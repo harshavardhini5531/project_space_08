@@ -306,7 +306,20 @@ export default function SpaceBot({ teamData = {}, onToggle, onAddToField }) {
 .sb-sn{width:34px;height:34px;min-width:34px;border-radius:50%;border:none;background:linear-gradient(135deg,#ff1d00,#ffaa00);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex:0 0 34px;box-shadow:0 0 10px rgba(255,170,0,.15)}
 .sb-sn:hover{transform:scale(1.06)}.sb-sn:disabled{opacity:.2;cursor:default;transform:none;box-shadow:none}
 .sb-pw{text-align:center;padding:6px;font-size:.5rem;color:rgba(255,255,255,.12)}
-@media(max-width:440px){.sb-panel{width:100vw;height:100vh;height:100dvh;bottom:0;right:0;border-radius:0}.sb-hdr{padding:max(16px,env(safe-area-inset-top)) 18px 16px}.sb-cl{width:40px;height:40px;min-width:40px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.08);border-radius:10px}.sb-fab-wrap{bottom:20px;right:16px}}
+
+/* Mobile: full screen, solid background, visible close button */
+@media(max-width:600px){
+  .sb-panel{width:100vw;height:100dvh;height:100vh;bottom:0;right:0;border-radius:0;background:#0a0510!important;border:none}
+  .sb-hdr{padding:max(48px,env(safe-area-inset-top)) 18px 16px;background:#0a0510;border-bottom:1px solid rgba(255,170,0,.15);position:relative;z-index:10}
+  .sb-cl{width:44px;height:44px;min-width:44px;display:flex!important;align-items:center;justify-content:center;background:rgba(255,29,0,.15);border:1px solid rgba(255,29,0,.25);border-radius:12px}
+  .sb-cl svg{color:#fd1c00!important;width:20px!important;height:20px!important}
+  .sb-msgs{padding:16px 14px;padding-bottom:env(safe-area-inset-bottom,16px)}
+  .sb-bar{padding:10px 14px;padding-bottom:max(14px,env(safe-area-inset-bottom))}
+  .sb-fab-wrap{bottom:20px;right:16px}
+  .sb-quicks{padding:8px 14px;gap:8px}
+  .sb-quick{padding:10px 14px;font-size:.75rem}
+  .sb-inp{font-size:16px!important}
+}
 `;
 
   return (

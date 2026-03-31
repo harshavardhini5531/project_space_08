@@ -128,8 +128,11 @@ export default function RegisterTeamPage() {
       const data=await res.json(); if(!res.ok){setError(data.error);setSaving(false);return}
       // Send email notifications to all team members
       try {
-        await fetch('/api/auth/notify-team',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({teamNumber:team.teamNumber,projectTitle,technology:team.technology,leaderName:user?.name||'',members})})
-      } catch{}
+        console.log('Sending notifications to members:', members.map(m=>({name:m.name,roll:m.roll_number,email:m.email})))
+        const notifRes=await fetch('/api/auth/notify-team',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({teamNumber:team.teamNumber,projectTitle,technology:team.technology,leaderName:user?.name||'',members})})
+        const notifData=await notifRes.json()
+        console.log('Notify response:', notifData)
+      } catch(e){console.error('Notify failed:',e)}
       setSaving(false);setShowSuccess(true)
     } catch{setError('Network error. Try again.');setSaving(false)}
   }
@@ -280,11 +283,11 @@ html,body{overflow:hidden!important;background:#050008}
 
 /* Toggle */
 .tg-w{display:flex;align-items:center;gap:12px;margin-bottom:20px}
-.tg{width:42px;height:22px;border-radius:11px;background:rgba(255,255,255,.08);border:none;cursor:pointer;position:relative;transition:background .25s}
-.tg.on{background:rgba(242,29,50,.25)}
-.tg-d{width:16px;height:16px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:transform .25s}
-.tg.on .tg-d{transform:translateX(20px)}
-.tg-t{font-size:.8rem;color:rgba(255,255,255,.5)}
+.tg{width:48px;height:26px;border-radius:13px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.08);cursor:pointer;position:relative;transition:all .3s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;flex-shrink:0}
+.tg.on{background:rgba(242,29,50,.3);border-color:rgba(242,29,50,.2)}
+.tg-d{width:20px;height:20px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:transform .25s cubic-bezier(.34,1.56,.64,1);box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.tg.on .tg-d{transform:translateX(22px)}
+.tg-t{font-size:.82rem;color:rgba(255,255,255,.5);user-select:none}
 
 /* Chips */
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
@@ -373,16 +376,25 @@ html,body{overflow:hidden!important;background:#050008}
   .stepper{display:none}
   .pg-m.co{margin-right:0}
   .mob{display:flex;gap:2px;padding:10px 12px 8px;background:rgba(5,0,8,.95);position:sticky;top:0;z-index:20;border-bottom:1px solid rgba(255,255,255,.04);flex-shrink:0}
-  .mob-s{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;border-radius:8px;cursor:pointer}
-  .mob-i{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center}
-  .mob-l{font-size:.48rem;color:rgba(255,255,255,.4);text-align:center;font-weight:500}
-  .ct{padding:0 16px 80px}
-  .ct-hdr{padding:18px 0 14px}
+  .mob-s{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;border-radius:8px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .mob-i{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center}
+  .mob-l{font-size:.5rem;color:rgba(255,255,255,.4);text-align:center;font-weight:500}
+  .ct{padding:0 14px 100px}
+  .ct-hdr{padding:16px 0 12px;flex-direction:column;gap:8px}
   .fg{grid-template-columns:1fr}
-  .card{padding:22px 18px}
-  .ct-hdr{flex-direction:column;gap:8px}
+  .card{padding:20px 16px}
   .mem-f{grid-template-columns:1fr}
   .rev-g{grid-template-columns:1fr}
+  .sub-btn{padding:16px;font-size:.88rem;-webkit-tap-highlight-color:transparent}
+  .tg-w{gap:10px}
+  .tg{min-width:48px}
+  .modal{padding:28px 20px}
+  .modal-btns{flex-direction:column}
+  .chips{gap:8px}
+  .chip{padding:8px 12px;font-size:.76rem}
+  .gt{padding:16px;font-size:.82rem}
+  .mem-e{padding:8px 12px;font-size:.68rem}
+  .sec{margin-bottom:20px}
 }
       `}</style>
 

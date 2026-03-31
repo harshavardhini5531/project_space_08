@@ -527,7 +527,29 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
   .tp-header{flex-direction:column;align-items:flex-start;gap:16px;}
   .tp-cards-grid{grid-template-columns:1fr 1fr;}
 }
-@media(max-width:600px){.tp-cards-grid{grid-template-columns:1fr;}}
+@media(max-width:768px){
+  .sidebar{display:none!important}
+  .topbar{padding:14px 16px}
+  .topbar-search{display:none}
+  .topbar-title{font-size:.9rem}
+  .main-content{padding:16px 14px}
+  .mp-hero{padding:24px 20px}
+  .mp-avatar{width:72px;height:72px;font-size:1.6rem}
+  .mp-hero-name{font-size:1.1rem}
+  .mp-hero-details{grid-template-columns:1fr}
+  .mp-hd{padding:8px 10px}
+  .mp-pay-grid{grid-template-columns:repeat(3,1fr)}
+  .tp-cards-grid{grid-template-columns:1fr}
+  .mp-maya-grid{grid-template-columns:1fr 1fr}
+  .mp-vr-name{width:60px;font-size:.65rem}
+}
+@media(max-width:480px){
+  .mp-hero-details{grid-template-columns:1fr}
+  .mp-pay-grid{grid-template-columns:1fr 1fr}
+  .mp-hero{padding:20px 16px}
+  .mp-stats-grid{grid-template-columns:1fr}
+  .topbar-credits{display:none}
+}
       `}</style>
 
       <div className="dash">
