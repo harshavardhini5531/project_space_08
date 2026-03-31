@@ -1,6 +1,6 @@
 'use client'
 import { setSession } from '@/lib/session'
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, Suspense, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import AuthBackground from '@/components/AuthBackground'
 import { globalStyles, colors, fonts } from '@/lib/theme'
@@ -34,6 +34,26 @@ function LoginPageInner() {
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
   }, [])
+
+  // Handle browser back button
+  // Store current state in ref for popstate handler
+  const stateRef = useRef({ proceed: false, role: null, step: 1 })
+  useEffect(() => { stateRef.current = { proceed, role, step } }, [proceed, role, step])
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const { proceed: p, role: r, step: s } = stateRef.current
+      if (p && r && s > 1) { setStep(v => v-1); setError('') }
+      else if (p) { setProceed(false); setError(''); setStep(1); setMode('signin') }
+      else if (r) { setRole(null) }
+      else { window.location.href = '/' }
+      // Push state again so next back press also works
+      window.history.pushState(null, '', window.location.href)
+    }
+    window.history.pushState(null, '', window.location.href)
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, []) // Only run once on mount
 
   useEffect(() => {
     const saved = sessionStorage.getItem('registeredRoll')

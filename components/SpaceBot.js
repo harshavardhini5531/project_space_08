@@ -306,7 +306,7 @@ export default function SpaceBot({ teamData = {}, onToggle, onAddToField }) {
 .sb-sn{width:34px;height:34px;min-width:34px;border-radius:50%;border:none;background:linear-gradient(135deg,#ff1d00,#ffaa00);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex:0 0 34px;box-shadow:0 0 10px rgba(255,170,0,.15)}
 .sb-sn:hover{transform:scale(1.06)}.sb-sn:disabled{opacity:.2;cursor:default;transform:none;box-shadow:none}
 .sb-pw{text-align:center;padding:6px;font-size:.5rem;color:rgba(255,255,255,.12)}
-@media(max-width:440px){.sb-panel{width:100vw;height:100vh;bottom:0;right:0;border-radius:0}}
+@media(max-width:440px){.sb-panel{width:100vw;height:100vh;height:100dvh;bottom:0;right:0;border-radius:0}.sb-hdr{padding:max(16px,env(safe-area-inset-top)) 18px 16px}.sb-cl{width:40px;height:40px;min-width:40px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.08);border-radius:10px}.sb-fab-wrap{bottom:20px;right:16px}}
 `;
 
   return (
