@@ -283,6 +283,14 @@ export default function Dashboard(){
   const [mayaCoding,setMayaCoding]=useState(null);
   const [mayaLoading,setMayaLoading]=useState(false);
   const [loading,setLoading]=useState(true);
+  const [isMobile,setIsMobile]=useState(false);
+  const [mobileMenuOpen,setMobileMenuOpen]=useState(false);
+
+  useEffect(()=>{
+    const check=()=>setIsMobile(window.innerWidth<768);
+    check(); window.addEventListener('resize',check);
+    return ()=>window.removeEventListener('resize',check);
+  },[]);
 
   useEffect(()=>{
     let u = null;
@@ -518,6 +526,14 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
 .tp-tag-leader{background:rgba(253,28,0,.08);border:1px solid rgba(253,28,0,.15);color:#fd1c00;}
 .tp-tag-you{background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.15);color:#4ade80;}
 
+/* Mobile sidebar overlay */
+.mob-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:99;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.mob-sidebar{position:fixed!important;left:0;top:0;bottom:0;z-index:100;animation:slideIn .3s cubic-bezier(.22,1,.36,1);box-shadow:4px 0 30px rgba(0,0,0,.5)}
+@keyframes slideIn{from{transform:translateX(-100%)}to{transform:none}}
+.mob-menu-btn{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.5);transition:all .2s;-webkit-tap-highlight-color:transparent}
+.mob-menu-btn:hover{background:rgba(253,28,0,.1);color:#fd1c00}
+
 @media(max-width:900px){
   .mp-hero{flex-direction:column;align-items:center;text-align:center;}
   .mp-hero-details{grid-template-columns:1fr 1fr;}
@@ -553,47 +569,57 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
       `}</style>
 
       <div className="dash">
-        <nav className="sidebar" style={{width:collapsed?78:260,minWidth:collapsed?78:260}}>
-          <div className="sb-profile" style={{padding:collapsed?"20px 12px 16px":"24px 20px 18px"}}>
-            <div className="sb-profile-row" style={{justifyContent:collapsed?"center":"space-between"}}>
-              <div className="sb-avatar" style={{width:collapsed?40:48,height:collapsed?40:48,fontSize:collapsed?14:18}}>{displayName.charAt(0)}</div>
-              {!collapsed&&<button className="sb-toggle" onClick={()=>setCollapsed(true)}><ChevronLeft size={14}/></button>}
+        {/* Mobile overlay backdrop */}
+        {isMobile && mobileMenuOpen && <div className="mob-overlay" onClick={()=>setMobileMenuOpen(false)}/>}
+
+        {/* Sidebar - hidden on mobile, shown as overlay when menu is open */}
+        {(!isMobile || mobileMenuOpen) && (
+        <nav className={`sidebar ${isMobile?'mob-sidebar':''}`} style={isMobile?{width:280,minWidth:280}:{width:collapsed?78:260,minWidth:collapsed?78:260}}>
+          <div className="sb-profile" style={{padding:isMobile?"24px 20px 18px":collapsed?"20px 12px 16px":"24px 20px 18px"}}>
+            <div className="sb-profile-row" style={{justifyContent:(!isMobile&&collapsed)?"center":"space-between"}}>
+              <div className="sb-avatar" style={{width:(!isMobile&&collapsed)?40:48,height:(!isMobile&&collapsed)?40:48,fontSize:(!isMobile&&collapsed)?14:18}}>{displayName.charAt(0)}</div>
+              {isMobile?<button className="sb-toggle" onClick={()=>setMobileMenuOpen(false)}><X size={16}/></button>
+              :!collapsed&&<button className="sb-toggle" onClick={()=>setCollapsed(true)}><ChevronLeft size={14}/></button>}
             </div>
-            {collapsed&&<div style={{display:"flex",justifyContent:"center",marginTop:10}}><button className="sb-toggle" onClick={()=>setCollapsed(false)}><ChevronRight size={14}/></button></div>}
-            {!collapsed&&<div className="sb-profile-info"><div className="sb-greeting">Good Day 👋</div><div className="sb-name">{displayName}</div><div className="sb-team-tag">{displayTeam} · {profile?.technology||''}</div></div>}
+            {!isMobile&&collapsed&&<div style={{display:"flex",justifyContent:"center",marginTop:10}}><button className="sb-toggle" onClick={()=>setCollapsed(false)}><ChevronRight size={14}/></button></div>}
+            {(isMobile||!collapsed)&&<div className="sb-profile-info"><div className="sb-greeting">Good Day 👋</div><div className="sb-name">{displayName}</div><div className="sb-team-tag">{displayTeam} · {profile?.technology||''}</div></div>}
           </div>
 
           <div className="sb-nav">
             {NAV_SECTIONS.map(sec=>(
               <div key={sec.title} className="sb-section">
-                {!collapsed&&<div className="sb-section-header">{sec.title}</div>}
+                {(isMobile||!collapsed)&&<div className="sb-section-header">{sec.title}</div>}
                 {sec.items.map(item=>(
                   <div key={item.id} className={`sb-item ${active===item.id?"active":""}`}
-                    onClick={()=>setActive(item.id)}
-                    onMouseEnter={()=>collapsed&&setHovered(item.id)} onMouseLeave={()=>setHovered(null)}
-                    style={{padding:collapsed?"10px 0":"9px 16px",margin:collapsed?"2px 8px":"2px 10px",justifyContent:collapsed?"center":"flex-start",gap:collapsed?0:12,borderRadius:collapsed?12:10}}>
+                    onClick={()=>{setActive(item.id);if(isMobile)setMobileMenuOpen(false)}}
+                    onMouseEnter={()=>!isMobile&&collapsed&&setHovered(item.id)} onMouseLeave={()=>setHovered(null)}
+                    style={{padding:(!isMobile&&collapsed)?"10px 0":"9px 16px",margin:(!isMobile&&collapsed)?"2px 8px":"2px 10px",justifyContent:(!isMobile&&collapsed)?"center":"flex-start",gap:(!isMobile&&collapsed)?0:12,borderRadius:(!isMobile&&collapsed)?12:10}}>
                     <div className="sb-item-icon"><item.icon size={18}/></div>
-                    {!collapsed&&<span className="sb-item-label">{item.label}</span>}
-                    {collapsed&&hovered===item.id&&<div className="sb-tooltip">{item.label}</div>}
+                    {(isMobile||!collapsed)&&<span className="sb-item-label">{item.label}</span>}
+                    {!isMobile&&collapsed&&hovered===item.id&&<div className="sb-tooltip">{item.label}</div>}
                   </div>
                 ))}
               </div>
             ))}
           </div>
 
-          <div className="sb-bottom" style={{padding:collapsed?"12px 8px":"14px 14px"}}>
-            <div className="sb-bottom-item" style={{padding:collapsed?"8px 0":"8px 10px",justifyContent:collapsed?"center":"flex-start",gap:collapsed?0:10}}><Settings size={18}/>{!collapsed&&<span className="sb-bottom-label">Settings</span>}</div>
-            <div className="sb-bottom-item" onClick={()=>{localStorage.removeItem('ps_user');localStorage.removeItem('ps_session');router.push('/auth/login')}} style={{padding:collapsed?"8px 0":"8px 10px",justifyContent:collapsed?"center":"flex-start",gap:collapsed?0:10}}><LogOut size={18}/>{!collapsed&&<span className="sb-bottom-label">Logout</span>}</div>
+          <div className="sb-bottom" style={{padding:(!isMobile&&collapsed)?"12px 8px":"14px 14px"}}>
+            <div className="sb-bottom-item" style={{padding:(!isMobile&&collapsed)?"8px 0":"8px 10px",justifyContent:(!isMobile&&collapsed)?"center":"flex-start",gap:(!isMobile&&collapsed)?0:10}}><Settings size={18}/>{(isMobile||!collapsed)&&<span className="sb-bottom-label">Settings</span>}</div>
+            <div className="sb-bottom-item" onClick={()=>{localStorage.removeItem('ps_user');localStorage.removeItem('ps_session');router.push('/auth/login')}} style={{padding:(!isMobile&&collapsed)?"8px 0":"8px 10px",justifyContent:(!isMobile&&collapsed)?"center":"flex-start",gap:(!isMobile&&collapsed)?0:10}}><LogOut size={18}/>{(isMobile||!collapsed)&&<span className="sb-bottom-label">Logout</span>}</div>
           </div>
         </nav>
+        )}
 
         <div className="content">
           <div className="topbar">
-            <div><div className="topbar-title">{PAGE_TITLES[active]}</div><div className="topbar-breadcrumb">Project Space / {PAGE_TITLES[active]}</div></div>
+            <div style={{display:'flex',alignItems:'center',gap:12}}>
+              {isMobile&&<button className="mob-menu-btn" onClick={()=>setMobileMenuOpen(true)}><ChevronRight size={18}/></button>}
+              <div><div className="topbar-title">{PAGE_TITLES[active]}</div><div className="topbar-breadcrumb">Project Space / {PAGE_TITLES[active]}</div></div>
+            </div>
             <div className="topbar-right">
-              <div className="topbar-search"><Search size={15}/><input placeholder="Search..."/></div>
+              {!isMobile&&<div className="topbar-search"><Search size={15}/><input placeholder="Search..."/></div>}
               <div className="topbar-icon"><Bell size={17}/><div className="topbar-notif"/></div>
-              <div className="topbar-credits"><Award size={15}/> <span>20</span> Credits</div>
+              {!isMobile&&<div className="topbar-credits"><Award size={15}/> <span>20</span> Credits</div>}
             </div>
           </div>
           <div className="main-content">
