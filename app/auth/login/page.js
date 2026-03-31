@@ -350,4 +350,4 @@ export default function LoginPage() {
       )}
     </AuthBackground>
   )
-}
+} 
