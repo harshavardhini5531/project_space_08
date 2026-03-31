@@ -1,6 +1,6 @@
 'use client'
 import { setSession } from '@/lib/session'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import AuthBackground from '@/components/AuthBackground'
 import { globalStyles, colors, fonts } from '@/lib/theme'
@@ -8,7 +8,7 @@ import { globalStyles, colors, fonts } from '@/lib/theme'
 const LEADER_ICON = 'https://i.ibb.co/zH6Hmhkq/leadership.png'
 const MEMBER_ICON = 'https://i.ibb.co/VY31hrPC/group-users.png'
 
-export default function LoginPage() {
+function LoginPageInner() {
   const router       = useRouter()
   const searchParams = useSearchParams()
 
@@ -350,4 +350,12 @@ export default function LoginPage() {
       )}
     </AuthBackground>
   )
-} 
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div style={{width:'100%',height:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'#050008',color:'rgba(255,255,255,.4)'}}>Loading...</div>}>
+      <LoginPageInner />
+    </Suspense>
+  )
+}
