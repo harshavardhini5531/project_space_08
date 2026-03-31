@@ -1,0 +1,58 @@
+/* lib/responsive.css — Import in layout.js or any page that needs mobile support */
+/* Breakpoints: mobile <768px, tablet 768-1024px, desktop >1024px */
+
+/* ═══ GLOBAL RESETS FOR MOBILE ═══ */
+@media (max-width: 768px) {
+  /* Prevent horizontal scroll */
+  html, body { overflow-x: hidden !important; }
+  
+  /* Touch-friendly tap targets */
+  button, a, input, select, textarea {
+    min-height: 44px;
+    font-size: max(16px, 1em); /* Prevent iOS zoom on focus */
+  }
+
+  /* Smooth scrolling */
+  * { -webkit-overflow-scrolling: touch; }
+}
+
+/* ═══ UTILITY CLASSES ═══ */
+/* Hide on mobile */
+@media (max-width: 768px) {
+  .hide-mobile { display: none !important; }
+}
+
+/* Hide on desktop */
+@media (min-width: 769px) {
+  .hide-desktop { display: none !important; }
+}
+
+/* Stack on mobile — converts row to column */
+@media (max-width: 768px) {
+  .stack-mobile {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  .stack-mobile > * {
+    width: 100% !important;
+  }
+}
+
+/* Full width on mobile */
+@media (max-width: 768px) {
+  .full-mobile {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+}
+
+/* ═══ SAFE AREA FOR NOTCH DEVICES ═══ */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .safe-bottom {
+    padding-bottom: calc(16px + env(safe-area-inset-bottom)) !important;
+  }
+}
