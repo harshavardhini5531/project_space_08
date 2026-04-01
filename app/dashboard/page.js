@@ -527,12 +527,12 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
 .tp-tag-you{background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.15);color:#4ade80;}
 
 /* Mobile sidebar overlay */
-.mob-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:99;animation:fadeIn .2s ease}
+.mob-overlay{position:fixed;inset:0;background:rgba(5,0,8,.85);z-index:99;animation:fadeIn .2s ease}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 .mob-sidebar{position:fixed!important;left:0;top:0;bottom:0;z-index:100;animation:slideIn .3s cubic-bezier(.22,1,.36,1);box-shadow:4px 0 30px rgba(0,0,0,.5);background:#0c0616!important}
 @keyframes slideIn{from{transform:translateX(-100%)}to{transform:none}}
-.mob-menu-btn{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.5);transition:all .2s;-webkit-tap-highlight-color:transparent}
-.mob-menu-btn:hover{background:rgba(253,28,0,.1);color:#fd1c00}
+.mob-menu-btn{width:40px;height:40px;border-radius:10px;background:rgba(253,28,0,.1);border:1px solid rgba(253,28,0,.2);display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fd1c00;transition:all .2s;-webkit-tap-highlight-color:transparent}
+.mob-menu-btn:active{background:rgba(253,28,0,.2);transform:scale(.95)}
 
 @media(max-width:900px){
   .mp-hero{flex-direction:column;align-items:center;text-align:center;}
@@ -613,7 +613,7 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
         <div className="content">
           <div className="topbar">
             <div style={{display:'flex',alignItems:'center',gap:12}}>
-              {isMobile&&<button className="mob-menu-btn" onClick={()=>setMobileMenuOpen(true)}><ChevronRight size={18}/></button>}
+              {isMobile&&<button className="mob-menu-btn" onClick={()=>setMobileMenuOpen(true)}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>}
               <div><div className="topbar-title">{PAGE_TITLES[active]}</div><div className="topbar-breadcrumb">Project Space / {PAGE_TITLES[active]}</div></div>
             </div>
             <div className="topbar-right">
