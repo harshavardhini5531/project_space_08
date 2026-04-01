@@ -558,147 +558,146 @@ export default function LandingPage() {
   }, [])
 
   /* ═══ MOBILE LAYOUT ═══ */
+ /* ═══ MOBILE LAYOUT ═══ */
   if (isMobile) {
     return (
       <>
         <style>{`
           *{margin:0;padding:0;box-sizing:border-box;}
-          html,body{width:100%;height:100%;background:#050008;overflow:hidden;}
-          body{font-family:'Poppins',sans-serif;color:#fff;}
-          .m-wrap{
-            width:100%;height:100vh;height:100dvh;
-            display:flex;flex-direction:column;
-            padding:0 7vw;overflow:hidden;position:relative;
-          }
-          .m-glow{
-            position:fixed;bottom:-30vh;left:50%;transform:translateX(-50%);
-            width:120vw;height:60vh;
-            background:radial-gradient(ellipse,rgba(253,28,0,0.06) 0%,rgba(253,28,0,0.02) 40%,transparent 70%);
-            pointer-events:none;z-index:0;
-          }
-          .m-stars{
-            position:fixed;inset:0;pointer-events:none;z-index:0;
-            background-image:
-              radial-gradient(1px 1px at 10% 20%,rgba(255,255,255,0.3),transparent),
-              radial-gradient(1px 1px at 30% 60%,rgba(255,255,255,0.2),transparent),
-              radial-gradient(1px 1px at 50% 10%,rgba(255,255,255,0.25),transparent),
-              radial-gradient(1px 1px at 70% 40%,rgba(255,255,255,0.15),transparent),
-              radial-gradient(1px 1px at 90% 70%,rgba(255,255,255,0.2),transparent),
-              radial-gradient(1px 1px at 15% 80%,rgba(255,255,255,0.18),transparent),
-              radial-gradient(1px 1px at 85% 15%,rgba(255,255,255,0.22),transparent),
-              radial-gradient(1px 1px at 40% 35%,rgba(255,255,255,0.2),transparent),
-              radial-gradient(1.5px 1.5px at 80% 55%,rgba(255,255,255,0.3),transparent),
-              radial-gradient(1.5px 1.5px at 20% 90%,rgba(255,255,255,0.25),transparent);
-            animation:mTwinkle 8s ease-in-out infinite alternate;
-          }
-          @keyframes mTwinkle{0%{opacity:0.6;}50%{opacity:1;}100%{opacity:0.7;}}
-          .m-content{position:relative;z-index:2;display:flex;flex-direction:column;flex:1;}
-          .m-ai{
-            display:flex;align-items:center;gap:6px;align-self:flex-end;
-            margin-top:4vh;margin-bottom:1vh;animation:mFade 0.8s ease 0.2s both;
-          }
-          .m-ai-icon{font-weight:300;font-size:20px;color:#fff;text-shadow:0 0 15px rgba(255,85,0,0.3);}
-          .m-ai-txt{
-            font-family:'Astro Futuristic Font','ASTRO','Orbitron',sans-serif;font-weight:700;font-size:6px;letter-spacing:3px;text-transform:uppercase;
-            background:linear-gradient(90deg,#ff9ffc,#b19eef,#fd1c00);
-            background-clip:text;-webkit-background-clip:text;color:transparent;
-          }
-          .m-title-section{margin-top:2vh;animation:mUp 0.7s ease 0.1s both;}
-          .m-title{
-            font-family:'Astro Futuristic Font','ASTRO','Orbitron',sans-serif;
-            font-weight:400;font-size:15vw;line-height:1.1;text-transform:uppercase;color:#fd1c00;
-          }
-          .m-title-w{color:#fff;}
-          .m-tagline{margin-top:3vh;animation:mUp 0.7s ease 0.3s both;}
-          .m-tag1{font-size:2.6vw;font-weight:300;letter-spacing:5px;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:6px;}
-          .m-tag-line{width:28px;height:1px;background:rgba(253,28,0,0.5);margin-bottom:8px;}
-          .m-tag2{font-size:2.8vw;font-weight:700;letter-spacing:5px;text-transform:uppercase;color:#fd1c00;}
-          .m-btns{display:flex;gap:10px;margin-top:4vh;animation:mUp 0.7s ease 0.5s both;}
-          .m-btn{
-            display:flex;align-items:center;gap:8px;padding:12px 20px;border-radius:10px;
-            font-family:'Poppins',sans-serif;font-size:13px;font-weight:500;
-            cursor:pointer;border:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;
-          }
-          .m-btn:active{transform:scale(0.95);}
-          .m-btn-p{background:linear-gradient(135deg,#fd1c00,#fd3a20);color:#fff;box-shadow:0 4px 20px rgba(253,28,0,0.3);}
-          .m-btn-s{background:rgba(255,255,255,0.06);color:#fff;border:1px solid rgba(255,255,255,0.12);}
-          .m-btn-i{width:24px;height:24px;border-radius:5px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.14);flex-shrink:0;}
-          .m-robot{
-            flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-            min-height:120px;position:relative;z-index:2;
-            animation:mFade 1s ease 0.7s both;
-          }
-          .m-robot-img{
-            width:clamp(120px,35vw,200px);height:clamp(120px,35vw,200px);
-            object-fit:contain;
-            filter:drop-shadow(0 0 15px rgba(255,255,255,0.1));
-            animation:mBounce 2s ease-in-out infinite;
-          }
-          .m-robot-shadow{
-            width:clamp(80px,20vw,120px);height:12px;border-radius:50%;
-            background:radial-gradient(ellipse,rgba(0,0,0,0.5) 0%,rgba(0,0,0,0.2) 40%,transparent 75%);
-            margin-top:-6px;filter:blur(3px);
-            animation:mShadow 2s ease-in-out infinite;
-          }
-          @keyframes mBounce{0%,100%{transform:translateY(0);}30%{transform:translateY(-14px);}50%{transform:translateY(-10px);}70%{transform:translateY(-14px);}}
-          @keyframes mShadow{0%,100%{transform:scaleX(1);opacity:1;}30%{transform:scaleX(0.6);opacity:0.4;}50%{transform:scaleX(0.65);opacity:0.5;}70%{transform:scaleX(0.6);opacity:0.4;}}
-          
-          .m-cd{
-            display:flex;align-items:center;justify-content:center;
-            padding:12px 0 max(14px,env(safe-area-inset-bottom));
-            position:relative;z-index:2;animation:mFade 0.8s ease 1s both;
-          }
-          .m-cd-b{display:flex;flex-direction:column;align-items:center;width:18vw;}
-          .m-cd-n{font-family:'Astro Futuristic Font','ASTRO','Orbitron',sans-serif;font-size:7vw;font-weight:400;color:#fff;letter-spacing:1px;}
-          .m-cd-n.flip{animation:mFlip 0.3s ease;}
-          .m-cd-l{font-size:2vw;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#fd1c00;margin-top:2px;}
-          .m-cd-c{font-size:5vw;color:#fd1c00;font-weight:300;padding:0 1vw;margin-bottom:12px;}
-          @keyframes mUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
-          @keyframes mFade{from{opacity:0;}to{opacity:1;}}
-          @keyframes mFlip{0%{transform:translateY(0);opacity:1;}40%{transform:translateY(-3px);opacity:0.4;}100%{transform:translateY(0);opacity:1;}}
-        `}</style>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-        <link href="https://fonts.cdnfonts.com/css/astro-futuristic-font" rel="stylesheet" />
-        <div className="m-wrap">
-          <div className="m-glow" />
-          <div className="m-stars" />
+          html,body{width:100%;height:100%;background:#050008;overflow-x:hidden;}
+          body{font-family:'DM Sans',sans-serif;color:#fff;}
+          @keyframes mUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+          @keyframes mFade{from{opacity:0}to{opacity:1}}
+          @keyframes mFlip{0%{transform:translateY(0);opacity:1}40%{transform:translateY(-3px);opacity:.4}100%{transform:translateY(0);opacity:1}}
+          @keyframes orbGlow{0%,100%{box-shadow:0 0 40px rgba(253,28,0,.15),0 0 80px rgba(253,28,0,.05)}50%{box-shadow:0 0 60px rgba(253,28,0,.25),0 0 120px rgba(253,28,0,.1)}}
+          @keyframes orbRotate{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(360deg)}}
+          @keyframes dotPulse{0%,100%{opacity:.3}50%{opacity:1}}
+          @keyframes ringPulse{0%,100%{transform:scale(1);opacity:.15}50%{transform:scale(1.08);opacity:.25}}
 
-          <div className="m-content">
-            <div className="m-ai"><span className="m-ai-icon">AI</span><span className="m-ai-txt">POWERED</span></div>
-            <div className="m-title-section">
-              <div className="m-title">PROJECT</div>
-              <div className="m-title m-title-w">SPACE</div>
+          .ml{width:100%;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;position:relative;overflow:hidden}
+
+          /* Ambient background */
+          .ml-bg{position:fixed;inset:0;pointer-events:none;z-index:0}
+          .ml-bg::before{content:'';position:absolute;top:-20%;right:-30%;width:80vw;height:80vw;border-radius:50%;background:radial-gradient(circle,rgba(253,28,0,.08),transparent 70%)}
+          .ml-bg::after{content:'';position:absolute;bottom:-10%;left:-20%;width:60vw;height:60vw;border-radius:50%;background:radial-gradient(circle,rgba(253,28,0,.04),transparent 70%)}
+
+          /* Stars */
+          .ml-stars{position:fixed;inset:0;pointer-events:none;z-index:0;background-image:radial-gradient(1px 1px at 10% 15%,rgba(255,255,255,.25),transparent),radial-gradient(1px 1px at 25% 45%,rgba(255,255,255,.2),transparent),radial-gradient(1px 1px at 45% 8%,rgba(255,255,255,.3),transparent),radial-gradient(1px 1px at 65% 35%,rgba(255,255,255,.15),transparent),radial-gradient(1px 1px at 80% 60%,rgba(255,255,255,.2),transparent),radial-gradient(1px 1px at 90% 20%,rgba(255,255,255,.25),transparent),radial-gradient(1px 1px at 15% 75%,rgba(255,255,255,.18),transparent),radial-gradient(1px 1px at 50% 55%,rgba(255,255,255,.22),transparent),radial-gradient(1.5px 1.5px at 35% 85%,rgba(255,255,255,.28),transparent),radial-gradient(1.5px 1.5px at 75% 90%,rgba(255,255,255,.2),transparent);animation:mTwinkle 6s ease-in-out infinite alternate}
+          @keyframes mTwinkle{0%{opacity:.5}50%{opacity:1}100%{opacity:.6}}
+
+          .ml-ct{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;padding:0 24px}
+
+          /* Header */
+          .ml-hdr{display:flex;justify-content:flex-end;padding-top:max(16px,env(safe-area-inset-top));margin-bottom:5vh;animation:mFade .8s ease .2s both}
+          .ml-ai{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)}
+          .ml-ai-icon{font-weight:300;font-size:16px;color:#fff;text-shadow:0 0 10px rgba(253,28,0,.3)}
+          .ml-ai-txt{font-size:7px;font-weight:700;letter-spacing:3px;text-transform:uppercase;background:linear-gradient(90deg,#ff9ffc,#b19eef,#fd1c00);background-clip:text;-webkit-background-clip:text;color:transparent}
+
+          /* Orb */
+          .ml-orb-wrap{display:flex;justify-content:center;margin-bottom:5vh;animation:mFade 1s ease .4s both;position:relative}
+          .ml-orb{width:130px;height:130px;border-radius:50%;position:relative;display:flex;align-items:center;justify-content:center}
+          .ml-orb-ring{position:absolute;inset:-8px;border-radius:50%;border:1px solid rgba(253,28,0,.12);animation:ringPulse 3s ease-in-out infinite}
+          .ml-orb-ring2{position:absolute;inset:-20px;border-radius:50%;border:1px dashed rgba(253,28,0,.06);animation:orbRotate 20s linear infinite}
+          .ml-orb-inner{width:100%;height:100%;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(253,28,0,.2),rgba(253,28,0,.08) 50%,rgba(5,0,8,.9));border:1px solid rgba(253,28,0,.15);animation:orbGlow 4s ease-in-out infinite;display:flex;align-items:center;justify-content:center}
+          .ml-orb-text{font-family:'Astro Futuristic Font','ASTRO','Orbitron',sans-serif;font-size:26px;font-weight:700;color:#fff;text-shadow:0 0 20px rgba(253,28,0,.3);letter-spacing:4px}
+          .ml-orb-dot{position:absolute;width:4px;height:4px;border-radius:50%;background:#fd1c00;animation:dotPulse 2s ease-in-out infinite}
+          .ml-orb-dot:nth-child(4){top:10%;right:15%;animation-delay:.3s}
+          .ml-orb-dot:nth-child(5){bottom:15%;left:10%;animation-delay:.6s}
+          .ml-orb-dot:nth-child(6){top:50%;right:2%;animation-delay:.9s}
+          .ml-orb-dot:nth-child(7){bottom:5%;right:35%;animation-delay:1.2s}
+
+          /* Title */
+          .ml-title-area{margin-bottom:3vh;animation:mUp .7s ease .3s both}
+          .ml-title{font-family:'Astro Futuristic Font','ASTRO','Orbitron',sans-serif;font-weight:400;font-size:clamp(36px,11vw,52px);line-height:1.1;text-transform:uppercase;color:#fd1c00}
+          .ml-title-w{color:#fff}
+
+          /* Tagline */
+          .ml-tag{margin-bottom:3vh;animation:mUp .7s ease .5s both}
+          .ml-tag1{font-size:10px;font-weight:400;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,.35)}
+          .ml-tag-line{width:28px;height:1px;background:rgba(253,28,0,.4);margin:6px 0}
+          .ml-tag2{font-size:11px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:#fd1c00}
+
+          /* Event info */
+          .ml-info{display:flex;gap:8px;margin-bottom:3vh;animation:mUp .7s ease .6s both}
+          .ml-info-card{flex:1;padding:12px 8px;border-radius:12px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.05);display:flex;flex-direction:column;align-items:center;gap:3px;transition:border-color .3s}
+          .ml-info-card:active{border-color:rgba(253,28,0,.15)}
+          .ml-info-icon{font-size:16px}
+          .ml-info-val{font-size:12px;font-weight:700;color:#fff}
+          .ml-info-lb{font-size:7px;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:1.5px;font-weight:600}
+
+          /* Buttons */
+          .ml-btns{display:flex;gap:10px;animation:mUp .7s ease .7s both}
+          .ml-btn{display:flex;align-items:center;justify-content:center;gap:8px;flex:1;padding:14px 16px;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;border:none;-webkit-tap-highlight-color:transparent;transition:transform .15s}
+          .ml-btn:active{transform:scale(.96)}
+          .ml-btn-p{background:linear-gradient(135deg,#fd1c00,#fd3a20);color:#fff;box-shadow:0 4px 24px rgba(253,28,0,.3)}
+          .ml-btn-s{background:rgba(255,255,255,.04);color:#fff;border:1px solid rgba(255,255,255,.1)}
+
+          /* Spacer */
+          .ml-spacer{flex:1;min-height:16px}
+
+          /* Countdown */
+          .ml-cd{display:flex;align-items:center;justify-content:center;padding:12px 0 max(14px,env(safe-area-inset-bottom));animation:mFade .8s ease 1s both}
+          .ml-cd-b{display:flex;flex-direction:column;align-items:center;width:18vw}
+          .ml-cd-n{font-family:'Astro Futuristic Font','ASTRO','Orbitron',sans-serif;font-size:clamp(20px,6vw,30px);font-weight:400;color:#fff;letter-spacing:1px}
+          .ml-cd-n.flip{animation:mFlip .3s ease}
+          .ml-cd-l{font-size:7px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#fd1c00;margin-top:2px}
+          .ml-cd-c{font-size:clamp(14px,4vw,22px);color:rgba(253,28,0,.35);font-weight:300;padding:0 1vw;margin-bottom:8px}
+        `}</style>
+        <link rel="preconnect" href="https://fonts.googleapis.com"/>
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin=""/>
+        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=Orbitron:wght@400;600&display=swap" rel="stylesheet"/>
+        <link href="https://fonts.cdnfonts.com/css/astro-futuristic-font" rel="stylesheet"/>
+
+        <div className="ml">
+          <div className="ml-bg"/>
+          <div className="ml-stars"/>
+
+          <div className="ml-ct">
+            <div className="ml-hdr">
+              <div className="ml-ai"><span className="ml-ai-icon">AI</span><span className="ml-ai-txt">POWERED</span></div>
             </div>
-            <div className="m-tagline">
-              <div className="m-tag1">DON&apos;T JUST THINK</div>
-              <div className="m-tag-line" />
-              <div className="m-tag2">MAKE IT HAPPEN</div>
+
+            <div className="ml-orb-wrap">
+              <div className="ml-orb">
+                <div className="ml-orb-ring"/>
+                <div className="ml-orb-ring2"/>
+                <div className="ml-orb-dot"/><div className="ml-orb-dot"/><div className="ml-orb-dot"/><div className="ml-orb-dot"/>
+                <div className="ml-orb-inner"><span className="ml-orb-text">PS</span></div>
+              </div>
             </div>
-            <div className="m-btns">
-              <button className="m-btn m-btn-p" onClick={() => routerHook.push('/auth/register')}>
-                <div className="m-btn-i"><svg width="11" height="11" viewBox="0 0 13 13" fill="none"><path d="M6.5 1v11M1 6.5h11" stroke="#fff" strokeWidth="2" strokeLinecap="round"/></svg></div>
-                Create Account
-              </button>
-              <button className="m-btn m-btn-s" onClick={() => routerHook.push('/auth/login')}>
-                <div className="m-btn-i"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M6 2H3a1 1 0 00-1 1v8a1 1 0 001 1h3" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M9.5 4.5L12 7l-2.5 2.5" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><line x1="12" y1="7" x2="5.5" y2="7" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/></svg></div>
-                Login
-              </button>
+
+            <div className="ml-title-area">
+              <div className="ml-title">PROJECT</div>
+              <div className="ml-title ml-title-w">SPACE</div>
             </div>
-            {/* Robot Mascot */}
-            <div className="m-robot">
-              <img className="m-robot-img" src="https://i.ibb.co/NdXXswGc/Gemini-Generated-Image-zecq2szecq2szecq-removebg-preview.png" alt="Robot" />
-              <div className="m-robot-shadow" />
+
+            <div className="ml-tag">
+              <div className="ml-tag1">DON&apos;T JUST THINK</div>
+              <div className="ml-tag-line"/>
+              <div className="ml-tag2">MAKE IT HAPPEN</div>
             </div>
-            <div className="m-cd">
-              <div className="m-cd-b"><div className="m-cd-n" id="cd-days">00</div><div className="m-cd-l">Days</div></div>
-              <div className="m-cd-c">:</div>
-              <div className="m-cd-b"><div className="m-cd-n" id="cd-hours">00</div><div className="m-cd-l">Hrs</div></div>
-              <div className="m-cd-c">:</div>
-              <div className="m-cd-b"><div className="m-cd-n" id="cd-mins">00</div><div className="m-cd-l">Min</div></div>
-              <div className="m-cd-c">:</div>
-              <div className="m-cd-b"><div className="m-cd-n" id="cd-secs">00</div><div className="m-cd-l">Sec</div></div>
+
+            <div className="ml-info">
+              <div className="ml-info-card"><div className="ml-info-icon">🗓</div><div className="ml-info-val">May 6-12</div><div className="ml-info-lb">Event Date</div></div>
+              <div className="ml-info-card"><div className="ml-info-icon">👥</div><div className="ml-info-val">684+</div><div className="ml-info-lb">Students</div></div>
+              <div className="ml-info-card"><div className="ml-info-icon">🏆</div><div className="ml-info-val">6 Tracks</div><div className="ml-info-lb">Technologies</div></div>
+            </div>
+
+            <div className="ml-btns">
+              <button className="ml-btn ml-btn-p" onClick={()=>routerHook.push('/auth/register')}>Create Account</button>
+              <button className="ml-btn ml-btn-s" onClick={()=>routerHook.push('/auth/login')}>Login</button>
+            </div>
+
+            <div className="ml-spacer"/>
+
+            <div className="ml-cd">
+              <div className="ml-cd-b"><div className="ml-cd-n" id="cd-days">00</div><div className="ml-cd-l">Days</div></div>
+              <div className="ml-cd-c">:</div>
+              <div className="ml-cd-b"><div className="ml-cd-n" id="cd-hours">00</div><div className="ml-cd-l">Hrs</div></div>
+              <div className="ml-cd-c">:</div>
+              <div className="ml-cd-b"><div className="ml-cd-n" id="cd-mins">00</div><div className="ml-cd-l">Min</div></div>
+              <div className="ml-cd-c">:</div>
+              <div className="ml-cd-b"><div className="ml-cd-n" id="cd-secs">00</div><div className="ml-cd-l">Sec</div></div>
             </div>
           </div>
         </div>
