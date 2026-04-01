@@ -544,7 +544,8 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
   .tp-cards-grid{grid-template-columns:1fr 1fr;}
 }
 @media(max-width:768px){
-  .sidebar{display:none!important}
+  .sidebar:not(.mob-sidebar){display:none!important}
+  .mob-sidebar{display:flex!important}
   .topbar{padding:14px 16px}
   .topbar-search{display:none}
   .topbar-title{font-size:.9rem}
