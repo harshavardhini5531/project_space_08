@@ -308,8 +308,8 @@ html,body{overflow:hidden!important;background:#050008}
 /* Form grid */
 .fg{display:grid;grid-template-columns:1fr 1fr;gap:28px 24px}
 .fg-full{grid-column:1/-1}
-@container main (max-width:800px){.fg{grid-template-columns:1fr}.fg-full{grid-column:1}.mem{width:calc(50% - 6px)}.rev-g{grid-template-columns:1fr 1fr}}
-@container main (max-width:600px){.mem{width:100%}.rev-g{grid-template-columns:1fr!important}}
+@container main (max-width:800px){.fg{grid-template-columns:1fr}.fg-full{grid-column:1}.mem-grid{grid-template-columns:1fr 1fr}.rev-g{grid-template-columns:1fr 1fr}}
+@container main (max-width:600px){.mem-grid{grid-template-columns:1fr 1fr}.rev-g{grid-template-columns:1fr!important}}
 @container main (max-width:500px){.card{padding:22px 18px}.ct{padding:0 16px 80px}.ct-hdr{flex-direction:column;gap:8px}}
 
 /* Toggle */
@@ -331,16 +331,15 @@ html,body{overflow:hidden!important;background:#050008}
 /* Team */
 .gt{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:12px;background:rgba(123,47,190,.04);border:1.5px dashed rgba(123,47,190,.15);color:#7B2FBE;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:500;cursor:pointer;transition:all .2s}
 .gt:hover{background:rgba(123,47,190,.08);border-style:solid}
-.mem-grid{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
-.mem{padding:16px;border-radius:12px;background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.04);transition:border-color .2s;width:calc(50% - 6px);box-sizing:border-box}
-.mem:hover{border-color:rgba(123,47,190,.12)}
-.mem-h{display:flex;align-items:center;gap:12px}
-.mem-av{width:42px;height:42px;border-radius:10px;background:rgba(123,47,190,.06);border:1px solid rgba(123,47,190,.1);display:flex;align-items:center;justify-content:center;font-size:.7rem;color:#7B2FBE;font-weight:600;flex-shrink:0}
-.mem-i{flex:1;min-width:0}.mem-n{font-size:.82rem;font-weight:500;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mem-r{font-size:.62rem;color:rgba(255,255,255,.35);margin-top:2px}
-.mem-b{padding:3px 8px;border-radius:6px;font-size:.5rem;background:rgba(123,47,190,.06);color:#7B2FBE;letter-spacing:1.5px;font-weight:500;text-transform:uppercase;font-family:${fonts.display};margin-top:8px;display:inline-block}
-.mem-e{padding:5px 10px;border-radius:6px;background:none;border:1px solid rgba(255,255,255,.06);color:rgba(255,255,255,.4);font-size:.64rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;margin-left:auto;flex-shrink:0}
-.mem-e:hover{border-color:rgba(123,47,190,.2);color:#7B2FBE}
-.mem-f{display:grid;grid-template-columns:1fr;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.03)}
+.mem-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;justify-items:center}
+.mem{padding:20px 16px;border-radius:16px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);transition:all .3s;width:100%;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;text-align:center}
+.mem:hover{border-color:rgba(253,28,0,.15);background:rgba(255,255,255,.03)}
+.mem-av{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,rgba(253,28,0,.15),rgba(250,160,0,.1));border:2px solid rgba(253,28,0,.2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:#fd1c00;font-weight:700;flex-shrink:0;margin-bottom:10px}
+.mem-i{width:100%}.mem-n{font-size:.85rem;font-weight:600;color:#fff;margin-bottom:3px}.mem-r{font-size:.6rem;color:rgba(255,255,255,.35);line-height:1.4}
+.mem-b{padding:3px 10px;border-radius:20px;font-size:.48rem;background:rgba(253,28,0,.08);color:#fd1c00;letter-spacing:1.5px;font-weight:600;text-transform:uppercase;font-family:${fonts.display};margin-top:8px;display:inline-block;border:1px solid rgba(253,28,0,.12)}
+.mem-e{padding:5px 14px;border-radius:20px;background:none;border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.4);font-size:.62rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;margin-top:10px}
+.mem-e:hover{border-color:rgba(253,28,0,.2);color:#fd1c00}
+.mem-f{display:grid;grid-template-columns:1fr;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.04);width:100%;text-align:left}
 
 /* Review */
 .rev-g{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
@@ -415,7 +414,7 @@ html,body{overflow:hidden!important;background:#050008}
   .ct-hdr{padding:16px 0 12px;flex-direction:column;gap:8px}
   .fg{grid-template-columns:1fr}
   .card{padding:20px 16px}
-  .mem{width:100%}
+  .mem-grid{grid-template-columns:1fr 1fr}
   .mem-f{grid-template-columns:1fr}
   .rev-g{grid-template-columns:1fr}
   .sub-btn{padding:16px;font-size:.88rem;-webkit-tap-highlight-color:transparent}
@@ -531,12 +530,13 @@ html,body{overflow:hidden!important;background:#050008}
                     <div className="mem-grid">
                     {members.map((m,i) => (
                       <div key={m.roll_number} className="mem">
-                        <div className="mem-h">
-                          <div className="mem-av" style={{overflow:'hidden'}}>{m.image_url?<img src={m.image_url} alt={m.name} style={{width:'100%',height:'100%',borderRadius:'inherit',objectFit:'cover'}} onError={e=>{e.target.style.display='none';e.target.parentNode.textContent=(m.name||'?')[0].toUpperCase()}}/>:(m.name||'?')[0].toUpperCase()}</div>
-                          <div className="mem-i"><div className="mem-n">{m.name}</div><div className="mem-r" style={{marginTop:'3px'}}>{m.roll_number} · {m.college} · {m.branch}</div></div>
-                          <button className="mem-e" onClick={()=>setEditingMember(editingMember===i?null:i)}>{editingMember===i?'Done':'Edit'}</button>
+                        <div className="mem-av" style={{overflow:'hidden'}}>{m.image_url?<img src={m.image_url} alt={m.name} style={{width:'100%',height:'100%',borderRadius:'50%',objectFit:'cover'}} onError={e=>{e.target.style.display='none';e.target.parentNode.textContent=(m.name||'?')[0].toUpperCase()}}/>:(m.name||'?')[0].toUpperCase()}</div>
+                        <div className="mem-i">
+                          <div className="mem-n">{m.name}</div>
+                          <div className="mem-r">{m.roll_number} · {m.college} · {m.branch}</div>
                         </div>
                         {m.is_leader && <div className="mem-b">Leader</div>}
+                        <button className="mem-e" onClick={()=>setEditingMember(editingMember===i?null:i)}>{editingMember===i?'Done':'Edit'}</button>
                         {editingMember===i && (
                           <div className="mem-f">
                             <FloatingField label="Roll Number" type="input" value={m.roll_number||''} onChange={v=>updateMember(i,'roll_number',v)} accent={SECTION_COLORS.team} cardBg={CARD_BG.team} />
