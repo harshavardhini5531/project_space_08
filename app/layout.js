@@ -5,7 +5,7 @@ export var metadata = {
   title: "Project Space",
   description: "Hackathon Event Management Platform — May 6–12, 2026",
   verification: {
-    google: 'tj5MxaJ7ul1Ux-iB7wPGuF3Uzk6aeBJLMnRjBUdDCu8',
+    google: 'TNHqCAUTfHX93gZTtWI5-UALEPnzonSjiNp7-izjL-Y',
   },
 }
 
