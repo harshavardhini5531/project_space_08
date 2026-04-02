@@ -60,7 +60,7 @@ function MyProfile({ profile, loading, videoRatings, videoLoading, mayaCoding, m
   return(
     <div className="mp">
       <div className="mp-hero">
-        <div className="mp-avatar-wrap"><div className="mp-avatar">{(s.name||'?').charAt(0)}</div></div>
+        <div className="mp-avatar-wrap">{s.image_url?<img className="mp-avatar-img" src={s.image_url} alt={s.name} onError={e=>{e.target.style.display='none';e.target.nextSibling.style.display='flex'}}/>:null}<div className="mp-avatar" style={s.image_url?{display:'none'}:{}}>{(s.name||'?').charAt(0)}</div></div>
         <div className="mp-hero-info">
           <div className="mp-hero-name">{s.name}</div>
           <div className="mp-hero-roll"><Hash size={12}/> {s.roll_number} · {s.branch} · {s.college}</div>
@@ -244,7 +244,7 @@ function TeamProfile({ user }){
           return(
           <div key={m.roll_number||i} className="tp-card" style={{animationDelay:`${i*.06}s`,border:isMe?'1px solid rgba(253,28,0,.2)':'1px solid rgba(255,255,255,.06)'}}>
             <div className="tp-card-top">
-              <div className="tp-card-avatar" style={isMe?{borderColor:'rgba(253,28,0,.3)',background:'linear-gradient(135deg,rgba(253,28,0,.2),rgba(250,160,0,.1))'}:{}}>{(m.name||'?').charAt(0)}<div className="tp-card-online"/></div>
+              <div className="tp-card-avatar" style={isMe?{borderColor:'rgba(253,28,0,.3)',background:'linear-gradient(135deg,rgba(253,28,0,.2),rgba(250,160,0,.1))'}:{}}>{m.image_url?<img src={m.image_url} alt={m.name} style={{width:'100%',height:'100%',borderRadius:'inherit',objectFit:'cover'}} onError={e=>{e.target.style.display='none'}}/>:null}{(!m.image_url)&&(m.name||'?').charAt(0)}<div className="tp-card-online"/></div>
               <div style={{display:'flex',gap:'6px',flexWrap:'wrap'}}>
                 {isLeader && <span className="tp-tag tp-tag-leader">Team Leader</span>}
                 {isMe && <span className="tp-tag tp-tag-you">You</span>}
@@ -416,7 +416,8 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
 .mp-hero{display:flex;gap:28px;align-items:flex-start;padding:32px;border-radius:20px;background:linear-gradient(135deg,hsla(7,94%,59%,1) 0%,hsla(7,98%,46%,1) 48%,hsla(30,92%,66%,1) 100%);position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(232,29,2,.12);}
 .mp-hero::before{content:'';position:absolute;top:-80px;right:-80px;width:350px;height:350px;background:radial-gradient(circle,rgba(255,255,255,.1),transparent 55%);pointer-events:none;}
 .mp-avatar-wrap{flex-shrink:0;}
-.mp-avatar{width:100px;height:100px;border-radius:22px;background:rgba(255,255,255,.15);backdrop-filter:blur(16px);border:2px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;font-size:2.2rem;font-weight:800;color:#fff;box-shadow:0 8px 32px rgba(0,0,0,.08);}
+.mp-avatar{width:100px;height:100px;border-radius:22px;background:rgba(255,255,255,.15);backdrop-filter:blur(16px);border:2px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;font-size:2.2rem;font-weight:800;color:#fff;box-shadow:0 8px 32px rgba(0,0,0,.08);overflow:hidden;}
+.mp-avatar-img{width:100px;height:100px;border-radius:22px;object-fit:cover;border:2px solid rgba(255,255,255,.3);box-shadow:0 8px 32px rgba(0,0,0,.08);}
 .mp-hero-info{flex:1;}
 .mp-hero-name{font-size:1.35rem;font-weight:800;color:#fff;margin-bottom:3px;}
 .mp-hero-roll{font-size:.74rem;color:rgba(255,255,255,.75);display:flex;align-items:center;gap:6px;margin-bottom:12px;}

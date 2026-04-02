@@ -3,7 +3,10 @@ import "@/lib/responsive.css"
 
 export var metadata = {
   title: "Project Space",
-  description: "Hackathon Event Management Platform — May 6–12, 2026"
+  description: "Hackathon Event Management Platform — May 6–12, 2026",
+  verification: {
+    google: 'tj5MxaJ7ul1Ux-iB7wPGuF3Uzk6aeBJLMnRjBUdDCu8',
+  },
 }
 
 export default function RootLayout({ children }) {

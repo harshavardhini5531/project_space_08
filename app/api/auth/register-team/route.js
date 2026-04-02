@@ -4,41 +4,60 @@ export async function POST(request) {
   try {
     const body = await request.json()
     const {
-      rollNumber, teamNumber, projectTitle, projectDescription,
+      rollNumber, serialNumber, projectTitle, projectDescription,
       problemStatement, projectArea, aiUsage, aiCapabilities,
       aiTools, techStack, members
     } = body
 
-    if (!rollNumber || !teamNumber) {
+    if (!rollNumber || !serialNumber) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    // Verify leader
+    const roll = rollNumber.trim().toUpperCase()
+
+    // Verify leader — find by serial_number
     const { data: memberRow } = await supabase
       .from('team_members')
-      .select('team_number, is_leader')
-      .eq('roll_number', rollNumber.trim().toUpperCase())
+      .select('serial_number, is_leader, team_number')
+      .eq('roll_number', roll)
       .single()
 
-    if (!memberRow || !memberRow.is_leader || memberRow.team_number !== teamNumber) {
+    if (!memberRow || !memberRow.is_leader || memberRow.serial_number !== serialNumber) {
       return Response.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
     // Check if already registered
     const { data: existingTeam } = await supabase
       .from('teams')
-      .select('registered')
-      .eq('team_number', teamNumber)
+      .select('registered, team_number')
+      .eq('serial_number', serialNumber)
       .single()
 
     if (existingTeam?.registered) {
       return Response.json({ error: 'Team is already registered. Registration cannot be modified.' }, { status: 409 })
     }
 
-    // Update teams table with ALL fields + set registered = true
+    // Auto-assign next team_number (PS-001, PS-002, ...)
+    const { data: maxTeam } = await supabase
+      .from('teams')
+      .select('team_number')
+      .not('team_number', 'is', null)
+      .order('team_number', { ascending: false })
+      .limit(1)
+      .single()
+
+    let nextNum = 1
+    if (maxTeam && maxTeam.team_number) {
+      const match = maxTeam.team_number.match(/PS-(\d+)/)
+      if (match) nextNum = parseInt(match[1]) + 1
+    }
+    const newTeamNumber = `PS-${String(nextNum).padStart(3, '0')}`
+
+    // Update teams table with project details + assign team_number
     const { error: teamErr } = await supabase
       .from('teams')
       .update({
+        team_number: newTeamNumber,
         project_title: projectTitle || '',
         project_description: projectDescription || '',
         problem_statement: problemStatement || '',
@@ -50,14 +69,24 @@ export async function POST(request) {
         registered: true,
         registered_at: new Date().toISOString()
       })
-      .eq('team_number', teamNumber)
+      .eq('serial_number', serialNumber)
 
     if (teamErr) {
       console.error('Team update error:', teamErr)
       return Response.json({ error: 'Failed to register: ' + teamErr.message }, { status: 500 })
     }
 
-    // Update team members — handle edits (name, phone, email)
+    // Update team_members with the new team_number
+    const { error: memberErr } = await supabase
+      .from('team_members')
+      .update({ team_number: newTeamNumber })
+      .eq('serial_number', serialNumber)
+
+    if (memberErr) {
+      console.error('Member update error:', memberErr)
+    }
+
+    // Update student details if provided (name, phone, email)
     if (members && Array.isArray(members)) {
       for (const m of members) {
         if (m.roll_number) {
@@ -72,7 +101,11 @@ export async function POST(request) {
       }
     }
 
-    return Response.json({ success: true, message: 'Team registered successfully!' })
+    return Response.json({
+      success: true,
+      teamNumber: newTeamNumber,
+      message: `Team registered successfully! Your team number is ${newTeamNumber}`
+    })
 
   } catch (err) {
     console.error('register-team error:', err)

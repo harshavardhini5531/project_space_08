@@ -3,31 +3,34 @@ import { supabase } from '@/lib/supabase'
 export async function POST(request) {
   try {
     const body = await request.json()
-    const rollNumber = body.rollNumber?.trim().toUpperCase()
+    const rollNumber = (body.rollNumber || '').trim().toUpperCase()
 
     if (!rollNumber) {
       return Response.json({ error: 'Roll number is required' }, { status: 400 })
     }
 
-    // Verify the requesting user exists and get their team
+    // Get team membership — use serial_number for linking
     const { data: memberRow } = await supabase
       .from('team_members')
-      .select('team_number, is_leader')
+      .select('team_number, serial_number, is_leader')
       .eq('roll_number', rollNumber)
       .single()
 
-    if (!memberRow) {
-      return Response.json({ error: 'You are not assigned to any team' }, { status: 403 })
+    if (!memberRow || !memberRow.is_leader) {
+      return Response.json({ error: 'Not a team leader' }, { status: 403 })
     }
 
-    // Get team data
-    const { data: team, error: teamErr } = await supabase
-      .from('teams')
-      .select('*')
-      .eq('team_number', memberRow.team_number)
-      .single()
+    // Get team info — by team_number if assigned, otherwise by serial_number
+    let team = null
+    if (memberRow.team_number) {
+      const { data } = await supabase.from('teams').select('*').eq('team_number', memberRow.team_number).single()
+      team = data
+    } else {
+      const { data } = await supabase.from('teams').select('*').eq('serial_number', memberRow.serial_number).single()
+      team = data
+    }
 
-    if (teamErr || !team) {
+    if (!team) {
       return Response.json({ error: 'Team not found' }, { status: 404 })
     }
 
@@ -35,14 +38,14 @@ export async function POST(request) {
     const { data: teamMembers } = await supabase
       .from('team_members')
       .select('roll_number, is_leader')
-      .eq('team_number', memberRow.team_number)
+      .eq('serial_number', memberRow.serial_number)
 
+    const rolls = (teamMembers || []).map(m => m.roll_number)
     let members = []
-    if (teamMembers && teamMembers.length > 0) {
-      const rolls = teamMembers.map(m => m.roll_number)
+    if (rolls.length > 0) {
       const { data: students } = await supabase
         .from('students')
-        .select('roll_number, name, email, phone, branch, college, technology')
+        .select('roll_number, name, email, phone, branch, college, technology, image_url')
         .in('roll_number', rolls)
 
       members = (students || []).map(s => ({
@@ -55,8 +58,8 @@ export async function POST(request) {
       success: true,
       team: {
         id: team.id,
-        teamNumber: team.team_number,
-        teamName: team.team_name,
+        teamNumber: team.team_number || null,
+        serialNumber: team.serial_number,
         technology: team.technology,
         projectTitle: team.project_title,
         projectDescription: team.project_description,
@@ -68,7 +71,8 @@ export async function POST(request) {
         techStack: team.tech_stack,
         leaderRoll: team.leader_roll,
         credits: team.credits,
-        registeredAt: team.registered_at
+        registeredAt: team.registered_at,
+        mentorAssigned: team.mentor_assigned
       },
       members,
       isLeader: memberRow.is_leader

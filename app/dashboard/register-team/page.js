@@ -41,6 +41,35 @@ export default function RegisterTeamPage() {
   const [activeSection, setActiveSection] = useState(null)
   const [showConfirm, setShowConfirm] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
+
+  // Confetti animation when registration succeeds
+  useEffect(() => {
+    if (!showSuccess) return
+    const c = document.getElementById('confettiCanvas')
+    if (!c) return
+    const ctx = c.getContext('2d')
+    c.width = window.innerWidth; c.height = window.innerHeight
+    const colors = ['#fd1c00','#faa000','#EEA727','#10b981','#4ade80','#7B2FBE','#BDE8F5','#f21d32','#ff6b6b','#ffd93d','#6bcf63','#4dabf7','#e64980','#ff922b']
+    const pieces = []
+    for (let i = 0; i < 150; i++) {
+      pieces.push({ x:Math.random()*c.width, y:Math.random()*c.height-c.height, w:Math.random()*10+5, h:Math.random()*6+3, color:colors[Math.floor(Math.random()*colors.length)], vy:Math.random()*3+2, vx:(Math.random()-.5)*2, rot:Math.random()*360, vr:(Math.random()-.5)*8, shape:Math.floor(Math.random()*3) })
+    }
+    let animId
+    function draw() {
+      ctx.clearRect(0,0,c.width,c.height)
+      pieces.forEach(p => {
+        ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot*Math.PI/180); ctx.fillStyle=p.color
+        if(p.shape===0) ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h)
+        else if(p.shape===1){ctx.beginPath();ctx.arc(0,0,p.w/3,0,Math.PI*2);ctx.fill()}
+        else{ctx.beginPath();ctx.moveTo(0,-p.h);ctx.lineTo(p.w/2,p.h/2);ctx.lineTo(-p.w/2,p.h/2);ctx.closePath();ctx.fill()}
+        ctx.restore(); p.y+=p.vy; p.x+=p.vx; p.rot+=p.vr; p.vy+=0.05
+        if(p.y>c.height+20){p.y=-20;p.x=Math.random()*c.width;p.vy=Math.random()*3+2}
+      })
+      animId = requestAnimationFrame(draw)
+    }
+    draw()
+    return () => cancelAnimationFrame(animId)
+  }, [showSuccess])
   const [projectTitle, setProjectTitle] = useState('')
   const [projectDescription, setProjectDescription] = useState('')
   const [problemStatement, setProblemStatement] = useState('')
@@ -124,12 +153,14 @@ export default function RegisterTeamPage() {
   async function handleConfirmSubmit() {
     setShowConfirm(false);setError('');setSuccess('');setSaving(true)
     try {
-      const res=await fetch('/api/auth/register-team',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rollNumber:user.rollNumber||user.roll_number,teamNumber:team.teamNumber,projectTitle,projectDescription,problemStatement,projectArea,aiUsage,aiCapabilities,aiTools,techStack,members})})
+      const res=await fetch('/api/auth/register-team',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rollNumber:user.rollNumber||user.roll_number,serialNumber:team.serialNumber,projectTitle,projectDescription,problemStatement,projectArea,aiUsage,aiCapabilities,aiTools,techStack,members})})
       const data=await res.json(); if(!res.ok){setError(data.error);setSaving(false);return}
+      // Update team with assigned team number
+      if(data.teamNumber) setTeam(prev=>({...prev, teamNumber: data.teamNumber}))
       // Send email notifications to all team members
       try {
         console.log('Sending notifications to members:', members.map(m=>({name:m.name,roll:m.roll_number,email:m.email})))
-        const notifRes=await fetch('/api/auth/notify-team',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({teamNumber:team.teamNumber,projectTitle,technology:team.technology,leaderName:user?.name||'',members})})
+        const notifRes=await fetch('/api/auth/notify-team',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({teamNumber:data.teamNumber||team.serialNumber,projectTitle,technology:team.technology,leaderName:user?.name||'',members})})
         const notifData=await notifRes.json()
         console.log('Notify response:', notifData)
       } catch(e){console.error('Notify failed:',e)}
@@ -138,7 +169,7 @@ export default function RegisterTeamPage() {
   }
 
   const techOptions = TECH_STACK_OPTIONS
-  const teamDataForBot = team ? {teamNumber:team.teamNumber,technology:team.technology,leaderName:user?.name||'',memberCount:members.length,currentTitle:projectTitle,currentDescription:projectDescription,currentProblem:problemStatement,currentArea:projectArea,currentAI:aiCapabilities,currentTech:techStack} : {}
+  const teamDataForBot = team ? {teamNumber:team.teamNumber||'Not assigned yet',serialNumber:team.serialNumber,technology:team.technology,leaderName:user?.name||'',memberCount:members.length,currentTitle:projectTitle,currentDescription:projectDescription,currentProblem:problemStatement,currentArea:projectArea,currentAI:aiCapabilities,currentTech:techStack} : {}
 
   const StepIcon = ({id,size}) => {
     if(id==='ai') return React.createElement('img',{src:'https://i.ibb.co/MD0SRjWB/chat-bot.png',alt:'',style:{width:size+'px',height:size+'px',objectFit:'contain',filter:'brightness(0) invert(1)'}})
@@ -277,8 +308,8 @@ html,body{overflow:hidden!important;background:#050008}
 /* Form grid */
 .fg{display:grid;grid-template-columns:1fr 1fr;gap:28px 24px}
 .fg-full{grid-column:1/-1}
-@container main (max-width:800px){.fg{grid-template-columns:1fr}.fg-full{grid-column:1}.mem-f{grid-template-columns:1fr 1fr!important}.rev-g{grid-template-columns:1fr 1fr}}
-@container main (max-width:600px){.mem-f{grid-template-columns:1fr!important}.rev-g{grid-template-columns:1fr!important}}
+@container main (max-width:800px){.fg{grid-template-columns:1fr}.fg-full{grid-column:1}.mem{width:calc(50% - 6px)}.rev-g{grid-template-columns:1fr 1fr}}
+@container main (max-width:600px){.mem{width:100%}.rev-g{grid-template-columns:1fr!important}}
 @container main (max-width:500px){.card{padding:22px 18px}.ct{padding:0 16px 80px}.ct-hdr{flex-direction:column;gap:8px}}
 
 /* Toggle */
@@ -300,15 +331,16 @@ html,body{overflow:hidden!important;background:#050008}
 /* Team */
 .gt{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:12px;background:rgba(123,47,190,.04);border:1.5px dashed rgba(123,47,190,.15);color:#7B2FBE;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:500;cursor:pointer;transition:all .2s}
 .gt:hover{background:rgba(123,47,190,.08);border-style:solid}
-.mem{padding:16px;border-radius:12px;background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.04);margin-bottom:10px;transition:border-color .2s}
+.mem-grid{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+.mem{padding:16px;border-radius:12px;background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.04);transition:border-color .2s;width:calc(50% - 6px);box-sizing:border-box}
 .mem:hover{border-color:rgba(123,47,190,.12)}
 .mem-h{display:flex;align-items:center;gap:12px}
-.mem-av{width:36px;height:36px;border-radius:9px;background:rgba(123,47,190,.06);border:1px solid rgba(123,47,190,.1);display:flex;align-items:center;justify-content:center;font-size:.7rem;color:#7B2FBE;font-weight:600}
-.mem-i{flex:1}.mem-n{font-size:.82rem;font-weight:500;color:#fff}.mem-r{font-size:.64rem;color:rgba(255,255,255,.35);margin-top:1px}
-.mem-b{padding:3px 8px;border-radius:6px;font-size:.5rem;background:rgba(123,47,190,.06);color:#7B2FBE;letter-spacing:1.5px;font-weight:500;text-transform:uppercase;font-family:${fonts.display}}
-.mem-e{padding:5px 10px;border-radius:6px;background:none;border:1px solid rgba(255,255,255,.06);color:rgba(255,255,255,.4);font-size:.64rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.mem-av{width:42px;height:42px;border-radius:10px;background:rgba(123,47,190,.06);border:1px solid rgba(123,47,190,.1);display:flex;align-items:center;justify-content:center;font-size:.7rem;color:#7B2FBE;font-weight:600;flex-shrink:0}
+.mem-i{flex:1;min-width:0}.mem-n{font-size:.82rem;font-weight:500;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mem-r{font-size:.62rem;color:rgba(255,255,255,.35);margin-top:2px}
+.mem-b{padding:3px 8px;border-radius:6px;font-size:.5rem;background:rgba(123,47,190,.06);color:#7B2FBE;letter-spacing:1.5px;font-weight:500;text-transform:uppercase;font-family:${fonts.display};margin-top:8px;display:inline-block}
+.mem-e{padding:5px 10px;border-radius:6px;background:none;border:1px solid rgba(255,255,255,.06);color:rgba(255,255,255,.4);font-size:.64rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;margin-left:auto;flex-shrink:0}
 .mem-e:hover{border-color:rgba(123,47,190,.2);color:#7B2FBE}
-.mem-f{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.03)}
+.mem-f{display:grid;grid-template-columns:1fr;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.03)}
 
 /* Review */
 .rev-g{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
@@ -383,6 +415,7 @@ html,body{overflow:hidden!important;background:#050008}
   .ct-hdr{padding:16px 0 12px;flex-direction:column;gap:8px}
   .fg{grid-template-columns:1fr}
   .card{padding:20px 16px}
+  .mem{width:100%}
   .mem-f{grid-template-columns:1fr}
   .rev-g{grid-template-columns:1fr}
   .sub-btn{padding:16px;font-size:.88rem;-webkit-tap-highlight-color:transparent}
@@ -402,7 +435,7 @@ html,body{overflow:hidden!important;background:#050008}
         {/* ═══ STEPPER SIDEBAR ═══ */}
         <aside className="stepper">
           <div className="st-logo"><div className="st-logo-badge">PS</div><span className="st-logo-text">PROJECT SPACE</span></div>
-          {team && <div className="st-badge">{team.teamNumber} <span>· {team.technology}</span></div>}
+          {team && <div className="st-badge">{team.teamNumber||`#${team.serialNumber}`} <span>· {team.technology}</span></div>}
           <div className="st-progress"><div className="st-progress-fill" style={{width:`${progressPct}%`}} /></div>
           <div className="st-progress-label">{progressPct}% COMPLETE</div>
           <div className="st-tl">
@@ -495,23 +528,25 @@ html,body{overflow:hidden!important;background:#050008}
                 ) : (
                   <>
                     <div style={{fontSize:'.7rem',color:'rgba(255,255,255,.35)',marginBottom:'14px'}}>{members.length} members loaded</div>
+                    <div className="mem-grid">
                     {members.map((m,i) => (
                       <div key={m.roll_number} className="mem">
                         <div className="mem-h">
-                          <div className="mem-av">{(m.name||'?')[0].toUpperCase()}</div>
-                          <div className="mem-i"><div className="mem-n">{m.name}</div><div className="mem-r">{m.roll_number} · {m.branch} · {m.college}</div></div>
-                          {m.is_leader && <div className="mem-b">Leader</div>}
+                          <div className="mem-av" style={{overflow:'hidden'}}>{m.image_url?<img src={m.image_url} alt={m.name} style={{width:'100%',height:'100%',borderRadius:'inherit',objectFit:'cover'}} onError={e=>{e.target.style.display='none';e.target.parentNode.textContent=(m.name||'?')[0].toUpperCase()}}/>:(m.name||'?')[0].toUpperCase()}</div>
+                          <div className="mem-i"><div className="mem-n">{m.name}</div><div className="mem-r" style={{marginTop:'3px'}}>{m.roll_number} · {m.college} · {m.branch}</div></div>
                           <button className="mem-e" onClick={()=>setEditingMember(editingMember===i?null:i)}>{editingMember===i?'Done':'Edit'}</button>
                         </div>
+                        {m.is_leader && <div className="mem-b">Leader</div>}
                         {editingMember===i && (
                           <div className="mem-f">
-                            <FloatingField label="Name" type="input" value={m.name||''} onChange={v=>updateMember(i,'name',v)} accent={SECTION_COLORS.team} cardBg={CARD_BG.team} />
-                            <FloatingField label="Phone" type="input" placeholder="Phone number" value={m.phone||''} onChange={v=>updateMember(i,'phone',v)} accent={SECTION_COLORS.team} cardBg={CARD_BG.team} />
-                            <FloatingField label="Email" type="input" placeholder="Email address" value={m.email||''} onChange={v=>updateMember(i,'email',v)} accent={SECTION_COLORS.team} cardBg={CARD_BG.team} />
+                            <FloatingField label="Roll Number" type="input" value={m.roll_number||''} onChange={v=>updateMember(i,'roll_number',v)} accent={SECTION_COLORS.team} cardBg={CARD_BG.team} />
+                            <FloatingField label="College" type="input" value={m.college||''} onChange={v=>updateMember(i,'college',v)} accent={SECTION_COLORS.team} cardBg={CARD_BG.team} />
+                            <FloatingField label="Branch" type="input" value={m.branch||''} onChange={v=>updateMember(i,'branch',v)} accent={SECTION_COLORS.team} cardBg={CARD_BG.team} />
                           </div>
                         )}
                       </div>
                     ))}
+                    </div>
                   </>
                 )}
               </div>
@@ -522,7 +557,7 @@ html,body{overflow:hidden!important;background:#050008}
               <div className="card cr"><div className="card-glow"/>
                 <div className="card-h"><svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Review & Register</div>
                 <div className="rev-g">
-                  <div className="rev-c"><div className="rev-l">Team</div><div className="rev-v">{team?.teamNumber||'—'}</div></div>
+                  <div className="rev-c"><div className="rev-l">Team</div><div className="rev-v">{team?.teamNumber||`#${team?.serialNumber}`||'—'}</div></div>
                   <div className="rev-c"><div className="rev-l">Technology</div><div className="rev-v">{team?.technology||'—'}</div></div>
                   <div className="rev-c"><div className="rev-l">Title</div><div className="rev-v">{projectTitle||'—'}</div></div>
                   <div className="rev-c"><div className="rev-l">Area</div><div className="rev-v">{projectArea.length?projectArea.join(', '):'—'}</div></div>
@@ -557,7 +592,7 @@ html,body{overflow:hidden!important;background:#050008}
             <div className="modal-desc">Are you sure you want to submit your registration?<br/>Once submitted, <strong>details cannot be edited</strong>.</div>
             <div className="modal-team">
               <div className="modal-team-h">Submitting for</div>
-              <div className="modal-team-v"><strong>{team?.teamNumber}</strong> · {projectTitle} · {members.length||0} members</div>
+              <div className="modal-team-v"><strong>{team?.teamNumber||`#${team?.serialNumber}`}</strong> · {projectTitle} · {members.length||0} members</div>
             </div>
             <div className="modal-check">
               <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
@@ -580,7 +615,7 @@ html,body{overflow:hidden!important;background:#050008}
             <div className="celebrate-title">Welcome on Board!</div>
             <div className="celebrate-quote">"Every great project begins with a single commit."</div>
             <div className="celebrate-info">
-              <div className="celebrate-team">{team?.teamNumber}</div>
+              <div className="celebrate-team">{team?.teamNumber||`Team #${team?.serialNumber}`}</div>
               <div className="celebrate-proj">{projectTitle}</div>
               <div className="celebrate-track">{team?.technology} Track</div>
             </div>
@@ -593,40 +628,6 @@ html,body{overflow:hidden!important;background:#050008}
               <button className="celebrate-go" onClick={()=>{setShowSuccess(false);router.push('/dashboard')}}>Let's Go! →</button>
             </div>
           </div>
-          <script dangerouslySetInnerHTML={{__html:`
-(function(){
-  var c=document.getElementById('confettiCanvas');if(!c)return;
-  var ctx=c.getContext('2d');c.width=window.innerWidth;c.height=window.innerHeight;
-  var colors=['#fd1c00','#faa000','#EEA727','#10b981','#4ade80','#7B2FBE','#BDE8F5','#f21d32','#ff6b6b','#ffd93d','#6bcf63','#4dabf7','#e64980','#ff922b'];
-  var pieces=[];
-  for(var i=0;i<150;i++){
-    pieces.push({
-      x:Math.random()*c.width,y:Math.random()*c.height-c.height,
-      w:Math.random()*10+5,h:Math.random()*6+3,
-      color:colors[Math.floor(Math.random()*colors.length)],
-      vy:Math.random()*3+2,vx:(Math.random()-.5)*2,
-      rot:Math.random()*360,vr:(Math.random()-.5)*8,
-      shape:Math.floor(Math.random()*3)
-    });
-  }
-  function draw(){
-    ctx.clearRect(0,0,c.width,c.height);
-    pieces.forEach(function(p){
-      ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);
-      ctx.fillStyle=p.color;
-      if(p.shape===0){ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);}
-      else if(p.shape===1){ctx.beginPath();ctx.arc(0,0,p.w/3,0,Math.PI*2);ctx.fill();}
-      else{ctx.beginPath();ctx.moveTo(0,-p.h);ctx.lineTo(p.w/2,p.h/2);ctx.lineTo(-p.w/2,p.h/2);ctx.closePath();ctx.fill();}
-      ctx.restore();
-      p.y+=p.vy;p.x+=p.vx;p.rot+=p.vr;
-      p.vy+=0.05;
-      if(p.y>c.height+20){p.y=-20;p.x=Math.random()*c.width;p.vy=Math.random()*3+2;}
-    });
-    requestAnimationFrame(draw);
-  }
-  draw();
-})();
-          `}}/>
         </div>
       )}
     </>

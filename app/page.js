@@ -555,156 +555,186 @@ export default function LandingPage() {
         if (window.THREE) { clearInterval(check); loadSphere() }
       }, 100)
     }
-  }, [])
+ }, [isMobile])
 
-  /* ═══ MOBILE LAYOUT ═══ */
- /* ═══ MOBILE LAYOUT ═══ */
+  /* ═══════════════════════════════════
+     MOBILE LAYOUT
+     ═══════════════════════════════════ */
   if (isMobile) {
     return (
       <>
         <style>{`
-          *{margin:0;padding:0;box-sizing:border-box;}
-          html,body{width:100%;height:100%;background:#050008;overflow-x:hidden;}
-          body{font-family:'DM Sans',sans-serif;color:#fff;}
-          @keyframes mUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
-          @keyframes mFade{from{opacity:0}to{opacity:1}}
-          @keyframes mFlip{0%{transform:translateY(0);opacity:1}40%{transform:translateY(-3px);opacity:.4}100%{transform:translateY(0);opacity:1}}
-          @keyframes orbGlow{0%,100%{box-shadow:0 0 40px rgba(253,28,0,.15),0 0 80px rgba(253,28,0,.05)}50%{box-shadow:0 0 60px rgba(253,28,0,.25),0 0 120px rgba(253,28,0,.1)}}
-          @keyframes orbRotate{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(360deg)}}
-          @keyframes dotPulse{0%,100%{opacity:.3}50%{opacity:1}}
-          @keyframes ringPulse{0%,100%{transform:scale(1);opacity:.15}50%{transform:scale(1.08);opacity:.25}}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:#050008;overflow:hidden;font-family:'DM Sans',sans-serif;color:#fff}
 
-          .ml{width:100%;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;position:relative;overflow:hidden}
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes mFlip{0%{transform:translateY(0)}40%{transform:translateY(-3px);opacity:.4}100%{transform:translateY(0);opacity:1}}
+@keyframes breathe{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.25}50%{transform:translate(-50%,-50%) scale(1.6);opacity:.55}}
+@keyframes spin3d{from{transform:rotateY(0)}to{transform:rotateY(360deg)}}
+@keyframes shimmer{from{background-position:0% 50%}to{background-position:200% 50%}}
+@keyframes glowPulse{0%,100%{filter:brightness(1) drop-shadow(0 0 2px rgba(177,158,239,.3))}50%{filter:brightness(1.3) drop-shadow(0 0 6px rgba(177,158,239,.5))}}
+@keyframes lineSweep{0%{left:-40%}100%{left:140%}}
+@keyframes ringPulse{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.12}50%{transform:translate(-50%,-50%) scale(1.08);opacity:.25}}
+@keyframes cardPop{from{opacity:0;transform:translateY(16px) scale(.92)}to{opacity:1;transform:none}}
+@keyframes dust{0%{transform:translateY(0) translateX(0);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateY(-80px) translateX(20px);opacity:0}}
+@keyframes btnShimmer{0%{left:-100%}100%{left:200%}}
+@keyframes sepPulse{0%,100%{opacity:.15}50%{opacity:.4}}
 
-          /* Ambient background */
-          .ml-bg{position:fixed;inset:0;pointer-events:none;z-index:0}
-          .ml-bg::before{content:'';position:absolute;top:-20%;right:-30%;width:80vw;height:80vw;border-radius:50%;background:radial-gradient(circle,rgba(253,28,0,.08),transparent 70%)}
-          .ml-bg::after{content:'';position:absolute;bottom:-10%;left:-20%;width:60vw;height:60vw;border-radius:50%;background:radial-gradient(circle,rgba(253,28,0,.04),transparent 70%)}
+.ml{width:100%;height:100vh;height:100dvh;position:relative;overflow:hidden;background:#050008;display:flex;flex-direction:column}
 
-          /* Stars */
-          .ml-stars{position:fixed;inset:0;pointer-events:none;z-index:0;background-image:radial-gradient(1px 1px at 10% 15%,rgba(255,255,255,.25),transparent),radial-gradient(1px 1px at 25% 45%,rgba(255,255,255,.2),transparent),radial-gradient(1px 1px at 45% 8%,rgba(255,255,255,.3),transparent),radial-gradient(1px 1px at 65% 35%,rgba(255,255,255,.15),transparent),radial-gradient(1px 1px at 80% 60%,rgba(255,255,255,.2),transparent),radial-gradient(1px 1px at 90% 20%,rgba(255,255,255,.25),transparent),radial-gradient(1px 1px at 15% 75%,rgba(255,255,255,.18),transparent),radial-gradient(1px 1px at 50% 55%,rgba(255,255,255,.22),transparent),radial-gradient(1.5px 1.5px at 35% 85%,rgba(255,255,255,.28),transparent),radial-gradient(1.5px 1.5px at 75% 90%,rgba(255,255,255,.2),transparent);animation:mTwinkle 6s ease-in-out infinite alternate}
-          @keyframes mTwinkle{0%{opacity:.5}50%{opacity:1}100%{opacity:.6}}
+.ml-stars{position:absolute;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    radial-gradient(1px 1px at 10% 8%,rgba(255,255,255,.2),transparent),
+    radial-gradient(1px 1px at 25% 35%,rgba(255,255,255,.15),transparent),
+    radial-gradient(1px 1px at 45% 12%,rgba(255,255,255,.25),transparent),
+    radial-gradient(1px 1px at 60% 28%,rgba(255,255,255,.12),transparent),
+    radial-gradient(1px 1px at 80% 50%,rgba(255,255,255,.18),transparent),
+    radial-gradient(1px 1px at 92% 15%,rgba(255,255,255,.2),transparent),
+    radial-gradient(1px 1px at 15% 65%,rgba(255,255,255,.1),transparent),
+    radial-gradient(1.5px 1.5px at 70% 80%,rgba(255,255,255,.15),transparent),
+    radial-gradient(1px 1px at 35% 90%,rgba(255,255,255,.12),transparent)
+}
+.ml-glow-amb{position:absolute;top:-5%;left:50%;transform:translateX(-50%);width:320px;height:250px;border-radius:50%;background:radial-gradient(circle,rgba(253,28,0,.12),rgba(253,28,0,.03) 55%,transparent 75%);pointer-events:none;z-index:0}
 
-          .ml-ct{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;padding:0 24px}
+.ml-dust{position:absolute;z-index:1;pointer-events:none;inset:0}
+.ml-dust-p{position:absolute;width:2px;height:2px;border-radius:50%;background:rgba(253,28,0,.4);animation:dust 6s ease-in-out infinite}
+.ml-dust-p:nth-child(1){left:12%;bottom:45%;animation-delay:0s;animation-duration:5s}
+.ml-dust-p:nth-child(2){left:28%;bottom:38%;animation-delay:1.2s;animation-duration:7s;width:1.5px;height:1.5px;background:rgba(255,255,255,.2)}
+.ml-dust-p:nth-child(3){right:18%;bottom:50%;animation-delay:2.5s;animation-duration:6s}
+.ml-dust-p:nth-child(4){right:32%;bottom:42%;animation-delay:0.8s;animation-duration:8s;width:1px;height:1px;background:rgba(255,255,255,.15)}
+.ml-dust-p:nth-child(5){left:50%;bottom:35%;animation-delay:3s;animation-duration:5.5s;width:1.5px;height:1.5px}
+.ml-dust-p:nth-child(6){left:65%;bottom:48%;animation-delay:1.8s;animation-duration:6.5s;width:1px;height:1px;background:rgba(255,255,255,.18)}
 
-          /* Header */
-          .ml-hdr{display:flex;justify-content:flex-end;padding-top:max(16px,env(safe-area-inset-top));margin-bottom:5vh;animation:mFade .8s ease .2s both}
-          .ml-ai{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)}
-          .ml-ai-icon{font-weight:300;font-size:16px;color:#fff;text-shadow:0 0 10px rgba(253,28,0,.3)}
-          .ml-ai-txt{font-size:7px;font-weight:700;letter-spacing:3px;text-transform:uppercase;background:linear-gradient(90deg,#ff9ffc,#b19eef,#fd1c00);background-clip:text;-webkit-background-clip:text;color:transparent}
+.ml-topbar{position:relative;z-index:5;display:flex;justify-content:center;padding:max(16px,env(safe-area-inset-top)) 24px 0;animation:fadeIn .6s ease .2s both}
+.ml-ai{display:flex;flex-direction:column;align-items:center}
+.ml-ai-spin{width:38px;height:30px;perspective:400px}
+.ml-ai-spin-in{width:100%;height:100%;transform-style:preserve-3d;animation:spin3d 4s linear infinite}
+.ml-ai-face{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Poppins',sans-serif;font-weight:300;font-size:22px;color:#fff;text-shadow:0 0 18px rgba(255,85,0,.35),0 0 35px rgba(255,120,30,.12);backface-visibility:hidden}
+.ml-ai-face-b{transform:rotateY(180deg)}
+.ml-ai-lb{font-family:'Astro Futuristic Font','ASTRO','Orbitron',sans-serif;font-size:6px;letter-spacing:4px;font-weight:700;text-transform:uppercase;margin-top:-1px;background:linear-gradient(90deg,#ff9ffc,#b19eef,#fd1c00,#ff9ffc);background-size:200% 100%;background-clip:text;-webkit-background-clip:text;color:transparent;animation:shimmer 3s linear infinite,glowPulse 2s ease-in-out infinite}
 
-          /* Orb */
-          .ml-orb-wrap{display:flex;justify-content:center;margin-bottom:5vh;animation:mFade 1s ease .4s both;position:relative}
-          .ml-orb{width:130px;height:130px;border-radius:50%;position:relative;display:flex;align-items:center;justify-content:center}
-          .ml-orb-ring{position:absolute;inset:-8px;border-radius:50%;border:1px solid rgba(253,28,0,.12);animation:ringPulse 3s ease-in-out infinite}
-          .ml-orb-ring2{position:absolute;inset:-20px;border-radius:50%;border:1px dashed rgba(253,28,0,.06);animation:orbRotate 20s linear infinite}
-          .ml-orb-inner{width:100%;height:100%;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(253,28,0,.2),rgba(253,28,0,.08) 50%,rgba(5,0,8,.9));border:1px solid rgba(253,28,0,.15);animation:orbGlow 4s ease-in-out infinite;display:flex;align-items:center;justify-content:center}
-          .ml-orb-text{font-family:'Astro Futuristic Font','ASTRO','Orbitron',sans-serif;font-size:26px;font-weight:700;color:#fff;text-shadow:0 0 20px rgba(253,28,0,.3);letter-spacing:4px}
-          .ml-orb-dot{position:absolute;width:4px;height:4px;border-radius:50%;background:#fd1c00;animation:dotPulse 2s ease-in-out infinite}
-          .ml-orb-dot:nth-child(4){top:10%;right:15%;animation-delay:.3s}
-          .ml-orb-dot:nth-child(5){bottom:15%;left:10%;animation-delay:.6s}
-          .ml-orb-dot:nth-child(6){top:50%;right:2%;animation-delay:.9s}
-          .ml-orb-dot:nth-child(7){bottom:5%;right:35%;animation-delay:1.2s}
+.ml-sphere-area{position:relative;z-index:2;flex:0 0 auto;display:flex;align-items:center;justify-content:center;height:36%;animation:fadeIn .8s ease .3s both}
+.ml-sphere-box{width:210px;height:210px;position:relative}
+.ml-sphere-box canvas{display:block;width:100%!important;height:100%!important}
+.ml-sphere-halo{position:absolute;left:50%;top:50%;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(253,28,0,.1),transparent 60%);animation:breathe 4s ease-in-out infinite;pointer-events:none}
+.ml-sphere-ring{position:absolute;left:50%;top:50%;width:230px;height:230px;border-radius:50%;border:1px solid rgba(253,28,0,.1);animation:ringPulse 3s ease-in-out infinite;pointer-events:none}
 
-          /* Title */
-          .ml-title-area{margin-bottom:3vh;animation:mUp .7s ease .3s both}
-          .ml-title{font-family:'Astro Futuristic Font','ASTRO','Orbitron',sans-serif;font-weight:400;font-size:clamp(36px,11vw,52px);line-height:1.1;text-transform:uppercase;color:#fd1c00}
-          .ml-title-w{color:#fff}
+.ml-title-block{position:relative;z-index:5;padding:0 28px;animation:fadeUp .7s ease .3s both}
+.ml-title{font-family:'Astro Futuristic Font','ASTRO','Orbitron',sans-serif;font-weight:400;font-size:clamp(38px,11vw,48px);line-height:1.05;text-transform:uppercase;color:#fd1c00;-webkit-text-stroke:1px rgba(253,28,0,.12);paint-order:stroke fill}
+.ml-title-w{color:#fff;-webkit-text-stroke:1px rgba(255,255,255,.08)}
+.ml-tagline{margin-top:8px;animation:fadeUp .7s ease .5s both}
+.ml-tag-top{font-family:'Poppins',sans-serif;font-size:9px;font-weight:300;letter-spacing:5px;text-transform:uppercase;color:rgba(255,255,255,.25)}
+.ml-tag-sep{width:30px;height:1px;margin:5px 0;background:linear-gradient(90deg,rgba(253,28,0,.5),transparent)}
+.ml-tag-btm{font-family:'Poppins',sans-serif;font-size:10px;font-weight:700;letter-spacing:5px;text-transform:uppercase;color:#fd1c00;text-shadow:0 0 12px rgba(253,28,0,.15)}
 
-          /* Tagline */
-          .ml-tag{margin-bottom:3vh;animation:mUp .7s ease .5s both}
-          .ml-tag1{font-size:10px;font-weight:400;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,.35)}
-          .ml-tag-line{width:28px;height:1px;background:rgba(253,28,0,.4);margin:6px 0}
-          .ml-tag2{font-size:11px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:#fd1c00}
+.ml-divider{position:relative;z-index:5;margin:18px 28px 0;height:1px;animation:fadeIn .8s ease .6s both;overflow:visible}
+.ml-divider-line{width:100%;height:1px;background:linear-gradient(90deg,transparent,rgba(253,28,0,.45) 15%,rgba(253,28,0,.45) 85%,transparent);border-radius:1px}
+.ml-divider-glow{position:absolute;top:-3px;left:8%;right:8%;height:7px;background:linear-gradient(90deg,transparent,rgba(253,28,0,.12) 25%,rgba(253,28,0,.12) 75%,transparent);border-radius:4px;filter:blur(3px)}
+.ml-divider-sweep{position:absolute;top:-1px;width:40px;height:3px;border-radius:3px;background:radial-gradient(ellipse,rgba(255,200,150,.5),transparent);animation:lineSweep 4s ease-in-out infinite;pointer-events:none;filter:blur(1px)}
 
-          /* Event info */
-          .ml-info{display:flex;gap:8px;margin-bottom:3vh;animation:mUp .7s ease .6s both}
-          .ml-info-card{flex:1;padding:12px 8px;border-radius:12px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.05);display:flex;flex-direction:column;align-items:center;gap:3px;transition:border-color .3s}
-          .ml-info-card:active{border-color:rgba(253,28,0,.15)}
-          .ml-info-icon{font-size:16px}
-          .ml-info-val{font-size:12px;font-weight:700;color:#fff}
-          .ml-info-lb{font-size:7px;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:1.5px;font-weight:600}
+.ml-bottom{position:relative;z-index:5;flex:1;display:flex;flex-direction:column;justify-content:space-evenly;padding:10px 22px max(14px,env(safe-area-inset-bottom))}
 
-          /* Buttons */
-          .ml-btns{display:flex;gap:10px;animation:mUp .7s ease .7s both}
-          .ml-btn{display:flex;align-items:center;justify-content:center;gap:8px;flex:1;padding:14px 16px;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;border:none;-webkit-tap-highlight-color:transparent;transition:transform .15s}
-          .ml-btn:active{transform:scale(.96)}
-          .ml-btn-p{background:linear-gradient(135deg,#fd1c00,#fd3a20);color:#fff;box-shadow:0 4px 24px rgba(253,28,0,.3)}
-          .ml-btn-s{background:rgba(255,255,255,.04);color:#fff;border:1px solid rgba(255,255,255,.1)}
+.ml-btns{display:flex;gap:10px;animation:fadeUp .6s ease .65s both}
+.ml-btn{display:flex;align-items:center;justify-content:center;gap:8px;flex:1;padding:14px;border-radius:14px;font-family:'Poppins','DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:transform .12s;-webkit-tap-highlight-color:transparent;position:relative;overflow:hidden}
+.ml-btn:active{transform:scale(.96)}
+.ml-btn-go{background:linear-gradient(135deg,#fd1c00,#e81600);color:#fff;box-shadow:0 4px 24px rgba(253,28,0,.3),inset 0 1px 0 rgba(255,255,255,.12)}
+.ml-btn-go::after{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);animation:btnShimmer 3s ease-in-out 2s infinite}
+.ml-btn-in{background:rgba(255,255,255,.04);color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.08)}
+.ml-btn-ic{width:24px;height:24px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ml-btn-go .ml-btn-ic{background:rgba(255,255,255,.14)}
+.ml-btn-in .ml-btn-ic{background:rgba(255,255,255,.05)}
 
-          /* Spacer */
-          .ml-spacer{flex:1;min-height:16px}
+.ml-stats{display:flex;gap:8px}
+.ml-stat{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:14px 6px;border-radius:14px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.04);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);animation:cardPop .5s cubic-bezier(.34,1.56,.64,1) both}
+.ml-stat:nth-child(1){animation-delay:.75s}
+.ml-stat:nth-child(2){animation-delay:.85s}
+.ml-stat:nth-child(3){animation-delay:.95s}
+.ml-stat-icon svg{stroke:#fd1c00;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;width:18px;height:18px}
+.ml-stat-val{font-size:13px;font-weight:700;color:#fff;letter-spacing:.3px}
+.ml-stat-lb{font-size:7px;color:#fd1c00;text-transform:uppercase;letter-spacing:1.5px;font-weight:600}
 
-          /* Countdown */
-          .ml-cd{display:flex;align-items:center;justify-content:center;padding:12px 0 max(14px,env(safe-area-inset-bottom));animation:mFade .8s ease 1s both}
-          .ml-cd-b{display:flex;flex-direction:column;align-items:center;width:18vw}
-          .ml-cd-n{font-family:'Astro Futuristic Font','ASTRO','Orbitron',sans-serif;font-size:clamp(20px,6vw,30px);font-weight:400;color:#fff;letter-spacing:1px}
-          .ml-cd-n.flip{animation:mFlip .3s ease}
-          .ml-cd-l{font-size:7px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#fd1c00;margin-top:2px}
-          .ml-cd-c{font-size:clamp(14px,4vw,22px);color:rgba(253,28,0,.35);font-weight:300;padding:0 1vw;margin-bottom:8px}
+.ml-cd{display:flex;align-items:center;justify-content:center;gap:2px;animation:fadeIn .8s ease 1.1s both}
+.ml-cd-unit{display:flex;flex-direction:column;align-items:center;min-width:52px}
+.ml-cd-n{font-family:'Astro Futuristic Font','ASTRO','Orbitron',sans-serif;font-size:clamp(20px,6vw,26px);font-weight:400;color:#fff;letter-spacing:1px;text-shadow:0 0 8px rgba(255,255,255,.04)}
+.ml-cd-n.flip{animation:mFlip .3s ease}
+.ml-cd-lb{font-family:'Poppins',sans-serif;font-size:8}, [])px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:rgba(253,28,0,.6);margin-top:2px}
+.ml-cd-sep{font-family:'Poppins',sans-serif;font-size:18px;color:rgba(253,28,0,.15);font-weight:300;margin-bottom:8px;animation:sepPulse 2s ease-in-out infinite}
         `}</style>
         <link rel="preconnect" href="https://fonts.googleapis.com"/>
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin=""/>
-        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=Orbitron:wght@400;600&display=swap" rel="stylesheet"/>
+        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
         <link href="https://fonts.cdnfonts.com/css/astro-futuristic-font" rel="stylesheet"/>
 
         <div className="ml">
-          <div className="ml-bg"/>
           <div className="ml-stars"/>
+          <div className="ml-glow-amb"/>
+          <div className="ml-dust">
+            <div className="ml-dust-p"/><div className="ml-dust-p"/><div className="ml-dust-p"/>
+            <div className="ml-dust-p"/><div className="ml-dust-p"/><div className="ml-dust-p"/>
+          </div>
 
-          <div className="ml-ct">
-            <div className="ml-hdr">
-              <div className="ml-ai"><span className="ml-ai-icon">AI</span><span className="ml-ai-txt">POWERED</span></div>
+          <div className="ml-topbar">
+            <div className="ml-ai">
+              <div className="ml-ai-spin"><div className="ml-ai-spin-in"><div className="ml-ai-face">AI</div><div className="ml-ai-face ml-ai-face-b">AI</div></div></div>
+              <div className="ml-ai-lb">POWERED</div>
             </div>
+          </div>
 
-            <div className="ml-orb-wrap">
-              <div className="ml-orb">
-                <div className="ml-orb-ring"/>
-                <div className="ml-orb-ring2"/>
-                <div className="ml-orb-dot"/><div className="ml-orb-dot"/><div className="ml-orb-dot"/><div className="ml-orb-dot"/>
-                <div className="ml-orb-inner"><span className="ml-orb-text">PS</span></div>
-              </div>
+          <div className="ml-sphere-area">
+            <div className="ml-sphere-halo"/>
+            <div className="ml-sphere-ring"/>
+            <div className="ml-sphere-box" ref={sphereMountRef}/>
+          </div>
+
+          <div className="ml-title-block">
+            <div className="ml-title">PROJECT</div>
+            <div className="ml-title ml-title-w">SPACE</div>
+            <div className="ml-tagline">
+              <div className="ml-tag-top">DON&apos;T JUST THINK</div>
+              <div className="ml-tag-sep"/>
+              <div className="ml-tag-btm">MAKE IT HAPPEN</div>
             </div>
+          </div>
 
-            <div className="ml-title-area">
-              <div className="ml-title">PROJECT</div>
-              <div className="ml-title ml-title-w">SPACE</div>
-            </div>
+          <div className="ml-divider">
+            <div className="ml-divider-glow"/>
+            <div className="ml-divider-line"/>
+            <div className="ml-divider-sweep"/>
+          </div>
 
-            <div className="ml-tag">
-              <div className="ml-tag1">DON&apos;T JUST THINK</div>
-              <div className="ml-tag-line"/>
-              <div className="ml-tag2">MAKE IT HAPPEN</div>
-            </div>
-
-            <div className="ml-info">
-              <div className="ml-info-card"><div className="ml-info-icon">🗓</div><div className="ml-info-val">May 6-12</div><div className="ml-info-lb">Event Date</div></div>
-              <div className="ml-info-card"><div className="ml-info-icon">👥</div><div className="ml-info-val">684+</div><div className="ml-info-lb">Students</div></div>
-              <div className="ml-info-card"><div className="ml-info-icon">🏆</div><div className="ml-info-val">6 Tracks</div><div className="ml-info-lb">Technologies</div></div>
-            </div>
-
+          <div className="ml-bottom">
             <div className="ml-btns">
-              <button className="ml-btn ml-btn-p" onClick={()=>routerHook.push('/auth/register')}>Create Account</button>
-              <button className="ml-btn ml-btn-s" onClick={()=>routerHook.push('/auth/login')}>Login</button>
+              <button className="ml-btn ml-btn-go" onClick={()=>routerHook.push('/auth/register')}>
+                <div className="ml-btn-ic"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/></svg></div>
+                Create Account
+              </button>
+              <button className="ml-btn ml-btn-in" onClick={()=>routerHook.push('/auth/login')}>
+                <div className="ml-btn-ic"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M6 2H3a1 1 0 00-1 1v8a1 1 0 001 1h3" stroke="#fff" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/><path d="M9.5 4.5L12 7l-2.5 2.5" stroke="#fff" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/><line x1="12" y1="7" x2="5.5" y2="7" stroke="#fff" strokeWidth="1.3" strokeLinecap="round"/></svg></div>
+                Login
+              </button>
             </div>
 
-            <div className="ml-spacer"/>
+            <div className="ml-stats">
+              <div className="ml-stat"><div className="ml-stat-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div className="ml-stat-val">May 6–12</div><div className="ml-stat-lb">Event Date</div></div>
+              <div className="ml-stat"><div className="ml-stat-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div><div className="ml-stat-val">684+</div><div className="ml-stat-lb">Students</div></div>
+              <div className="ml-stat"><div className="ml-stat-icon"><svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div><div className="ml-stat-val">6 Tracks</div><div className="ml-stat-lb">Technologies</div></div>
+            </div>
 
             <div className="ml-cd">
-              <div className="ml-cd-b"><div className="ml-cd-n" id="cd-days">00</div><div className="ml-cd-l">Days</div></div>
-              <div className="ml-cd-c">:</div>
-              <div className="ml-cd-b"><div className="ml-cd-n" id="cd-hours">00</div><div className="ml-cd-l">Hrs</div></div>
-              <div className="ml-cd-c">:</div>
-              <div className="ml-cd-b"><div className="ml-cd-n" id="cd-mins">00</div><div className="ml-cd-l">Min</div></div>
-              <div className="ml-cd-c">:</div>
-              <div className="ml-cd-b"><div className="ml-cd-n" id="cd-secs">00</div><div className="ml-cd-l">Sec</div></div>
+              <div className="ml-cd-unit"><div className="ml-cd-n" id="cd-days">00</div><div className="ml-cd-lb">Days</div></div>
+              <div className="ml-cd-sep">:</div>
+              <div className="ml-cd-unit"><div className="ml-cd-n" id="cd-hours">00</div><div className="ml-cd-lb">Hrs</div></div>
+              <div className="ml-cd-sep">:</div>
+              <div className="ml-cd-unit"><div className="ml-cd-n" id="cd-mins">00</div><div className="ml-cd-lb">Min</div></div>
+              <div className="ml-cd-sep">:</div>
+              <div className="ml-cd-unit"><div className="ml-cd-n" id="cd-secs">00</div><div className="ml-cd-lb">Sec</div></div>
             </div>
           </div>
         </div>
       </>
     )
   }
-
     /* ═══ DESKTOP LAYOUT ═══ */
   return (
     <>

@@ -25,7 +25,7 @@ export async function POST(request) {
     // Check team membership
     const { data: memberRow } = await supabase
       .from('team_members')
-      .select('is_leader, team_number')
+      .select('is_leader, team_number, serial_number')
       .eq('roll_number', roll)
       .single()
 
@@ -41,22 +41,26 @@ export async function POST(request) {
       return Response.json({ error: 'You are a Team Leader. Please use Team Leader login.' }, { status: 403 })
     }
 
+    // Find team — by team_number if assigned, otherwise by serial_number
+    let team = null
+    if (memberRow.team_number) {
+      const { data } = await supabase.from('teams').select('*').eq('team_number', memberRow.team_number).single()
+      team = data
+    } else {
+      const { data } = await supabase.from('teams').select('*').eq('serial_number', memberRow.serial_number).single()
+      team = data
+    }
+
     // If member, check if team leader has registered the team
     if (role === 'member') {
-      const { data: teamRow } = await supabase
-        .from('teams')
-        .select('leader_roll, registered')
-        .eq('team_number', memberRow.team_number)
-        .single()
-
-      if (teamRow && !teamRow.registered) {
+      if (team && !team.registered) {
         const { data: leaderInfo } = await supabase
           .from('students')
           .select('name')
-          .eq('roll_number', teamRow.leader_roll)
+          .eq('roll_number', team.leader_roll)
           .single()
         return Response.json({
-          error: `Team not registered yet. Contact your Team Leader: ${leaderInfo?.name || teamRow.leader_roll}`
+          error: `Team not registered yet. Contact your Team Leader: ${leaderInfo?.name || team.leader_roll}`
         }, { status: 403 })
       }
     }
@@ -77,13 +81,6 @@ export async function POST(request) {
       return Response.json({ error: 'Incorrect password' }, { status: 401 })
     }
 
-    // Get team details including registered status
-    const { data: team } = await supabase
-      .from('teams')
-      .select('*')
-      .eq('team_number', memberRow.team_number)
-      .single()
-
     // Update last login
     await supabase
       .from('user_passwords')
@@ -102,7 +99,8 @@ export async function POST(request) {
         email: student.email,
         phone: student.phone,
         gender: student.gender,
-        teamNumber: memberRow.team_number,
+        teamNumber: memberRow.team_number || null,
+        serialNumber: memberRow.serial_number,
         isLeader: memberRow.is_leader,
         role: memberRow.is_leader ? 'leader' : 'member',
         registered: team?.registered || false,
