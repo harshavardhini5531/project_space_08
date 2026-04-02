@@ -308,8 +308,8 @@ html,body{overflow:hidden!important;background:#050008}
 /* Form grid */
 .fg{display:grid;grid-template-columns:1fr 1fr;gap:28px 24px}
 .fg-full{grid-column:1/-1}
-@container main (max-width:800px){.fg{grid-template-columns:1fr}.fg-full{grid-column:1}.mem-grid{grid-template-columns:1fr 1fr}.rev-g{grid-template-columns:1fr 1fr}}
-@container main (max-width:600px){.mem-grid{grid-template-columns:1fr 1fr}.rev-g{grid-template-columns:1fr!important}}
+@container main (max-width:800px){.fg{grid-template-columns:1fr}.fg-full{grid-column:1}.mem{width:calc(50% - 7px)}.rev-g{grid-template-columns:1fr 1fr}}
+@container main (max-width:600px){.mem{width:100%}.rev-g{grid-template-columns:1fr!important}}
 @container main (max-width:500px){.card{padding:22px 18px}.ct{padding:0 16px 80px}.ct-hdr{flex-direction:column;gap:8px}}
 
 /* Toggle */
@@ -331,15 +331,18 @@ html,body{overflow:hidden!important;background:#050008}
 /* Team */
 .gt{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:12px;background:rgba(123,47,190,.04);border:1.5px dashed rgba(123,47,190,.15);color:#7B2FBE;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:500;cursor:pointer;transition:all .2s}
 .gt:hover{background:rgba(123,47,190,.08);border-style:solid}
-.mem-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;justify-items:center}
-.mem{padding:20px 16px;border-radius:16px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);transition:all .3s;width:100%;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;text-align:center}
-.mem:hover{border-color:rgba(253,28,0,.15);background:rgba(255,255,255,.03)}
-.mem-av{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,rgba(253,28,0,.15),rgba(250,160,0,.1));border:2px solid rgba(253,28,0,.2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:#fd1c00;font-weight:700;flex-shrink:0;margin-bottom:10px}
-.mem-i{width:100%}.mem-n{font-size:.85rem;font-weight:600;color:#fff;margin-bottom:3px}.mem-r{font-size:.6rem;color:rgba(255,255,255,.35);line-height:1.4}
-.mem-b{padding:3px 10px;border-radius:20px;font-size:.48rem;background:rgba(253,28,0,.08);color:#fd1c00;letter-spacing:1.5px;font-weight:600;text-transform:uppercase;font-family:${fonts.display};margin-top:8px;display:inline-block;border:1px solid rgba(253,28,0,.12)}
-.mem-e{padding:5px 14px;border-radius:20px;background:none;border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.4);font-size:.62rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;margin-top:10px}
+.mem-grid{display:flex;flex-wrap:wrap;gap:14px;justify-content:center}
+.mem{padding:18px 20px;border-radius:14px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06);transition:all .3s;width:calc(50% - 7px);box-sizing:border-box;display:flex;align-items:center;gap:16px}
+.mem:hover{border-color:rgba(253,28,0,.12);background:rgba(255,255,255,.035)}
+.mem-av{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,rgba(253,28,0,.12),rgba(250,160,0,.08));border:2px solid rgba(253,28,0,.15);display:flex;align-items:center;justify-content:center;font-size:1rem;color:#fd1c00;font-weight:700;flex-shrink:0}
+.mem-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.mem-n{font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;color:#fff;letter-spacing:.2px}
+.mem-r{font-family:'DM Sans',sans-serif;font-size:.65rem;color:rgba(255,255,255,.4);letter-spacing:.3px;line-height:1.4}
+.mem-tags{display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap}
+.mem-b{padding:2px 10px;border-radius:20px;font-size:.5rem;background:rgba(253,28,0,.06);color:#fd1c00;letter-spacing:1.5px;font-weight:600;text-transform:uppercase;font-family:${fonts.display};border:1px solid rgba(253,28,0,.1)}
+.mem-e{padding:3px 12px;border-radius:20px;background:none;border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.35);font-size:.58rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;letter-spacing:.3px}
 .mem-e:hover{border-color:rgba(253,28,0,.2);color:#fd1c00}
-.mem-f{display:grid;grid-template-columns:1fr;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.04);width:100%;text-align:left}
+.mem-f{display:grid;grid-template-columns:1fr;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.04);width:100%}
 
 /* Review */
 .rev-g{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
@@ -414,7 +417,7 @@ html,body{overflow:hidden!important;background:#050008}
   .ct-hdr{padding:16px 0 12px;flex-direction:column;gap:8px}
   .fg{grid-template-columns:1fr}
   .card{padding:20px 16px}
-  .mem-grid{grid-template-columns:1fr 1fr}
+  .mem{width:100%}
   .mem-f{grid-template-columns:1fr}
   .rev-g{grid-template-columns:1fr}
   .sub-btn{padding:16px;font-size:.88rem;-webkit-tap-highlight-color:transparent}
@@ -531,19 +534,21 @@ html,body{overflow:hidden!important;background:#050008}
                     {members.map((m,i) => (
                       <div key={m.roll_number} className="mem">
                         <div className="mem-av" style={{overflow:'hidden'}}>{m.image_url?<img src={m.image_url} alt={m.name} style={{width:'100%',height:'100%',borderRadius:'50%',objectFit:'cover'}} onError={e=>{e.target.style.display='none';e.target.parentNode.textContent=(m.name||'?')[0].toUpperCase()}}/>:(m.name||'?')[0].toUpperCase()}</div>
-                        <div className="mem-i">
+                        <div className="mem-right">
                           <div className="mem-n">{m.name}</div>
                           <div className="mem-r">{m.roll_number} · {m.college} · {m.branch}</div>
-                        </div>
-                        {m.is_leader && <div className="mem-b">Leader</div>}
-                        <button className="mem-e" onClick={()=>setEditingMember(editingMember===i?null:i)}>{editingMember===i?'Done':'Edit'}</button>
-                        {editingMember===i && (
-                          <div className="mem-f">
-                            <FloatingField label="Roll Number" type="input" value={m.roll_number||''} onChange={v=>updateMember(i,'roll_number',v)} accent={SECTION_COLORS.team} cardBg={CARD_BG.team} />
-                            <FloatingField label="College" type="input" value={m.college||''} onChange={v=>updateMember(i,'college',v)} accent={SECTION_COLORS.team} cardBg={CARD_BG.team} />
-                            <FloatingField label="Branch" type="input" value={m.branch||''} onChange={v=>updateMember(i,'branch',v)} accent={SECTION_COLORS.team} cardBg={CARD_BG.team} />
+                          <div className="mem-tags">
+                            {m.is_leader && <div className="mem-b">Leader</div>}
+                            <button className="mem-e" onClick={()=>setEditingMember(editingMember===i?null:i)}>{editingMember===i?'Done':'Edit'}</button>
                           </div>
-                        )}
+                          {editingMember===i && (
+                            <div className="mem-f">
+                              <FloatingField label="Roll Number" type="input" value={m.roll_number||''} onChange={v=>updateMember(i,'roll_number',v)} accent={SECTION_COLORS.team} cardBg={CARD_BG.team} />
+                              <FloatingField label="College" type="input" value={m.college||''} onChange={v=>updateMember(i,'college',v)} accent={SECTION_COLORS.team} cardBg={CARD_BG.team} />
+                              <FloatingField label="Branch" type="input" value={m.branch||''} onChange={v=>updateMember(i,'branch',v)} accent={SECTION_COLORS.team} cardBg={CARD_BG.team} />
+                            </div>
+                          )}
+                        </div>
                       </div>
                     ))}
                     </div>
