@@ -214,7 +214,7 @@ export default function RegisterTeamPage() {
     <>
       <style>{`
 ${globalStyles}
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600;700&display=swap');
 @keyframes dotPop{0%{transform:translateX(-3.5px) scale(1)}50%{transform:translateX(-3.5px) scale(1.4)}100%{transform:translateX(-3.5px) scale(1)}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 html,body{overflow:hidden!important;background:#050008}
@@ -246,7 +246,7 @@ html,body{overflow:hidden!important;background:#050008}
 
 /* Timeline — evenly distributed with justify-content:space-between */
 .st-tl{flex:1;padding:0 0 24px;position:relative;display:flex;flex-direction:column;justify-content:space-between;}
-.st-line{position:absolute;left:${AXIS}px;top:0;bottom:0;width:1.5px;background:linear-gradient(180deg,rgba(253,28,0,.12),rgba(255,255,255,.04) 30%,rgba(255,255,255,.04) 70%,transparent);z-index:0;transform:translateX(-0.75px);}
+.st-line{position:absolute;left:${AXIS}px;top:0;bottom:0;width:1.5px;background:#b9c0c6;z-index:0;transform:translateX(-0.75px);opacity:.3}
 .st-step-block{position:relative;z-index:1;}
 
 .st-row{display:flex;align-items:center;padding:3px 16px 3px 0;}
@@ -259,9 +259,9 @@ html,body{overflow:hidden!important;background:#050008}
 .st-subs{padding:8px 0 4px;}
 .st-sub{display:flex;align-items:center;padding:8px 0;position:relative;cursor:pointer;}
 .st-sub:hover .st-stxt{color:rgba(255,255,255,.65);}
-.st-dot{position:absolute;left:${AXIS}px;width:7px;height:7px;border-radius:50%;background:${SIDE_BG};border:1.5px solid rgba(255,255,255,0.12);transform:translateX(-3.5px);z-index:3;transition:all .4s cubic-bezier(.4,0,.2,1);}
+.st-dot{position:absolute;left:${AXIS}px;width:7px;height:7px;border-radius:50%;background:${SIDE_BG};border:1.5px solid #b9c0c6;transform:translateX(-3.5px);z-index:3;transition:all .4s cubic-bezier(.4,0,.2,1);}
 .st-dot.filled{background:#fd1c00;border-color:#fd1c00;box-shadow:0 0 8px rgba(253,28,0,0.3);animation:dotPop .4s cubic-bezier(.34,1.56,.64,1);}
-.st-stxt{font-size:.73rem;color:rgba(255,255,255,0.35);margin-left:${AXIS+16}px;transition:color .3s;}
+.st-stxt{font-family:'Open Sans',sans-serif;font-size:.73rem;color:rgba(255,255,255,0.35);margin-left:${AXIS+16}px;transition:color .3s;}
 .st-stxt.filled{color:rgba(255,255,255,.8);}
 
 /* Mobile stepper */
@@ -364,28 +364,27 @@ html,body{overflow:hidden!important;background:#050008}
 .gt{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:12px;background:rgba(123,47,190,.04);border:1.5px dashed rgba(123,47,190,.15);color:#7B2FBE;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:500;cursor:pointer;transition:all .2s}
 .gt:hover{background:rgba(123,47,190,.08);border-style:solid}
 .mem-grid{display:flex;flex-wrap:wrap;gap:14px;justify-content:center}
-.mem{padding:20px;border-radius:16px;background:linear-gradient(145deg,rgba(255,255,255,.03),rgba(255,255,255,.015));border:1px solid rgba(255,255,255,.06);transition:all .3s;width:calc(50% - 7px);box-sizing:border-box;display:flex;gap:16px;position:relative;backdrop-filter:blur(4px)}
-.mem:hover{border-color:rgba(253,28,0,.15);background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.025));box-shadow:0 4px 20px rgba(0,0,0,.15)}
-.mem-av{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,rgba(253,28,0,.15),rgba(250,160,0,.1));border:2px solid rgba(253,28,0,.18);display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:#fd1c00;font-weight:700;flex-shrink:0;box-shadow:0 2px 12px rgba(253,28,0,.08)}
+.mem{padding:20px;border-radius:16px;background:linear-gradient(145deg,rgba(255,255,255,.03),rgba(255,255,255,.015));border:1px solid rgba(255,255,255,.06);transition:all .3s;width:calc(50% - 7px);box-sizing:border-box;display:flex;gap:16px;position:relative}
+.mem:hover{border-color:rgba(157,0,255,.15);background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.025));box-shadow:0 4px 20px rgba(0,0,0,.15)}
+.mem-av{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,rgba(157,0,255,.12),rgba(222,153,255,.08));border:2px solid rgba(157,0,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:#9d00ff;font-weight:700;flex-shrink:0;box-shadow:0 2px 12px rgba(157,0,255,.1)}
 .mem-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:0;padding-right:60px}
-.mem-n{font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:700;color:#fff;letter-spacing:.2px;margin-bottom:8px;line-height:1.2}
-.mem-detail{display:flex;align-items:center;gap:6px;margin-bottom:4px}
-.mem-detail-icon{width:14px;height:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;opacity:.4}
-.mem-detail-icon svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
-.mem-detail-val{font-family:'DM Sans',sans-serif;font-size:.68rem;color:rgba(255,255,255,.45);letter-spacing:.3px}
-.mem-detail-val.roll{color:rgba(255,170,0,.7);font-weight:600;font-size:.72rem}
-.mem-short{display:flex;align-items:center;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.04)}
-.mem-short-lb{font-size:.5rem;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:1px;font-weight:600;flex-shrink:0}
-.mem-short-val{font-size:.72rem;color:rgba(253,28,0,.8);font-weight:600;font-family:'DM Sans',sans-serif}
-.mem-short-edit{font-size:.5rem;color:rgba(255,255,255,.25);cursor:pointer;text-decoration:underline;margin-left:auto}
-.mem-short-edit:hover{color:#fd1c00}
-.mem-short-input{background:rgba(255,255,255,.04);border:1px solid rgba(253,28,0,.15);border-radius:6px;padding:4px 8px;font-size:.7rem;color:#fff;font-family:'DM Sans',sans-serif;width:120px;outline:none}
-.mem-short-input:focus{border-color:rgba(253,28,0,.3)}
+.mem-n{font-family:'Open Sans',sans-serif;font-size:.92rem;font-weight:700;color:#fff;letter-spacing:.2px;margin-bottom:6px;line-height:1.2}
+.mem-details-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+.mem-detail{display:flex;align-items:center;gap:4px}
+.mem-detail-icon{width:14px;height:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.mem-detail-icon svg{width:12px;height:12px;stroke:#9d00ff;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 3px rgba(157,0,255,.4))}
+.mem-detail-val{font-family:'Open Sans',sans-serif;font-size:.66rem;color:#de99ff;letter-spacing:.3px}
+.mem-detail-val.roll{font-weight:600;font-size:.7rem}
+.mem-short-row{display:flex;align-items:center;gap:6px;margin-top:4px}
+.mem-short-lb{font-family:'Open Sans',sans-serif;font-size:.5rem;color:rgba(222,153,255,.4);text-transform:uppercase;letter-spacing:1px;font-weight:600;flex-shrink:0}
+.mem-short-val{font-family:'Open Sans',sans-serif;font-size:.7rem;color:#de99ff;font-weight:600}
+.mem-short-input{background:rgba(157,0,255,.06);border:1px solid rgba(157,0,255,.2);border-radius:6px;padding:4px 8px;font-size:.68rem;color:#fff;font-family:'Open Sans',sans-serif;width:120px;outline:none}
+.mem-short-input:focus{border-color:rgba(157,0,255,.4)}
 .mem-short-err{font-size:.48rem;color:#f21d32;margin-top:2px}
-.mem-b{position:absolute;top:14px;right:14px;padding:3px 10px;border-radius:20px;font-size:.48rem;background:rgba(253,28,0,.08);color:#fd1c00;letter-spacing:1.5px;font-weight:700;text-transform:uppercase;font-family:${fonts.display};border:1px solid rgba(253,28,0,.12)}
-.mem-e{position:absolute;bottom:14px;right:14px;padding:4px 14px;border-radius:20px;background:rgba(253,28,0,.06);border:1px solid rgba(253,28,0,.1);color:#fd1c00;font-size:.58rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;font-weight:500;letter-spacing:.3px}
-.mem-e:hover{background:rgba(253,28,0,.12);border-color:rgba(253,28,0,.2)}
-.mem-f{display:grid;grid-template-columns:1fr;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.04);width:100%}
+.mem-b{position:absolute;top:14px;right:14px;padding:3px 10px;border-radius:20px;font-size:.48rem;background:rgba(157,0,255,.08);color:#9d00ff;letter-spacing:1.5px;font-weight:700;text-transform:uppercase;font-family:${fonts.display};border:1px solid rgba(157,0,255,.15)}
+.mem-e{position:absolute;bottom:14px;right:14px;padding:4px 14px;border-radius:20px;background:rgba(157,0,255,.06);border:1px solid rgba(157,0,255,.12);color:#de99ff;font-size:.58rem;cursor:pointer;font-family:'Open Sans',sans-serif;transition:all .2s;font-weight:500;letter-spacing:.3px}
+.mem-e:hover{background:rgba(157,0,255,.12);border-color:rgba(157,0,255,.25);color:#fff}
+.mem-f{display:grid;grid-template-columns:1fr;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid rgba(157,0,255,.08);width:100%}
 
 /* Review */
 .rev-g{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
@@ -583,32 +582,33 @@ html,body{overflow:hidden!important;background:#050008}
                         <div className="mem-av" style={{overflow:'hidden'}}>{m.image_url?<img src={m.image_url} alt={m.name} style={{width:'100%',height:'100%',borderRadius:'50%',objectFit:'cover'}} onError={e=>{e.target.style.display='none';e.target.parentNode.textContent=(m.name||'?')[0].toUpperCase()}}/>:(m.name||'?')[0].toUpperCase()}</div>
                         <div className="mem-right">
                           <div className="mem-n">{m.name}</div>
-                          <div className="mem-detail"><div className="mem-detail-icon"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div><div className="mem-detail-val roll">{m.roll_number}</div></div>
-                          <div className="mem-detail"><div className="mem-detail-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></div><div className="mem-detail-val">{m.college}</div></div>
-                          <div className="mem-detail"><div className="mem-detail-icon"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg></div><div className="mem-detail-val">{m.branch}</div></div>
-                          <div className="mem-short">
-                            <span className="mem-short-lb">Short:</span>
-                            {editingShortName===i ? (
-                              <span style={{display:'flex',flexDirection:'column',gap:'2px',flex:1}}>
-                                <span style={{display:'flex',gap:'4px',alignItems:'center'}}>
-                                  <input className="mem-short-input" value={shortNameInput} onChange={e=>{setShortNameInput(e.target.value);setShortNameError('')}} placeholder="Part of full name"/>
-                                  <span style={{fontSize:'.52rem',color:'#4ade80',cursor:'pointer',fontWeight:600}} onClick={()=>saveShortName(i)}>Save</span>
-                                  <span style={{fontSize:'.52rem',color:'rgba(255,255,255,.3)',cursor:'pointer'}} onClick={()=>{setEditingShortName(null);setShortNameError('')}}>Cancel</span>
-                                </span>
+                          <div className="mem-details-row">
+                            <div className="mem-detail"><div className="mem-detail-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div><div className="mem-detail-val roll">{m.roll_number}</div></div>
+                            <div className="mem-detail"><div className="mem-detail-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></div><div className="mem-detail-val">{m.college}</div></div>
+                            <div className="mem-detail"><div className="mem-detail-icon"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg></div><div className="mem-detail-val">{m.branch}</div></div>
+                          </div>
+                          <div className="mem-short-row">
+                            <span className="mem-short-lb">Short Name:</span>
+                            {editingMember===i ? (
+                              <span style={{display:'flex',gap:'4px',alignItems:'center',flex:1}}>
+                                <input className="mem-short-input" value={shortNameInput} onChange={e=>{setShortNameInput(e.target.value);setShortNameError('')}} placeholder="Part of full name"/>
                                 {shortNameError && <span className="mem-short-err">{shortNameError}</span>}
                               </span>
                             ) : (
-                              <><span className="mem-short-val">{m.short_name||generateShortName(m.name)}</span><span className="mem-short-edit" onClick={()=>{setEditingShortName(i);setShortNameInput(m.short_name||generateShortName(m.name));setShortNameError('')}}>edit</span></>
+                              <span className="mem-short-val">{m.short_name||generateShortName(m.name)}</span>
                             )}
                           </div>
                         </div>
                         {m.is_leader && <div className="mem-b">Leader</div>}
-                        <button className="mem-e" onClick={()=>setEditingMember(editingMember===i?null:i)}>{editingMember===i?'Done':'Edit'}</button>
+                        <button className="mem-e" onClick={()=>{
+                          if(editingMember===i){saveShortName(i);setEditingMember(null)}
+                          else{setEditingMember(i);setShortNameInput(m.short_name||generateShortName(m.name));setShortNameError('')}
+                        }}>{editingMember===i?'Done':'Edit'}</button>
                         {editingMember===i && (
                           <div className="mem-f" style={{width:'calc(100% - 40px)',marginLeft:'72px'}}>
-                            <FloatingField label="Roll Number" type="input" value={m.roll_number||''} onChange={v=>updateMember(i,'roll_number',v)} accent={SECTION_COLORS.team} cardBg={CARD_BG.team} />
-                            <FloatingField label="College" type="input" value={m.college||''} onChange={v=>updateMember(i,'college',v)} accent={SECTION_COLORS.team} cardBg={CARD_BG.team} />
-                            <FloatingField label="Branch" type="input" value={m.branch||''} onChange={v=>updateMember(i,'branch',v)} accent={SECTION_COLORS.team} cardBg={CARD_BG.team} />
+                            <FloatingField label="Roll Number" type="input" value={m.roll_number||''} onChange={v=>updateMember(i,'roll_number',v)} accent="#9d00ff" cardBg="rgba(157,0,255,.04)" />
+                            <FloatingField label="College" type="input" value={m.college||''} onChange={v=>updateMember(i,'college',v)} accent="#9d00ff" cardBg="rgba(157,0,255,.04)" />
+                            <FloatingField label="Branch" type="input" value={m.branch||''} onChange={v=>updateMember(i,'branch',v)} accent="#9d00ff" cardBg="rgba(157,0,255,.04)" />
                           </div>
                         )}
                       </div>
