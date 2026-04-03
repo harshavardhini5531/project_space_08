@@ -173,6 +173,13 @@ export default function RegisterTeamPage() {
   const totalFields = ['projectArea','projectTitle','projectDescription','problemStatement','aiCapabilities','aiTools','techStack','membersLoaded']
   const progressPct = Math.round(totalFields.filter(f=>isFieldFilled(f)).length/totalFields.length*100)
 
+  // Check if any field in a section is filled
+  function isSectionFilled(sectionId) {
+    const step = STEPS_CONFIG.find(s=>s.id===sectionId)
+    if(!step || !step.fields.length) return false
+    return step.fields.some(f=>isFieldFilled(f))
+  }
+
   function scrollToSection(id) { sectionRefs[id]?.current?.scrollIntoView({behavior:'smooth',block:'start'}) }
 
   function handleRegisterClick() {
@@ -239,7 +246,7 @@ html,body{overflow:hidden!important;background:#050008}
 .st-progress-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#fd1c00,#faa000);transition:width .5s cubic-bezier(.4,0,.2,1)}
 .st-progress-label{margin:4px 22px 20px;font-size:.55rem;color:rgba(255,255,255,.3);letter-spacing:1px}
 .st-tl{flex:1;padding:0 0 24px;position:relative;display:flex;flex-direction:column;justify-content:space-between}
-.st-line{position:absolute;left:${AXIS}px;top:0;bottom:0;width:1.5px;background:#b9c0c6;z-index:0;transform:translateX(-0.75px);opacity:.3}
+.st-line{position:absolute;left:${AXIS}px;top:0;bottom:0;width:1.5px;background:#4b4e53;z-index:0;transform:translateX(-0.75px)}
 .st-step-block{position:relative;z-index:1}
 .st-row{display:flex;align-items:center;padding:3px 16px 3px 0}
 .st-iw{width:${AXIS*2}px;display:flex;justify-content:center;flex-shrink:0;position:relative;z-index:3}
@@ -250,8 +257,13 @@ html,body{overflow:hidden!important;background:#050008}
 .st-subs{padding:8px 0 4px}
 .st-sub{display:flex;align-items:center;padding:8px 0;position:relative;cursor:pointer}
 .st-sub:hover .st-stxt{color:rgba(255,255,255,.65)}
-.st-dot{position:absolute;left:${AXIS}px;width:7px;height:7px;border-radius:50%;background:${SIDE_BG};border:1.5px solid #b9c0c6;transform:translateX(-3.5px);z-index:3;transition:all .4s cubic-bezier(.4,0,.2,1)}
-.st-dot.filled{background:#fd1c00;border-color:#fd1c00;box-shadow:0 0 8px rgba(253,28,0,0.3);animation:dotPop .4s cubic-bezier(.34,1.56,.64,1)}
+.st-dot{position:absolute;left:${AXIS}px;width:7px;height:7px;border-radius:50%;background:${SIDE_BG};border:1.5px solid #4b4e53;transform:translateX(-3.5px);z-index:3;transition:all .4s cubic-bezier(.4,0,.2,1)}
+.st-dot.filled{box-shadow:0 0 8px currentColor;animation:dotPop .4s cubic-bezier(.34,1.56,.64,1)}
+.st-dot.clr-project{border-color:#EEA727}.st-dot.clr-project.filled{background:#EEA727;border-color:#EEA727;color:#EEA727}
+.st-dot.clr-tech{border-color:#10b981}.st-dot.clr-tech.filled{background:#10b981;border-color:#10b981;color:#10b981}
+.st-dot.clr-ai{border-color:#f21d32}.st-dot.clr-ai.filled{background:#f21d32;border-color:#f21d32;color:#f21d32}
+.st-dot.clr-team{border-color:#7B2FBE}.st-dot.clr-team.filled{background:#7B2FBE;border-color:#7B2FBE;color:#7B2FBE}
+.st-dot.clr-review{border-color:#BDE8F5}.st-dot.clr-review.filled{background:#BDE8F5;border-color:#BDE8F5;color:#BDE8F5}
 .st-stxt{font-family:'Open Sans',sans-serif;font-size:.73rem;color:rgba(255,255,255,0.35);margin-left:${AXIS+16}px;transition:color .3s}
 .st-stxt.filled{color:rgba(255,255,255,.8)}
 .mob{display:none}
@@ -267,6 +279,7 @@ html,body{overflow:hidden!important;background:#050008}
 .sec:first-child{margin-top:20px}
 .sec:focus-within{z-index:100!important}
 .card{border-radius:16px;padding:27px 32px 32px;position:relative;transition:border-color .3s,box-shadow .3s;border:none;overflow:visible;z-index:1}
+.card textarea{max-width:100%;overflow-y:auto;resize:vertical}
 .card:focus-within{z-index:100}
 .card-glow{position:absolute;inset:0;border-radius:16px;overflow:hidden;z-index:-2;pointer-events:none}
 .card-glow::before{content:'';position:absolute;top:50%;left:50%;width:300%;height:300%;transform-origin:center;animation:glowSpin 12s linear infinite;opacity:0;transition:opacity .5s}
@@ -308,7 +321,8 @@ html,body{overflow:hidden!important;background:#050008}
 .ct2 .pf-lbl,.ct2 .mdd-fl{color:#7B2FBE!important}
 .cr .pf-lbl,.cr .mdd-fl{color:#BDE8F5!important}
 
-.fg{display:grid;grid-template-columns:1fr 1fr;gap:28px 24px}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:28px 24px;position:relative}
+.fg>div{position:relative;z-index:1}
 .fg-full{grid-column:1/-1}
 @container main (max-width:800px){.fg{grid-template-columns:1fr}.fg-full{grid-column:1}.rev-g{grid-template-columns:1fr 1fr}}
 @container main (max-width:600px){.rev-g{grid-template-columns:1fr!important}}
@@ -485,7 +499,7 @@ html,body{overflow:hidden!important;background:#050008}
                 {s.subs.length > 0 && (
                   <div className="st-subs">{s.subs.map((sub,i) => {
                     const f=fieldStatus[sub]||false
-                    return <div className="st-sub" key={i} onClick={()=>scrollToSection(s.id)}><div className={`st-dot${f?' filled':''}`}/><div className={`st-stxt${f?' filled':''}`}>{sub}</div></div>
+                    return <div className="st-sub" key={i} onClick={()=>scrollToSection(s.id)}><div className={`st-dot clr-${s.id}${f?' filled':''}`}/><div className={`st-stxt${f?' filled':''}`}>{sub}</div></div>
                   })}</div>
                 )}
               </div>
@@ -496,12 +510,14 @@ html,body{overflow:hidden!important;background:#050008}
         <div className={`pg-m ${chatOpen?'co':''}`}>
           {isMobile && (
             <div className="mob">
-              {STEPS_CONFIG.map(s => (
+              {STEPS_CONFIG.map(s => {
+                const filled = isSectionFilled(s.id)
+                return (
                 <div key={s.id} className="mob-s" onClick={()=>scrollToSection(s.id)}>
-                  <div className="mob-i" style={{background:SECTION_COLORS[s.id]}}><StepIcon id={s.id} size={13} /></div>
-                  <div className="mob-l">{s.label}</div>
+                  <div className="mob-i" style={{background:filled?SECTION_COLORS[s.id]:'#2a2a2f',transition:'background .3s'}}><StepIcon id={s.id} size={13} /></div>
+                  <div className="mob-l" style={{color:filled?SECTION_COLORS[s.id]:undefined}}>{s.label}</div>
                 </div>
-              ))}
+              )})}
             </div>
           )}
 
