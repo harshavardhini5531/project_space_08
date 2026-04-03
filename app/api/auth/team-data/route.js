@@ -37,7 +37,7 @@ export async function POST(request) {
     // Get all team members with student details
     const { data: teamMembers } = await supabase
       .from('team_members')
-      .select('roll_number, is_leader')
+      .select('roll_number, is_leader, short_name')
       .eq('serial_number', memberRow.serial_number)
 
     const rolls = (teamMembers || []).map(m => m.roll_number)

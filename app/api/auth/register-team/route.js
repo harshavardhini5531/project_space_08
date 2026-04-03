@@ -4,7 +4,7 @@ export async function POST(request) {
   try {
     const body = await request.json()
     const {
-      rollNumber, serialNumber, projectTitle, projectDescription,
+      rollNumber, serialNumber, projectTitle, projectShortName, projectDescription,
       problemStatement, projectArea, aiUsage, aiCapabilities,
       aiTools, techStack, members
     } = body
@@ -59,6 +59,7 @@ export async function POST(request) {
       .update({
         team_number: newTeamNumber,
         project_title: projectTitle || '',
+        project_short_name: projectShortName || '',
         project_description: projectDescription || '',
         problem_statement: problemStatement || '',
         project_area: Array.isArray(projectArea) ? projectArea : [],
@@ -86,7 +87,7 @@ export async function POST(request) {
       console.error('Member update error:', memberErr)
     }
 
-    // Update student details if provided (name, phone, email)
+    // Update student details and short_name
     if (members && Array.isArray(members)) {
       for (const m of members) {
         if (m.roll_number) {
@@ -94,6 +95,7 @@ export async function POST(request) {
           if (m.name) updateData.name = m.name
           if (m.phone) updateData.phone = m.phone
           if (m.email) updateData.email = m.email
+          if (m.short_name) updateData.short_name = m.short_name
           if (Object.keys(updateData).length > 0) {
             await supabase.from('students').update(updateData).eq('roll_number', m.roll_number)
           }

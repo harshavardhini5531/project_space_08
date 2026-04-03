@@ -36,6 +36,9 @@ export default function RegisterTeamPage() {
   const [membersLoaded, setMembersLoaded] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [editingMember, setEditingMember] = useState(null)
+  const [editingShortName, setEditingShortName] = useState(null)
+  const [shortNameInput, setShortNameInput] = useState('')
+  const [shortNameError, setShortNameError] = useState('')
   const [chatOpen, setChatOpen] = useState(false)
   const [areaCounts, setAreaCounts] = useState({})
   const [activeSection, setActiveSection] = useState(null)
@@ -71,6 +74,7 @@ export default function RegisterTeamPage() {
     return () => cancelAnimationFrame(animId)
   }, [showSuccess])
   const [projectTitle, setProjectTitle] = useState('')
+  const [projectShortName, setProjectShortName] = useState('')
   const [projectDescription, setProjectDescription] = useState('')
   const [problemStatement, setProblemStatement] = useState('')
   const [projectArea, setProjectArea] = useState([])
@@ -113,12 +117,40 @@ export default function RegisterTeamPage() {
   }
   async function fetchMembers() {
     if(!user) return; setLoading(true)
-    try { const res=await fetch('/api/auth/team-data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rollNumber:user.rollNumber||user.roll_number})}); const data=await res.json(); if(!res.ok){setError(data.error);return} setMembers(data.members||[]); setMembersLoaded(true) } catch{setError('Failed to load members')} finally{setLoading(false)}
+    try { const res=await fetch('/api/auth/team-data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rollNumber:user.rollNumber||user.roll_number})}); const data=await res.json(); if(!res.ok){setError(data.error);return}
+      // Auto-generate short names for members
+      const membersWithShort = (data.members||[]).map(m => ({...m, short_name: m.short_name || generateShortName(m.name)}))
+      setMembers(membersWithShort); setMembersLoaded(true) } catch{setError('Failed to load members')} finally{setLoading(false)}
   }
 
   function addChip(val,list,setList,setInput) { const v=val.trim(); if(v&&!list.includes(v)){setList([...list,v]);setInput('')} }
   function removeChip(val,list,setList) { setList(list.filter(x=>x!==val)) }
   function updateMember(i,field,val) { const u=[...members]; u[i]={...u[i],[field]:val}; setMembers(u) }
+
+  // Generate short name: pick the longest word from full name
+  function generateShortName(fullName) {
+    if (!fullName) return ''
+    const words = fullName.trim().split(/\s+/)
+    return words.reduce((a,b) => b.length > a.length ? b : a, '')
+  }
+
+  // Validate short name: must be a part of full name (case-insensitive)
+  function validateShortName(shortName, fullName) {
+    if (!shortName || !fullName) return false
+    return fullName.toLowerCase().includes(shortName.toLowerCase())
+  }
+
+  function saveShortName(i) {
+    const m = members[i]
+    if (!validateShortName(shortNameInput, m.name)) {
+      setShortNameError('Short name must be a part of your full name')
+      return
+    }
+    updateMember(i, 'short_name', shortNameInput.trim())
+    setEditingShortName(null)
+    setShortNameInput('')
+    setShortNameError('')
+  }
 
   function isFieldFilled(f) {
     switch(f) {
@@ -153,7 +185,7 @@ export default function RegisterTeamPage() {
   async function handleConfirmSubmit() {
     setShowConfirm(false);setError('');setSuccess('');setSaving(true)
     try {
-      const res=await fetch('/api/auth/register-team',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rollNumber:user.rollNumber||user.roll_number,serialNumber:team.serialNumber,projectTitle,projectDescription,problemStatement,projectArea,aiUsage,aiCapabilities,aiTools,techStack,members})})
+      const res=await fetch('/api/auth/register-team',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rollNumber:user.rollNumber||user.roll_number,serialNumber:team.serialNumber,projectTitle,projectShortName,projectDescription,problemStatement,projectArea,aiUsage,aiCapabilities,aiTools,techStack,members})})
       const data=await res.json(); if(!res.ok){setError(data.error);setSaving(false);return}
       // Update team with assigned team number
       if(data.teamNumber) setTeam(prev=>({...prev, teamNumber: data.teamNumber}))
@@ -332,16 +364,27 @@ html,body{overflow:hidden!important;background:#050008}
 .gt{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:12px;background:rgba(123,47,190,.04);border:1.5px dashed rgba(123,47,190,.15);color:#7B2FBE;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:500;cursor:pointer;transition:all .2s}
 .gt:hover{background:rgba(123,47,190,.08);border-style:solid}
 .mem-grid{display:flex;flex-wrap:wrap;gap:14px;justify-content:center}
-.mem{padding:18px 20px;border-radius:14px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06);transition:all .3s;width:calc(50% - 7px);box-sizing:border-box;display:flex;align-items:center;gap:16px}
-.mem:hover{border-color:rgba(253,28,0,.12);background:rgba(255,255,255,.035)}
-.mem-av{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,rgba(253,28,0,.12),rgba(250,160,0,.08));border:2px solid rgba(253,28,0,.15);display:flex;align-items:center;justify-content:center;font-size:1rem;color:#fd1c00;font-weight:700;flex-shrink:0}
-.mem-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
-.mem-n{font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;color:#fff;letter-spacing:.2px}
-.mem-r{font-family:'DM Sans',sans-serif;font-size:.65rem;color:rgba(255,255,255,.4);letter-spacing:.3px;line-height:1.4}
-.mem-tags{display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap}
-.mem-b{padding:2px 10px;border-radius:20px;font-size:.5rem;background:rgba(253,28,0,.06);color:#fd1c00;letter-spacing:1.5px;font-weight:600;text-transform:uppercase;font-family:${fonts.display};border:1px solid rgba(253,28,0,.1)}
-.mem-e{padding:3px 12px;border-radius:20px;background:none;border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.35);font-size:.58rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;letter-spacing:.3px}
-.mem-e:hover{border-color:rgba(253,28,0,.2);color:#fd1c00}
+.mem{padding:20px;border-radius:16px;background:linear-gradient(145deg,rgba(255,255,255,.03),rgba(255,255,255,.015));border:1px solid rgba(255,255,255,.06);transition:all .3s;width:calc(50% - 7px);box-sizing:border-box;display:flex;gap:16px;position:relative;backdrop-filter:blur(4px)}
+.mem:hover{border-color:rgba(253,28,0,.15);background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.025));box-shadow:0 4px 20px rgba(0,0,0,.15)}
+.mem-av{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,rgba(253,28,0,.15),rgba(250,160,0,.1));border:2px solid rgba(253,28,0,.18);display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:#fd1c00;font-weight:700;flex-shrink:0;box-shadow:0 2px 12px rgba(253,28,0,.08)}
+.mem-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:0;padding-right:60px}
+.mem-n{font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:700;color:#fff;letter-spacing:.2px;margin-bottom:8px;line-height:1.2}
+.mem-detail{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.mem-detail-icon{width:14px;height:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;opacity:.4}
+.mem-detail-icon svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.mem-detail-val{font-family:'DM Sans',sans-serif;font-size:.68rem;color:rgba(255,255,255,.45);letter-spacing:.3px}
+.mem-detail-val.roll{color:rgba(255,170,0,.7);font-weight:600;font-size:.72rem}
+.mem-short{display:flex;align-items:center;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.04)}
+.mem-short-lb{font-size:.5rem;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:1px;font-weight:600;flex-shrink:0}
+.mem-short-val{font-size:.72rem;color:rgba(253,28,0,.8);font-weight:600;font-family:'DM Sans',sans-serif}
+.mem-short-edit{font-size:.5rem;color:rgba(255,255,255,.25);cursor:pointer;text-decoration:underline;margin-left:auto}
+.mem-short-edit:hover{color:#fd1c00}
+.mem-short-input{background:rgba(255,255,255,.04);border:1px solid rgba(253,28,0,.15);border-radius:6px;padding:4px 8px;font-size:.7rem;color:#fff;font-family:'DM Sans',sans-serif;width:120px;outline:none}
+.mem-short-input:focus{border-color:rgba(253,28,0,.3)}
+.mem-short-err{font-size:.48rem;color:#f21d32;margin-top:2px}
+.mem-b{position:absolute;top:14px;right:14px;padding:3px 10px;border-radius:20px;font-size:.48rem;background:rgba(253,28,0,.08);color:#fd1c00;letter-spacing:1.5px;font-weight:700;text-transform:uppercase;font-family:${fonts.display};border:1px solid rgba(253,28,0,.12)}
+.mem-e{position:absolute;bottom:14px;right:14px;padding:4px 14px;border-radius:20px;background:rgba(253,28,0,.06);border:1px solid rgba(253,28,0,.1);color:#fd1c00;font-size:.58rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;font-weight:500;letter-spacing:.3px}
+.mem-e:hover{background:rgba(253,28,0,.12);border-color:rgba(253,28,0,.2)}
 .mem-f{display:grid;grid-template-columns:1fr;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.04);width:100%}
 
 /* Review */
@@ -484,7 +527,11 @@ html,body{overflow:hidden!important;background:#050008}
               <div className="card cp"><div className="card-glow"/>
                 <div className="card-h"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>Project Information</div>
                 <div className="fg">
-                  <div><FloatingField label="Project Title" required type="input" placeholder="Enter your project title" value={projectTitle} onChange={setProjectTitle} accent={SECTION_COLORS.project} cardBg={CARD_BG.project} /></div>
+                  <div>
+                    <FloatingField label="Project Title" required type="input" placeholder="Enter your project title (max 25 chars)" value={projectTitle} onChange={v=>{ if(v.length<=25) setProjectTitle(v) }} accent={SECTION_COLORS.project} cardBg={CARD_BG.project} />
+                    <div style={{textAlign:'right',fontSize:'.58rem',color:projectTitle.length>=23?'#fd1c00':'rgba(255,255,255,.2)',marginTop:'4px',fontWeight:500}}>{projectTitle.length}/25</div>
+                  </div>
+                  <div><FloatingField label="Short Name" type="input" placeholder="e.g. PS, SkillBridge, HOOT" value={projectShortName} onChange={v=>{ if(v.length<=10) setProjectShortName(v) }} accent={SECTION_COLORS.project} cardBg={CARD_BG.project} /></div>
                   <div><MultiDropdown label="Project Area" options={PROJECT_AREAS} selected={projectArea} onChange={setProjectArea} counts={areaCounts} accent={SECTION_COLORS.project} cardBg={CARD_BG.project} onCustomAdd={()=>{}} /></div>
                   <div><FloatingField label="Project Description" required type="textarea" placeholder="Describe what your project does, expected outcomes..." value={projectDescription} onChange={setProjectDescription} accent={SECTION_COLORS.project} cardBg={CARD_BG.project} rows={4} maxLen={500} /></div>
                   <div><FloatingField label="Problem Statement" type="textarea" placeholder="What problem does your project solve?" value={problemStatement} onChange={setProblemStatement} accent={SECTION_COLORS.project} cardBg={CARD_BG.project} rows={3} maxLen={300} /></div>
@@ -536,19 +583,34 @@ html,body{overflow:hidden!important;background:#050008}
                         <div className="mem-av" style={{overflow:'hidden'}}>{m.image_url?<img src={m.image_url} alt={m.name} style={{width:'100%',height:'100%',borderRadius:'50%',objectFit:'cover'}} onError={e=>{e.target.style.display='none';e.target.parentNode.textContent=(m.name||'?')[0].toUpperCase()}}/>:(m.name||'?')[0].toUpperCase()}</div>
                         <div className="mem-right">
                           <div className="mem-n">{m.name}</div>
-                          <div className="mem-r">{m.roll_number} · {m.college} · {m.branch}</div>
-                          <div className="mem-tags">
-                            {m.is_leader && <div className="mem-b">Leader</div>}
-                            <button className="mem-e" onClick={()=>setEditingMember(editingMember===i?null:i)}>{editingMember===i?'Done':'Edit'}</button>
+                          <div className="mem-detail"><div className="mem-detail-icon"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div><div className="mem-detail-val roll">{m.roll_number}</div></div>
+                          <div className="mem-detail"><div className="mem-detail-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></div><div className="mem-detail-val">{m.college}</div></div>
+                          <div className="mem-detail"><div className="mem-detail-icon"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg></div><div className="mem-detail-val">{m.branch}</div></div>
+                          <div className="mem-short">
+                            <span className="mem-short-lb">Short:</span>
+                            {editingShortName===i ? (
+                              <span style={{display:'flex',flexDirection:'column',gap:'2px',flex:1}}>
+                                <span style={{display:'flex',gap:'4px',alignItems:'center'}}>
+                                  <input className="mem-short-input" value={shortNameInput} onChange={e=>{setShortNameInput(e.target.value);setShortNameError('')}} placeholder="Part of full name"/>
+                                  <span style={{fontSize:'.52rem',color:'#4ade80',cursor:'pointer',fontWeight:600}} onClick={()=>saveShortName(i)}>Save</span>
+                                  <span style={{fontSize:'.52rem',color:'rgba(255,255,255,.3)',cursor:'pointer'}} onClick={()=>{setEditingShortName(null);setShortNameError('')}}>Cancel</span>
+                                </span>
+                                {shortNameError && <span className="mem-short-err">{shortNameError}</span>}
+                              </span>
+                            ) : (
+                              <><span className="mem-short-val">{m.short_name||generateShortName(m.name)}</span><span className="mem-short-edit" onClick={()=>{setEditingShortName(i);setShortNameInput(m.short_name||generateShortName(m.name));setShortNameError('')}}>edit</span></>
+                            )}
                           </div>
-                          {editingMember===i && (
-                            <div className="mem-f">
-                              <FloatingField label="Roll Number" type="input" value={m.roll_number||''} onChange={v=>updateMember(i,'roll_number',v)} accent={SECTION_COLORS.team} cardBg={CARD_BG.team} />
-                              <FloatingField label="College" type="input" value={m.college||''} onChange={v=>updateMember(i,'college',v)} accent={SECTION_COLORS.team} cardBg={CARD_BG.team} />
-                              <FloatingField label="Branch" type="input" value={m.branch||''} onChange={v=>updateMember(i,'branch',v)} accent={SECTION_COLORS.team} cardBg={CARD_BG.team} />
-                            </div>
-                          )}
                         </div>
+                        {m.is_leader && <div className="mem-b">Leader</div>}
+                        <button className="mem-e" onClick={()=>setEditingMember(editingMember===i?null:i)}>{editingMember===i?'Done':'Edit'}</button>
+                        {editingMember===i && (
+                          <div className="mem-f" style={{width:'calc(100% - 40px)',marginLeft:'72px'}}>
+                            <FloatingField label="Roll Number" type="input" value={m.roll_number||''} onChange={v=>updateMember(i,'roll_number',v)} accent={SECTION_COLORS.team} cardBg={CARD_BG.team} />
+                            <FloatingField label="College" type="input" value={m.college||''} onChange={v=>updateMember(i,'college',v)} accent={SECTION_COLORS.team} cardBg={CARD_BG.team} />
+                            <FloatingField label="Branch" type="input" value={m.branch||''} onChange={v=>updateMember(i,'branch',v)} accent={SECTION_COLORS.team} cardBg={CARD_BG.team} />
+                          </div>
+                        )}
                       </div>
                     ))}
                     </div>
@@ -564,7 +626,7 @@ html,body{overflow:hidden!important;background:#050008}
                 <div className="rev-g">
                   <div className="rev-c"><div className="rev-l">Team</div><div className="rev-v">{team?.teamNumber||`#${team?.serialNumber}`||'—'}</div></div>
                   <div className="rev-c"><div className="rev-l">Technology</div><div className="rev-v">{team?.technology||'—'}</div></div>
-                  <div className="rev-c"><div className="rev-l">Title</div><div className="rev-v">{projectTitle||'—'}</div></div>
+                  <div className="rev-c"><div className="rev-l">Title</div><div className="rev-v">{projectTitle||'—'}{projectShortName?` (${projectShortName})`:''}</div></div>
                   <div className="rev-c"><div className="rev-l">Area</div><div className="rev-v">{projectArea.length?projectArea.join(', '):'—'}</div></div>
                   <div className="rev-c full"><div className="rev-l">Description</div><div className="rev-v">{projectDescription||'—'}</div></div>
                   {techStack.length>0 && <div className="rev-c full"><div className="rev-l">Tech Stack</div><div className="rev-ch">{techStack.map(t=><span key={t}>{t}</span>)}</div></div>}
