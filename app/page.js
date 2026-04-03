@@ -557,109 +557,113 @@ export default function LandingPage() {
     }
  }, [isMobile])
 
-  /* ═══════════════════════════════════
+ /* ═══════════════════════════════════
      MOBILE LAYOUT
      ═══════════════════════════════════ */
   if (isMobile) {
+    const tracks = ["DATA SPECIALIST","AWS DEVELOPMENT","FULL STACK","GOOGLE FLUTTER","SERVICENOW","VLSI"];
+    const tTop = "DON'T JUST THINK".split("");
+    const tBtm = "MAKE IT HAPPEN".split("");
+
     return (
       <>
         <style>{`
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;background:#050008;overflow:hidden;font-family:'DM Sans',sans-serif;color:#fff}
+:root{--r:#fd1c00;--bg:#050008}
 
-@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes mFlip{0%{transform:translateY(0)}40%{transform:translateY(-3px);opacity:.4}100%{transform:translateY(0);opacity:1}}
-@keyframes breathe{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.25}50%{transform:translate(-50%,-50%) scale(1.6);opacity:.55}}
+@keyframes up{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes pop{from{opacity:0;transform:scale(.9) translateY(10px)}to{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
 @keyframes spin3d{from{transform:rotateY(0)}to{transform:rotateY(360deg)}}
-@keyframes shimmer{from{background-position:0% 50%}to{background-position:200% 50%}}
-@keyframes glowPulse{0%,100%{filter:brightness(1) drop-shadow(0 0 2px rgba(177,158,239,.3))}50%{filter:brightness(1.3) drop-shadow(0 0 6px rgba(177,158,239,.5))}}
-@keyframes lineSweep{0%{left:-40%}100%{left:140%}}
-@keyframes ringPulse{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.12}50%{transform:translate(-50%,-50%) scale(1.08);opacity:.25}}
-@keyframes cardPop{from{opacity:0;transform:translateY(16px) scale(.92)}to{opacity:1;transform:none}}
-@keyframes dust{0%{transform:translateY(0) translateX(0);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateY(-80px) translateX(20px);opacity:0}}
-@keyframes btnShimmer{0%{left:-100%}100%{left:200%}}
-@keyframes sepPulse{0%,100%{opacity:.15}50%{opacity:.4}}
+@keyframes shimmer{from{background-position:200% 50%}to{background-position:0% 50%}}
+@keyframes gpulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.4) drop-shadow(0 0 4px rgba(177,158,239,.4))}}
+@keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
+@keyframes breathe{0%,100%{opacity:.2;transform:translate(-50%,-50%) scale(1)}50%{opacity:.5;transform:translate(-50%,-50%) scale(1.3)}}
+@keyframes sweep{0%{left:-80%}100%{left:180%}}
+@keyframes tReveal{0%{opacity:0;transform:translateY(12px);filter:blur(4px)}60%{filter:blur(0)}100%{opacity:1;transform:none}}
+@keyframes tGR{0%,100%{text-shadow:0 0 4px rgba(253,28,0,.1)}50%{text-shadow:0 0 16px rgba(253,28,0,.35),0 0 36px rgba(253,28,0,.1)}}
+@keyframes tGW{0%,100%{text-shadow:0 0 3px rgba(255,255,255,.03)}50%{text-shadow:0 0 12px rgba(255,255,255,.2),0 0 26px rgba(255,255,255,.05)}}
+@keyframes lIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@keyframes tSweep{0%,100%{text-shadow:0 0 0 transparent}50%{text-shadow:0 0 8px rgba(253,28,0,.25)}}
+@keyframes cGlow{0%,100%{box-shadow:0 0 0 transparent}50%{box-shadow:0 0 14px rgba(253,28,0,.06),inset 0 1px 6px rgba(253,28,0,.03)}}
+@keyframes linePulse{0%,100%{opacity:.3}50%{opacity:.7}}
 
-.ml{width:100%;height:100vh;height:100dvh;position:relative;overflow:hidden;background:#050008;display:flex;flex-direction:column}
+.ml{width:100%;height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden;position:relative;font-family:'DM Sans',sans-serif;color:#fff;padding:20px 0;background:#050008}
 
-.ml-stars{position:absolute;inset:0;z-index:0;pointer-events:none;
-  background-image:
-    radial-gradient(1px 1px at 10% 8%,rgba(255,255,255,.2),transparent),
-    radial-gradient(1px 1px at 25% 35%,rgba(255,255,255,.15),transparent),
-    radial-gradient(1px 1px at 45% 12%,rgba(255,255,255,.25),transparent),
-    radial-gradient(1px 1px at 60% 28%,rgba(255,255,255,.12),transparent),
-    radial-gradient(1px 1px at 80% 50%,rgba(255,255,255,.18),transparent),
-    radial-gradient(1px 1px at 92% 15%,rgba(255,255,255,.2),transparent),
-    radial-gradient(1px 1px at 15% 65%,rgba(255,255,255,.1),transparent),
-    radial-gradient(1.5px 1.5px at 70% 80%,rgba(255,255,255,.15),transparent),
-    radial-gradient(1px 1px at 35% 90%,rgba(255,255,255,.12),transparent)
-}
-.ml-glow-amb{position:absolute;top:-5%;left:50%;transform:translateX(-50%);width:320px;height:250px;border-radius:50%;background:radial-gradient(circle,rgba(253,28,0,.12),rgba(253,28,0,.03) 55%,transparent 75%);pointer-events:none;z-index:0}
-
-.ml-dust{position:absolute;z-index:1;pointer-events:none;inset:0}
-.ml-dust-p{position:absolute;width:2px;height:2px;border-radius:50%;background:rgba(253,28,0,.4);animation:dust 6s ease-in-out infinite}
-.ml-dust-p:nth-child(1){left:12%;bottom:45%;animation-delay:0s;animation-duration:5s}
-.ml-dust-p:nth-child(2){left:28%;bottom:38%;animation-delay:1.2s;animation-duration:7s;width:1.5px;height:1.5px;background:rgba(255,255,255,.2)}
-.ml-dust-p:nth-child(3){right:18%;bottom:50%;animation-delay:2.5s;animation-duration:6s}
-.ml-dust-p:nth-child(4){right:32%;bottom:42%;animation-delay:0.8s;animation-duration:8s;width:1px;height:1px;background:rgba(255,255,255,.15)}
-.ml-dust-p:nth-child(5){left:50%;bottom:35%;animation-delay:3s;animation-duration:5.5s;width:1.5px;height:1.5px}
-.ml-dust-p:nth-child(6){left:65%;bottom:48%;animation-delay:1.8s;animation-duration:6.5s;width:1px;height:1px;background:rgba(255,255,255,.18)}
-
-.ml-topbar{position:relative;z-index:5;display:flex;justify-content:center;padding:max(16px,env(safe-area-inset-top)) 24px 0;animation:fadeIn .6s ease .2s both}
+/* TOP: AI powered */
+.ml-top{display:flex;justify-content:flex-end;padding:0 22px;flex-shrink:0;animation:fade .5s ease .1s both;z-index:2}
 .ml-ai{display:flex;flex-direction:column;align-items:center}
-.ml-ai-spin{width:38px;height:30px;perspective:400px}
-.ml-ai-spin-in{width:100%;height:100%;transform-style:preserve-3d;animation:spin3d 4s linear infinite}
-.ml-ai-face{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Poppins',sans-serif;font-weight:300;font-size:22px;color:#fff;text-shadow:0 0 18px rgba(255,85,0,.35),0 0 35px rgba(255,120,30,.12);backface-visibility:hidden}
-.ml-ai-face-b{transform:rotateY(180deg)}
-.ml-ai-lb{font-family:'Astro Futuristic Font','ASTRO','Orbitron',sans-serif;font-size:6px;letter-spacing:4px;font-weight:700;text-transform:uppercase;margin-top:-1px;background:linear-gradient(90deg,#ff9ffc,#b19eef,#fd1c00,#ff9ffc);background-size:200% 100%;background-clip:text;-webkit-background-clip:text;color:transparent;animation:shimmer 3s linear infinite,glowPulse 2s ease-in-out infinite}
+.ml-ai-3d{width:32px;height:24px;perspective:400px}
+.ml-ai-in{width:100%;height:100%;transform-style:preserve-3d;animation:spin3d 4s linear infinite}
+.ml-ai-f{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Poppins',sans-serif;font-weight:300;font-size:16px;color:var(--r);text-shadow:0 0 12px rgba(253,28,0,.3);backface-visibility:hidden}
+.ml-ai-f:last-child{transform:rotateY(180deg)}
+.ml-ai-t{font-family:'Astro Futuristic Font','ASTRO',sans-serif;font-size:5px;letter-spacing:3.5px;font-weight:700;text-transform:uppercase;background:linear-gradient(90deg,#ff9ffc,#b19eef,var(--r),#ff9ffc);background-size:200%;background-clip:text;-webkit-background-clip:text;color:transparent;animation:shimmer 3s linear infinite,gpulse 2s ease-in-out infinite}
 
-.ml-sphere-area{position:relative;z-index:2;flex:0 0 auto;display:flex;align-items:center;justify-content:center;height:36%;animation:fadeIn .8s ease .3s both}
-.ml-sphere-box{width:210px;height:210px;position:relative}
-.ml-sphere-box canvas{display:block;width:100%!important;height:100%!important}
-.ml-sphere-halo{position:absolute;left:50%;top:50%;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(253,28,0,.1),transparent 60%);animation:breathe 4s ease-in-out infinite;pointer-events:none}
-.ml-sphere-ring{position:absolute;left:50%;top:50%;width:230px;height:230px;border-radius:50%;border:1px solid rgba(253,28,0,.1);animation:ringPulse 3s ease-in-out infinite;pointer-events:none}
+/* MIDDLE */
+.ml-mid{flex:1;display:flex;flex-direction:column;justify-content:center;padding:20px 0 45px;z-index:2;min-height:0;gap:30px}
 
-.ml-title-block{position:relative;z-index:5;padding:0 28px;animation:fadeUp .7s ease .3s both}
-.ml-title{font-family:'Astro Futuristic Font','ASTRO','Orbitron',sans-serif;font-weight:400;font-size:clamp(38px,11vw,48px);line-height:1.05;text-transform:uppercase;color:#fd1c00;-webkit-text-stroke:1px rgba(253,28,0,.12);paint-order:stroke fill}
-.ml-title-w{color:#fff;-webkit-text-stroke:1px rgba(255,255,255,.08)}
-.ml-tagline{margin-top:8px;animation:fadeUp .7s ease .5s both}
-.ml-tag-top{font-family:'Poppins',sans-serif;font-size:9px;font-weight:300;letter-spacing:5px;text-transform:uppercase;color:rgba(255,255,255,.25)}
-.ml-tag-sep{width:30px;height:1px;margin:5px 0;background:linear-gradient(90deg,rgba(253,28,0,.5),transparent)}
-.ml-tag-btm{font-family:'Poppins',sans-serif;font-size:10px;font-weight:700;letter-spacing:5px;text-transform:uppercase;color:#fd1c00;text-shadow:0 0 12px rgba(253,28,0,.15)}
+/* Hero */
+.ml-hc{margin:0 18px;padding:20px 18px 16px;border-radius:16px;border:1px solid rgba(253,28,0,.1);background:linear-gradient(135deg,rgba(253,28,0,.04),rgba(253,28,0,.01) 60%,transparent);position:relative;overflow:visible;animation:up .6s ease .2s both,cGlow 5s ease-in-out 2s infinite}
+.ml-hc-t{font-family:'Astro Futuristic Font','ASTRO','Orbitron',sans-serif;font-weight:400;font-size:38px;line-height:1.06;text-transform:uppercase;color:var(--r);-webkit-text-stroke:1px rgba(253,28,0,.08);paint-order:stroke fill;position:relative;z-index:3;animation:tReveal .8s cubic-bezier(.16,1,.3,1) .3s both,tGR 4s ease-in-out 1.5s infinite}
+.ml-hc-tw{color:#fff;-webkit-text-stroke:1px rgba(255,255,255,.05);animation:tReveal .8s cubic-bezier(.16,1,.3,1) .45s both,tGW 4s ease-in-out 1.8s infinite}
+.ml-hc-tag{margin-top:10px;position:relative;z-index:3}
+.ml-hc-tag-r{display:flex;gap:0;flex-wrap:wrap}
+.ml-hc-tag-r span{display:inline-block;animation:lIn .3s ease both}
+.ml-hc-tag-r.t1 span{font-family:'Poppins',sans-serif;font-size:8px;font-weight:300;letter-spacing:4.5px;text-transform:uppercase;color:rgba(255,255,255,.2)}
+.ml-hc-tag-sep{width:24px;height:1px;background:linear-gradient(90deg,rgba(253,28,0,.5),transparent);margin:4px 0;animation:fade .4s ease .9s both}
+.ml-hc-tag-r.t2 span{font-family:'Poppins',sans-serif;font-size:9px;font-weight:700;letter-spacing:4.5px;text-transform:uppercase;color:var(--r);animation:lIn .3s ease both,tSweep 3s ease-in-out 2s infinite}
+.ml-hc-sp{position:absolute;right:-17px;top:-10px;width:150px;height:150px;z-index:2}
+.ml-hc-sp canvas{display:block;width:100%!important;height:100%!important;border-radius:50%}
+.ml-hc-sp-g{position:absolute;left:50%;top:50%;width:125px;height:125px;border-radius:50%;background:radial-gradient(circle,rgba(253,28,0,.12),transparent 60%);animation:breathe 4s ease-in-out infinite;pointer-events:none}
 
-.ml-divider{position:relative;z-index:5;margin:18px 28px 0;height:1px;animation:fadeIn .8s ease .6s both;overflow:visible}
-.ml-divider-line{width:100%;height:1px;background:linear-gradient(90deg,transparent,rgba(253,28,0,.45) 15%,rgba(253,28,0,.45) 85%,transparent);border-radius:1px}
-.ml-divider-glow{position:absolute;top:-3px;left:8%;right:8%;height:7px;background:linear-gradient(90deg,transparent,rgba(253,28,0,.12) 25%,rgba(253,28,0,.12) 75%,transparent);border-radius:4px;filter:blur(3px)}
-.ml-divider-sweep{position:absolute;top:-1px;width:40px;height:3px;border-radius:3px;background:radial-gradient(ellipse,rgba(255,200,150,.5),transparent);animation:lineSweep 4s ease-in-out infinite;pointer-events:none;filter:blur(1px)}
+/* Buttons */
+.ml-act{display:flex;gap:10px;margin:0 18px;animation:up .5s ease .4s both}
+.ml-ab{display:flex;align-items:center;justify-content:center;gap:7px;flex:1;padding:13px;border-radius:12px;font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:transform .1s;-webkit-tap-highlight-color:transparent;position:relative;overflow:hidden}
+.ml-ab:active{transform:scale(.97)}
+.ml-ab-p{background:var(--r);color:#fff;box-shadow:0 4px 16px rgba(253,28,0,.25)}
+.ml-ab-p::after{content:'';position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);animation:sweep 4s ease-in-out 2s infinite}
+.ml-ab-s{background:rgba(255,255,255,.025);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.06)}
+.ml-ab i{width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-style:normal;flex-shrink:0}
+.ml-ab-p i{background:rgba(255,255,255,.12)}
+.ml-ab-s i{background:rgba(255,255,255,.04)}
 
-.ml-bottom{position:relative;z-index:5;flex:1;display:flex;flex-direction:column;justify-content:space-evenly;padding:10px 22px max(14px,env(safe-area-inset-bottom))}
+/* Track badges */
+.ml-trk{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:0 18px;animation:fade .5s ease .6s both}
+.ml-trk-c{padding:7px 4px;border-radius:8px;border:1px solid rgba(253,28,0,.08);background:rgba(253,28,0,.02);font-family:'DM Sans',sans-serif;font-size:7px;font-weight:600;letter-spacing:1.5px;color:rgba(253,28,0,.45);text-align:center;text-transform:uppercase}
 
-.ml-btns{display:flex;gap:10px;animation:fadeUp .6s ease .65s both}
-.ml-btn{display:flex;align-items:center;justify-content:center;gap:8px;flex:1;padding:14px;border-radius:14px;font-family:'Poppins','DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:transform .12s;-webkit-tap-highlight-color:transparent;position:relative;overflow:hidden}
-.ml-btn:active{transform:scale(.96)}
-.ml-btn-go{background:linear-gradient(135deg,#fd1c00,#e81600);color:#fff;box-shadow:0 4px 24px rgba(253,28,0,.3),inset 0 1px 0 rgba(255,255,255,.12)}
-.ml-btn-go::after{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);animation:btnShimmer 3s ease-in-out 2s infinite}
-.ml-btn-in{background:rgba(255,255,255,.04);color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.08)}
-.ml-btn-ic{width:24px;height:24px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.ml-btn-go .ml-btn-ic{background:rgba(255,255,255,.14)}
-.ml-btn-in .ml-btn-ic{background:rgba(255,255,255,.05)}
+/* Stats 2x2 */
+.ml-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 18px}
+.ml-gc{padding:16px 12px;border-radius:14px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);display:flex;align-items:center;gap:11px;animation:pop .45s cubic-bezier(.3,1.5,.6,1) both,cGlow 5s ease-in-out infinite}
+.ml-gc:nth-child(1){animation-delay:.5s,.5s}
+.ml-gc:nth-child(2){animation-delay:.6s,.6s}
+.ml-gc:nth-child(3){animation-delay:.7s,.7s}
+.ml-gc:nth-child(4){animation-delay:.8s,.8s}
+.ml-gc-ic{width:36px;height:36px;border-radius:10px;background:rgba(253,28,0,.06);border:1px solid rgba(253,28,0,.08);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ml-gc-ic svg{stroke:var(--r);fill:none;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;width:17px;height:17px}
+.ml-gc-v{font-size:16px;font-weight:800;color:#fff}
+.ml-gc-l{font-size:7px;color:var(--r);text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-top:1px}
 
-.ml-stats{display:flex;gap:8px}
-.ml-stat{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:14px 6px;border-radius:14px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.04);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);animation:cardPop .5s cubic-bezier(.34,1.56,.64,1) both}
-.ml-stat:nth-child(1){animation-delay:.75s}
-.ml-stat:nth-child(2){animation-delay:.85s}
-.ml-stat:nth-child(3){animation-delay:.95s}
-.ml-stat-icon svg{stroke:#fd1c00;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;width:18px;height:18px}
-.ml-stat-val{font-size:13px;font-weight:700;color:#fff;letter-spacing:.3px}
-.ml-stat-lb{font-size:7px;color:#fd1c00;text-transform:uppercase;letter-spacing:1.5px;font-weight:600}
+/* BOTTOM: countdown */
+.ml-bot{flex-shrink:0;padding:0 18px;z-index:2;animation:fade .6s ease .9s both;margin-top:30px}
+.ml-cd{display:flex;flex-direction:column;align-items:center;padding:14px 14px 12px;border-radius:14px;background:rgba(253,28,0,.02);border:1px solid rgba(253,28,0,.08);box-shadow:0 0 16px rgba(253,28,0,.04);animation:cGlow 5s ease-in-out 2s infinite}
+.ml-cd-row{display:flex;align-items:flex-start}
+.ml-cd-u{display:flex;flex-direction:column;align-items:center;min-width:50px}
+.ml-cd-n{font-family:'Astro Futuristic Font','ASTRO','Orbitron',sans-serif;font-size:30px;font-weight:400;color:#fff;letter-spacing:2px;line-height:1;text-align:center}
+.ml-cd-n.flip{animation:up .3s ease}
+.ml-cd-c{font-family:'Poppins',sans-serif;font-size:22px;font-weight:300;color:var(--r);line-height:1;padding:0 2px;margin-top:1px;animation:pulse 2s ease-in-out infinite}
+.ml-cd-lb{font-family:'DM Sans',sans-serif;font-size:7px;font-weight:600;color:var(--r);letter-spacing:1.5px;margin-top:4px;text-transform:uppercase}
 
-.ml-cd{display:flex;align-items:center;justify-content:center;gap:2px;animation:fadeIn .8s ease 1.1s both}
-.ml-cd-unit{display:flex;flex-direction:column;align-items:center;min-width:52px}
-.ml-cd-n{font-family:'Astro Futuristic Font','ASTRO','Orbitron',sans-serif;font-size:clamp(20px,6vw,26px);font-weight:400;color:#fff;letter-spacing:1px;text-shadow:0 0 8px rgba(255,255,255,.04)}
-.ml-cd-n.flip{animation:mFlip .3s ease}
-.ml-cd-lb{font-family:'Poppins',sans-serif;font-size:8}, [])px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:rgba(253,28,0,.6);margin-top:2px}
-.ml-cd-sep{font-family:'Poppins',sans-serif;font-size:18px;color:rgba(253,28,0,.15);font-weight:300;margin-bottom:8px;animation:sepPulse 2s ease-in-out infinite}
+.ml-bot-deco{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;animation:linePulse 3s ease-in-out infinite}
+.ml-bot-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(253,28,0,.1),transparent)}
+.ml-bot-dot{width:3px;height:3px;border-radius:50%;background:var(--r);opacity:.25}
+
+/* Nebula */
+.ml-nebula{position:absolute;bottom:0;left:0;right:0;height:35%;pointer-events:none;z-index:1;
+  background:radial-gradient(ellipse at 30% 80%,rgba(253,28,0,.12),transparent 50%),radial-gradient(ellipse at 70% 90%,rgba(200,60,10,.1),transparent 45%),radial-gradient(ellipse at 50% 100%,rgba(253,28,0,.08),transparent 55%),radial-gradient(ellipse at 15% 95%,rgba(180,40,0,.06),transparent 40%),radial-gradient(ellipse at 85% 85%,rgba(220,50,5,.07),transparent 40%);
+  -webkit-mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.3) 25%,rgba(0,0,0,.7) 60%,rgba(0,0,0,1) 100%);
+  mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.3) 25%,rgba(0,0,0,.7) 60%,rgba(0,0,0,1) 100%);
+}
         `}</style>
         <link rel="preconnect" href="https://fonts.googleapis.com"/>
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin=""/>
@@ -667,70 +671,72 @@ html,body{width:100%;height:100%;background:#050008;overflow:hidden;font-family:
         <link href="https://fonts.cdnfonts.com/css/astro-futuristic-font" rel="stylesheet"/>
 
         <div className="ml">
-          <div className="ml-stars"/>
-          <div className="ml-glow-amb"/>
-          <div className="ml-dust">
-            <div className="ml-dust-p"/><div className="ml-dust-p"/><div className="ml-dust-p"/>
-            <div className="ml-dust-p"/><div className="ml-dust-p"/><div className="ml-dust-p"/>
-          </div>
 
-          <div className="ml-topbar">
+          {/* TOP: AI powered */}
+          <div className="ml-top">
             <div className="ml-ai">
-              <div className="ml-ai-spin"><div className="ml-ai-spin-in"><div className="ml-ai-face">AI</div><div className="ml-ai-face ml-ai-face-b">AI</div></div></div>
-              <div className="ml-ai-lb">POWERED</div>
+              <div className="ml-ai-3d"><div className="ml-ai-in"><div className="ml-ai-f">AI</div><div className="ml-ai-f">AI</div></div></div>
+              <div className="ml-ai-t">POWERED</div>
             </div>
           </div>
 
-          <div className="ml-sphere-area">
-            <div className="ml-sphere-halo"/>
-            <div className="ml-sphere-ring"/>
-            <div className="ml-sphere-box" ref={sphereMountRef}/>
-          </div>
+          {/* MIDDLE */}
+          <div className="ml-mid">
 
-          <div className="ml-title-block">
-            <div className="ml-title">PROJECT</div>
-            <div className="ml-title ml-title-w">SPACE</div>
-            <div className="ml-tagline">
-              <div className="ml-tag-top">DON&apos;T JUST THINK</div>
-              <div className="ml-tag-sep"/>
-              <div className="ml-tag-btm">MAKE IT HAPPEN</div>
-            </div>
-          </div>
-
-          <div className="ml-divider">
-            <div className="ml-divider-glow"/>
-            <div className="ml-divider-line"/>
-            <div className="ml-divider-sweep"/>
-          </div>
-
-          <div className="ml-bottom">
-            <div className="ml-btns">
-              <button className="ml-btn ml-btn-go" onClick={()=>routerHook.push('/auth/register')}>
-                <div className="ml-btn-ic"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/></svg></div>
-                Create Account
-              </button>
-              <button className="ml-btn ml-btn-in" onClick={()=>routerHook.push('/auth/login')}>
-                <div className="ml-btn-ic"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M6 2H3a1 1 0 00-1 1v8a1 1 0 001 1h3" stroke="#fff" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/><path d="M9.5 4.5L12 7l-2.5 2.5" stroke="#fff" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/><line x1="12" y1="7" x2="5.5" y2="7" stroke="#fff" strokeWidth="1.3" strokeLinecap="round"/></svg></div>
-                Login
-              </button>
+            <div className="ml-hc">
+              <div className="ml-hc-t">PROJECT</div>
+              <div className="ml-hc-t ml-hc-tw">SPACE</div>
+              <div className="ml-hc-tag">
+                <div className="ml-hc-tag-r t1">{tTop.map((c,i) => <span key={i} style={{animationDelay:`${.6+i*.03}s`}}>{c===" "?"\u00A0\u00A0":c}</span>)}</div>
+                <div className="ml-hc-tag-sep"/>
+                <div className="ml-hc-tag-r t2">{tBtm.map((c,i) => <span key={i} style={{animationDelay:`${.95+i*.04}s`}}>{c===" "?"\u00A0\u00A0":c}</span>)}</div>
+              </div>
+              <div className="ml-hc-sp" ref={sphereMountRef}><div className="ml-hc-sp-g"/></div>
             </div>
 
-            <div className="ml-stats">
-              <div className="ml-stat"><div className="ml-stat-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div className="ml-stat-val">May 6–12</div><div className="ml-stat-lb">Event Date</div></div>
-              <div className="ml-stat"><div className="ml-stat-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div><div className="ml-stat-val">684+</div><div className="ml-stat-lb">Students</div></div>
-              <div className="ml-stat"><div className="ml-stat-icon"><svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div><div className="ml-stat-val">6 Tracks</div><div className="ml-stat-lb">Technologies</div></div>
+            <div className="ml-act">
+              <button className="ml-ab ml-ab-p" onClick={()=>routerHook.push('/auth/register')}><i><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/></svg></i>Create Account</button>
+              <button className="ml-ab ml-ab-s" onClick={()=>routerHook.push('/auth/login')}><i><svg width="10" height="10" viewBox="0 0 14 14" fill="none"><path d="M6 2H3a1 1 0 00-1 1v8a1 1 0 001 1h3" stroke="#fff" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/><path d="M9.5 4.5L12 7l-2.5 2.5" stroke="#fff" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/><line x1="12" y1="7" x2="5.5" y2="7" stroke="#fff" strokeWidth="1.2" strokeLinecap="round"/></svg></i>Login</button>
             </div>
 
+            <div className="ml-trk">
+              {tracks.map((tr,i) => <div key={i} className="ml-trk-c">{tr}</div>)}
+            </div>
+
+            <div className="ml-grid">
+              <div className="ml-gc"><div className="ml-gc-ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div><div className="ml-gc-v">7 Days</div><div className="ml-gc-l">May 6 – 12, 2026</div></div></div>
+              <div className="ml-gc"><div className="ml-gc-ic"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div><div><div className="ml-gc-v">900+</div><div className="ml-gc-l">Students</div></div></div>
+              <div className="ml-gc"><div className="ml-gc-ic"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg></div><div><div className="ml-gc-v">158</div><div className="ml-gc-l">Projects</div></div></div>
+              <div className="ml-gc"><div className="ml-gc-ic"><svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div><div><div className="ml-gc-v">6 Tracks</div><div className="ml-gc-l">Technologies</div></div></div>
+            </div>
+
+          </div>
+
+          {/* BOTTOM: countdown */}
+          <div className="ml-bot">
             <div className="ml-cd">
-              <div className="ml-cd-unit"><div className="ml-cd-n" id="cd-days">00</div><div className="ml-cd-lb">Days</div></div>
-              <div className="ml-cd-sep">:</div>
-              <div className="ml-cd-unit"><div className="ml-cd-n" id="cd-hours">00</div><div className="ml-cd-lb">Hrs</div></div>
-              <div className="ml-cd-sep">:</div>
-              <div className="ml-cd-unit"><div className="ml-cd-n" id="cd-mins">00</div><div className="ml-cd-lb">Min</div></div>
-              <div className="ml-cd-sep">:</div>
-              <div className="ml-cd-unit"><div className="ml-cd-n" id="cd-secs">00</div><div className="ml-cd-lb">Sec</div></div>
+              <div className="ml-cd-row">
+                <div className="ml-cd-u"><div className="ml-cd-n" id="cd-days">00</div><div className="ml-cd-lb">Days</div></div>
+                <div className="ml-cd-c">:</div>
+                <div className="ml-cd-u"><div className="ml-cd-n" id="cd-hours">00</div><div className="ml-cd-lb">Hrs</div></div>
+                <div className="ml-cd-c">:</div>
+                <div className="ml-cd-u"><div className="ml-cd-n" id="cd-mins">00</div><div className="ml-cd-lb">Min</div></div>
+                <div className="ml-cd-c">:</div>
+                <div className="ml-cd-u"><div className="ml-cd-n" id="cd-secs">00</div><div className="ml-cd-lb">Sec</div></div>
+              </div>
+            </div>
+            <div className="ml-bot-deco">
+              <div className="ml-bot-line"/>
+              <div className="ml-bot-dot"/>
+              <div className="ml-bot-dot"/>
+              <div className="ml-bot-dot"/>
+              <div className="ml-bot-line"/>
             </div>
           </div>
+
+          {/* Nebula */}
+          <div className="ml-nebula"/>
+
         </div>
       </>
     )

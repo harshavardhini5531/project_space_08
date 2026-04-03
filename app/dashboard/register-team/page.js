@@ -113,7 +113,18 @@ export default function RegisterTeamPage() {
   }, [])
 
   async function fetchTeamInfo(roll) {
-    try { const res=await fetch('/api/auth/team-data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rollNumber:roll})}); const data=await res.json(); if(!res.ok){setError(data.error);setLoading(false);return} setTeam(data.team) } catch{setError('Failed to load team data')} finally{setLoading(false)}
+    try { 
+      const res=await fetch('/api/auth/team-data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rollNumber:roll})}); 
+      const data=await res.json(); 
+      if(!res.ok){setError(data.error);setLoading(false);return} 
+      setTeam(data.team)
+      // Auto-load members
+      if(data.members) {
+        const membersWithShort = (data.members||[]).map(m => ({...m, short_name: m.short_name || generateShortName(m.name)}))
+        setMembers(membersWithShort)
+        setMembersLoaded(true)
+      }
+    } catch{setError('Failed to load team data')} finally{setLoading(false)}
   }
   async function fetchMembers() {
     if(!user) return; setLoading(true)
@@ -361,30 +372,70 @@ html,body{overflow:hidden!important;background:#050008}
 .chip-tk .chip-x:hover{background:rgba(16,185,129,.2);color:#fff}
 
 /* Team */
-.gt{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:12px;background:rgba(123,47,190,.04);border:1.5px dashed rgba(123,47,190,.15);color:#7B2FBE;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:500;cursor:pointer;transition:all .2s}
+.gt{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:12px;background:rgba(123,47,190,.04);border:1.5px dashed rgba(123,47,190,.15);color:#7B2FBE;font-family:'Open Sans',sans-serif;font-size:.8rem;font-weight:500;cursor:pointer;transition:all .2s}
 .gt:hover{background:rgba(123,47,190,.08);border-style:solid}
-.mem-grid{display:flex;flex-wrap:wrap;gap:14px;justify-content:center}
-.mem{padding:20px;border-radius:16px;background:linear-gradient(145deg,rgba(255,255,255,.03),rgba(255,255,255,.015));border:1px solid rgba(255,255,255,.06);transition:all .3s;width:calc(50% - 7px);box-sizing:border-box;display:flex;gap:16px;position:relative}
-.mem:hover{border-color:rgba(157,0,255,.15);background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.025));box-shadow:0 4px 20px rgba(0,0,0,.15)}
-.mem-av{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,rgba(157,0,255,.12),rgba(222,153,255,.08));border:2px solid rgba(157,0,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:#9d00ff;font-weight:700;flex-shrink:0;box-shadow:0 2px 12px rgba(157,0,255,.1)}
-.mem-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:0;padding-right:60px}
-.mem-n{font-family:'Open Sans',sans-serif;font-size:.92rem;font-weight:700;color:#fff;letter-spacing:.2px;margin-bottom:6px;line-height:1.2}
-.mem-details-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px}
-.mem-detail{display:flex;align-items:center;gap:4px}
-.mem-detail-icon{width:14px;height:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.mem-detail-icon svg{width:12px;height:12px;stroke:#9d00ff;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 3px rgba(157,0,255,.4))}
-.mem-detail-val{font-family:'Open Sans',sans-serif;font-size:.66rem;color:#de99ff;letter-spacing:.3px}
-.mem-detail-val.roll{font-weight:600;font-size:.7rem}
-.mem-short-row{display:flex;align-items:center;gap:6px;margin-top:4px}
-.mem-short-lb{font-family:'Open Sans',sans-serif;font-size:.5rem;color:rgba(222,153,255,.4);text-transform:uppercase;letter-spacing:1px;font-weight:600;flex-shrink:0}
-.mem-short-val{font-family:'Open Sans',sans-serif;font-size:.7rem;color:#de99ff;font-weight:600}
-.mem-short-input{background:rgba(157,0,255,.06);border:1px solid rgba(157,0,255,.2);border-radius:6px;padding:4px 8px;font-size:.68rem;color:#fff;font-family:'Open Sans',sans-serif;width:120px;outline:none}
-.mem-short-input:focus{border-color:rgba(157,0,255,.4)}
-.mem-short-err{font-size:.48rem;color:#f21d32;margin-top:2px}
-.mem-b{position:absolute;top:14px;right:14px;padding:3px 10px;border-radius:20px;font-size:.48rem;background:rgba(157,0,255,.08);color:#9d00ff;letter-spacing:1.5px;font-weight:700;text-transform:uppercase;font-family:${fonts.display};border:1px solid rgba(157,0,255,.15)}
-.mem-e{position:absolute;bottom:14px;right:14px;padding:4px 14px;border-radius:20px;background:rgba(157,0,255,.06);border:1px solid rgba(157,0,255,.12);color:#de99ff;font-size:.58rem;cursor:pointer;font-family:'Open Sans',sans-serif;transition:all .2s;font-weight:500;letter-spacing:.3px}
-.mem-e:hover{background:rgba(157,0,255,.12);border-color:rgba(157,0,255,.25);color:#fff}
-.mem-f{display:grid;grid-template-columns:1fr;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid rgba(157,0,255,.08);width:100%}
+
+/* Leader card */
+.ldr-card{position:relative;background:#0d0a14;border:1px solid rgba(255,29,0,.3);border-radius:16px;padding:24px;padding-top:40px;margin-bottom:16px;overflow:hidden;transition:border-color .3s,box-shadow .3s}
+.ldr-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,29,0,.03),transparent 60%);pointer-events:none}
+.ldr-card:hover{border-color:rgba(255,29,0,.5);box-shadow:0 0 30px rgba(255,29,0,.08)}
+.ldr-card-body{display:flex;align-items:center;gap:20px}
+.ldr-badge{position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#fff;background:linear-gradient(135deg,#ff1d00,#c41600);padding:2px 10px;border-radius:100px;white-space:nowrap;box-shadow:0 2px 8px rgba(255,29,0,.3)}
+.tech-badge{position:absolute;top:12px;right:14px;font-size:10.5px;font-weight:600;letter-spacing:.03em;color:#9b5cd6;background:rgba(123,47,190,.1);border:1px solid rgba(123,47,190,.25);padding:4px 12px;border-radius:100px;display:flex;align-items:center;gap:5px;z-index:2;white-space:nowrap}
+.tech-badge svg{width:12px;height:12px;stroke:#9b5cd6;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* Avatar */
+.tm-avatar{position:relative;flex-shrink:0}
+.tm-av-ring{width:68px;height:68px;border-radius:50%;padding:1px;background:conic-gradient(from 0deg,#c084fc,#5b21b6,#c084fc,#5b21b6);position:relative}
+.tm-av-ring::after{content:'';position:absolute;inset:0;border-radius:50%;background:linear-gradient(45deg,transparent 30%,rgba(192,132,252,.4) 45%,rgba(192,132,252,.7) 50%,rgba(192,132,252,.4) 55%,transparent 70%);background-size:200% 200%;animation:ringShine 3s ease-in-out infinite;pointer-events:none}
+@keyframes ringShine{0%{background-position:-100% -100%}50%,100%{background-position:200% 200%}}
+.tm-av-inner{width:100%;height:100%;border-radius:50%;background:#13101a;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:600;color:#9b5cd6;overflow:hidden;position:relative;z-index:1}
+.tm-av-inner img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.tm-av-sm .tm-av-ring{width:52px;height:52px}
+.tm-av-sm .tm-av-inner{font-size:18px}
+
+/* Member info */
+.tm-info{flex:1;min-width:0}
+.tm-name{font-family:'Open Sans',sans-serif;font-size:16px;font-weight:600;color:#fff;margin-bottom:1px}
+.tm-short{font-family:'Open Sans',sans-serif;font-size:12px;font-weight:400;color:#9b5cd6;opacity:.7;letter-spacing:.02em;margin-bottom:6px;font-style:italic}
+.tm-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.tm-chip{font-family:'Open Sans',sans-serif;font-size:11.5px;font-weight:500;color:#8a7f96;background:#13101a;border:1px solid rgba(255,255,255,.05);padding:3px 10px;border-radius:6px;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.tm-chip svg{width:12px;height:12px;stroke:#5a5168;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tm-chip.tech{color:#9b5cd6;border-color:rgba(123,47,190,.2);background:rgba(123,47,190,.06)}
+.tm-chip.tech svg{stroke:#9b5cd6}
+.tm-short-chip{display:inline-flex;align-items:center;gap:6px;margin-top:6px;font-family:'Open Sans',sans-serif;font-size:11.5px;font-weight:500;color:#8a7f96;background:#13101a;border:1px solid rgba(255,255,255,.05);padding:3px 10px;border-radius:6px}
+.tm-short-lb{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9b5cd6}
+
+/* Member grid */
+.tm-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tm-card{position:relative;background:#0d0a14;border:1px solid rgba(123,47,190,.15);border-radius:14px;padding:20px;padding-top:38px;display:flex;flex-direction:column;gap:14px;transition:border-color .3s,box-shadow .3s,transform .3s}
+.tm-card:hover{border-color:rgba(123,47,190,.4);box-shadow:0 4px 24px rgba(123,47,190,.08);transform:translateY(-2px)}
+.tm-card-top{display:flex;align-items:center;gap:14px}
+
+/* Actions */
+.tm-actions{display:flex;justify-content:flex-end;margin-top:auto;padding-top:4px}
+.tm-btn-edit{display:flex;align-items:center;gap:6px;font-family:'Open Sans',sans-serif;font-size:12.5px;font-weight:500;color:#9b5cd6;background:rgba(123,47,190,.06);border:1px solid rgba(123,47,190,.15);padding:7px 16px;border-radius:8px;cursor:pointer;transition:all .25s;letter-spacing:.01em}
+.tm-btn-edit:hover{background:rgba(123,47,190,.15);border-color:rgba(123,47,190,.4);box-shadow:0 0 12px rgba(123,47,190,.1)}
+.tm-btn-edit svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* Edit panel */
+.tm-edit{display:flex;flex-direction:column;gap:12px;padding-top:14px;border-top:1px solid rgba(123,47,190,.1);animation:editSlide .3s ease-out}
+@keyframes editSlide{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.tm-edit-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tm-edit-row.full{grid-template-columns:1fr}
+.tm-field-lb{font-family:'Open Sans',sans-serif;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#5a5168;margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.tm-field-lb svg{width:11px;height:11px;stroke:#5a5168;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tm-field-in{width:100%;font-family:'Open Sans',sans-serif;font-size:13px;font-weight:400;color:#e8e0f0;background:#13101a;border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:9px 12px;outline:none;transition:border-color .25s,box-shadow .25s}
+.tm-field-in:focus{border-color:#7B2FBE;box-shadow:0 0 0 3px rgba(123,47,190,.25)}
+.tm-field-in::placeholder{color:#5a5168}
+.tm-field-in.readonly{color:#8a7f96;background:rgba(255,255,255,.02);border-style:dashed;cursor:default}
+.tm-edit-btns{display:flex;justify-content:flex-end;gap:8px;padding-top:4px}
+.tm-btn-save{font-family:'Open Sans',sans-serif;font-size:12px;font-weight:600;color:#fff;background:linear-gradient(135deg,#7B2FBE,#5a1fa0);border:none;padding:8px 22px;border-radius:8px;cursor:pointer;transition:all .25s}
+.tm-btn-save:hover{box-shadow:0 4px 16px rgba(123,47,190,.25);transform:translateY(-1px)}
+.tm-btn-cancel{font-family:'Open Sans',sans-serif;font-size:12px;font-weight:500;color:#8a7f96;background:transparent;border:1px solid rgba(255,255,255,.08);padding:8px 16px;border-radius:8px;cursor:pointer;transition:all .25s}
+.tm-btn-cancel:hover{border-color:rgba(255,255,255,.15);color:#e8e0f0}
+.tm-short-err{font-size:10px;color:#f21d32;margin-top:2px}
+.tm-count{font-family:'Open Sans',sans-serif;font-size:13px;font-weight:500;color:#9b5cd6;background:rgba(123,47,190,.08);border:1px solid rgba(123,47,190,.15);padding:6px 14px;border-radius:100px;letter-spacing:.02em}
 
 /* Review */
 .rev-g{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
@@ -567,52 +618,92 @@ html,body{overflow:hidden!important;background:#050008}
             {/* ── TEAM ── */}
             <div className="sec" ref={sectionRefs.team} style={{zIndex:activeSection==='team'?100:20}} onClick={()=>setActiveSection('team')}>
               <div className="card ct2"><div className="card-glow"/>
-                <div className="card-h"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Team Members</div>
-                {!membersLoaded ? (
-                  <button className="gt" onClick={fetchMembers} disabled={loading}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-                    {loading?'Loading...':'Load Team Members'}
-                  </button>
-                ) : (
+                <div className="card-h" style={{justifyContent:'space-between'}}><span style={{display:'flex',alignItems:'center',gap:'8px'}}><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Team Members</span>{membersLoaded&&<span className="tm-count">{members.length} Members</span>}</div>
+                
+                {membersLoaded && members.length > 0 && (
                   <>
-                    <div style={{fontSize:'.7rem',color:'rgba(255,255,255,.35)',marginBottom:'14px'}}>{members.length} members loaded</div>
-                    <div className="mem-grid">
-                    {members.map((m,i) => (
-                      <div key={m.roll_number} className="mem">
-                        <div className="mem-av" style={{overflow:'hidden'}}>{m.image_url?<img src={m.image_url} alt={m.name} style={{width:'100%',height:'100%',borderRadius:'50%',objectFit:'cover'}} onError={e=>{e.target.style.display='none';e.target.parentNode.textContent=(m.name||'?')[0].toUpperCase()}}/>:(m.name||'?')[0].toUpperCase()}</div>
-                        <div className="mem-right">
-                          <div className="mem-n">{m.name}</div>
-                          <div className="mem-details-row">
-                            <div className="mem-detail"><div className="mem-detail-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div><div className="mem-detail-val roll">{m.roll_number}</div></div>
-                            <div className="mem-detail"><div className="mem-detail-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></div><div className="mem-detail-val">{m.college}</div></div>
-                            <div className="mem-detail"><div className="mem-detail-icon"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg></div><div className="mem-detail-val">{m.branch}</div></div>
+                    {/* Leader Card */}
+                    {members.filter(m=>m.is_leader).map((m,_)=>{const i=members.indexOf(m);return(
+                      <div key={m.roll_number} className="ldr-card">
+                        <span className="tech-badge"><svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>{team?.technology}</span>
+                        <div className="ldr-card-body">
+                          <div className="tm-avatar">
+                            <div className="tm-av-ring"><div className="tm-av-inner">{m.image_url?<img src={m.image_url} alt={m.name} onError={e=>{e.target.style.display='none';e.target.parentNode.textContent=(m.name||'?')[0]}}/>:(m.name||'?')[0]}</div></div>
+                            <div className="ldr-badge">★ Leader</div>
                           </div>
-                          <div className="mem-short-row">
-                            <span className="mem-short-lb">Short Name:</span>
-                            {editingMember===i ? (
-                              <span style={{display:'flex',gap:'4px',alignItems:'center',flex:1}}>
-                                <input className="mem-short-input" value={shortNameInput} onChange={e=>{setShortNameInput(e.target.value);setShortNameError('')}} placeholder="Part of full name"/>
-                                {shortNameError && <span className="mem-short-err">{shortNameError}</span>}
-                              </span>
-                            ) : (
-                              <span className="mem-short-val">{m.short_name||generateShortName(m.name)}</span>
-                            )}
+                          <div className="tm-info">
+                            <div className="tm-name">{m.name}</div>
+                            <div className="tm-short">{m.short_name||generateShortName(m.name)}</div>
+                            <div className="tm-meta">
+                              <span className="tm-chip"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="18" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/></svg>{m.roll_number}</span>
+                              <span className="tm-chip"><svg viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 3 3 6 3s6-1 6-3v-5"/></svg>{m.college} · {m.branch}</span>
+                            </div>
                           </div>
                         </div>
-                        {m.is_leader && <div className="mem-b">Leader</div>}
-                        <button className="mem-e" onClick={()=>{
-                          if(editingMember===i){saveShortName(i);setEditingMember(null)}
-                          else{setEditingMember(i);setShortNameInput(m.short_name||generateShortName(m.name));setShortNameError('')}
-                        }}>{editingMember===i?'Done':'Edit'}</button>
+                        <div className="tm-actions">
+                          <button className="tm-btn-edit" onClick={()=>{if(editingMember===i){saveShortName(i);setEditingMember(null)}else{setEditingMember(i);setShortNameInput(m.short_name||generateShortName(m.name));setShortNameError('')}}}>
+                            <svg viewBox="0 0 24 24"><path d="M17 3a2.83 2.83 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>{editingMember===i?'Done':'Edit'}
+                          </button>
+                        </div>
                         {editingMember===i && (
-                          <div className="mem-f" style={{width:'calc(100% - 40px)',marginLeft:'72px'}}>
-                            <FloatingField label="Roll Number" type="input" value={m.roll_number||''} onChange={v=>updateMember(i,'roll_number',v)} accent="#9d00ff" cardBg="rgba(157,0,255,.04)" />
-                            <FloatingField label="College" type="input" value={m.college||''} onChange={v=>updateMember(i,'college',v)} accent="#9d00ff" cardBg="rgba(157,0,255,.04)" />
-                            <FloatingField label="Branch" type="input" value={m.branch||''} onChange={v=>updateMember(i,'branch',v)} accent="#9d00ff" cardBg="rgba(157,0,255,.04)" />
+                          <div className="tm-edit">
+                            <div className="tm-edit-row">
+                              <div><div className="tm-field-lb"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Short Name</div><input className="tm-field-in" value={shortNameInput} onChange={e=>{setShortNameInput(e.target.value);setShortNameError('')}} placeholder="Part of full name"/>{shortNameError&&<div className="tm-short-err">{shortNameError}</div>}</div>
+                              <div><div className="tm-field-lb"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="18" rx="2"/></svg>Roll Number</div><input className="tm-field-in readonly" value={m.roll_number} readOnly/></div>
+                            </div>
+                            <div className="tm-edit-row">
+                              <div><div className="tm-field-lb"><svg viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/></svg>College</div><input className="tm-field-in" value={m.college||''} onChange={e=>updateMember(i,'college',e.target.value)}/></div>
+                              <div><div className="tm-field-lb"><svg viewBox="0 0 24 24"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 01-9 9"/></svg>Branch</div><input className="tm-field-in" value={m.branch||''} onChange={e=>updateMember(i,'branch',e.target.value)}/></div>
+                            </div>
+                            <div className="tm-edit-btns">
+                              <button className="tm-btn-cancel" onClick={()=>{setEditingMember(null);setShortNameError('')}}>Cancel</button>
+                              <button className="tm-btn-save" onClick={()=>{saveShortName(i);setEditingMember(null)}}>Save</button>
+                            </div>
                           </div>
                         )}
                       </div>
-                    ))}
+                    )})}
+
+                    {/* Member Grid */}
+                    <div className="tm-grid">
+                    {members.filter(m=>!m.is_leader).map((m,_)=>{const i=members.indexOf(m);return(
+                      <div key={m.roll_number} className="tm-card">
+                        <span className="tech-badge"><svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>{team?.technology}</span>
+                        <div className="tm-card-top">
+                          <div className="tm-avatar tm-av-sm">
+                            <div className="tm-av-ring"><div className="tm-av-inner">{m.image_url?<img src={m.image_url} alt={m.name} onError={e=>{e.target.style.display='none';e.target.parentNode.textContent=(m.name||'?')[0]}}/>:(m.name||'?')[0]}</div></div>
+                          </div>
+                          <div className="tm-info">
+                            <div className="tm-name" style={{fontSize:'14.5px'}}>{m.name}</div>
+                            <div className="tm-meta">
+                              <span className="tm-chip"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="18" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/></svg>{m.roll_number}</span>
+                              <span className="tm-chip"><svg viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/></svg>{m.college} · {m.branch}</span>
+                            </div>
+                            <div className="tm-short-chip"><span className="tm-short-lb">Short</span> {m.short_name||generateShortName(m.name)}</div>
+                          </div>
+                        </div>
+                        <div className="tm-actions">
+                          <button className="tm-btn-edit" onClick={()=>{if(editingMember===i){saveShortName(i);setEditingMember(null)}else{setEditingMember(i);setShortNameInput(m.short_name||generateShortName(m.name));setShortNameError('')}}}>
+                            <svg viewBox="0 0 24 24"><path d="M17 3a2.83 2.83 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>{editingMember===i?'Done':'Edit'}
+                          </button>
+                        </div>
+                        {editingMember===i && (
+                          <div className="tm-edit">
+                            <div className="tm-edit-row full">
+                              <div><div className="tm-field-lb">Short Name</div><input className="tm-field-in" value={shortNameInput} onChange={e=>{setShortNameInput(e.target.value);setShortNameError('')}} placeholder="Part of full name"/>{shortNameError&&<div className="tm-short-err">{shortNameError}</div>}</div>
+                            </div>
+                            <div className="tm-edit-row">
+                              <div><div className="tm-field-lb">College</div><input className="tm-field-in" value={m.college||''} onChange={e=>updateMember(i,'college',e.target.value)}/></div>
+                              <div><div className="tm-field-lb">Branch</div><input className="tm-field-in" value={m.branch||''} onChange={e=>updateMember(i,'branch',e.target.value)}/></div>
+                            </div>
+                            <div className="tm-edit-btns">
+                              <button className="tm-btn-cancel" onClick={()=>{setEditingMember(null);setShortNameError('')}}>Cancel</button>
+                              <button className="tm-btn-save" onClick={()=>{saveShortName(i);setEditingMember(null)}}>Save</button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )})}
                     </div>
                   </>
                 )}
