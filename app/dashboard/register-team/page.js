@@ -335,7 +335,7 @@ html,body{overflow:hidden!important;background:#050008}
 .gt:disabled{opacity:.7;pointer-events:none}
 .gt svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
-.tm-count{font-family:${fonts.display};font-size:13px;font-weight:500;color:#9b5cd6;background:rgba(123,47,190,.08);border:1px solid rgba(123,47,190,.15);padding:6px 14px;border-radius:100px}
+.tm-count{font-family:${fonts.display};font-size:11px;font-weight:500;color:#9b5cd6;background:rgba(123,47,190,.08);border:1px solid rgba(123,47,190,.15);padding:4px 12px;border-radius:100px}
 
 /* Avatar ring with shine */
 .tm-avatar{position:relative;flex-shrink:0}
@@ -344,15 +344,16 @@ html,body{overflow:hidden!important;background:#050008}
 .tm-av-inner{width:100%;height:100%;border-radius:50%;background:#13101a;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;color:#9b5cd6;overflow:hidden;position:relative;z-index:1}
 .tm-av-inner img{width:100%;height:100%;object-fit:cover;border-radius:50%}
 
-/* Leader badge on avatar */
-.ldr-badge{position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);font-size:8px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#fff;background:linear-gradient(135deg,#ff1d00,#c41600);padding:2px 8px;border-radius:100px;white-space:nowrap;box-shadow:0 2px 8px rgba(255,29,0,.3);z-index:3}
+/* Leader badge — top left of card */
+.ldr-badge{position:absolute;top:12px;left:14px;font-size:8px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#fff;background:linear-gradient(135deg,#ff1d00,#c41600);padding:3px 10px;border-radius:100px;white-space:nowrap;box-shadow:0 2px 8px rgba(255,29,0,.3);z-index:3}
 
-/* Tech badge */
-.tech-badge{position:absolute;top:12px;right:14px;font-size:10px;font-weight:600;color:#9b5cd6;background:rgba(123,47,190,.1);border:1px solid rgba(123,47,190,.25);padding:4px 12px;border-radius:100px;display:flex;align-items:center;gap:5px;z-index:2;white-space:nowrap}
+/* Tech badge — top right */
+.tech-badge{position:absolute;top:12px;right:14px;font-size:10px;font-weight:600;color:#9b5cd6;background:rgba(123,47,190,.1);border:1px solid rgba(123,47,190,.25);padding:4px 12px;border-radius:100px;display:flex;align-items:center;gap:5px;z-index:2;white-space:nowrap;text-transform:uppercase}
 .tech-badge svg{width:12px;height:12px;stroke:#9b5cd6;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
 /* Unified member grid — ALL members same card */
-.tm-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ct2 .card-h{margin-bottom:3px}
+.tm-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
 .tm-card{position:relative;background:#0d0a14;border:1px solid rgba(123,47,190,.15);border-radius:14px;padding:20px;padding-top:38px;display:flex;flex-direction:column;gap:14px;animation:cardIn .5s ease-out both;transition:border-color .3s,box-shadow .3s,transform .3s}
 .tm-card:hover{border-color:rgba(123,47,190,.4);box-shadow:0 4px 24px rgba(123,47,190,.08);transform:translateY(-2px)}
 .tm-card:nth-child(1){animation-delay:.05s}.tm-card:nth-child(2){animation-delay:.1s}.tm-card:nth-child(3){animation-delay:.15s}.tm-card:nth-child(4){animation-delay:.2s}.tm-card:nth-child(5){animation-delay:.25s}.tm-card:nth-child(6){animation-delay:.3s}
@@ -360,7 +361,7 @@ html,body{overflow:hidden!important;background:#050008}
 .tm-grid .tm-card:last-child:nth-child(odd){grid-column:1}
 
 .tm-info{flex:1;min-width:0}
-.tm-name{font-family:'DM Sans',sans-serif;font-size:14.5px;font-weight:600;color:#fff;margin-bottom:1px}
+.tm-name{font-family:'DM Sans',sans-serif;font-size:14.5px;font-weight:600;color:#fff;margin-bottom:1px;text-transform:uppercase;letter-spacing:.3px}
 .tm-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .tm-chip{font-family:'DM Sans',sans-serif;font-size:11.5px;font-weight:500;color:#8a7f96;background:#13101a;border:1px solid rgba(255,255,255,.05);padding:3px 10px;border-radius:6px;display:flex;align-items:center;gap:5px;white-space:nowrap}
 .tm-chip svg{width:12px;height:12px;stroke:#5a5168;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -368,7 +369,7 @@ html,body{overflow:hidden!important;background:#050008}
 .tm-short-lb{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9b5cd6}
 
 .tm-actions{display:flex;justify-content:flex-end;margin-top:auto;padding-top:4px}
-.tm-btn-edit{display:flex;align-items:center;gap:6px;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:500;color:#9b5cd6;background:rgba(123,47,190,.06);border:1px solid rgba(123,47,190,.15);padding:7px 16px;border-radius:8px;cursor:pointer;transition:all .25s}
+.tm-btn-edit{display:flex;align-items:center;gap:6px;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:500;color:#9b5cd6;background:rgba(123,47,190,.06);border:1px solid rgba(123,47,190,.15);padding:7px 16px;border-radius:8px;cursor:pointer;transition:all .25s;text-transform:uppercase;letter-spacing:.5px}
 .tm-btn-edit:hover{background:rgba(123,47,190,.15);border-color:rgba(123,47,190,.4);box-shadow:0 0 12px rgba(123,47,190,.1)}
 .tm-btn-edit svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
@@ -470,7 +471,7 @@ html,body{overflow:hidden!important;background:#050008}
       <div className="pg">
         <aside className="stepper">
           <div className="st-logo"><div className="st-logo-badge">PS</div><span className="st-logo-text">PROJECT SPACE</span></div>
-          {team && <div className="st-badge">{team.teamNumber||`#${team.serialNumber}`} <span>· {team.technology}</span></div>}
+          {team && <div className="st-badge">{team.teamNumber||'Awaiting Registration'} <span>· {team.technology}</span></div>}
           <div className="st-progress"><div className="st-progress-fill" style={{width:`${progressPct}%`}} /></div>
           <div className="st-progress-label">{progressPct}% COMPLETE</div>
           <div className="st-tl">
@@ -569,11 +570,11 @@ html,body{overflow:hidden!important;background:#050008}
                   <div className="tm-grid">
                     {members.map((m)=>{const i=members.indexOf(m);return(
                       <div key={m.roll_number} className="tm-card">
+                        {m.is_leader && <div className="ldr-badge">★ LEADER</div>}
                         <span className="tech-badge"><svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>{team?.technology}</span>
                         <div className="tm-card-top">
                           <div className="tm-avatar">
                             <div className="tm-av-ring"><div className="tm-av-inner">{m.image_url?<img src={m.image_url} alt={m.name} onError={e=>{e.target.style.display='none';e.target.parentNode.textContent=(m.name||'?')[0]}}/>:(m.name||'?')[0]}</div></div>
-                            {m.is_leader && <div className="ldr-badge">★ Leader</div>}
                           </div>
                           <div className="tm-info">
                             <div className="tm-name">{m.name}</div>
@@ -581,18 +582,19 @@ html,body{overflow:hidden!important;background:#050008}
                               <span className="tm-chip"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="18" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/></svg>{m.roll_number}</span>
                               <span className="tm-chip"><svg viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 3 3 6 3s6-1 6-3v-5"/></svg>{m.college} · {m.branch}</span>
                             </div>
-                            <div className="tm-short-chip"><span className="tm-short-lb">Short</span> {m.short_name||generateShortName(m.name)}</div>
+                            <div className="tm-short-chip"><span className="tm-short-lb">Short Name</span> {m.short_name||generateShortName(m.name)}</div>
                           </div>
                         </div>
                         <div className="tm-actions">
                           <button className="tm-btn-edit" onClick={()=>{if(editingMember===i){saveShortName(i);setEditingMember(null)}else{setEditingMember(i);setShortNameInput(m.short_name||generateShortName(m.name));setShortNameError('')}}}>
-                            <svg viewBox="0 0 24 24"><path d="M17 3a2.83 2.83 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>{editingMember===i?'Done':'Edit'}
+                            <svg viewBox="0 0 24 24"><path d="M17 3a2.83 2.83 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>{editingMember===i?'DONE':'EDIT'}
                           </button>
                         </div>
                         {editingMember===i && (
                           <div className="tm-edit">
-                            <div className="tm-edit-row full">
+                            <div className="tm-edit-row">
                               <div><div className="tm-field-lb">Short Name</div><input className="tm-field-in" value={shortNameInput} onChange={e=>{setShortNameInput(e.target.value);setShortNameError('')}} placeholder="Part of full name"/>{shortNameError&&<div className="tm-short-err">{shortNameError}</div>}</div>
+                              <div><div className="tm-field-lb">Roll Number</div><input className="tm-field-in readonly" value={m.roll_number} readOnly/></div>
                             </div>
                             <div className="tm-edit-row">
                               <div><div className="tm-field-lb">College</div><input className="tm-field-in" value={m.college||''} onChange={e=>updateMember(i,'college',e.target.value)}/></div>
@@ -611,21 +613,14 @@ html,body{overflow:hidden!important;background:#050008}
               </div>
             </div>
 
-            {/* ── REVIEW ── */}
+            {/* ── REGISTER ── */}
             <div className="sec" ref={sectionRefs.review} style={{zIndex:activeSection==='review'?100:10}} onClick={()=>setActiveSection('review')}>
               <div className="card cr"><div className="card-glow"/>
-                <div className="card-h"><svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Review & Register</div>
-                <div className="rev-g">
-                  <div className="rev-c"><div className="rev-l">Team</div><div className="rev-v">{team?.teamNumber||`#${team?.serialNumber}`||'—'}</div></div>
-                  <div className="rev-c"><div className="rev-l">Technology</div><div className="rev-v">{team?.technology||'—'}</div></div>
-                  <div className="rev-c"><div className="rev-l">Title</div><div className="rev-v">{projectTitle||'—'}{projectShortName?` (${projectShortName})`:''}</div></div>
-                  <div className="rev-c"><div className="rev-l">Area</div><div className="rev-v">{projectArea.length?projectArea.join(', '):'—'}</div></div>
-                  <div className="rev-c full"><div className="rev-l">Description</div><div className="rev-v">{projectDescription||'—'}</div></div>
-                  {techStack.length>0 && <div className="rev-c full"><div className="rev-l">Tech Stack</div><div className="rev-ch">{techStack.map(t=><span key={t}>{t}</span>)}</div></div>}
-                  <div className="rev-c"><div className="rev-l">Members</div><div className="rev-v">{membersLoaded?`${members.length} loaded`:'Not loaded'}</div></div>
-                  <div className="rev-c"><div className="rev-l">AI</div><div className="rev-v">{aiUsage}</div></div>
+                <div className="card-h"><svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Register Team</div>
+                <div style={{textAlign:'center',padding:'12px 0 8px'}}>
+                  <div style={{fontSize:'.78rem',color:'rgba(255,255,255,.45)',marginBottom:'16px',lineHeight:1.6}}>Review all your details before registering. Once submitted, details cannot be edited.</div>
+                  <button className="sub-btn" onClick={handleRegisterClick} disabled={saving||!projectTitle.trim()||!projectDescription.trim()}>{saving?'Registering...':'Review & Register Team'}</button>
                 </div>
-                <button className="sub-btn" onClick={handleRegisterClick} disabled={saving||!projectTitle.trim()||!projectDescription.trim()}>{saving?'Registering...':'Register Team'}</button>
               </div>
             </div>
           </div>
@@ -644,15 +639,30 @@ html,body{overflow:hidden!important;background:#050008}
 
       {showConfirm && (
         <div className="modal-overlay" onClick={()=>setShowConfirm(false)}>
-          <div className="modal" onClick={e=>e.stopPropagation()}>
-            <div className="modal-icon warn">⚠️</div>
-            <div className="modal-title">Confirm Registration</div>
-            <div className="modal-desc">Are you sure you want to submit?<br/>Once submitted, <strong>details cannot be edited</strong>.</div>
-            <div className="modal-team"><div className="modal-team-h">Submitting for</div><div className="modal-team-v"><strong>{team?.teamNumber||`#${team?.serialNumber}`}</strong> · {projectTitle} · {members.length||0} members</div></div>
-            <div className="modal-check"><svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Please review all sections carefully before confirming.</div>
+          <div className="modal" style={{width:'min(560px,92vw)',maxHeight:'85vh',overflowY:'auto'}} onClick={e=>e.stopPropagation()}>
+            <div className="modal-icon warn">📋</div>
+            <div className="modal-title">Review Your Details</div>
+            <div className="modal-desc">Please verify all information before submitting.</div>
+
+            <div className="rev-g" style={{marginBottom:'16px'}}>
+              <div className="rev-c"><div className="rev-l">Technology Track</div><div className="rev-v">{team?.technology||'—'}</div></div>
+              <div className="rev-c"><div className="rev-l">Members</div><div className="rev-v">{membersLoaded?`${members.length} members`:'Not loaded'}</div></div>
+              <div className="rev-c full"><div className="rev-l">Project Title</div><div className="rev-v" style={{fontWeight:600}}>{projectTitle||'—'}{projectShortName?` (${projectShortName})`:''}</div></div>
+              <div className="rev-c full"><div className="rev-l">Project Area</div><div className="rev-v">{projectArea.length?projectArea.join(', '):'—'}</div></div>
+              <div className="rev-c full"><div className="rev-l">Project Description</div><div className="rev-v">{projectDescription||'—'}</div></div>
+              {problemStatement.trim() && <div className="rev-c full"><div className="rev-l">Problem Statement</div><div className="rev-v">{problemStatement}</div></div>}
+              {techStack.length>0 && <div className="rev-c full"><div className="rev-l">Tech Stack</div><div className="rev-ch">{techStack.map(t=><span key={t}>{t}</span>)}</div></div>}
+              <div className="rev-c"><div className="rev-l">AI Usage</div><div className="rev-v">{aiUsage}</div></div>
+              {aiUsage==='Yes' && aiCapabilities.length>0 && <div className="rev-c"><div className="rev-l">AI Capabilities</div><div className="rev-ch">{aiCapabilities.map(c=><span key={c}>{c}</span>)}</div></div>}
+              {aiUsage==='Yes' && aiTools.length>0 && <div className="rev-c full"><div className="rev-l">AI Tools</div><div className="rev-ch">{aiTools.map(t=><span key={t}>{t}</span>)}</div></div>}
+              {membersLoaded && members.length>0 && <div className="rev-c full"><div className="rev-l">Team Members</div><div className="rev-v">{members.map(m=>m.name).join(', ')}</div></div>}
+            </div>
+
+            <div className="modal-check"><svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Once registered, these details <strong>cannot be edited</strong>. Please review carefully.</div>
+
             <div className="modal-btns">
-              <button className="modal-btn cancel" onClick={()=>setShowConfirm(false)}>Go Back</button>
-              <button className="modal-btn confirm" onClick={handleConfirmSubmit} disabled={saving}>{saving?'Submitting...':'Yes, Register'}</button>
+              <button className="modal-btn cancel" onClick={()=>setShowConfirm(false)}>Go Back & Edit</button>
+              <button className="modal-btn confirm" onClick={handleConfirmSubmit} disabled={saving}>{saving?'Submitting...':'Confirm & Register'}</button>
             </div>
           </div>
         </div>
