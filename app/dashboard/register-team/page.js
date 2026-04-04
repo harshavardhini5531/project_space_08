@@ -603,7 +603,7 @@ html,body{overflow:hidden!important;background:#050008}
                     <FloatingField label="Project Title" required type="input" placeholder="Enter your project title (max 25 chars)" value={projectTitle} onChange={v=>{ if(v.length<=25) setProjectTitle(v) }} accent={SECTION_COLORS.project} cardBg={CARD_BG.project} />
                     <div style={{textAlign:'right',fontSize:'.58rem',color:projectTitle.length>=23?'#fd1c00':'rgba(255,255,255,.2)',marginTop:'4px',fontWeight:500}}>{projectTitle.length}/25</div>
                   </div>
-                  <div><MultiDropdown label="Project Area" options={PROJECT_AREAS} selected={projectArea} onChange={setProjectArea} counts={areaCounts} accent={SECTION_COLORS.project} cardBg={CARD_BG.project} onCustomAdd={()=>{}} /></div>
+                  <div style={{position:'relative',zIndex:50}}><MultiDropdown label="Project Area" options={PROJECT_AREAS} selected={projectArea} onChange={setProjectArea} counts={areaCounts} accent={SECTION_COLORS.project} cardBg={CARD_BG.project} onCustomAdd={()=>{}} /></div>
                   <div><FloatingField label="Project Description" required type="textarea" placeholder="Describe what your project does..." value={projectDescription} onChange={setProjectDescription} accent={SECTION_COLORS.project} cardBg={CARD_BG.project} rows={4} maxLen={500} /></div>
                   <div><FloatingField label="Problem Statement" type="textarea" placeholder="What problem does your project solve?" value={problemStatement} onChange={setProblemStatement} accent={SECTION_COLORS.project} cardBg={CARD_BG.project} rows={3} maxLen={300} /></div>
                 </div>

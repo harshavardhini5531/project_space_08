@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import AuthBackground from '@/components/AuthBackground'
 import { globalStyles, colors, fonts } from '@/lib/theme'
+import { PHASE } from '@/lib/phase'
 
 export default function LeaderLoginPage() {
   const router = useRouter()
@@ -437,11 +438,12 @@ export default function LeaderLoginPage() {
           <div className="alt-link">
             Don&apos;t have an account? <a onClick={() => router.push('/auth/register')}>Create Account</a>
           </div>
+          {PHASE !== 'registration' && (
           <div className="alt-link" style={{ marginTop:'8px' }}>
             Not a Team Leader? <a onClick={() => router.push('/auth/login')}>Switch Role</a>
           </div>
+          )}
         </div>
-      </div>
 
       {!isMobile && (<>
       {/* DIAGONAL LIGHT RAY */}
