@@ -4,7 +4,7 @@ export async function POST(request) {
   try {
     const body = await request.json()
     const {
-      rollNumber, serialNumber, projectTitle,projectDescription,
+      rollNumber, serialNumber, projectTitle, projectDescription,
       problemStatement, projectArea, aiUsage, aiCapabilities,
       aiTools, techStack, members
     } = body
@@ -15,7 +15,7 @@ export async function POST(request) {
 
     const roll = rollNumber.trim().toUpperCase()
 
-    // Verify leader — find by serial_number
+    // Verify leader
     const { data: memberRow } = await supabase
       .from('team_members')
       .select('serial_number, is_leader, team_number')
@@ -29,7 +29,7 @@ export async function POST(request) {
     // Check if already registered
     const { data: existingTeam } = await supabase
       .from('teams')
-      .select('registered, team_number')
+      .select('registered, team_number, technology')
       .eq('serial_number', serialNumber)
       .single()
 
@@ -53,11 +53,14 @@ export async function POST(request) {
     }
     const newTeamNumber = `PS-${String(nextNum).padStart(3, '0')}`
 
-    // Update teams table with project details + assign team_number
-    const { error: teamErr } = await supabase
-      .from('teams')
-      .update({
+    // Insert into team_registrations table
+    const { error: regErr } = await supabase
+      .from('team_registrations')
+      .insert({
+        serial_number: serialNumber,
         team_number: newTeamNumber,
+        technology: existingTeam?.technology || '',
+        leader_roll: roll,
         project_title: projectTitle || '',
         project_description: projectDescription || '',
         problem_statement: problemStatement || '',
@@ -66,14 +69,33 @@ export async function POST(request) {
         ai_capabilities: Array.isArray(aiCapabilities) ? aiCapabilities : [],
         ai_tools: Array.isArray(aiTools) ? aiTools : [],
         tech_stack: Array.isArray(techStack) ? techStack : [],
-        registered: true,
+        members: members ? JSON.stringify(members.map(m => ({
+          name: m.name,
+          roll_number: m.roll_number,
+          college: m.college,
+          branch: m.branch,
+          short_name: m.short_name,
+          is_leader: m.is_leader
+        }))) : '[]',
         registered_at: new Date().toISOString()
+      })
+
+    if (regErr) {
+      console.error('Registration insert error:', regErr)
+      return Response.json({ error: 'Failed to register: ' + regErr.message }, { status: 500 })
+    }
+
+    // Update teams table — mark registered + assign team_number
+    const { error: teamErr } = await supabase
+      .from('teams')
+      .update({
+        team_number: newTeamNumber,
+        registered: true
       })
       .eq('serial_number', serialNumber)
 
     if (teamErr) {
       console.error('Team update error:', teamErr)
-      return Response.json({ error: 'Failed to register: ' + teamErr.message }, { status: 500 })
     }
 
     // Update team_members with the new team_number
@@ -86,17 +108,19 @@ export async function POST(request) {
       console.error('Member update error:', memberErr)
     }
 
-    // Update student details and short_name
+    // Save short_name to team_members + update student details
     if (members && Array.isArray(members)) {
       for (const m of members) {
         if (m.roll_number) {
-          const updateData = {}
-          if (m.name) updateData.name = m.name
-          if (m.phone) updateData.phone = m.phone
-          if (m.email) updateData.email = m.email
-          if (m.short_name) updateData.short_name = m.short_name
-          if (Object.keys(updateData).length > 0) {
-            await supabase.from('students').update(updateData).eq('roll_number', m.roll_number)
+          const studentData = {}
+          if (m.name) studentData.name = m.name
+          if (m.phone) studentData.phone = m.phone
+          if (m.email) studentData.email = m.email
+          if (Object.keys(studentData).length > 0) {
+            await supabase.from('students').update(studentData).eq('roll_number', m.roll_number)
+          }
+          if (m.short_name) {
+            await supabase.from('team_members').update({ short_name: m.short_name }).eq('roll_number', m.roll_number).eq('serial_number', serialNumber)
           }
         }
       }

@@ -192,7 +192,7 @@ export default function RegisterTeamPage() {
   async function handleConfirmSubmit() {
     setShowConfirm(false);setError('');setSuccess('');setSaving(true)
     try {
-      const res=await fetch('/api/auth/register-team',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rollNumber:user.rollNumber||user.roll_number,serialNumber:team.serialNumber,projectTitle,projectShortName,projectDescription,problemStatement,projectArea,aiUsage,aiCapabilities,aiTools,techStack,members})})
+      const res=await fetch('/api/auth/register-team',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rollNumber:user.rollNumber||user.roll_number,serialNumber:team.serialNumber,projectTitle,projectDescription,problemStatement,projectArea,aiUsage,aiCapabilities,aiTools,techStack,members})})
       const data=await res.json(); if(!res.ok){setError(data.error);setSaving(false);return}
       if(data.teamNumber) setTeam(prev=>({...prev, teamNumber: data.teamNumber}))
       try {
@@ -526,7 +526,10 @@ html,body{overflow:hidden!important;background:#050008}
               <div><div className="ct-t">Team Registration</div><div className="ct-s">Fill all sections below · {progressPct}% complete</div></div>
               {team && <div className="ct-b">{team.technology}</div>}
             </div>
-            {error && <div className="err">{error}</div>}
+            {error && <div className="err" style={{position:'fixed',top:'16px',left:'50%',transform:'translateX(-50%)',zIndex:9999,maxWidth:'500px',width:'90%',boxShadow:'0 8px 32px rgba(0,0,0,.5)',animation:'fadeUp .3s ease',display:'flex',alignItems:'center',gap:'10px'}}>
+              <span style={{flex:1}}>{error}</span>
+              <button onClick={()=>setError('')} style={{background:'none',border:'none',color:'inherit',cursor:'pointer',fontSize:'16px',flexShrink:0}}>✕</button>
+            </div>}
             {success && <div className="suc">{success}</div>}
 
             {/* ── PROJECT ── */}
@@ -538,7 +541,6 @@ html,body{overflow:hidden!important;background:#050008}
                     <FloatingField label="Project Title" required type="input" placeholder="Enter your project title (max 25 chars)" value={projectTitle} onChange={v=>{ if(v.length<=25) setProjectTitle(v) }} accent={SECTION_COLORS.project} cardBg={CARD_BG.project} />
                     <div style={{textAlign:'right',fontSize:'.58rem',color:projectTitle.length>=23?'#fd1c00':'rgba(255,255,255,.2)',marginTop:'4px',fontWeight:500}}>{projectTitle.length}/25</div>
                   </div>
-                  <div><FloatingField label="Short Name" type="input" placeholder="e.g. PS, SkillBridge" value={projectShortName} onChange={v=>{ if(v.length<=10) setProjectShortName(v) }} accent={SECTION_COLORS.project} cardBg={CARD_BG.project} /></div>
                   <div><MultiDropdown label="Project Area" options={PROJECT_AREAS} selected={projectArea} onChange={setProjectArea} counts={areaCounts} accent={SECTION_COLORS.project} cardBg={CARD_BG.project} onCustomAdd={()=>{}} /></div>
                   <div><FloatingField label="Project Description" required type="textarea" placeholder="Describe what your project does..." value={projectDescription} onChange={setProjectDescription} accent={SECTION_COLORS.project} cardBg={CARD_BG.project} rows={4} maxLen={500} /></div>
                   <div><FloatingField label="Problem Statement" type="textarea" placeholder="What problem does your project solve?" value={problemStatement} onChange={setProblemStatement} accent={SECTION_COLORS.project} cardBg={CARD_BG.project} rows={3} maxLen={300} /></div>
@@ -663,7 +665,7 @@ html,body{overflow:hidden!important;background:#050008}
             <div className="rev-g" style={{marginBottom:'16px'}}>
               <div className="rev-c"><div className="rev-l">Technology Track</div><div className="rev-v">{team?.technology||'—'}</div></div>
               <div className="rev-c"><div className="rev-l">Members</div><div className="rev-v">{membersLoaded?`${members.length} members`:'Not loaded'}</div></div>
-              <div className="rev-c full"><div className="rev-l">Project Title</div><div className="rev-v" style={{fontWeight:600}}>{projectTitle||'—'}{projectShortName?` (${projectShortName})`:''}</div></div>
+              <div className="rev-c full"><div className="rev-l">Project Title</div><div className="rev-v" style={{fontWeight:600}}>{projectTitle||'—'}</div></div>
               <div className="rev-c full"><div className="rev-l">Project Area</div><div className="rev-v">{projectArea.length?projectArea.join(', '):'—'}</div></div>
               <div className="rev-c full"><div className="rev-l">Project Description</div><div className="rev-v">{projectDescription||'—'}</div></div>
               {problemStatement.trim() && <div className="rev-c full"><div className="rev-l">Problem Statement</div><div className="rev-v">{problemStatement}</div></div>}
@@ -698,8 +700,7 @@ html,body{overflow:hidden!important;background:#050008}
             </div>
             <div className="celebrate-notif"><svg viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2L11 13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>All team members have been notified via email</div>
             <div className="celebrate-btns">
-              <button className="modal-btn ghost" onClick={()=>{setShowSuccess(false);router.push('/auth/login')}}>Login Page</button>
-              <button className="celebrate-go" onClick={()=>{setShowSuccess(false);router.push('/dashboard')}}>Let's Go! →</button>
+              <button className="celebrate-go" onClick={()=>setShowSuccess(false)} style={{background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.1)',boxShadow:'none',fontWeight:500,letterSpacing:'1px'}}>✕ Close</button>
             </div>
           </div>
         </div>
