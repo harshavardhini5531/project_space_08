@@ -4,7 +4,7 @@ export async function POST(request) {
   try {
     const body = await request.json()
     const {
-      rollNumber, serialNumber, projectTitle, projectShortName, projectDescription,
+      rollNumber, serialNumber, projectTitle,projectDescription,
       problemStatement, projectArea, aiUsage, aiCapabilities,
       aiTools, techStack, members
     } = body
@@ -59,7 +59,6 @@ export async function POST(request) {
       .update({
         team_number: newTeamNumber,
         project_title: projectTitle || '',
-        project_short_name: projectShortName || '',
         project_description: projectDescription || '',
         problem_statement: problemStatement || '',
         project_area: Array.isArray(projectArea) ? projectArea : [],
