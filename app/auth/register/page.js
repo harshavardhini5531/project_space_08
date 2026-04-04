@@ -3,8 +3,6 @@ import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import AuthBackground from '@/components/AuthBackground'
 import { globalStyles, colors, fonts } from '@/lib/theme'
-import phase from '@/lib/phase'
-
 export default function RegisterPage() {
   const router = useRouter()
   const [step, setStep]                   = useState(1)
