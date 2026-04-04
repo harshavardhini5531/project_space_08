@@ -640,8 +640,7 @@ html,body{overflow:hidden!important;background:#050008}
                 {aiUsage === 'Yes' && (
                   <div className="fg">
                     <div>
-                      <FloatingField label="AI Capabilities" type="input" placeholder="e.g. Image Recognition, NLP..." value={capInput} onChange={setCapInput} accent={SECTION_COLORS.ai} cardBg={CARD_BG.ai} />
-                      {capInput.trim() && <button style={{marginTop:'8px',padding:'6px 14px',borderRadius:'8px',background:'rgba(242,29,50,.06)',border:'1px solid rgba(242,29,50,.12)',color:'#f21d32',fontSize:'.74rem',cursor:'pointer',fontFamily:'DM Sans'}} onClick={()=>addChip(capInput,aiCapabilities,setAiCapabilities,setCapInput)}>+ Add Capability</button>}
+                      <FloatingField label="AI Capabilities" type="input" placeholder="e.g. Image Recognition, NLP... (press Enter to add)" value={capInput} onChange={setCapInput} accent={SECTION_COLORS.ai} cardBg={CARD_BG.ai} onKeyDown={e => { if(e.key==='Enter') { e.preventDefault(); addChip(capInput,aiCapabilities,setAiCapabilities,setCapInput) }}} />
                       {aiCapabilities.length > 0 && <div className="chips" style={{marginTop:'10px'}}>{aiCapabilities.map(c=><div key={c} className="chip">{c}<button className="chip-x" onClick={()=>removeChip(c,aiCapabilities,setAiCapabilities)}>×</button></div>)}</div>}
                     </div>
                     <div><MultiDropdown label="AI Tools" options={AI_TOOLS} selected={aiTools} onChange={setAiTools} counts={{}} accent={SECTION_COLORS.ai} cardBg={CARD_BG.ai} onCustomAdd={()=>{}} /></div>

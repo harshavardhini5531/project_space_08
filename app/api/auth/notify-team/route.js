@@ -82,9 +82,6 @@ export async function POST(request) {
         <div style="margin-top:12px;font-size:11px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px">Team Leader</div>
         <div style="font-size:14px;color:rgba(255,255,255,.7)">${leaderName || 'Your Leader'}</div>
       </div>
-      <div style="text-align:center">
-        <a href="${appUrl}/auth/login" style="display:inline-block;padding:12px 32px;background:linear-gradient(135deg,#fd1c00,#fd3a20);color:#fff;text-decoration:none;border-radius:10px;font-weight:600;font-size:14px">Login to Dashboard</a>
-      </div>
       <p style="font-size:11px;color:rgba(255,255,255,.25);text-align:center;margin-top:20px">
         May 6–12, 2026 · Aditya University<br/>Do not reply to this email.
       </p>
