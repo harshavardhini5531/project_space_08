@@ -252,6 +252,19 @@ export default function RegisterTeamPage() {
 
   if(loading&&!team) return <div style={{width:'100%',height:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'#050008',color:'rgba(255,255,255,.4)',fontFamily:'sans-serif'}}>Loading...</div>
 
+  // Already registered — show simple message
+  if(team && team.registered) return (
+    <div style={{width:'100%',height:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'#050008',fontFamily:"'DM Sans',sans-serif"}}>
+      <div style={{textAlign:'center',maxWidth:'480px',padding:'48px 40px',borderRadius:'24px',background:'linear-gradient(170deg,#14101e,#0a0810)',border:'1px solid rgba(255,255,255,.08)',boxShadow:'0 20px 60px rgba(0,0,0,.4)'}}>
+        <div style={{fontSize:'56px',marginBottom:'20px'}}>✅</div>
+        <div style={{fontFamily:fonts.display,fontSize:'1.1rem',fontWeight:700,letterSpacing:'3px',textTransform:'uppercase',color:'#fff',marginBottom:'12px'}}>Already Registered</div>
+        <div style={{fontSize:'.85rem',color:'rgba(255,255,255,.45)',lineHeight:1.6,marginBottom:'24px'}}>Your team <strong style={{color:'#fd1c00'}}>{team.teamNumber || `#${team.serialNumber}`}</strong> has been successfully registered for the <strong style={{color:'#EEA727'}}>{team.technology}</strong> track.</div>
+        <div style={{padding:'14px 18px',borderRadius:'12px',background:'rgba(74,222,128,.04)',border:'1px solid rgba(74,222,128,.12)',marginBottom:'28px',fontSize:'.78rem',color:'rgba(74,222,128,.8)',lineHeight:1.5}}>All team members have been notified. See you at Project Space on May 6!</div>
+        <button onClick={()=>router.push('/')} style={{padding:'13px 32px',borderRadius:'12px',background:colors.gradientPrimary,border:'none',color:'#fff',fontFamily:"'DM Sans',sans-serif",fontSize:'.88rem',fontWeight:600,cursor:'pointer',boxShadow:`0 4px 20px ${colors.primaryGlow}`,transition:'all .25s'}}>← Back to Home</button>
+      </div>
+    </div>
+  )
+
   return (
     <>
       <style>{`
@@ -763,7 +776,7 @@ html,body{overflow:hidden!important;background:#050008}
             </div>
             <div className="celebrate-notif"><svg viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2L11 13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>All team members have been notified via email</div>
             <div className="celebrate-btns">
-              <button className="celebrate-go" onClick={()=>setShowSuccess(false)} style={{background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.1)',boxShadow:'none',fontWeight:500,letterSpacing:'1px'}}>✕ Close</button>
+              <button className="celebrate-go" onClick={()=>router.push('/')} style={{background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.1)',boxShadow:'none',fontWeight:500,letterSpacing:'1px'}}>✕ Close</button>
             </div>
           </div>
         </div>
