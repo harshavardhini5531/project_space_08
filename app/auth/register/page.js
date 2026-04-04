@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import AuthBackground from '@/components/AuthBackground'
 import { globalStyles, colors, fonts } from '@/lib/theme'
+import phase from '@/lib/phase'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -22,165 +23,7 @@ export default function RegisterPage() {
     const check = () => setIsMobile(window.innerWidth < 768)
     check()
     window.addEventListener('resize', check)
-    // ═══ MOBILE LAYOUT ═══
-  if (isMobile) {
-    return (
-      <>
-        <style>{`
-          *{margin:0;padding:0;box-sizing:border-box;}
-          html,body{background:#050008;overflow:auto!important;}
-          body{font-family:'Poppins',sans-serif;color:#fff;}
-          /* ── MOBILE AUTH ── */
-          .ma-wrap{
-            width:100%;min-height:100vh;min-height:100dvh;
-            display:flex;flex-direction:column;align-items:center;justify-content:center;
-            padding:20px 6vw;background:#050008;position:relative;overflow:auto;
-          }
-          .ma-stars{
-            position:fixed;inset:0;pointer-events:none;
-            background-image:
-              radial-gradient(1px 1px at 10% 20%,rgba(255,255,255,0.25),transparent),
-              radial-gradient(1px 1px at 30% 60%,rgba(255,255,255,0.15),transparent),
-              radial-gradient(1px 1px at 50% 10%,rgba(255,255,255,0.2),transparent),
-              radial-gradient(1px 1px at 70% 40%,rgba(255,255,255,0.12),transparent),
-              radial-gradient(1px 1px at 90% 70%,rgba(255,255,255,0.18),transparent),
-              radial-gradient(1px 1px at 85% 15%,rgba(255,255,255,0.2),transparent);
-          }
-          .ma-glow{
-            position:fixed;top:-20vh;left:50%;transform:translateX(-50%);
-            width:80vw;height:40vh;border-radius:50%;
-            background:radial-gradient(ellipse,rgba(253,28,0,0.05) 0%,transparent 70%);
-            pointer-events:none;
-          }
-          .ma-back{
-            position:absolute;top:16px;left:16px;
-            display:flex;align-items:center;gap:5px;
-            background:none;border:none;color:rgba(255,255,255,0.5);
-            font-family:'Poppins',sans-serif;font-size:12px;cursor:pointer;z-index:10;
-          }
-          .ma-card{
-            width:100%;max-width:380px;
-            background:rgba(15,10,20,0.85);
-            border:1px solid rgba(255,255,255,0.09);
-            border-radius:16px;padding:28px 20px 24px;
-            backdrop-filter:blur(12px);position:relative;z-index:2;
-          }
-
-        `}</style>
-        <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-        <div className="ma-wrap">
-          <div className="ma-stars" />
-          <div className="ma-glow" />
-          <button className="ma-back" onClick={() => step === 1 ? router.push('/') : setStep(s => s-1)}>
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 3L5 8l5 5"/></svg>
-            Back
-          </button>
-          <div className="ma-card">
-            <div className="card-header" style={{display:'flex',flexDirection:'column',alignItems:'center',marginBottom:'24px'}}>
-              <div style={{width:'42px',height:'42px',borderRadius:'10px',background:'linear-gradient(135deg,#ff2800,#ff5535)',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Orbitron',sans-serif",fontSize:'12px',fontWeight:600,color:'#fff',boxShadow:'0 0 20px rgba(255,40,0,0.4)'}}>PS</div>
-              <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:'0.85rem',fontWeight:600,letterSpacing:'3px',color:'#fff',marginTop:'10px'}}>PROJECT SPACE</div>
-              <div style={{fontSize:'0.7rem',color:'rgba(255,255,255,0.35)',fontWeight:300,marginTop:'2px'}}>Create your account — Team Leaders only</div>
-            </div>
-
-            <div className="ps-steps" style={{display:'flex',alignItems:'center',justifyContent:'center',marginBottom:'22px'}}>
-              {[1,2,3].map(n => (
-                <React.Fragment key={n}>
-                  {n > 1 && <div style={{width:'32px',height:'1px',background:step > n-1 ? 'rgba(255,96,64,0.35)' : 'rgba(255,255,255,0.1)'}} />}
-                  <div style={{width:'28px',height:'28px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'11px',fontWeight:600,
-                    background: step > n ? 'rgba(255,40,0,0.2)' : step === n ? '#ff2800' : 'rgba(255,255,255,0.06)',
-                    color: step > n ? '#ff6040' : step === n ? '#fff' : 'rgba(255,255,255,0.25)',
-                    boxShadow: step === n ? '0 0 14px rgba(255,40,0,0.4)' : 'none'
-                  }}>{step > n ? '✓' : n}</div>
-                </React.Fragment>
-              ))}
-            </div>
-
-            {error && <div style={{background:'rgba(255,40,0,0.1)',border:'1px solid rgba(255,40,0,0.25)',borderRadius:'8px',padding:'9px 12px',fontSize:'0.75rem',color:'#ff6040',marginBottom:'12px'}}>{error}</div>}
-
-            {step === 1 && (<>
-              <div style={{marginBottom:'14px'}}>
-                <label style={{display:'block',fontSize:'0.65rem',fontWeight:500,letterSpacing:'1.5px',textTransform:'uppercase',color:'rgba(255,255,255,0.4)',marginBottom:'5px'}}>Roll Number</label>
-                <input style={{width:'100%',padding:'11px 14px',background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'10px',color:'#fff',fontFamily:"'Poppins',sans-serif",fontSize:'0.85rem',outline:'none'}}
-                  placeholder="e.g. 23P31A4441" value={rollNumber} onChange={e => setRollNumber(e.target.value.toUpperCase())}
-                  onKeyDown={e => e.key === 'Enter' && handleSendOTP()} autoFocus />
-              </div>
-              <button style={{width:'100%',padding:'12px',background:'linear-gradient(135deg,#ff2800,#ff5535)',color:'#fff',border:'none',borderRadius:'10px',fontFamily:"'Poppins',sans-serif",fontSize:'0.85rem',fontWeight:600,cursor:'pointer'}}
-                onClick={handleSendOTP} disabled={loading || !rollNumber}>
-                {loading ? 'Checking...' : 'Send OTP →'}
-              </button>
-              <div style={{textAlign:'center',marginTop:'14px',fontSize:'0.75rem',color:'rgba(255,255,255,0.35)'}}>
-                Already have an account? <span style={{color:'#ff6040',cursor:'pointer'}} onClick={() => router.push('/auth/login')}>Login here</span>
-              </div>
-            </>)}
-
-            {step === 2 && (<>
-              {studentInfo && (
-                <div style={{background:'rgba(255,40,0,0.08)',border:'1px solid rgba(255,40,0,0.2)',borderRadius:'10px',padding:'10px 12px',fontSize:'0.75rem',color:'rgba(255,255,255,0.65)',marginBottom:'14px'}}>
-                  Hi <strong style={{color:'#ff6040'}}>{studentInfo.name}</strong>! OTP sent to <strong style={{color:'#ff6040'}}>{maskedEmail}</strong>
-                </div>
-              )}
-              <div style={{marginBottom:'14px'}}>
-                <label style={{display:'block',fontSize:'0.65rem',fontWeight:500,letterSpacing:'1.5px',textTransform:'uppercase',color:'rgba(255,255,255,0.4)',marginBottom:'5px'}}>Enter OTP</label>
-                <input style={{width:'100%',padding:'11px 14px',background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'10px',color:'#fff',fontFamily:"'Poppins',sans-serif",fontSize:'0.85rem',outline:'none',letterSpacing:'4px',textAlign:'center'}}
-                  placeholder="6-digit OTP" value={otp} onChange={e => setOtp(e.target.value.replace(/\D/,'').slice(0,6))}
-                  onKeyDown={e => e.key === 'Enter' && handleVerifyOTP()} maxLength={6} autoFocus />
-              </div>
-              <button style={{width:'100%',padding:'12px',background:'linear-gradient(135deg,#ff2800,#ff5535)',color:'#fff',border:'none',borderRadius:'10px',fontFamily:"'Poppins',sans-serif",fontSize:'0.85rem',fontWeight:600,cursor:'pointer'}}
-                onClick={handleVerifyOTP} disabled={loading || otp.length !== 6}>
-                {loading ? 'Verifying...' : 'Verify OTP →'}
-              </button>
-              <div style={{textAlign:'center',marginTop:'10px',fontSize:'0.72rem',color:'rgba(255,255,255,0.35)'}}>
-                Didn\'t receive it? <span style={{color:'#ff6040',cursor:'pointer'}} onClick={() => { setStep(1); setOtp('') }}>Resend OTP</span>
-              </div>
-            </>)}
-
-            {step === 3 && (<>
-              <div style={{marginBottom:'14px'}}>
-                <label style={{display:'block',fontSize:'0.65rem',fontWeight:500,letterSpacing:'1.5px',textTransform:'uppercase',color:'rgba(255,255,255,0.4)',marginBottom:'5px'}}>Create Password</label>
-                <div style={{position:'relative'}}>
-                  <input style={{width:'100%',padding:'11px 14px',paddingRight:'52px',background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'10px',color:'#fff',fontFamily:"'Poppins',sans-serif",fontSize:'0.85rem',outline:'none'}}
-                    type={showPass ? 'text' : 'password'} placeholder="Enter password" value={password}
-                    onChange={e => setPassword(e.target.value)} autoFocus />
-                  <button style={{position:'absolute',right:'12px',top:'50%',transform:'translateY(-50%)',background:'none',border:'none',color:'rgba(255,255,255,0.35)',fontSize:'10px',cursor:'pointer',fontFamily:"'Poppins',sans-serif"}}
-                    onClick={() => setShowPass(v => !v)}>{showPass ? 'HIDE' : 'SHOW'}</button>
-                </div>
-                {password && (
-                  <div style={{marginTop:'8px',display:'flex',flexDirection:'column',gap:'4px'}}>
-                    {passwordRules.map(r => (
-                      <div key={r.label} style={{display:'flex',alignItems:'center',gap:'6px',fontSize:'0.65rem',color:r.test(password)?'#4ade80':'rgba(255,255,255,0.35)'}}>
-                        <span style={{width:'4px',height:'4px',borderRadius:'50%',background:'currentColor'}} />{r.label}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <div style={{marginBottom:'14px'}}>
-                <label style={{display:'block',fontSize:'0.65rem',fontWeight:500,letterSpacing:'1.5px',textTransform:'uppercase',color:'rgba(255,255,255,0.4)',marginBottom:'5px'}}>Confirm Password</label>
-                <div style={{position:'relative'}}>
-                  <input style={{width:'100%',padding:'11px 14px',paddingRight:'52px',background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'10px',color:'#fff',fontFamily:"'Poppins',sans-serif",fontSize:'0.85rem',outline:'none'}}
-                    type={showConfirm ? 'text' : 'password'} placeholder="Re-enter password" value={confirmPassword}
-                    onChange={e => setConfirmPassword(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && handleSetPassword()} />
-                  <button style={{position:'absolute',right:'12px',top:'50%',transform:'translateY(-50%)',background:'none',border:'none',color:'rgba(255,255,255,0.35)',fontSize:'10px',cursor:'pointer',fontFamily:"'Poppins',sans-serif"}}
-                    onClick={() => setShowConfirm(v => !v)}>{showConfirm ? 'HIDE' : 'SHOW'}</button>
-                </div>
-                {confirmPassword && password !== confirmPassword && (
-                  <div style={{fontSize:'0.68rem',color:'#ff6040',marginTop:'4px'}}>Passwords do not match</div>
-                )}
-              </div>
-              <button style={{width:'100%',padding:'12px',background:'linear-gradient(135deg,#ff2800,#ff5535)',color:'#fff',border:'none',borderRadius:'10px',fontFamily:"'Poppins',sans-serif",fontSize:'0.85rem',fontWeight:600,cursor:'pointer'}}
-                onClick={handleSetPassword} disabled={loading || !password || !confirmPassword}>
-                {loading ? 'Creating Account...' : 'Create Account →'}
-              </button>
-            </>)}
-          </div>
-        </div>
-      </>
-    )
-  }
-
-  // ═══ DESKTOP LAYOUT ═══
-  return () => window.removeEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
   }, [])
 
   const passwordRules = [
@@ -246,6 +89,164 @@ export default function RegisterPage() {
     return <div className={`ps-step-dot ${state}`}>{step > n ? '✓' : n}</div>
   }
 
+  // ═══ MOBILE LAYOUT ═══
+  if (isMobile) {
+    return (
+      <>
+        <style>{`
+          *{margin:0;padding:0;box-sizing:border-box;}
+          html,body{background:#050008;overflow:auto!important;}
+          body{font-family:'Poppins',sans-serif;color:#fff;}
+          .ma-wrap{
+            width:100%;min-height:100vh;min-height:100dvh;
+            display:flex;flex-direction:column;align-items:center;justify-content:center;
+            padding:20px 6vw;background:#050008;position:relative;overflow:auto;
+          }
+          .ma-stars{
+            position:fixed;inset:0;pointer-events:none;
+            background-image:
+              radial-gradient(1px 1px at 10% 20%,rgba(255,255,255,0.25),transparent),
+              radial-gradient(1px 1px at 30% 60%,rgba(255,255,255,0.15),transparent),
+              radial-gradient(1px 1px at 50% 10%,rgba(255,255,255,0.2),transparent),
+              radial-gradient(1px 1px at 70% 40%,rgba(255,255,255,0.12),transparent),
+              radial-gradient(1px 1px at 90% 70%,rgba(255,255,255,0.18),transparent),
+              radial-gradient(1px 1px at 85% 15%,rgba(255,255,255,0.2),transparent);
+          }
+          .ma-glow{
+            position:fixed;top:-20vh;left:50%;transform:translateX(-50%);
+            width:80vw;height:40vh;border-radius:50%;
+            background:radial-gradient(ellipse,rgba(253,28,0,0.05) 0%,transparent 70%);
+            pointer-events:none;
+          }
+          .ma-back{
+            position:absolute;top:16px;left:16px;
+            display:flex;align-items:center;gap:5px;
+            background:none;border:none;color:rgba(255,255,255,0.5);
+            font-family:'Poppins',sans-serif;font-size:12px;cursor:pointer;z-index:10;
+          }
+          .ma-card{
+            width:100%;max-width:380px;
+            background:rgba(15,10,20,0.85);
+            border:1px solid rgba(255,255,255,0.09);
+            border-radius:16px;padding:28px 20px 24px;
+            backdrop-filter:blur(12px);position:relative;z-index:2;
+          }
+        `}</style>
+        <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+        <div className="ma-wrap">
+          <div className="ma-stars" />
+          <div className="ma-glow" />
+          <button className="ma-back" onClick={() => step === 1 ? router.push('/') : setStep(s => s-1)}>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 3L5 8l5 5"/></svg>
+            Back
+          </button>
+          <div className="ma-card">
+            <div className="card-header" style={{display:'flex',flexDirection:'column',alignItems:'center',marginBottom:'24px'}}>
+              <div style={{width:'42px',height:'42px',borderRadius:'10px',background:'linear-gradient(135deg,#ff2800,#ff5535)',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Orbitron',sans-serif",fontSize:'12px',fontWeight:600,color:'#fff',boxShadow:'0 0 20px rgba(255,40,0,0.4)'}}>PS</div>
+              <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:'0.85rem',fontWeight:600,letterSpacing:'3px',color:'#fff',marginTop:'10px'}}>PROJECT SPACE</div>
+              <div style={{fontSize:'0.7rem',color:'rgba(255,255,255,0.35)',fontWeight:300,marginTop:'2px'}}>Create your account — Team Leaders only</div>
+            </div>
+
+            <div className="ps-steps" style={{display:'flex',alignItems:'center',justifyContent:'center',marginBottom:'22px'}}>
+              {[1,2,3].map(n => (
+                <React.Fragment key={n}>
+                  {n > 1 && <div style={{width:'32px',height:'1px',background:step > n-1 ? 'rgba(255,96,64,0.35)' : 'rgba(255,255,255,0.1)'}} />}
+                  <div style={{width:'28px',height:'28px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'11px',fontWeight:600,
+                    background: step > n ? 'rgba(255,40,0,0.2)' : step === n ? '#ff2800' : 'rgba(255,255,255,0.06)',
+                    color: step > n ? '#ff6040' : step === n ? '#fff' : 'rgba(255,255,255,0.25)',
+                    boxShadow: step === n ? '0 0 14px rgba(255,40,0,0.4)' : 'none'
+                  }}>{step > n ? '✓' : n}</div>
+                </React.Fragment>
+              ))}
+            </div>
+
+            {error && <div style={{background:'rgba(255,40,0,0.1)',border:'1px solid rgba(255,40,0,0.25)',borderRadius:'8px',padding:'9px 12px',fontSize:'0.75rem',color:'#ff6040',marginBottom:'12px'}}>{error}</div>}
+
+            {step === 1 && (<>
+              <div style={{marginBottom:'14px'}}>
+                <label style={{display:'block',fontSize:'0.65rem',fontWeight:500,letterSpacing:'1.5px',textTransform:'uppercase',color:'rgba(255,255,255,0.4)',marginBottom:'5px'}}>Roll Number</label>
+                <input style={{width:'100%',padding:'11px 14px',background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'10px',color:'#fff',fontFamily:"'Poppins',sans-serif",fontSize:'0.85rem',outline:'none'}}
+                  placeholder="e.g. 23P31A4441" value={rollNumber} onChange={e => setRollNumber(e.target.value.toUpperCase())}
+                  onKeyDown={e => e.key === 'Enter' && handleSendOTP()} autoFocus />
+              </div>
+              <button style={{width:'100%',padding:'12px',background:'linear-gradient(135deg,#ff2800,#ff5535)',color:'#fff',border:'none',borderRadius:'10px',fontFamily:"'Poppins',sans-serif",fontSize:'0.85rem',fontWeight:600,cursor:'pointer'}}
+                onClick={handleSendOTP} disabled={loading || !rollNumber}>
+                {loading ? 'Checking...' : 'Send OTP →'}
+              </button>
+              {phase.showLogin && (
+                <div style={{textAlign:'center',marginTop:'14px',fontSize:'0.75rem',color:'rgba(255,255,255,0.35)'}}>
+                  Already have an account? <span style={{color:'#ff6040',cursor:'pointer'}} onClick={() => router.push('/auth/login')}>Login here</span>
+                </div>
+              )}
+            </>)}
+
+            {step === 2 && (<>
+              {studentInfo && (
+                <div style={{background:'rgba(255,40,0,0.08)',border:'1px solid rgba(255,40,0,0.2)',borderRadius:'10px',padding:'10px 12px',fontSize:'0.75rem',color:'rgba(255,255,255,0.65)',marginBottom:'14px'}}>
+                  Hi <strong style={{color:'#ff6040'}}>{studentInfo.name}</strong>! OTP sent to <strong style={{color:'#ff6040'}}>{maskedEmail}</strong>
+                </div>
+              )}
+              <div style={{marginBottom:'14px'}}>
+                <label style={{display:'block',fontSize:'0.65rem',fontWeight:500,letterSpacing:'1.5px',textTransform:'uppercase',color:'rgba(255,255,255,0.4)',marginBottom:'5px'}}>Enter OTP</label>
+                <input style={{width:'100%',padding:'11px 14px',background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'10px',color:'#fff',fontFamily:"'Poppins',sans-serif",fontSize:'0.85rem',outline:'none',letterSpacing:'4px',textAlign:'center'}}
+                  placeholder="6-digit OTP" value={otp} onChange={e => setOtp(e.target.value.replace(/\D/,'').slice(0,6))}
+                  onKeyDown={e => e.key === 'Enter' && handleVerifyOTP()} maxLength={6} autoFocus />
+              </div>
+              <button style={{width:'100%',padding:'12px',background:'linear-gradient(135deg,#ff2800,#ff5535)',color:'#fff',border:'none',borderRadius:'10px',fontFamily:"'Poppins',sans-serif",fontSize:'0.85rem',fontWeight:600,cursor:'pointer'}}
+                onClick={handleVerifyOTP} disabled={loading || otp.length !== 6}>
+                {loading ? 'Verifying...' : 'Verify OTP →'}
+              </button>
+              <div style={{textAlign:'center',marginTop:'10px',fontSize:'0.72rem',color:'rgba(255,255,255,0.35)'}}>
+                Didn&apos;t receive it? <span style={{color:'#ff6040',cursor:'pointer'}} onClick={() => { setStep(1); setOtp('') }}>Resend OTP</span>
+              </div>
+            </>)}
+
+            {step === 3 && (<>
+              <div style={{marginBottom:'14px'}}>
+                <label style={{display:'block',fontSize:'0.65rem',fontWeight:500,letterSpacing:'1.5px',textTransform:'uppercase',color:'rgba(255,255,255,0.4)',marginBottom:'5px'}}>Create Password</label>
+                <div style={{position:'relative'}}>
+                  <input style={{width:'100%',padding:'11px 14px',paddingRight:'52px',background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'10px',color:'#fff',fontFamily:"'Poppins',sans-serif",fontSize:'0.85rem',outline:'none'}}
+                    type={showPass ? 'text' : 'password'} placeholder="Enter password" value={password}
+                    onChange={e => setPassword(e.target.value)} autoFocus />
+                  <button style={{position:'absolute',right:'12px',top:'50%',transform:'translateY(-50%)',background:'none',border:'none',color:'rgba(255,255,255,0.35)',fontSize:'10px',cursor:'pointer',fontFamily:"'Poppins',sans-serif"}}
+                    onClick={() => setShowPass(v => !v)}>{showPass ? 'HIDE' : 'SHOW'}</button>
+                </div>
+                {password && (
+                  <div style={{marginTop:'8px',display:'flex',flexDirection:'column',gap:'4px'}}>
+                    {passwordRules.map(r => (
+                      <div key={r.label} style={{display:'flex',alignItems:'center',gap:'6px',fontSize:'0.65rem',color:r.test(password)?'#4ade80':'rgba(255,255,255,0.35)'}}>
+                        <span style={{width:'4px',height:'4px',borderRadius:'50%',background:'currentColor'}} />{r.label}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div style={{marginBottom:'14px'}}>
+                <label style={{display:'block',fontSize:'0.65rem',fontWeight:500,letterSpacing:'1.5px',textTransform:'uppercase',color:'rgba(255,255,255,0.4)',marginBottom:'5px'}}>Confirm Password</label>
+                <div style={{position:'relative'}}>
+                  <input style={{width:'100%',padding:'11px 14px',paddingRight:'52px',background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'10px',color:'#fff',fontFamily:"'Poppins',sans-serif",fontSize:'0.85rem',outline:'none'}}
+                    type={showConfirm ? 'text' : 'password'} placeholder="Re-enter password" value={confirmPassword}
+                    onChange={e => setConfirmPassword(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleSetPassword()} />
+                  <button style={{position:'absolute',right:'12px',top:'50%',transform:'translateY(-50%)',background:'none',border:'none',color:'rgba(255,255,255,0.35)',fontSize:'10px',cursor:'pointer',fontFamily:"'Poppins',sans-serif"}}
+                    onClick={() => setShowConfirm(v => !v)}>{showConfirm ? 'HIDE' : 'SHOW'}</button>
+                </div>
+                {confirmPassword && password !== confirmPassword && (
+                  <div style={{fontSize:'0.68rem',color:'#ff6040',marginTop:'4px'}}>Passwords do not match</div>
+                )}
+              </div>
+              <button style={{width:'100%',padding:'12px',background:'linear-gradient(135deg,#ff2800,#ff5535)',color:'#fff',border:'none',borderRadius:'10px',fontFamily:"'Poppins',sans-serif",fontSize:'0.85rem',fontWeight:600,cursor:'pointer'}}
+                onClick={handleSetPassword} disabled={loading || !password || !confirmPassword}>
+                {loading ? 'Creating Account...' : 'Create Account →'}
+              </button>
+            </>)}
+          </div>
+        </div>
+      </>
+    )
+  }
+
+  // ═══ DESKTOP LAYOUT ═══
   return (
     <AuthBackground>
       <style>{`
@@ -288,7 +289,7 @@ export default function RegisterPage() {
         .login-link a { color:${colors.error};text-decoration:none;font-weight:500;cursor:pointer; }
         .login-link a:hover { color:#ff9ffc; }
         .mismatch { font-size:0.7rem;color:${colors.error};margin-top:5px; }
-        .robo-mascot,.robo-spotlight-cone { display:${isMobile ? 'none' : 'flex'}; }
+        .robo-mascot,.robo-spotlight-cone { display:flex; }
         .robo-mascot {
           position:fixed;bottom:24px;left:32px;z-index:20;
           flex-direction:column;align-items:center;
@@ -373,9 +374,11 @@ export default function RegisterPage() {
               <button className="ps-btn-primary" onClick={handleSendOTP} disabled={loading || !rollNumber}>
                 {loading ? 'Checking...' : 'Send OTP →'}
               </button>
-              <div className="login-link">
-                Already have an account? <a onClick={() => router.push('/auth/login')}>Login here</a>
-              </div>
+              {phase.showLogin && (
+                <div className="login-link">
+                  Already have an account? <a onClick={() => router.push('/auth/login')}>Login here</a>
+                </div>
+              )}
             </>
           )}
 
@@ -397,7 +400,7 @@ export default function RegisterPage() {
                 {loading ? 'Verifying...' : 'Verify OTP →'}
               </button>
               <div className="resend">
-                Didn't receive it? <button onClick={() => { setStep(1); setOtp('') }}>Resend OTP</button>
+                Didn&apos;t receive it? <button onClick={() => { setStep(1); setOtp('') }}>Resend OTP</button>
               </div>
             </>
           )}
@@ -450,19 +453,15 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      {!isMobile && (
-        <>
-          <div className="robo-spotlight-cone">
-            <div className="robo-cone-beam" />
-            <div className="robo-cone-outer" />
-            <div className="robo-ground-light" />
-          </div>
-          <div className="robo-mascot">
-            <img className="robo-img" src="https://i.ibb.co/NdXXswGc/Gemini-Generated-Image-zecq2szecq2szecq-removebg-preview.png" alt="Robot mascot" />
-            <div className="robo-shadow" />
-          </div>
-        </>
-      )}
+      <div className="robo-spotlight-cone">
+        <div className="robo-cone-beam" />
+        <div className="robo-cone-outer" />
+        <div className="robo-ground-light" />
+      </div>
+      <div className="robo-mascot">
+        <img className="robo-img" src="https://i.ibb.co/NdXXswGc/Gemini-Generated-Image-zecq2szecq2szecq-removebg-preview.png" alt="Robot mascot" />
+        <div className="robo-shadow" />
+      </div>
     </AuthBackground>
   )
 }
