@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import AuthBackground from '@/components/AuthBackground'
 import { globalStyles, colors, fonts } from '@/lib/theme'
+import { PHASE } from '@/lib/phase'
 export default function RegisterPage() {
   const router = useRouter()
   const [step, setStep]                   = useState(1)
@@ -171,7 +172,7 @@ export default function RegisterPage() {
                 onClick={handleSendOTP} disabled={loading || !rollNumber}>
                 {loading ? 'Checking...' : 'Send OTP →'}
               </button>
-              {true && (
+              {PHASE !== 'registration' && (
                 <div style={{textAlign:'center',marginTop:'14px',fontSize:'0.75rem',color:'rgba(255,255,255,0.35)'}}>
                   Already have an account? <span style={{color:'#ff6040',cursor:'pointer'}} onClick={() => router.push('/auth/login')}>Login here</span>
                 </div>
@@ -372,7 +373,7 @@ export default function RegisterPage() {
               <button className="ps-btn-primary" onClick={handleSendOTP} disabled={loading || !rollNumber}>
                 {loading ? 'Checking...' : 'Send OTP →'}
               </button>
-              {true && (
+              {PHASE !== 'registration' && (
                 <div className="login-link">
                   Already have an account? <a onClick={() => router.push('/auth/login')}>Login here</a>
                 </div>
