@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { globalStyles, colors, fonts, HACKATHON_START } from '@/lib/theme'
+import { PHASE } from '@/lib/phase'
 
 export default function LandingPage() {
   const routerHook  = useRouter()
@@ -696,7 +697,8 @@ html,body{width:100%;height:100%;background:#050008;overflow:hidden;font-family:
 
             <div className="ml-act">
               <button className="ml-ab ml-ab-p" onClick={()=>routerHook.push('/auth/register')}><i><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/></svg></i>Create Account</button>
-              <button className="ml-ab ml-ab-s" onClick={()=>routerHook.push('/auth/login')}><i><svg width="10" height="10" viewBox="0 0 14 14" fill="none"><path d="M6 2H3a1 1 0 00-1 1v8a1 1 0 001 1h3" stroke="#fff" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/><path d="M9.5 4.5L12 7l-2.5 2.5" stroke="#fff" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/><line x1="12" y1="7" x2="5.5" y2="7" stroke="#fff" strokeWidth="1.2" strokeLinecap="round"/></svg></i>Login</button>
+              {PHASE !== 'registration' && <button className="ml-ab ml-ab-s" onClick={()=>routerHook.push('/auth/login')}><i><svg width="10" height="10" viewBox="0 0 14 14" fill="none"><path d="M6 2H3a1 1 0 00-1 1v8a1 1 0 001 1h3" stroke="#fff" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/><path d="M9.5 4.5L12 7l-2.5 2.5" stroke="#fff" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/><line x1="12" y1="7" x2="5.5" y2="7" stroke="#fff" strokeWidth="1.2" strokeLinecap="round"/></svg></i>Login</button>
+  }
             </div>
 
             <div className="ml-trk">
@@ -1149,7 +1151,7 @@ html,body{width:100%;height:100%;background:#050008;overflow:hidden;font-family:
                 <path d="M2.5 6.5h8M7 3.5l3 3-3 3" stroke="white" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
-            <button className="btn btn-secondary" onClick={() => routerHook.push('/auth/login')}>
+            {PHASE !== 'registration' && <button className="btn btn-secondary" onClick={() => routerHook.push('/auth/login')}>
               <div className="btn-icon">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                   <path d="M6 2H3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -1162,6 +1164,7 @@ html,body{width:100%;height:100%;background:#050008;overflow:hidden;font-family:
                 <path d="M2.5 6.5h8M7 3.5l3 3-3 3" stroke="white" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
+  }
           </div>
         </div>
 
