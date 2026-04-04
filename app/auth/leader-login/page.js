@@ -53,7 +53,6 @@ export default function LeaderLoginPage() {
           *{margin:0;padding:0;box-sizing:border-box;}
           html,body{background:#050008;overflow:auto!important;}
           body{font-family:'Poppins',sans-serif;color:#fff;}
-          /* ── MOBILE AUTH ── */
           .ma-wrap{
             width:100%;min-height:100vh;min-height:100dvh;
             display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -88,7 +87,6 @@ export default function LeaderLoginPage() {
             border-radius:16px;padding:28px 20px 24px;
             backdrop-filter:blur(12px);position:relative;z-index:2;
           }
-
         `}</style>
         <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
         <div className="ma-wrap">
@@ -122,7 +120,7 @@ export default function LeaderLoginPage() {
             </button>
             <div style={{display:'flex',justifyContent:'space-between',marginTop:'16px',fontSize:'0.72rem',color:'rgba(255,255,255,0.35)'}}>
               <span style={{cursor:'pointer'}} onClick={() => router.push('/auth/register')}>Create Account</span>
-              <span style={{cursor:'pointer'}} onClick={() => router.push('/auth/login')}>Switch Role</span>
+              {PHASE !== 'registration' && <span style={{cursor:'pointer'}} onClick={() => router.push('/auth/login')}>Switch Role</span>}
             </div>
           </div>
         </div>
@@ -196,112 +194,41 @@ export default function LeaderLoginPage() {
         }
         .alt-link a:hover { color:#ff9ffc; }
 
-        /* ── ROBOT MASCOT — same as register page ── */
         .robo-mascot {
-          position:fixed;
-          bottom:24px;
-          left:32px;
-          z-index:20;
-          display:flex;
-          flex-direction:column;
-          align-items:center;
+          position:fixed;bottom:24px;left:32px;z-index:20;
+          display:flex;flex-direction:column;align-items:center;
           animation:roboFadeIn 1s ease 0.8s both;
         }
-
         .robo-spotlight-cone {
-          position:fixed;
-          top:0;
-          left:0;
-          width:100vw;
-          height:100vh;
-          pointer-events:none;
-          z-index:3;
-          overflow:hidden;
+          position:fixed;top:0;left:0;width:100vw;height:100vh;
+          pointer-events:none;z-index:3;overflow:hidden;
         }
-
         .robo-cone-beam {
-          position:absolute;
-          top:47%;
-          left:50%;
-          width:200px;
-          height:200vh;
+          position:absolute;top:47%;left:50%;width:200px;height:200vh;
           transform:translate(-50%,-50%) rotate(70deg);
-          background:linear-gradient(
-            90deg,
-            rgba(255,255,255,0.0) 0%,
-            rgba(255,240,220,0.05) 20%,
-            rgba(255,240,220,0.1) 45%,
-            rgba(255,240,220,0.1) 55%,
-            rgba(255,240,220,0.05) 80%,
-            rgba(255,255,255,0.0) 100%
-          );
-          filter:blur(2px);
-          animation:coneFlicker 4s ease-in-out infinite;
+          background:linear-gradient(90deg,rgba(255,255,255,0.0) 0%,rgba(255,240,220,0.05) 20%,rgba(255,240,220,0.1) 45%,rgba(255,240,220,0.1) 55%,rgba(255,240,220,0.05) 80%,rgba(255,255,255,0.0) 100%);
+          filter:blur(2px);animation:coneFlicker 4s ease-in-out infinite;
         }
-
         .robo-cone-outer {
-          position:absolute;
-          top:47%;
-          left:50%;
-          width:350px;
-          height:200vh;
+          position:absolute;top:47%;left:50%;width:350px;height:200vh;
           transform:translate(-50%,-50%) rotate(70deg);
-          background:linear-gradient(
-            90deg,
-            rgba(255,255,255,0.0) 0%,
-            rgba(255,230,200,0.02) 25%,
-            rgba(255,230,200,0.05) 45%,
-            rgba(255,230,200,0.05) 55%,
-            rgba(255,230,200,0.02) 75%,
-            rgba(255,255,255,0.0) 100%
-          );
-          filter:blur(15px);
-          animation:coneFlicker 4s ease-in-out 1s infinite;
+          background:linear-gradient(90deg,rgba(255,255,255,0.0) 0%,rgba(255,230,200,0.02) 25%,rgba(255,230,200,0.05) 45%,rgba(255,230,200,0.05) 55%,rgba(255,230,200,0.02) 75%,rgba(255,255,255,0.0) 100%);
+          filter:blur(15px);animation:coneFlicker 4s ease-in-out 1s infinite;
         }
-
         .robo-ground-light {
-          position:absolute;
-          bottom:3%;
-          left:2%;
-          width:300px;
-          height:300px;
-          border-radius:50%;
-          background:radial-gradient(
-            ellipse,
-            rgba(255,240,220,0.12) 0%,
-            rgba(255,240,220,0.05) 35%,
-            transparent 65%
-          );
-          filter:blur(25px);
-          animation:groundPulse 3s ease-in-out infinite;
+          position:absolute;bottom:3%;left:2%;width:300px;height:300px;border-radius:50%;
+          background:radial-gradient(ellipse,rgba(255,240,220,0.12) 0%,rgba(255,240,220,0.05) 35%,transparent 65%);
+          filter:blur(25px);animation:groundPulse 3s ease-in-out infinite;
         }
-
         .robo-img {
-          width:250px;
-          height:250px;
-          object-fit:contain;
-          filter:
-            drop-shadow(0 0 20px rgba(255,255,255,0.15))
-            drop-shadow(0 0 60px rgba(255,255,255,0.06));
-          animation:roboBounce 2s ease-in-out infinite;
-          position:relative;
-          z-index:2;
+          width:250px;height:250px;object-fit:contain;
+          filter:drop-shadow(0 0 20px rgba(255,255,255,0.15)) drop-shadow(0 0 60px rgba(255,255,255,0.06));
+          animation:roboBounce 2s ease-in-out infinite;position:relative;z-index:2;
         }
-
         .robo-shadow {
-          width:160px;
-          height:20px;
-          border-radius:50%;
-          background:radial-gradient(
-            ellipse,
-            rgba(0,0,0,0.6) 0%,
-            rgba(0,0,0,0.3) 40%,
-            transparent 75%
-          );
-          margin-top:-12px;
-          filter:blur(4px);
-          animation:shadowPulse 2s ease-in-out infinite;
-          z-index:1;
+          width:160px;height:20px;border-radius:50%;
+          background:radial-gradient(ellipse,rgba(0,0,0,0.6) 0%,rgba(0,0,0,0.3) 40%,transparent 75%);
+          margin-top:-12px;filter:blur(4px);animation:shadowPulse 2s ease-in-out infinite;z-index:1;
         }
 
         @keyframes roboBounce {
@@ -310,46 +237,39 @@ export default function LeaderLoginPage() {
           50% { transform:translateY(-14px); }
           70% { transform:translateY(-18px); }
         }
-
         @keyframes shadowPulse {
           0%, 100% { transform:scaleX(1); opacity:1; }
           30% { transform:scaleX(0.65); opacity:0.4; }
           50% { transform:scaleX(0.7); opacity:0.5; }
           70% { transform:scaleX(0.65); opacity:0.4; }
         }
-
         @keyframes coneFlicker {
           0%, 100% { opacity:0.8; }
           25% { opacity:1; }
           50% { opacity:0.7; }
           75% { opacity:0.95; }
         }
-
         @keyframes groundPulse {
           0%, 100% { opacity:1; transform:translateX(-50%) scaleX(1); }
           30% { opacity:0.5; transform:translateX(-50%) scaleX(0.75); }
           50% { opacity:0.6; transform:translateX(-50%) scaleX(0.8); }
           70% { opacity:0.5; transform:translateX(-50%) scaleX(0.75); }
         }
-
         @keyframes roboFadeIn {
           from { opacity:0; transform:translateY(30px); }
           to { opacity:1; transform:translateY(0); }
         }
-
         @keyframes psFadeUp {
           from { opacity:0; transform:translateY(10px); }
           to { opacity:1; transform:translateY(0); }
         }
 
-        /* ── TABLET ── */
         @media(max-width:1024px) {
           .ll-card { max-width:380px; padding:32px 28px 28px; }
           .robo-img { width:200px; height:200px; }
           .robo-shadow { width:130px; }
           .robo-mascot { bottom:20px; left:20px; }
         }
-        /* ── MOBILE ── */
         @media(max-width:640px) {
           .ll-page { padding:15px; height:auto; min-height:100vh; }
           .ll-card { max-width:100%; padding:28px 20px 24px; border-radius:16px; }
@@ -358,7 +278,6 @@ export default function LeaderLoginPage() {
           .robo-spotlight-cone { display:none; }
           .ps-back { top:16px; left:16px; font-size:12px; }
         }
-        /* ── SMALL MOBILE ── */
         @media(max-width:380px) {
           .ll-card { padding:22px 16px 20px; }
           .ps-input { padding:11px 12px; font-size:0.82rem; }
@@ -444,16 +363,15 @@ export default function LeaderLoginPage() {
           </div>
           )}
         </div>
+      </div>
 
       {!isMobile && (<>
-      {/* DIAGONAL LIGHT RAY */}
       <div className="robo-spotlight-cone">
         <div className="robo-cone-beam" />
         <div className="robo-cone-outer" />
         <div className="robo-ground-light" />
       </div>
 
-      {/* ROBOT MASCOT */}
       <div className="robo-mascot">
         <img
           className="robo-img"
