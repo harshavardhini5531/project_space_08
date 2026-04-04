@@ -2,7 +2,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { globalStyles, colors, fonts, HACKATHON_START } from '@/lib/theme'
-import phase from '@/lib/phase'
 
 export default function LandingPage() {
   const routerHook  = useRouter()
