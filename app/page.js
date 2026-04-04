@@ -618,16 +618,16 @@ html,body{width:100%;height:100%;background:#050008;overflow:hidden;font-family:
 .ml-hc-sp canvas{display:block;width:100%!important;height:100%!important;border-radius:50%}
 .ml-hc-sp-g{position:absolute;left:50%;top:50%;width:125px;height:125px;border-radius:50%;background:radial-gradient(circle,rgba(253,28,0,.12),transparent 60%);animation:breathe 4s ease-in-out infinite;pointer-events:none}
 
-  /* Buttons */
-  .ml-act{display:flex;gap:10px;margin:0 18px;animation:up .5s ease .4s both}
-  .ml-ab{display:flex;align-items:center;justify-content:center;gap:7px;flex:1;padding:13px;border-radius:12px;font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:transform .1s;-webkit-tap-highlight-color:transparent;position:relative;overflow:hidden}
-  .ml-ab:active{transform:scale(.97)}
-  .ml-ab-p{background:var(--r);color:#fff;box-shadow:0 4px 16px rgba(253,28,0,.25)}
-  .ml-ab-p::after{content:'';position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);animation:sweep 4s ease-in-out 2s infinite}
-  .ml-ab-s{background:rgba(255,255,255,.025);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.06)}
-  .ml-ab i{width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-style:normal;flex-shrink:0}
-  .ml-ab-p i{background:rgba(255,255,255,.12)}
-  .ml-ab-s i{background:rgba(255,255,255,.04)}
+/* Buttons */
+.ml-act{display:flex;gap:10px;margin:0 18px;animation:up .5s ease .4s both}
+.ml-ab{display:flex;align-items:center;justify-content:center;gap:7px;flex:1;padding:13px;border-radius:12px;font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:transform .1s;-webkit-tap-highlight-color:transparent;position:relative;overflow:hidden}
+.ml-ab:active{transform:scale(.97)}
+.ml-ab-p{background:var(--r);color:#fff;box-shadow:0 4px 16px rgba(253,28,0,.25)}
+.ml-ab-p::after{content:'';position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);animation:sweep 4s ease-in-out 2s infinite}
+.ml-ab-s{background:rgba(255,255,255,.025);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.06)}
+.ml-ab i{width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-style:normal;flex-shrink:0}
+.ml-ab-p i{background:rgba(255,255,255,.12)}
+.ml-ab-s i{background:rgba(255,255,255,.04)}
 
 /* Track badges */
 .ml-trk{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:0 18px;animation:fade .5s ease .6s both}
