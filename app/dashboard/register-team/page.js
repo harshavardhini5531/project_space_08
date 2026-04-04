@@ -43,6 +43,8 @@ export default function RegisterTeamPage() {
   const [activeSection, setActiveSection] = useState(null)
   const [showConfirm, setShowConfirm] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
+  const [infoLoading, setInfoLoading] = useState(false)
+  const [infoLoaded, setInfoLoaded] = useState(false)
 
   useEffect(() => {
     if (!showSuccess) return
@@ -115,6 +117,27 @@ export default function RegisterTeamPage() {
     } catch{setError('Failed to load team data')} finally{setLoading(false)}
   }
 
+  async function fetchProjectInfo() {
+    if(!user || infoLoading) return
+    setInfoLoading(true)
+    try {
+      const res = await fetch('/api/auth/get-team-info', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rollNumber: user.rollNumber || user.roll_number })
+      })
+      const data = await res.json()
+      if (!res.ok) { setError(data.error); setInfoLoading(false); return }
+      const t = data.team
+      if (t.projectTitle) setProjectTitle(t.projectTitle)
+      if (t.projectDescription) setProjectDescription(t.projectDescription)
+      if (t.problemStatement) setProblemStatement(t.problemStatement)
+      if (t.aiUsage) setAiUsage(t.aiUsage)
+      setInfoLoaded(true)
+    } catch { setError('Failed to fetch project info') }
+    finally { setInfoLoading(false) }
+  }
+
   async function fetchMembers() {
     if(!user) return; setLoading(true)
     try {
@@ -173,7 +196,6 @@ export default function RegisterTeamPage() {
   const totalFields = ['projectArea','projectTitle','projectDescription','problemStatement','aiCapabilities','aiTools','techStack','membersLoaded']
   const progressPct = Math.round(totalFields.filter(f=>isFieldFilled(f)).length/totalFields.length*100)
 
-  // Check if any field in a section is filled
   function isSectionFilled(sectionId) {
     const step = STEPS_CONFIG.find(s=>s.id===sectionId)
     if(!step || !step.fields.length) return false
@@ -204,7 +226,24 @@ export default function RegisterTeamPage() {
   }
 
   const techOptions = TECH_STACK_OPTIONS
-  const teamDataForBot = team ? {teamNumber:team.teamNumber||'Not assigned yet',serialNumber:team.serialNumber,technology:team.technology,leaderName:user?.name||'',memberCount:members.length,currentTitle:projectTitle,currentDescription:projectDescription,currentProblem:problemStatement,currentArea:projectArea,currentAI:aiCapabilities,currentTech:techStack} : {}
+  const teamDataForBot = team ? {
+    teamNumber: team.teamNumber || 'Not assigned yet',
+    serialNumber: team.serialNumber,
+    technology: team.technology,
+    leaderName: user?.name || '',
+    memberCount: members.length,
+    currentTitle: projectTitle,
+    currentDescription: projectDescription,
+    currentProblem: problemStatement,
+    currentArea: projectArea,
+    currentAI: aiCapabilities,
+    currentTech: techStack,
+    // Master data from teams table for SpaceBot context
+    masterTitle: team.projectTitle || '',
+    masterDescription: team.projectDescription || '',
+    masterProblem: team.problemStatement || '',
+    masterAiUsage: team.aiUsage || 'No',
+  } : {}
 
   const StepIcon = ({id,size}) => {
     if(id==='ai') return React.createElement('img',{src:'https://i.ibb.co/MD0SRjWB/chat-bot.png',alt:'',style:{width:size+'px',height:size+'px',objectFit:'contain',filter:'brightness(0) invert(1)'}})
@@ -342,6 +381,15 @@ html,body{overflow:hidden!important;background:#050008}
 .chip-tk{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.12)}
 .chip-tk .chip-x:hover{background:rgba(16,185,129,.2);color:#fff}
 
+/* ═══ Get Info Button (amber, same style as Get Team) ═══ */
+.gi{display:flex;align-items:center;justify-content:center;gap:10px;padding:10px 24px;border-radius:12px;background:linear-gradient(135deg,#EEA727,#d4911e);border:none;color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .3s;box-shadow:0 4px 24px rgba(238,167,39,.25);position:relative;overflow:hidden;margin-top:8px;float:right}
+.gi::before{content:'';position:absolute;top:0;left:-100%;width:200%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);animation:shimmer 3s infinite}
+.gi:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(238,167,39,.35)}
+.gi:disabled{opacity:.7;pointer-events:none}
+.gi svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.gi-done{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:10px;background:rgba(74,222,128,.06);border:1px solid rgba(74,222,128,.15);color:#4ade80;font-size:.72rem;font-weight:500;margin-top:8px;float:right}
+.gi-done svg{width:14px;height:14px;stroke:#4ade80;fill:none;stroke-width:2.5}
+
 /* ═══ TEAM — Get Team Button (gradient + shimmer) ═══ */
 .gt{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:12px 32px;border-radius:12px;background:linear-gradient(135deg,#7B2FBE,#5a1fa0);border:none;color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .3s;box-shadow:0 4px 24px rgba(123,47,190,.25);position:relative;overflow:hidden}
 .gt::before{content:'';position:absolute;top:0;left:-100%;width:200%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);animation:shimmer 3s infinite}
@@ -471,6 +519,7 @@ html,body{overflow:hidden!important;background:#050008}
   .modal-btns{flex-direction:column}
   .chips{gap:8px}.chip{padding:8px 12px;font-size:.76rem}
   .gt{padding:14px 24px;font-size:13px}
+  .gi{font-size:12px;padding:10px 20px}
   .sec{margin-bottom:20px}
   .tm-grid{grid-template-columns:1fr}
   .tm-card{padding:16px;padding-top:36px}
@@ -544,6 +593,20 @@ html,body{overflow:hidden!important;background:#050008}
                   <div><MultiDropdown label="Project Area" options={PROJECT_AREAS} selected={projectArea} onChange={setProjectArea} counts={areaCounts} accent={SECTION_COLORS.project} cardBg={CARD_BG.project} onCustomAdd={()=>{}} /></div>
                   <div><FloatingField label="Project Description" required type="textarea" placeholder="Describe what your project does..." value={projectDescription} onChange={setProjectDescription} accent={SECTION_COLORS.project} cardBg={CARD_BG.project} rows={4} maxLen={500} /></div>
                   <div><FloatingField label="Problem Statement" type="textarea" placeholder="What problem does your project solve?" value={problemStatement} onChange={setProblemStatement} accent={SECTION_COLORS.project} cardBg={CARD_BG.project} rows={3} maxLen={300} /></div>
+                </div>
+                {/* Get Info Button — bottom right */}
+                <div style={{display:'flex',justifyContent:'flex-end',marginTop:'16px',clear:'both'}}>
+                  {infoLoaded ? (
+                    <div className="gi-done">
+                      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                      Info Loaded — Edit fields above
+                    </div>
+                  ) : (
+                    <button className="gi" onClick={fetchProjectInfo} disabled={infoLoading}>
+                      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                      {infoLoading ? 'Fetching...' : 'Get Info'}
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
