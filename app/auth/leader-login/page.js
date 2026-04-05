@@ -11,15 +11,16 @@ export default function LeaderLoginPage() {
   const [rollNumber, setRollNumber] = useState('')
   const [password, setPassword]     = useState('')
   const [loading, setLoading]       = useState(false)
+  const [error, setError]           = useState('')
   const [isMobile, setIsMobile]     = useState(false)
+  const [showPass, setShowPass]     = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false)
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768)
     check()
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
   }, [])
-  const [showPass, setShowPass]     = useState(false)
-  const [showSuccess, setShowSuccess] = useState(false)
 
   useEffect(() => {
     const savedRoll = sessionStorage.getItem('registeredRoll')
