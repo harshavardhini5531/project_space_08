@@ -360,7 +360,16 @@ export default function RegisterPage() {
             <StepDot n={3} />
           </div>
 
-          {error && <div className="ps-error">{error}</div>}
+          {error && <div className="ps-error">
+  {error}
+  {error.toLowerCase().includes('already') && (
+    <div style={{marginTop:'8px'}}>
+      <span style={{color:'#EEA727',cursor:'pointer',fontWeight:600,textDecoration:'underline'}} onClick={()=>router.push('/auth/leader-login')}>
+        Login to complete registration →
+      </span>
+    </div>
+  )}
+</div>}
 
           {step === 1 && (
             <>
