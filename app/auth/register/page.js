@@ -12,13 +12,16 @@ export default function RegisterPage() {
   const [password, setPassword]           = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [studentInfo, setStudentInfo]     = useState(null)
-  const [loading, setLoading]             = useState(false)
+  const [loading, setLoading]             // ═══ MOBILE LAYOUT ═══
+  if (isMobile) {= useState(false)
   const [error, setError]                 = useState('')
   const [showPass, setShowPass]           = useState(false)
   const [showConfirm, setShowConfirm]     = useState(false)
   const [isMobile, setIsMobile]           = useState(false)
+  const [mounted, setMounted]             = useState(false)
 
   useEffect(() => {
+    setMounted(true)
     const check = () => setIsMobile(window.innerWidth < 768)
     check()
     window.addEventListener('resize', check)
@@ -146,6 +149,7 @@ export default function RegisterPage() {
   }
 
   // ═══ MOBILE LAYOUT ═══
+  if (!mounted) return <div style={{width:'100%',height:'100vh',background:'#050008'}} />
   if (isMobile) {
     return (
       <>
