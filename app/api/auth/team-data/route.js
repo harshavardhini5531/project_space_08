@@ -52,18 +52,13 @@ export async function POST(request) {
         projectTitle: team.project_title,
         projectDescription: team.project_description,
         problemStatement: team.problem_statement,
-        projectArea: team.project_area,
         aiUsage: team.ai_usage,
-        aiCapabilities: team.ai_capabilities,
-        aiTools: team.ai_tools,
-        techStack: team.tech_stack,
         leaderRoll: team.leader_roll,
-        credits: team.credits,
-        registeredAt: team.registered_at,
+        registered: team.registered,
         mentorAssigned: team.mentor_assigned
       },
       members,
-      isLeader: memberRow.is_leader
+      isLeader: team.leader_roll === rollNumber
     })
 
   } catch (err) {
