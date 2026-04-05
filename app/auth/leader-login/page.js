@@ -11,7 +11,7 @@ export default function LeaderLoginPage() {
   const [rollNumber, setRollNumber] = useState('')
   const [password, setPassword]     = useState('')
   const [loading, setLoading]       = useState(false)
-  const [error, setError]           = useState('')
+  const [isMobile, setIsMobile]     = useState(false)
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768)
     check()
