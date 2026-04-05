@@ -18,8 +18,6 @@ export default function RegisterPage() {
   const [showPass, setShowPass]           = useState(false)
   const [showConfirm, setShowConfirm]     = useState(false)
   const [isMobile, setIsMobile]           = useState(false)
-  const [mounted, setMounted]             = useState(false)
-
   useEffect(() => {
     setMounted(true)
     const check = () => setIsMobile(window.innerWidth < 768)
@@ -149,10 +147,9 @@ export default function RegisterPage() {
   }
 
   // ═══ MOBILE LAYOUT ═══
-  if (!mounted) return <div style={{width:'100%',height:'100vh',background:'#050008'}} />
   if (isMobile) {
     return (
-      <>
+      <AuthBackground>
         <style>{`
           *{margin:0;padding:0;box-sizing:border-box;}
           html,body{background:#050008;overflow:auto!important;}
@@ -303,7 +300,7 @@ export default function RegisterPage() {
             </>)}
           </div>
         </div>
-      </>
+      </AuthBackground>
     )
   }
 
