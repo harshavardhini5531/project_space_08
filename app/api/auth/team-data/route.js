@@ -9,36 +9,24 @@ export async function POST(request) {
       return Response.json({ error: 'Roll number is required' }, { status: 400 })
     }
 
-    // Get team membership — use serial_number for linking
-    const { data: memberRow } = await supabase
-      .from('team_members')
-      .select('team_number, serial_number, is_leader')
-      .eq('roll_number', rollNumber)
+    // Get team directly by leader roll number
+    const { data: team } = await supabase
+      .from('teams')
+      .select('*')
+      .eq('leader_roll', rollNumber)
       .single()
-
-    if (!memberRow || !memberRow.is_leader) {
-      return Response.json({ error: 'Not a team leader' }, { status: 403 })
-    }
-
-    // Get team info — by team_number if assigned, otherwise by serial_number
-    let team = null
-    if (memberRow.team_number) {
-      const { data } = await supabase.from('teams').select('*').eq('team_number', memberRow.team_number).single()
-      team = data
-    } else {
-      const { data } = await supabase.from('teams').select('*').eq('serial_number', memberRow.serial_number).single()
-      team = data
-    }
 
     if (!team) {
       return Response.json({ error: 'Team not found' }, { status: 404 })
     }
 
+    const serialNumber = team.serial_number
+
     // Get all team members with student details
     const { data: teamMembers } = await supabase
       .from('team_members')
       .select('roll_number, is_leader, short_name')
-      .eq('serial_number', memberRow.serial_number)
+      .eq('serial_number', serialNumber)
 
     const rolls = (teamMembers || []).map(m => m.roll_number)
     let members = []
