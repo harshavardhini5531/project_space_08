@@ -83,6 +83,63 @@ export default function RegisterPage() {
     ? studentInfo.email.replace(/(.{2})(.*)(@.*)/, (_,a,b,c) => a + '*'.repeat(Math.min(b.length,6)) + c)
     : ''
 
+  const isAlreadyExistsError = error && error.toLowerCase().includes('already')
+
+  // Shared error banner component for both views
+  const ErrorBanner = () => {
+    if (!error) return null
+    return (
+      <div style={{
+        background: isAlreadyExistsError ? 'rgba(238,167,39,0.06)' : 'rgba(255,40,0,0.06)',
+        border: `1px solid ${isAlreadyExistsError ? 'rgba(238,167,39,0.2)' : 'rgba(255,40,0,0.15)'}`,
+        borderRadius: '12px',
+        padding: '14px 16px',
+        marginBottom: '16px',
+        animation: 'errIn 0.3s ease'
+      }}>
+        <div style={{display:'flex',alignItems:'flex-start',gap:'10px'}}>
+          <div style={{
+            width:'28px',height:'28px',borderRadius:'8px',flexShrink:0,
+            background: isAlreadyExistsError ? 'rgba(238,167,39,0.12)' : 'rgba(255,40,0,0.1)',
+            display:'flex',alignItems:'center',justifyContent:'center',
+            fontSize:'13px',marginTop:'1px'
+          }}>
+            {isAlreadyExistsError ? '🔑' : '⚠️'}
+          </div>
+          <div style={{flex:1}}>
+            <div style={{
+              fontSize:'0.8rem',
+              color: isAlreadyExistsError ? '#EEA727' : '#ff6040',
+              fontWeight:500,lineHeight:1.5
+            }}>{error}</div>
+            {isAlreadyExistsError && (
+              <button
+                onClick={() => router.push('/auth/leader-login')}
+                style={{
+                  marginTop:'10px',
+                  display:'flex',alignItems:'center',gap:'6px',
+                  padding:'9px 18px',borderRadius:'10px',
+                  background:'linear-gradient(135deg,#EEA727,#d4911e)',
+                  border:'none',color:'#fff',
+                  fontFamily:"'DM Sans','Poppins',sans-serif",
+                  fontSize:'0.78rem',fontWeight:600,
+                  cursor:'pointer',
+                  boxShadow:'0 2px 12px rgba(238,167,39,0.25)',
+                  transition:'all 0.2s'
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/>
+                </svg>
+                Login to complete registration
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   const StepDot = ({ n }) => {
     const state = step > n ? 'done' : step === n ? 'active' : 'pending'
     return <div className={`ps-step-dot ${state}`}>{step > n ? '✓' : n}</div>
@@ -96,6 +153,7 @@ export default function RegisterPage() {
           *{margin:0;padding:0;box-sizing:border-box;}
           html,body{background:#050008;overflow:auto!important;}
           body{font-family:'Poppins',sans-serif;color:#fff;}
+          @keyframes errIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
           .ma-wrap{
             width:100%;min-height:100vh;min-height:100dvh;
             display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -159,7 +217,7 @@ export default function RegisterPage() {
               ))}
             </div>
 
-            {error && <div style={{background:'rgba(255,40,0,0.1)',border:'1px solid rgba(255,40,0,0.25)',borderRadius:'8px',padding:'9px 12px',fontSize:'0.75rem',color:'#ff6040',marginBottom:'12px'}}>{error}</div>}
+            <ErrorBanner />
 
             {step === 1 && (<>
               <div style={{marginBottom:'14px'}}>
@@ -250,6 +308,7 @@ export default function RegisterPage() {
     <AuthBackground>
       <style>{`
         ${globalStyles}
+        @keyframes errIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
         .reg-page {
           width:100%;min-height:100vh;
           display:flex;align-items:center;justify-content:center;
@@ -360,16 +419,7 @@ export default function RegisterPage() {
             <StepDot n={3} />
           </div>
 
-          {error && <div className="ps-error">
-  {error}
-  {error.toLowerCase().includes('already') && (
-    <div style={{marginTop:'8px'}}>
-      <span style={{color:'#EEA727',cursor:'pointer',fontWeight:600,textDecoration:'underline'}} onClick={()=>router.push('/auth/leader-login')}>
-        Login to complete registration →
-      </span>
-    </div>
-  )}
-</div>}
+          <ErrorBanner />
 
           {step === 1 && (
             <>
