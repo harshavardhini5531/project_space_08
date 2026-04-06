@@ -64,8 +64,7 @@ export default function MultiDropdown({ label, options, selected, onChange, coun
     <div ref={ref} style={{ position: 'relative', width: '100%' }}>
       <style>{`
 /* Tags — scoped */
-${S} .mdt{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}
-${S} .mdt-t{display:inline-flex;align-items:center;gap:6px;padding:5px 8px 5px 13px;background:rgba(${rgb},.08);border:1px solid rgba(${rgb},.18);border-radius:20px;font-size:.74rem;font-weight:500;color:rgba(255,255,255,.85);animation:mdtPop .3s cubic-bezier(.34,1.56,.64,1)}
+${S} .mdt{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px;margin-bottom:10px}${S} .mdt-t{display:inline-flex;align-items:center;gap:6px;padding:5px 8px 5px 13px;background:rgba(${rgb},.08);border:1px solid rgba(${rgb},.18);border-radius:20px;font-size:.74rem;font-weight:500;color:rgba(255,255,255,.85);animation:mdtPop .3s cubic-bezier(.34,1.56,.64,1)}
 @keyframes mdtPop{from{opacity:0;transform:scale(.65) translateY(6px)}to{opacity:1;transform:scale(1) translateY(0)}}
 ${S} .mdt-t:hover{background:rgba(${rgb},.14);border-color:rgba(${rgb},.28)}
 ${S} .mdt-h{display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:10px;background:rgba(${rgb},.12)}
