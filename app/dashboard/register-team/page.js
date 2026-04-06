@@ -214,9 +214,12 @@ export default function RegisterTeamPage() {
   function handleRegisterClick() {
     setError('')
     if(!projectTitle.trim()){setError('Project title is required');scrollToSection('project');return}
+    if(projectTitle.length>25){setError('Project title must be 25 characters or less. Please shorten it.');scrollToSection('project');return}
     if(!projectDescription.trim()){setError('Project description is required');scrollToSection('project');return}
     if(!projectArea.length){setError('Please select at least one Project Area');scrollToSection('project');return}
     if(!techStack.length){setError('Please select at least one Tech Stack item');scrollToSection('tech');return}
+    if(aiUsage==='Yes' && !aiCapabilities.length){setError('Please add at least one AI Capability');scrollToSection('ai');return}
+    if(aiUsage==='Yes' && !aiTools.length){setError('Please add at least one AI Tool');scrollToSection('ai');return}
     setShowConfirm(true)
   }
 
@@ -618,8 +621,8 @@ html,body{overflow:hidden!important;background:#050008}
                 <div className="card-h"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>Project Information</div>
                 <div className="fg">
                   <div>
-                    <FloatingField label="Project Title" required type="input" placeholder="Enter your project title (max 25 chars)" value={projectTitle} onChange={v=>{ if(v.length<=25) setProjectTitle(v) }} accent={SECTION_COLORS.project} cardBg={CARD_BG.project} />
-                    <div style={{textAlign:'right',fontSize:'.58rem',color:projectTitle.length>=23?'#fd1c00':'rgba(255,255,255,.2)',marginTop:'4px',fontWeight:500}}>{projectTitle.length}/25</div>
+                    <FloatingField label="Project Title" required type="input" placeholder="Enter your project title (max 25 chars)" value={projectTitle} onChange={v=>setProjectTitle(v)} accent={SECTION_COLORS.project} cardBg={CARD_BG.project} />
+                    <div style={{textAlign:'right',fontSize:'.58rem',color:projectTitle.length>25?'#fd1c00':projectTitle.length>=23?'#EEA727':'rgba(255,255,255,.2)',marginTop:'4px',fontWeight:500}}>{projectTitle.length}/25 {projectTitle.length>25?'⚠ Must be 25 or less':''}</div>
                   </div>
                   <div style={{position:'relative',zIndex:50}}><MultiDropdown label="Project Area *" options={PROJECT_AREAS} selected={projectArea} onChange={setProjectArea} counts={areaCounts} accent={SECTION_COLORS.project} cardBg={CARD_BG.project} onCustomAdd={()=>{}} /></div>
                   <div><FloatingField label="Project Description" required type="textarea" placeholder="Describe what your project does..." value={projectDescription} onChange={setProjectDescription} accent={SECTION_COLORS.project} cardBg={CARD_BG.project} rows={4} maxLen={500} /></div>
@@ -730,7 +733,7 @@ html,body{overflow:hidden!important;background:#050008}
                 <div className="card-h"><svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Register Team</div>
                 <div style={{textAlign:'center',padding:'12px 0 8px'}}>
                   <div style={{fontSize:'.78rem',color:'rgba(255,255,255,.45)',marginBottom:'16px',lineHeight:1.6}}>Review all your details before registering. Once submitted, details cannot be edited.</div>
-                  <button className="sub-btn" onClick={handleRegisterClick} disabled={saving||!projectTitle.trim()||!projectDescription.trim()||!projectArea.length||!techStack.length}>{saving?'Registering...':'Review & Register Team'}</button>
+                  <button className="sub-btn" onClick={handleRegisterClick} disabled={saving||!projectTitle.trim()||projectTitle.length>25||!projectDescription.trim()||!projectArea.length||!techStack.length}>{saving?'Registering...':'Review & Register Team'}</button>
                 </div>
               </div>
             </div>
