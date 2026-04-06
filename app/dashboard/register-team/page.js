@@ -389,13 +389,13 @@ html,body{overflow:hidden!important;background:#050008}
 @container main (max-width:600px){.rev-g{grid-template-columns:1fr!important}}
 @container main (max-width:500px){.card{padding:22px 18px}.ct{padding:0 16px 80px}.ct-hdr{flex-direction:column;gap:8px}}
 
-.tg-w{display:flex;align-items:center;gap:14px;margin-bottom:20px;padding:12px 16px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04)}
-.tg{width:48px;height:26px;border-radius:13px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.1);cursor:pointer;position:relative;transition:all .3s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;flex-shrink:0}
-.tg.on{background:rgba(242,29,50,.25);border-color:rgba(242,29,50,.35)}
-.tg-d{width:20px;height:20px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:transform .25s cubic-bezier(.34,1.56,.64,1);box-shadow:0 1px 4px rgba(0,0,0,.2)}
-.tg.on .tg-d{transform:translateX(22px)}
-.tg-t{font-size:.8rem;color:rgba(255,255,255,.45);user-select:none;font-weight:500}
-.tg.on+.tg-t{color:rgba(242,29,50,.8)}
+.tg-w{display:flex;align-items:center;gap:14px;margin-bottom:20px;padding:14px 18px;border-radius:14px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04)}
+.tg{width:52px;height:28px;border-radius:14px;background:#e0e0e0;border:none;cursor:pointer;position:relative;transition:background .3s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;flex-shrink:0}
+.tg.on{background:#3b82f6}
+.tg-d{width:24px;height:24px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:transform .25s cubic-bezier(.34,1.56,.64,1);box-shadow:0 1px 3px rgba(0,0,0,.15),0 1px 2px rgba(0,0,0,.1)}
+.tg.on .tg-d{transform:translateX(24px)}
+.tg-t{font-size:.82rem;color:rgba(255,255,255,.5);user-select:none;font-weight:500}
+.tg.on+.tg-t{color:rgba(255,255,255,.85)}
 
 .err-toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:9999;max-width:480px;width:90%;display:flex;align-items:center;gap:12px;padding:14px 18px;border-radius:14px;background:rgba(20,8,8,.95);border:1px solid rgba(255,40,0,.2);box-shadow:0 8px 40px rgba(0,0,0,.5),0 0 20px rgba(255,40,0,.08);backdrop-filter:blur(16px);animation:toastIn .4s cubic-bezier(.22,1,.36,1)}
 .err-toast-icon{width:32px;height:32px;border-radius:10px;background:rgba(255,40,0,.1);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
@@ -621,7 +621,7 @@ html,body{overflow:hidden!important;background:#050008}
                     <FloatingField label="Project Title" required type="input" placeholder="Enter your project title (max 25 chars)" value={projectTitle} onChange={v=>{ if(v.length<=25) setProjectTitle(v) }} accent={SECTION_COLORS.project} cardBg={CARD_BG.project} />
                     <div style={{textAlign:'right',fontSize:'.58rem',color:projectTitle.length>=23?'#fd1c00':'rgba(255,255,255,.2)',marginTop:'4px',fontWeight:500}}>{projectTitle.length}/25</div>
                   </div>
-                  <div style={{position:'relative',zIndex:50}}><MultiDropdown label="Project Area" options={PROJECT_AREAS} selected={projectArea} onChange={setProjectArea} counts={areaCounts} accent={SECTION_COLORS.project} cardBg={CARD_BG.project} onCustomAdd={()=>{}} /></div>
+                  <div style={{position:'relative',zIndex:50}}><MultiDropdown label="Project Area *" options={PROJECT_AREAS} selected={projectArea} onChange={setProjectArea} counts={areaCounts} accent={SECTION_COLORS.project} cardBg={CARD_BG.project} onCustomAdd={()=>{}} /></div>
                   <div><FloatingField label="Project Description" required type="textarea" placeholder="Describe what your project does..." value={projectDescription} onChange={setProjectDescription} accent={SECTION_COLORS.project} cardBg={CARD_BG.project} rows={4} maxLen={500} /></div>
                   <div><FloatingField label="Problem Statement" type="textarea" placeholder="What problem does your project solve?" value={problemStatement} onChange={setProblemStatement} accent={SECTION_COLORS.project} cardBg={CARD_BG.project} rows={3} maxLen={300} /></div>
                 </div>
@@ -646,7 +646,7 @@ html,body{overflow:hidden!important;background:#050008}
             <div className="sec" ref={sectionRefs.tech} style={{zIndex:activeSection==='tech'?100:40}} onClick={()=>setActiveSection('tech')}>
               <div className="card ck"><div className="card-glow"/>
                 <div className="card-h"><svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>Tech Stack</div>
-                <div className="fg"><div className="fg-full"><MultiDropdown label="Tech Stack" options={techOptions} selected={techStack} onChange={setTechStack} counts={techCounts} accent={SECTION_COLORS.tech} cardBg={CARD_BG.tech} onCustomAdd={()=>{}} /></div></div>
+                <div className="fg"><div className="fg-full"><MultiDropdown label="Tech Stack *" options={techOptions} selected={techStack} onChange={setTechStack} counts={techCounts} accent={SECTION_COLORS.tech} cardBg={CARD_BG.tech} onCustomAdd={()=>{}} /></div></div>
               </div>
             </div>
 

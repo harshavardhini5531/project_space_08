@@ -127,6 +127,26 @@ export async function POST(request) {
           .single()
 
         if (mentor?.email) {
+          // Count how many teams this mentor has and how many registered
+          const { data: mentorTeams } = await supabase
+            .from('teams')
+            .select('serial_number, registered')
+            .eq('mentor_assigned', mentorName)
+          
+          const totalAssigned = mentorTeams?.length || 0
+          const { data: registeredTeams } = await supabase
+            .from('team_registrations')
+            .select('serial_number')
+            .in('serial_number', (mentorTeams || []).map(t => t.serial_number))
+          
+          const totalRegistered = registeredTeams?.length || 0
+          const allDone = totalRegistered === totalAssigned && totalAssigned > 0
+          const progressText = `${totalRegistered} of ${totalAssigned} teams registered`
+          const progressColor = allDone ? '#4ade80' : '#EEA727'
+          const progressBg = allDone ? 'rgba(74,222,128,.06)' : 'rgba(238,167,39,.06)'
+          const progressBorder = allDone ? 'rgba(74,222,128,.15)' : 'rgba(238,167,39,.15)'
+          const progressEmoji = allDone ? '🎉' : '📊'
+
           const mentorHtml = `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#050008;font-family:Arial,sans-serif">
@@ -136,8 +156,16 @@ export async function POST(request) {
       <div style="font-size:11px;letter-spacing:3px;color:rgba(255,255,255,.5);margin-top:8px;text-transform:uppercase">Project Space</div>
     </div>
     <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:32px 24px">
-      <h1 style="font-size:20px;font-weight:700;color:#fff;text-align:center;margin:0 0 8px">New Team Registered!</h1>
-      <p style="font-size:14px;color:rgba(255,255,255,.5);text-align:center;margin:0 0 24px">Hi ${mentor.name || mentorName}, a team assigned to you has registered.</p>
+      <h1 style="font-size:20px;font-weight:700;color:#fff;text-align:center;margin:0 0 8px">${allDone ? 'All Teams Registered! 🎉' : 'New Team Registered!'}</h1>
+      <p style="font-size:14px;color:rgba(255,255,255,.5);text-align:center;margin:0 0 20px">Hi ${mentor.name || mentorName}, a team assigned to you has completed registration.</p>
+      
+      <div style="background:${progressBg};border:1px solid ${progressBorder};border-radius:10px;padding:12px 16px;margin-bottom:20px;text-align:center">
+        <div style="font-size:13px;color:${progressColor};font-weight:600">${progressEmoji} ${progressText}</div>
+        <div style="margin-top:8px;height:6px;border-radius:3px;background:rgba(255,255,255,.06);overflow:hidden">
+          <div style="height:100%;border-radius:3px;background:${progressColor};width:${totalAssigned > 0 ? Math.round(totalRegistered/totalAssigned*100) : 0}%"></div>
+        </div>
+      </div>
+
       <div style="background:rgba(253,28,0,.04);border:1px solid rgba(253,28,0,.1);border-radius:12px;padding:16px;margin-bottom:20px">
         <div style="font-size:11px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px">Team</div>
         <div style="font-size:16px;font-weight:700;color:#fd1c00">${teamNumber}</div>
