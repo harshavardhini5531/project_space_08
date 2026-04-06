@@ -20,10 +20,10 @@ function rollToEmail(roll) {
 
 export async function POST(request) {
   try {
-    const { teamNumber, projectTitle, technology, leaderName, members } = await request.json()
+    const { teamNumber, projectTitle, technology, leaderName, members, mentorName } = await request.json()
 
     console.log('=== NOTIFY TEAM ===')
-    console.log('Team:', teamNumber, '| Members:', members?.length)
+    console.log('Team:', teamNumber, '| Members:', members?.length, '| Mentor:', mentorName)
 
     if (!teamNumber || !members?.length) {
       return Response.json({ error: 'Missing team data' }, { status: 400 })
@@ -82,6 +82,9 @@ export async function POST(request) {
         <div style="margin-top:12px;font-size:11px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px">Team Leader</div>
         <div style="font-size:14px;color:rgba(255,255,255,.7)">${leaderName || 'Your Leader'}</div>
       </div>
+      <div style="text-align:center">
+        <a href="${appUrl}/auth/login" style="display:inline-block;padding:12px 32px;background:linear-gradient(135deg,#fd1c00,#fd3a20);color:#fff;text-decoration:none;border-radius:10px;font-weight:600;font-size:14px">Login to Dashboard</a>
+      </div>
       <p style="font-size:11px;color:rgba(255,255,255,.25);text-align:center;margin-top:20px">
         May 6–12, 2026 · Aditya University<br/>Do not reply to this email.
       </p>
@@ -109,6 +112,62 @@ export async function POST(request) {
     }
 
     console.log('=== DONE:', sent + '/' + emailList.length, 'sent ===')
+
+    // Send notification to mentor if assigned
+    if (mentorName) {
+      try {
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://yiwyfhdzgvlsmdeshdgv.supabase.co',
+          process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+        )
+        const { data: mentor } = await supabase
+          .from('mentors')
+          .select('email, name')
+          .eq('name', mentorName)
+          .single()
+
+        if (mentor?.email) {
+          const mentorHtml = `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#050008;font-family:Arial,sans-serif">
+  <div style="max-width:520px;margin:0 auto;padding:32px 20px">
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="display:inline-block;width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#fd1c00,#faa000);color:#fff;font-weight:700;font-size:14px;line-height:44px;text-align:center">PS</div>
+      <div style="font-size:11px;letter-spacing:3px;color:rgba(255,255,255,.5);margin-top:8px;text-transform:uppercase">Project Space</div>
+    </div>
+    <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:32px 24px">
+      <h1 style="font-size:20px;font-weight:700;color:#fff;text-align:center;margin:0 0 8px">New Team Registered!</h1>
+      <p style="font-size:14px;color:rgba(255,255,255,.5);text-align:center;margin:0 0 24px">Hi ${mentor.name || mentorName}, a team assigned to you has registered.</p>
+      <div style="background:rgba(253,28,0,.04);border:1px solid rgba(253,28,0,.1);border-radius:12px;padding:16px;margin-bottom:20px">
+        <div style="font-size:11px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px">Team</div>
+        <div style="font-size:16px;font-weight:700;color:#fd1c00">${teamNumber}</div>
+        <div style="margin-top:12px;font-size:11px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px">Project</div>
+        <div style="font-size:14px;color:#fff;font-weight:600">${projectTitle || 'Untitled'}</div>
+        <div style="margin-top:12px;font-size:11px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px">Technology Track</div>
+        <div style="font-size:14px;color:#EEA727">${technology}</div>
+        <div style="margin-top:12px;font-size:11px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px">Team Leader</div>
+        <div style="font-size:14px;color:rgba(255,255,255,.7)">${leaderName || 'Leader'}</div>
+        <div style="margin-top:12px;font-size:11px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px">Team Size</div>
+        <div style="font-size:14px;color:rgba(255,255,255,.7)">${members.length} members</div>
+      </div>
+      <p style="font-size:11px;color:rgba(255,255,255,.25);text-align:center;margin-top:20px">May 6–12, 2026 · Aditya University<br/>Do not reply to this email.</p>
+    </div>
+  </div>
+</body>
+</html>`
+          await transporter.sendMail({
+            from: `"Project Space" <${process.env.GMAIL_USER}>`,
+            to: mentor.email,
+            subject: `📋 Team ${teamNumber} Registered — ${projectTitle} | Project Space`,
+            html: mentorHtml
+          })
+          console.log('✅ Mentor notified:', mentor.email)
+        }
+      } catch (mentorErr) {
+        console.error('Mentor notify error:', mentorErr.message)
+      }
+    }
+
     return Response.json({ sent, total: emailList.length })
 
   } catch (err) {

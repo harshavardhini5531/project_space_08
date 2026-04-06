@@ -25,7 +25,7 @@ export async function POST(request) {
     // Check team membership
     const { data: memberRow } = await supabase
       .from('team_members')
-      .select('is_leader, team_number')
+      .select('is_leader, team_number, serial_number')
       .eq('roll_number', rollNumber)
       .single()
 
@@ -39,7 +39,7 @@ export async function POST(request) {
         const { data: teamRow } = await supabase
           .from('teams')
           .select('leader_roll')
-          .eq('team_number', memberRow.team_number)
+          .eq('serial_number', memberRow.serial_number)
           .single()
 
         let leaderName = teamRow?.leader_roll || 'your team leader'
@@ -79,7 +79,7 @@ export async function POST(request) {
       const { data: teamRow } = await supabase
         .from('teams')
         .select('leader_roll, registered')
-        .eq('team_number', memberRow.team_number)
+        .eq('serial_number', memberRow.serial_number)
         .single()
 
       if (!teamRow?.registered) {

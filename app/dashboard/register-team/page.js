@@ -31,8 +31,7 @@ export default function RegisterTeamPage() {
   const [members, setMembers] = useState([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [toast, setToast] = useState(null)
-  const toastTimer = useRef(null)
+  const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [membersLoaded, setMembersLoaded] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
@@ -105,33 +104,17 @@ export default function RegisterTeamPage() {
     if(!u){router.push('/auth/login');return}
     if(u.role!=='leader'){router.push('/auth/login');return}
     const roll = u.rollNumber || u.roll_number || ''
-    if(!roll){showToast('Session missing roll number. Please login again.');setLoading(false);return}
-    setUser({...u, rollNumber: roll}); fetchTeamInfo(roll, true)
+    if(!roll){setError('Session missing roll number. Please login again.');setLoading(false);return}
+    setUser({...u, rollNumber: roll}); fetchTeamInfo(roll)
   }, [])
 
-  // ── Toast helpers ──
-  function showToast(message, type = 'error') {
-    if (toastTimer.current) clearTimeout(toastTimer.current)
-    setToast({ message, type })
-    toastTimer.current = setTimeout(() => setToast(null), 30000)
-  }
-  function closeToast() {
-    if (toastTimer.current) clearTimeout(toastTimer.current)
-    setToast(null)
-  }
-
-  async function fetchTeamInfo(roll, isInitialLoad = false) {
+  async function fetchTeamInfo(roll) {
     try {
       const res=await fetch('/api/auth/team-data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rollNumber:roll})})
       const data=await res.json()
-      if(!res.ok){
-        if(!isInitialLoad) showToast(data.error || 'Failed to load team data')
-        setLoading(false);return
-      }
+      if(!res.ok){setError(data.error);setLoading(false);return}
       setTeam(data.team)
-    } catch{
-      if(!isInitialLoad) showToast('Failed to load team data')
-    } finally{setLoading(false)}
+    } catch{setError('Failed to load team data')} finally{setLoading(false)}
   }
 
   async function fetchProjectInfo() {
@@ -144,14 +127,14 @@ export default function RegisterTeamPage() {
         body: JSON.stringify({ rollNumber: user.rollNumber || user.roll_number })
       })
       const data = await res.json()
-      if (!res.ok) { showToast(data.error); setInfoLoading(false); return }
+      if (!res.ok) { setError(data.error); setInfoLoading(false); return }
       const t = data.team
       if (t.projectTitle) setProjectTitle(t.projectTitle)
       if (t.projectDescription) setProjectDescription(t.projectDescription)
       if (t.problemStatement) setProblemStatement(t.problemStatement)
       if (t.aiUsage) setAiUsage(t.aiUsage)
       setInfoLoaded(true)
-    } catch { showToast('Failed to fetch project info') }
+    } catch { setError('Failed to fetch project info') }
     finally { setInfoLoading(false) }
   }
 
@@ -160,10 +143,11 @@ export default function RegisterTeamPage() {
     try {
       const res=await fetch('/api/auth/team-data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rollNumber:user.rollNumber||user.roll_number})})
       const data=await res.json()
-      if(!res.ok){showToast(data.error);return}
+      if(!res.ok){setError(data.error);return}
       const membersWithShort = (data.members||[]).map(m => ({...m, short_name: m.short_name || generateShortName(m.name)}))
+      membersWithShort.sort((a,b) => (b.is_leader ? 1 : 0) - (a.is_leader ? 1 : 0))
       setMembers(membersWithShort); setMembersLoaded(true)
-    } catch{showToast('Failed to load members')} finally{setLoading(false)}
+    } catch{setError('Failed to load members')} finally{setLoading(false)}
   }
 
   function addChip(val,list,setList,setInput) { const v=val.trim(); if(v&&!list.includes(v)){setList([...list,v]);setInput('')} }
@@ -222,23 +206,24 @@ export default function RegisterTeamPage() {
   function scrollToSection(id) { sectionRefs[id]?.current?.scrollIntoView({behavior:'smooth',block:'start'}) }
 
   function handleRegisterClick() {
-    if(!projectTitle.trim()){showToast('Project title is required');scrollToSection('project');return}
-    if(!projectDescription.trim()){showToast('Project description is required');scrollToSection('project');return}
+    setError('')
+    if(!projectTitle.trim()){setError('Project title is required');scrollToSection('project');return}
+    if(!projectDescription.trim()){setError('Project description is required');scrollToSection('project');return}
     setShowConfirm(true)
   }
 
   async function handleConfirmSubmit() {
-    setShowConfirm(false);setSuccess('');setSaving(true)
+    setShowConfirm(false);setError('');setSuccess('');setSaving(true)
     try {
       const res=await fetch('/api/auth/register-team',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rollNumber:user.rollNumber||user.roll_number,serialNumber:team.serialNumber,projectTitle,projectDescription,problemStatement,projectArea,aiUsage,aiCapabilities,aiTools,techStack,members})})
-      const data=await res.json(); if(!res.ok){showToast(data.error);setSaving(false);return}
+      const data=await res.json(); if(!res.ok){setError(data.error);setSaving(false);return}
       if(data.teamNumber) setTeam(prev=>({...prev, teamNumber: data.teamNumber}))
       try {
-        const notifRes=await fetch('/api/auth/notify-team',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({teamNumber:data.teamNumber||team.serialNumber,projectTitle,technology:team.technology,leaderName:user?.name||'',members})})
+        const notifRes=await fetch('/api/auth/notify-team',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({teamNumber:data.teamNumber||team.serialNumber,projectTitle,technology:team.technology,leaderName:user?.name||'',members,mentorName:team.mentorAssigned||''})})
         await notifRes.json()
       } catch(e){console.error('Notify failed:',e)}
       setSaving(false);setShowSuccess(true)
-    } catch{showToast('Network error. Try again.');setSaving(false)}
+    } catch{setError('Network error. Try again.');setSaving(false)}
   }
 
   const techOptions = TECH_STACK_OPTIONS
@@ -254,6 +239,7 @@ export default function RegisterTeamPage() {
     currentArea: projectArea,
     currentAI: aiCapabilities,
     currentTech: techStack,
+    // Master data from teams table for SpaceBot context
     masterTitle: team.projectTitle || '',
     masterDescription: team.projectDescription || '',
     masterProblem: team.problemStatement || '',
@@ -267,6 +253,7 @@ export default function RegisterTeamPage() {
 
   if(loading&&!team) return <div style={{width:'100%',height:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'#050008',color:'rgba(255,255,255,.4)',fontFamily:'sans-serif'}}>Loading...</div>
 
+  // Already registered — show simple message
   if(team && team.registered) return (
     <div style={{width:'100%',height:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'#050008',fontFamily:"'DM Sans',sans-serif"}}>
       <div style={{textAlign:'center',maxWidth:'480px',padding:'48px 40px',borderRadius:'24px',background:'linear-gradient(170deg,#14101e,#0a0810)',border:'1px solid rgba(255,255,255,.08)',boxShadow:'0 20px 60px rgba(0,0,0,.4)'}}>
@@ -295,21 +282,7 @@ ${globalStyles}
 @keyframes modalPop{from{opacity:0;transform:scale(.9) translateY(20px)}to{opacity:1;transform:none}}
 @keyframes celebPop{0%{opacity:0;transform:scale(.7) translateY(40px)}60%{transform:scale(1.03)}100%{opacity:1;transform:none}}
 @keyframes celebBounce{0%,100%{transform:translateY(0) rotate(0)}30%{transform:translateY(-12px) rotate(-5deg)}60%{transform:translateY(-6px) rotate(3deg)}}
-@keyframes toastSlide{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
-@keyframes toastCountdown{from{width:100%}to{width:0%}}
 html,body{overflow:hidden!important;background:#050008}
-
-/* ── Toast ── */
-.rt-toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:99999;display:flex;align-items:center;gap:12px;padding:14px 18px;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:#fff;max-width:92vw;width:auto;min-width:300px;animation:toastSlide .4s cubic-bezier(.16,1,.3,1) both;box-shadow:0 8px 40px rgba(0,0,0,.5);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
-.rt-toast[data-type="error"]{background:rgba(200,30,30,.92);border:1px solid rgba(255,255,255,.1)}
-.rt-toast[data-type="success"]{background:rgba(16,160,100,.92);border:1px solid rgba(255,255,255,.1)}
-.rt-toast[data-type="info"]{background:rgba(50,100,220,.92);border:1px solid rgba(255,255,255,.1)}
-.rt-toast-icon{flex-shrink:0}.rt-toast-icon svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.rt-toast-msg{flex:1;line-height:1.4}
-.rt-toast-close{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;background:rgba(255,255,255,.15);border:none;transition:background .15s}
-.rt-toast-close:hover{background:rgba(255,255,255,.25)}
-.rt-toast-close svg{width:12px;height:12px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round}
-.rt-toast-bar{position:absolute;bottom:0;left:0;height:3px;border-radius:0 0 14px 14px;background:rgba(255,255,255,.25);animation:toastCountdown 30s linear both}
 
 .pg{display:flex;height:100vh}
 .pg-m{flex:1;display:flex;flex-direction:column;overflow:hidden;transition:margin-right .3s ease;container-type:inline-size;container-name:main}
@@ -408,12 +381,20 @@ html,body{overflow:hidden!important;background:#050008}
 @container main (max-width:600px){.rev-g{grid-template-columns:1fr!important}}
 @container main (max-width:500px){.card{padding:22px 18px}.ct{padding:0 16px 80px}.ct-hdr{flex-direction:column;gap:8px}}
 
-.tg-w{display:flex;align-items:center;gap:12px;margin-bottom:20px}
-.tg{width:52px;height:28px;border-radius:14px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.08);cursor:pointer;position:relative;transition:all .3s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;flex-shrink:0}
-.tg.on{background:rgba(242,29,50,.3);border-color:rgba(242,29,50,.2)}
-.tg-d{width:22px;height:22px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:transform .25s cubic-bezier(.34,1.56,.64,1);box-shadow:0 1px 4px rgba(0,0,0,.2)}
-.tg.on .tg-d{transform:translateX(24px)}
-.tg-t{font-size:.82rem;color:rgba(255,255,255,.5);user-select:none}
+.tg-w{display:flex;align-items:center;gap:14px;margin-bottom:20px;padding:12px 16px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04)}
+.tg{width:48px;height:26px;border-radius:13px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.1);cursor:pointer;position:relative;transition:all .3s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;flex-shrink:0}
+.tg.on{background:rgba(242,29,50,.25);border-color:rgba(242,29,50,.35)}
+.tg-d{width:20px;height:20px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:transform .25s cubic-bezier(.34,1.56,.64,1);box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.tg.on .tg-d{transform:translateX(22px)}
+.tg-t{font-size:.8rem;color:rgba(255,255,255,.45);user-select:none;font-weight:500}
+.tg.on+.tg-t{color:rgba(242,29,50,.8)}
+
+.err-toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:9999;max-width:480px;width:90%;display:flex;align-items:center;gap:12px;padding:14px 18px;border-radius:14px;background:rgba(20,8,8,.95);border:1px solid rgba(255,40,0,.2);box-shadow:0 8px 40px rgba(0,0,0,.5),0 0 20px rgba(255,40,0,.08);backdrop-filter:blur(16px);animation:toastIn .4s cubic-bezier(.22,1,.36,1)}
+.err-toast-icon{width:32px;height:32px;border-radius:10px;background:rgba(255,40,0,.1);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.err-toast span{font-size:.82rem;color:#ff6040;font-weight:500;line-height:1.5}
+.err-toast-close{background:none;border:none;color:rgba(255,255,255,.3);cursor:pointer;font-size:16px;flex-shrink:0;padding:4px 2px;transition:color .2s}
+.err-toast-close:hover{color:#fff}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(-12px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
 .chip{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:8px;background:rgba(242,29,50,.06);border:1px solid rgba(242,29,50,.12);font-size:.74rem;color:rgba(255,255,255,.65)}
@@ -422,6 +403,7 @@ html,body{overflow:hidden!important;background:#050008}
 .chip-tk{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.12)}
 .chip-tk .chip-x:hover{background:rgba(16,185,129,.2);color:#fff}
 
+/* ═══ Get Info Button (amber, same style as Get Team) ═══ */
 .gi{display:flex;align-items:center;justify-content:center;gap:10px;padding:10px 24px;border-radius:12px;background:linear-gradient(135deg,#EEA727,#d4911e);border:none;color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .3s;box-shadow:0 4px 24px rgba(238,167,39,.25);position:relative;overflow:hidden;margin-top:8px;float:right}
 .gi::before{content:'';position:absolute;top:0;left:-100%;width:200%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);animation:shimmer 3s infinite}
 .gi:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(238,167,39,.35)}
@@ -430,6 +412,7 @@ html,body{overflow:hidden!important;background:#050008}
 .gi-done{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:10px;background:rgba(74,222,128,.06);border:1px solid rgba(74,222,128,.15);color:#4ade80;font-size:.72rem;font-weight:500;margin-top:8px;float:right}
 .gi-done svg{width:14px;height:14px;stroke:#4ade80;fill:none;stroke-width:2.5}
 
+/* ═══ TEAM — Get Team Button (gradient + shimmer) ═══ */
 .gt{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:12px 32px;border-radius:12px;background:linear-gradient(135deg,#7B2FBE,#5a1fa0);border:none;color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .3s;box-shadow:0 4px 24px rgba(123,47,190,.25);position:relative;overflow:hidden}
 .gt::before{content:'';position:absolute;top:0;left:-100%;width:200%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);animation:shimmer 3s infinite}
 .gt:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(123,47,190,.35)}
@@ -437,14 +420,22 @@ html,body{overflow:hidden!important;background:#050008}
 .gt svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
 .tm-count{font-family:${fonts.display};font-size:11px;font-weight:500;color:#9b5cd6;background:rgba(123,47,190,.08);border:1px solid rgba(123,47,190,.15);padding:4px 12px;border-radius:100px}
+
+/* Avatar ring with shine */
 .tm-avatar{position:relative;flex-shrink:0}
 .tm-av-ring{width:52px;height:52px;border-radius:50%;padding:1px;background:conic-gradient(from 0deg,#c084fc,#5b21b6,#c084fc,#5b21b6);position:relative}
 .tm-av-ring::after{content:'';position:absolute;inset:0;border-radius:50%;background:linear-gradient(45deg,transparent 40%,rgba(192,132,252,.5) 48%,rgba(192,132,252,.8) 50%,rgba(192,132,252,.5) 52%,transparent 60%);background-size:300% 300%;animation:ringShine 3s ease-in-out infinite;pointer-events:none;z-index:0}
 .tm-av-inner{width:100%;height:100%;border-radius:50%;background:#13101a;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;color:#9b5cd6;overflow:hidden;position:relative;z-index:1}
 .tm-av-inner img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+
+/* Leader badge — top left of card */
 .ldr-badge{position:absolute;top:12px;left:14px;font-size:8px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#fff;background:linear-gradient(135deg,#ff1d00,#c41600);padding:3px 10px;border-radius:100px;white-space:nowrap;box-shadow:0 2px 8px rgba(255,29,0,.3);z-index:3}
+
+/* Tech badge — top right */
 .tech-badge{position:absolute;top:12px;right:14px;font-size:10px;font-weight:600;color:#9b5cd6;background:rgba(123,47,190,.1);border:1px solid rgba(123,47,190,.25);padding:4px 12px;border-radius:100px;display:flex;align-items:center;gap:5px;z-index:2;white-space:nowrap;text-transform:uppercase}
 .tech-badge svg{width:12px;height:12px;stroke:#9b5cd6;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* Unified member grid — ALL members same card */
 .ct2 .card-h{margin-bottom:3px}
 .tm-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
 .tm-card{position:relative;background:#0d0a14;border:1px solid rgba(123,47,190,.15);border-radius:14px;padding:20px;padding-top:38px;display:flex;flex-direction:column;gap:14px;animation:cardIn .5s ease-out both;transition:border-color .3s,box-shadow .3s,transform .3s}
@@ -452,6 +443,7 @@ html,body{overflow:hidden!important;background:#050008}
 .tm-card:nth-child(1){animation-delay:.05s}.tm-card:nth-child(2){animation-delay:.1s}.tm-card:nth-child(3){animation-delay:.15s}.tm-card:nth-child(4){animation-delay:.2s}.tm-card:nth-child(5){animation-delay:.25s}.tm-card:nth-child(6){animation-delay:.3s}
 .tm-card-top{display:flex;align-items:center;gap:14px}
 .tm-grid .tm-card:last-child:nth-child(odd){grid-column:1}
+
 .tm-info{flex:1;min-width:0}
 .tm-name{font-family:'DM Sans',sans-serif;font-size:14.5px;font-weight:600;color:#fff;margin-bottom:1px;text-transform:uppercase;letter-spacing:.3px}
 .tm-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
@@ -459,10 +451,12 @@ html,body{overflow:hidden!important;background:#050008}
 .tm-chip svg{width:12px;height:12px;stroke:#5a5168;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .tm-short-chip{display:inline-flex;align-items:center;gap:6px;margin-top:6px;font-family:'DM Sans',sans-serif;font-size:11.5px;font-weight:500;color:#8a7f96;background:#13101a;border:1px solid rgba(255,255,255,.05);padding:3px 10px;border-radius:6px}
 .tm-short-lb{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9b5cd6}
+
 .tm-actions{display:flex;justify-content:flex-end;margin-top:auto;padding-top:4px}
 .tm-btn-edit{display:flex;align-items:center;gap:6px;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:500;color:#9b5cd6;background:rgba(123,47,190,.06);border:1px solid rgba(123,47,190,.15);padding:7px 16px;border-radius:8px;cursor:pointer;transition:all .25s;text-transform:uppercase;letter-spacing:.5px}
 .tm-btn-edit:hover{background:rgba(123,47,190,.15);border-color:rgba(123,47,190,.4);box-shadow:0 0 12px rgba(123,47,190,.1)}
 .tm-btn-edit svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
 .tm-edit{display:flex;flex-direction:column;gap:12px;padding-top:14px;border-top:1px solid rgba(123,47,190,.1);animation:editSlide .3s ease-out}
 .tm-edit-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .tm-edit-row.full{grid-template-columns:1fr}
@@ -490,6 +484,7 @@ html,body{overflow:hidden!important;background:#050008}
 .sub-btn{width:100%;padding:15px;border-radius:12px;background:${colors.gradientPrimary};border:none;color:#fff;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;box-shadow:0 4px 20px ${colors.primaryGlow};transition:all .25s}
 .sub-btn:hover{box-shadow:0 6px 28px rgba(253,28,0,.4);transform:translateY(-1px)}
 .sub-btn:disabled{opacity:.35;cursor:not-allowed;transform:none}
+.err{padding:10px 14px;border-radius:10px;margin-bottom:14px;background:${colors.errorBg};border:1px solid ${colors.errorBorder};color:${colors.error};font-size:.76rem}
 .suc{padding:10px 14px;border-radius:10px;margin-bottom:14px;background:${colors.successBg};border:1px solid ${colors.successBorder};color:${colors.success};font-size:.76rem}
 
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);z-index:9999;display:flex;align-items:center;justify-content:center;animation:modalFadeIn .25s ease}
@@ -505,6 +500,11 @@ html,body{overflow:hidden!important;background:#050008}
 .modal-btn.cancel:hover{background:rgba(255,255,255,.08);color:#fff}
 .modal-btn.confirm{background:${colors.gradientPrimary};color:#fff;box-shadow:0 4px 16px ${colors.primaryGlow}}
 .modal-btn.confirm:hover{box-shadow:0 6px 24px rgba(253,28,0,.35);transform:translateY(-1px)}
+.modal-btn.ghost{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.5)}
+.modal-btn.ghost:hover{background:rgba(255,255,255,.08);color:#fff}
+.modal-team{margin-bottom:20px;padding:14px 16px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04)}
+.modal-team-h{font-size:.6rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1.5px;font-family:${fonts.display};margin-bottom:8px}
+.modal-team-v{font-size:.78rem;color:rgba(255,255,255,.7)}
 .modal-check{display:flex;align-items:flex-start;gap:8px;padding:10px 14px;border-radius:10px;background:rgba(238,167,39,.04);border:1px solid rgba(238,167,39,.1);margin-bottom:20px;font-size:.72rem;color:rgba(255,255,255,.55);line-height:1.5}
 .modal-check svg{flex-shrink:0;margin-top:2px;stroke:#EEA727;width:16px;height:16px}
 
@@ -536,7 +536,7 @@ html,body{overflow:hidden!important;background:#050008}
   .card{padding:20px 16px}
   .rev-g{grid-template-columns:1fr}
   .sub-btn{padding:16px;font-size:.88rem;-webkit-tap-highlight-color:transparent}
-  .tg-w{gap:10px}
+  .tg-w{gap:10px;padding:10px 14px}
   .modal{padding:28px 20px}
   .modal-btns{flex-direction:column}
   .chips{gap:8px}.chip{padding:8px 12px;font-size:.76rem}
@@ -597,27 +597,11 @@ html,body{overflow:hidden!important;background:#050008}
               <div><div className="ct-t">Team Registration</div><div className="ct-s">Fill all sections below · {progressPct}% complete</div></div>
               {team && <div className="ct-b">{team.technology}</div>}
             </div>
-
-            {/* ── Toast notification ── */}
-            {toast && (
-              <div className="rt-toast" data-type={toast.type || 'error'}>
-                <div className="rt-toast-icon">
-                  {toast.type === 'success' ? (
-                    <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                  ) : toast.type === 'info' ? (
-                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                  ) : (
-                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-                  )}
-                </div>
-                <div className="rt-toast-msg">{toast.message}</div>
-                <button className="rt-toast-close" onClick={closeToast}>
-                  <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                </button>
-                <div className="rt-toast-bar"/>
-              </div>
-            )}
-
+            {error && <div className="err-toast">
+              <div className="err-toast-icon">⚠️</div>
+              <span style={{flex:1}}>{error}</span>
+              <button onClick={()=>setError('')} className="err-toast-close">✕</button>
+            </div>}
             {success && <div className="suc">{success}</div>}
 
             {/* ── PROJECT ── */}
@@ -633,6 +617,7 @@ html,body{overflow:hidden!important;background:#050008}
                   <div><FloatingField label="Project Description" required type="textarea" placeholder="Describe what your project does..." value={projectDescription} onChange={setProjectDescription} accent={SECTION_COLORS.project} cardBg={CARD_BG.project} rows={4} maxLen={500} /></div>
                   <div><FloatingField label="Problem Statement" type="textarea" placeholder="What problem does your project solve?" value={problemStatement} onChange={setProblemStatement} accent={SECTION_COLORS.project} cardBg={CARD_BG.project} rows={3} maxLen={300} /></div>
                 </div>
+                {/* Get Info Button — bottom right */}
                 <div style={{display:'flex',justifyContent:'flex-end',marginTop:'16px',clear:'both'}}>
                   {infoLoaded ? (
                     <div className="gi-done">
@@ -665,7 +650,7 @@ html,body{overflow:hidden!important;background:#050008}
                 {aiUsage === 'Yes' && (
                   <div className="fg">
                     <div>
-                      <FloatingField label="AI Capabilities" type="input" placeholder="e.g. Image Recognition, NLP... (press Enter to add)" value={capInput} onChange={setCapInput} accent={SECTION_COLORS.ai} cardBg={CARD_BG.ai} onKeyDown={e => { if(e.key==='Enter') { e.preventDefault(); addChip(capInput,aiCapabilities,setAiCapabilities,setCapInput) }}} />
+                      <FloatingField label="AI Capabilities" type="input" placeholder="e.g. Image Recognition, NLP... (press Enter to add)" value={capInput} onChange={setCapInput} accent={SECTION_COLORS.ai} cardBg={CARD_BG.ai} onKeyDown={e => { if(e.key==='Enter'){e.preventDefault();addChip(capInput,aiCapabilities,setAiCapabilities,setCapInput)}}} />
                       {aiCapabilities.length > 0 && <div className="chips" style={{marginTop:'10px'}}>{aiCapabilities.map(c=><div key={c} className="chip">{c}<button className="chip-x" onClick={()=>removeChip(c,aiCapabilities,setAiCapabilities)}>×</button></div>)}</div>}
                     </div>
                     <div><MultiDropdown label="AI Tools" options={AI_TOOLS} selected={aiTools} onChange={setAiTools} counts={{}} accent={SECTION_COLORS.ai} cardBg={CARD_BG.ai} onCustomAdd={()=>{}} /></div>
@@ -674,7 +659,7 @@ html,body{overflow:hidden!important;background:#050008}
               </div>
             </div>
 
-            {/* ── TEAM ── */}
+            {/* ── TEAM — Unified grid, all members same card ── */}
             <div className="sec" ref={sectionRefs.team} style={{zIndex:activeSection==='team'?100:20}} onClick={()=>setActiveSection('team')}>
               <div className="card ct2"><div className="card-glow"/>
                 <div className="card-h" style={{justifyContent:'space-between'}}><span style={{display:'flex',alignItems:'center',gap:'8px'}}><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Team Members</span>{membersLoaded&&<span className="tm-count">{members.length} Members</span>}</div>
