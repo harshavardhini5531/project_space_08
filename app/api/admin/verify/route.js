@@ -29,8 +29,10 @@ export async function POST(request) {
       await supabase.from('otp_codes').delete().eq('roll_number', 'ADMIN_' + cleanEmail)
       await supabase.from('otp_codes').insert({
         roll_number: 'ADMIN_' + cleanEmail,
-        otp_code: code,
-        expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString()
+        email: cleanEmail,
+        otp: code,
+        expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+        used: false
       })
 
       // Send OTP email
@@ -72,7 +74,7 @@ export async function POST(request) {
         .single()
 
       if (!otpRow) return Response.json({ error: 'No OTP found. Request a new one.' }, { status: 400 })
-      if (otpRow.otp_code !== otp) return Response.json({ error: 'Invalid OTP' }, { status: 400 })
+      if (otpRow.otp !== otp) return Response.json({ error: 'Invalid OTP' }, { status: 400 })
       if (new Date(otpRow.expires_at) < new Date()) return Response.json({ error: 'OTP expired. Request a new one.' }, { status: 400 })
 
       // Delete used OTP
