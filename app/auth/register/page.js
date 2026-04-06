@@ -12,14 +12,12 @@ export default function RegisterPage() {
   const [password, setPassword]           = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [studentInfo, setStudentInfo]     = useState(null)
-  const [loading, setLoading]             // ═══ MOBILE LAYOUT ═══
-  if (isMobile) {= useState(false)
+  const [loading, setLoading]             = useState(false)
   const [error, setError]                 = useState('')
   const [showPass, setShowPass]           = useState(false)
   const [showConfirm, setShowConfirm]     = useState(false)
   const [isMobile, setIsMobile]           = useState(false)
   useEffect(() => {
-    setMounted(true)
     const check = () => setIsMobile(window.innerWidth < 768)
     check()
     window.addEventListener('resize', check)
