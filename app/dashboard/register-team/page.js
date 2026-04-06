@@ -82,11 +82,9 @@ export default function RegisterTeamPage() {
   const [problemStatement, setProblemStatement] = useState('')
   const [projectArea, setProjectArea] = useState([])
   const [aiUsage, setAiUsage] = useState('No')
-  const [aiCapabilities, setAiCapabilities] = useState([])
+  const [aiCapabilities, setAiCapabilities] = useState('')
   const [aiTools, setAiTools] = useState([])
   const [techStack, setTechStack] = useState([])
-  const [capInput, setCapInput] = useState('')
-
   const sectionRefs = { project:useRef(null), ai:useRef(null), tech:useRef(null), team:useRef(null), review:useRef(null) }
 
   useEffect(() => { const c=()=>setIsMobile(window.innerWidth<768); c(); window.addEventListener('resize',c); return ()=>window.removeEventListener('resize',c) }, [])
@@ -188,7 +186,7 @@ export default function RegisterTeamPage() {
       case 'projectTitle': return !!projectTitle.trim()
       case 'projectDescription': return !!projectDescription.trim()
       case 'problemStatement': return !!problemStatement.trim()
-      case 'aiCapabilities': return aiCapabilities.length>0
+      case 'aiCapabilities': return !!aiCapabilities.trim()
       case 'aiTools': return aiTools.length>0
       case 'techStack': return techStack.length>0
       case 'membersLoaded': return membersLoaded
@@ -218,7 +216,7 @@ export default function RegisterTeamPage() {
     if(!projectDescription.trim()){setError('Project description is required');scrollToSection('project');return}
     if(!projectArea.length){setError('Please select at least one Project Area');scrollToSection('project');return}
     if(!techStack.length){setError('Please select at least one Tech Stack item');scrollToSection('tech');return}
-    if(aiUsage==='Yes' && !aiCapabilities.length){setError('Please add at least one AI Capability');scrollToSection('ai');return}
+    if(aiUsage==='Yes' && !aiCapabilities.trim()){setError('Please describe AI capabilities');scrollToSection('ai');return}
     if(aiUsage==='Yes' && !aiTools.length){setError('Please add at least one AI Tool');scrollToSection('ai');return}
     setShowConfirm(true)
   }
@@ -661,8 +659,7 @@ html,body{overflow:hidden!important;background:#050008}
                 {aiUsage === 'Yes' && (
                   <div className="fg">
                     <div>
-                      <FloatingField label="AI Capabilities" type="input" placeholder="e.g. Image Recognition, NLP... (press Enter to add)" value={capInput} onChange={setCapInput} accent={SECTION_COLORS.ai} cardBg={CARD_BG.ai} onKeyDown={e => { if(e.key==='Enter'){e.preventDefault();addChip(capInput,aiCapabilities,setAiCapabilities,setCapInput)}}} />
-                      {aiCapabilities.length > 0 && <div className="chips" style={{marginTop:'10px'}}>{aiCapabilities.map(c=><div key={c} className="chip">{c}<button className="chip-x" onClick={()=>removeChip(c,aiCapabilities,setAiCapabilities)}>×</button></div>)}</div>}
+                      <FloatingField label="AI Capabilities *" type="textarea" placeholder="Describe how AI is used in your project..." value={aiCapabilities} onChange={setAiCapabilities} accent={SECTION_COLORS.ai} cardBg={CARD_BG.ai} rows={3} maxLen={300} />
                     </div>
                     <div><MultiDropdown label="AI Tools" options={AI_TOOLS} selected={aiTools} onChange={setAiTools} counts={aiToolsCounts} accent={SECTION_COLORS.ai} cardBg={CARD_BG.ai} onCustomAdd={()=>{}} /></div>
                   </div>
@@ -746,7 +743,7 @@ html,body{overflow:hidden!important;background:#050008}
           case 'title': setProjectTitle(text); scrollToSection('project'); break
           case 'desc': setProjectDescription(text); scrollToSection('project'); break
           case 'problem': setProblemStatement(text); scrollToSection('project'); break
-          case 'ai': setAiCapabilities(prev => prev.includes(text) ? prev : [...prev, text]); scrollToSection('ai'); break
+          case 'ai': setAiCapabilities(prev => prev ? prev + ', ' + text : text); scrollToSection('ai'); break
           case 'tech': setTechStack(prev => prev.includes(text) ? prev : [...prev, text]); scrollToSection('tech'); break
         }
       }} />}
