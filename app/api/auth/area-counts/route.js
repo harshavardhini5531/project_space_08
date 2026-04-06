@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server'
 export async function GET() {
   try {
     const { data: teams, error } = await supabase
-      .from('teams')
+      .from('team_registrations')
       .select('project_area')
       .not('project_area', 'is', null)
 
