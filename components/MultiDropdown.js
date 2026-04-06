@@ -153,18 +153,6 @@ ${S} .mdd-add button:hover{background:rgba(${rgb},.12)}
       `}</style>
 
       <div className={`mdd-${uid}`}>
-        {selected.length > 0 && (
-          <div className="mdt">
-            {selected.map(v => (
-              <span key={v} className="mdt-t">
-                {v}
-                {(counts[v] || 0) > 0 && <span className="mdt-h"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg><span>{counts[v]}</span></span>}
-                <span className="mdt-x" onClick={e => { e.stopPropagation(); onChange(selected.filter(x => x !== v)) }}><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>
-              </span>
-            ))}
-          </div>
-        )}
-
         <div className={`mdd mdd-${uid} ${open ? 'on' : ''}`}>
           <span className="mdd-fl">{label}</span>
           <div className="mdd-tr" onClick={() => setOpen(!open)}>
@@ -201,6 +189,17 @@ ${S} .mdd-add button:hover{background:rgba(${rgb},.12)}
             </div>
           </div>
         </div>
+        {selected.length > 0 && (
+          <div className="mdt">
+            {selected.map(v => (
+              <span key={v} className="mdt-t">
+                {v}
+                {(counts[v] || 0) > 0 && <span className="mdt-h"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg><span>{counts[v]}</span></span>}
+                <span className="mdt-x" onClick={e => { e.stopPropagation(); onChange(selected.filter(x => x !== v)) }}><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>
+              </span>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
