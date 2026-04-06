@@ -40,6 +40,8 @@ export default function RegisterTeamPage() {
   const [shortNameError, setShortNameError] = useState('')
   const [chatOpen, setChatOpen] = useState(false)
   const [areaCounts, setAreaCounts] = useState({})
+  const [techCounts, setTechCounts] = useState({})
+  const [aiToolsCounts, setAiToolsCounts] = useState({})
   const [activeSection, setActiveSection] = useState(null)
   const [showConfirm, setShowConfirm] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
@@ -90,11 +92,15 @@ export default function RegisterTeamPage() {
   useEffect(() => { const c=()=>setIsMobile(window.innerWidth<768); c(); window.addEventListener('resize',c); return ()=>window.removeEventListener('resize',c) }, [])
 
   useEffect(() => {
-    async function fetchCounts() { try { const r=await fetch('/api/auth/area-counts'); const d=await r.json(); if(r.ok) setAreaCounts(d.counts||{}) } catch{} }
-    fetchCounts()
+    async function fetchAllCounts() {
+      try { const r=await fetch('/api/auth/area-counts'); const d=await r.json(); if(r.ok) setAreaCounts(d.counts||{}) } catch{}
+      try { const r=await fetch('/api/auth/tech-counts'); const d=await r.json(); if(r.ok) setTechCounts(d.counts||{}) } catch{}
+      try { const r=await fetch('/api/auth/ai-tools-counts'); const d=await r.json(); if(r.ok) setAiToolsCounts(d.counts||{}) } catch{}
+    }
+    fetchAllCounts()
     const url=process.env.NEXT_PUBLIC_SUPABASE_URL||'https://yiwyfhdzgvlsmdeshdgv.supabase.co'
     const key=process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY||''
-    if(key){ const sb=createClient(url,key); const ch=sb.channel('teams-rt').on('postgres_changes',{event:'*',schema:'public',table:'teams'},()=>fetchCounts()).subscribe(); return ()=>{sb.removeChannel(ch)} }
+    if(key){ const sb=createClient(url,key); const ch=sb.channel('teams-rt').on('postgres_changes',{event:'*',schema:'public',table:'team_registrations'},()=>fetchAllCounts()).subscribe(); return ()=>{sb.removeChannel(ch)} }
   }, [])
 
   useEffect(() => {
@@ -209,6 +215,8 @@ export default function RegisterTeamPage() {
     setError('')
     if(!projectTitle.trim()){setError('Project title is required');scrollToSection('project');return}
     if(!projectDescription.trim()){setError('Project description is required');scrollToSection('project');return}
+    if(!projectArea.length){setError('Please select at least one Project Area');scrollToSection('project');return}
+    if(!techStack.length){setError('Please select at least one Tech Stack item');scrollToSection('tech');return}
     setShowConfirm(true)
   }
 
@@ -638,7 +646,7 @@ html,body{overflow:hidden!important;background:#050008}
             <div className="sec" ref={sectionRefs.tech} style={{zIndex:activeSection==='tech'?100:40}} onClick={()=>setActiveSection('tech')}>
               <div className="card ck"><div className="card-glow"/>
                 <div className="card-h"><svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>Tech Stack</div>
-                <div className="fg"><div className="fg-full"><MultiDropdown label="Tech Stack" options={techOptions} selected={techStack} onChange={setTechStack} counts={{}} accent={SECTION_COLORS.tech} cardBg={CARD_BG.tech} onCustomAdd={()=>{}} /></div></div>
+                <div className="fg"><div className="fg-full"><MultiDropdown label="Tech Stack" options={techOptions} selected={techStack} onChange={setTechStack} counts={techCounts} accent={SECTION_COLORS.tech} cardBg={CARD_BG.tech} onCustomAdd={()=>{}} /></div></div>
               </div>
             </div>
 
@@ -653,7 +661,7 @@ html,body{overflow:hidden!important;background:#050008}
                       <FloatingField label="AI Capabilities" type="input" placeholder="e.g. Image Recognition, NLP... (press Enter to add)" value={capInput} onChange={setCapInput} accent={SECTION_COLORS.ai} cardBg={CARD_BG.ai} onKeyDown={e => { if(e.key==='Enter'){e.preventDefault();addChip(capInput,aiCapabilities,setAiCapabilities,setCapInput)}}} />
                       {aiCapabilities.length > 0 && <div className="chips" style={{marginTop:'10px'}}>{aiCapabilities.map(c=><div key={c} className="chip">{c}<button className="chip-x" onClick={()=>removeChip(c,aiCapabilities,setAiCapabilities)}>×</button></div>)}</div>}
                     </div>
-                    <div><MultiDropdown label="AI Tools" options={AI_TOOLS} selected={aiTools} onChange={setAiTools} counts={{}} accent={SECTION_COLORS.ai} cardBg={CARD_BG.ai} onCustomAdd={()=>{}} /></div>
+                    <div><MultiDropdown label="AI Tools" options={AI_TOOLS} selected={aiTools} onChange={setAiTools} counts={aiToolsCounts} accent={SECTION_COLORS.ai} cardBg={CARD_BG.ai} onCustomAdd={()=>{}} /></div>
                   </div>
                 )}
               </div>
@@ -722,7 +730,7 @@ html,body{overflow:hidden!important;background:#050008}
                 <div className="card-h"><svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Register Team</div>
                 <div style={{textAlign:'center',padding:'12px 0 8px'}}>
                   <div style={{fontSize:'.78rem',color:'rgba(255,255,255,.45)',marginBottom:'16px',lineHeight:1.6}}>Review all your details before registering. Once submitted, details cannot be edited.</div>
-                  <button className="sub-btn" onClick={handleRegisterClick} disabled={saving||!projectTitle.trim()||!projectDescription.trim()}>{saving?'Registering...':'Review & Register Team'}</button>
+                  <button className="sub-btn" onClick={handleRegisterClick} disabled={saving||!projectTitle.trim()||!projectDescription.trim()||!projectArea.length||!techStack.length}>{saving?'Registering...':'Review & Register Team'}</button>
                 </div>
               </div>
             </div>
