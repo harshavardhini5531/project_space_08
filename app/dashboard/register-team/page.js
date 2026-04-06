@@ -764,7 +764,7 @@ html,body{overflow:hidden!important;background:#050008}
               {problemStatement.trim() && <div className="rev-c full"><div className="rev-l">Problem Statement</div><div className="rev-v">{problemStatement}</div></div>}
               {techStack.length>0 && <div className="rev-c full"><div className="rev-l">Tech Stack</div><div className="rev-ch">{techStack.map(t=><span key={t}>{t}</span>)}</div></div>}
               <div className="rev-c"><div className="rev-l">AI Usage</div><div className="rev-v">{aiUsage}</div></div>
-              {aiUsage==='Yes' && aiCapabilities.length>0 && <div className="rev-c"><div className="rev-l">AI Capabilities</div><div className="rev-ch">{aiCapabilities.map(c=><span key={c}>{c}</span>)}</div></div>}
+              {aiUsage==='Yes' && aiCapabilities.length>0 && <div className="rev-c"><div className="rev-l">AI Capabilities</div><div className="rev-v">{aiCapabilities}</div></div>}
               {aiUsage==='Yes' && aiTools.length>0 && <div className="rev-c full"><div className="rev-l">AI Tools</div><div className="rev-ch">{aiTools.map(t=><span key={t}>{t}</span>)}</div></div>}
               {membersLoaded && members.length>0 && <div className="rev-c full"><div className="rev-l">Team Members</div><div className="rev-v">{members.map(m=>m.name).join(', ')}</div></div>}
             </div>

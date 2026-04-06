@@ -66,7 +66,7 @@ export async function POST(request) {
         problem_statement: problemStatement || '',
         project_area: Array.isArray(projectArea) ? projectArea : [],
         ai_usage: aiUsage || 'No',
-        ai_capabilities: Array.isArray(aiCapabilities) ? aiCapabilities : [],
+        ai_capabilities: aiCapabilities || '',
         ai_tools: Array.isArray(aiTools) ? aiTools : [],
         tech_stack: Array.isArray(techStack) ? techStack : [],
         members: members ? JSON.stringify(members.map(m => ({
