@@ -19,7 +19,7 @@ ${td.currentTitle ? `- Current Project Title: "${td.currentTitle}"` : '- No titl
 ${td.currentDescription ? `- Current Description: "${td.currentDescription}"` : '- No description yet'}
 ${td.currentProblem ? `- Current Problem Statement: "${td.currentProblem}"` : ''}
 ${td.currentArea?.length ? `- Project Areas: ${td.currentArea.join(', ')}` : ''}
-${td.currentAI?.length ? `- AI Capabilities: ${td.currentAI.join(', ')}` : ''}
+${td.currentAI?.length ? `- AI Capabilities: ${Array.isArray(td.currentAI) ? td.currentAI.join(', ') : td.currentAI}` : ''}
 ${td.currentTech?.length ? `- Tech Stack: ${td.currentTech.join(', ')}` : ''}
 
 RESPONSE RULES — FOLLOW STRICTLY:
