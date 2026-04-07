@@ -47,7 +47,7 @@ export async function POST(request) {
       if (!leader?.email) continue
 
       try {
-        await transporter.sendMail({
+        await sendMail({
           from: `"Project Space" <${process.env.GMAIL_USER}>`,
           to: leader.email,
           subject: `⏰ Reminder: Register Your Team — ${team.project_title || 'Project Space'} | Project Space`,
