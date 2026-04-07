@@ -1,14 +1,5 @@
 import { supabase } from '@/lib/supabase'
-import nodemailer from 'nodemailer'
-
-var transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_PASS
-  }
-})
-
+import { sendMail } from '@/lib/mailer'
 function rollToEmail(roll) {
   if (!roll) return null
   const r = roll.toUpperCase()

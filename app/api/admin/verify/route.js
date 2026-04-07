@@ -1,15 +1,7 @@
 import { supabase } from '@/lib/supabase'
-import nodemailer from 'nodemailer'
+import { sendMail } from '@/lib/mailer'
 
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || 'harshavardhini@technicalhub.io').split(',').map(e => e.trim().toLowerCase())
-
-var transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_PASS
-  }
-})
 
 export async function POST(request) {
   try {

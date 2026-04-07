@@ -1,13 +1,6 @@
-import nodemailer from 'nodemailer'
+import { sendMail } from '@/lib/mailer'
 import { createClient } from '@supabase/supabase-js'
 
-var transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_PASS
-  }
-})
 
 function rollToEmail(roll) {
   if (!roll) return null
