@@ -28,7 +28,7 @@ export async function POST(request) {
       })
 
       // Send OTP email
-      await transporter.sendMail({
+      await sendMail({
         from: `"Project Space Admin" <${process.env.GMAIL_USER}>`,
         to: cleanEmail,
         subject: `🔐 Admin Login OTP — Project Space`,
