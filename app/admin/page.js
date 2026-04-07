@@ -1,15 +1,22 @@
 'use client'
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 export default function AdminDashboard() {
   const router = useRouter()
-  const [step, setStep] = useState('login') // login, otp, dashboard
+  const [phase, setPhase] = useState('auth') // auth, dashboard
+  const [mode, setMode] = useState('login') // login, create, forgot
+  const [step, setStep] = useState(1)
   const [email, setEmail] = useState('')
   const [otp, setOtp] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [showPass, setShowPass] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
   const [token, setToken] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [adminName, setAdminName] = useState('')
   const [data, setData] = useState(null)
   const [activeTab, setActiveTab] = useState('overview')
   const [search, setSearch] = useState('')
@@ -20,80 +27,131 @@ export default function AdminDashboard() {
   const [reminding, setReminding] = useState(false)
   const [reminderMsg, setReminderMsg] = useState('')
 
+  const passwordRules = [
+    { label: 'At least 8 characters', test: v => v.length >= 8 },
+    { label: 'One uppercase letter', test: v => /[A-Z]/.test(v) },
+    { label: 'One number', test: v => /[0-9]/.test(v) },
+    { label: 'One special character', test: v => /[^A-Za-z0-9]/.test(v) },
+  ]
+
   useEffect(() => {
     const saved = sessionStorage.getItem('admin_token')
-    if (saved) { setToken(saved); setStep('dashboard') }
+    const savedEmail = sessionStorage.getItem('adminEmail')
+    if (savedEmail) { setEmail(savedEmail); sessionStorage.removeItem('adminEmail') }
+    if (saved) { setToken(saved); setPhase('dashboard') }
   }, [])
 
-  useEffect(() => {
-    if (step === 'dashboard' && token) fetchDashboard()
-  }, [step, token])
+  useEffect(() => { if (phase === 'dashboard' && token) fetchDashboard() }, [phase, token])
 
-  async function handleSendOTP() {
+  // ── AUTH FUNCTIONS ──
+  async function handleCheckAndSendOTP() {
     setError(''); setLoading(true)
     try {
-      const r = await fetch('/api/admin/verify', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'send-otp',email}) })
+      const check = await fetch('/api/admin/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'check-account', email }) })
+      const checkData = await check.json()
+      if (!check.ok) { setError(checkData.error); return }
+      setAdminName(checkData.name)
+
+      if (mode === 'login' && checkData.hasPassword) { setStep(2); return }
+      if (mode === 'login' && !checkData.hasPassword) { setMode('create') }
+
+      const r = await fetch('/api/admin/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'send-otp', email }) })
       const d = await r.json()
       if (!r.ok) { setError(d.error); return }
-      setStep('otp')
+      setStep(2)
     } catch { setError('Network error') } finally { setLoading(false) }
   }
 
   async function handleVerifyOTP() {
     setError(''); setLoading(true)
     try {
-      const r = await fetch('/api/admin/verify', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'verify-otp',email,otp}) })
+      const r = await fetch('/api/admin/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'verify-otp', email, otp }) })
       const d = await r.json()
       if (!r.ok) { setError(d.error); return }
-      setToken(d.token); sessionStorage.setItem('admin_token', d.token); setStep('dashboard')
+      setStep(3)
     } catch { setError('Network error') } finally { setLoading(false) }
   }
 
+  async function handleSetPassword() {
+    setError('')
+    if (password !== confirmPassword) { setError('Passwords do not match'); return }
+    const failed = passwordRules.find(r => !r.test(password))
+    if (failed) { setError(failed.label + ' is required'); return }
+    setLoading(true)
+    try {
+      const r = await fetch('/api/admin/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'set-password', email, newPassword: password, confirmPassword }) })
+      const d = await r.json()
+      if (!r.ok) { setError(d.error); return }
+      sessionStorage.setItem('adminEmail', email)
+      window.location.reload()
+    } catch { setError('Network error') } finally { setLoading(false) }
+  }
+
+  async function handlePasswordLogin() {
+    setError(''); setLoading(true)
+    try {
+      const r = await fetch('/api/admin/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'password-login', email, password }) })
+      const d = await r.json()
+      if (!r.ok) { setError(d.error); return }
+      setToken(d.token); sessionStorage.setItem('admin_token', d.token); setPhase('dashboard')
+    } catch { setError('Network error') } finally { setLoading(false) }
+  }
+
+  async function handleForgotSendOTP() {
+    setError(''); setLoading(true)
+    try {
+      const r = await fetch('/api/admin/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'send-otp', email }) })
+      const d = await r.json()
+      if (!r.ok) { setError(d.error); return }
+      setAdminName(d.name); setStep(2)
+    } catch { setError('Network error') } finally { setLoading(false) }
+  }
+
+  // ── DASHBOARD FUNCTIONS ──
   async function fetchDashboard() {
     setLoading(true)
     try {
-      const r = await fetch('/api/admin/dashboard', { headers:{'x-admin-token':token} })
+      const r = await fetch('/api/admin/dashboard', { headers: { 'x-admin-token': token } })
       const d = await r.json()
-      if (!r.ok) { setError(d.error); setStep('login'); sessionStorage.removeItem('admin_token'); return }
+      if (!r.ok) { setError(d.error); setPhase('auth'); sessionStorage.removeItem('admin_token'); return }
       setData(d)
     } catch { setError('Failed to load') } finally { setLoading(false) }
   }
 
   async function handleExport(type) {
-    const r = await fetch(`/api/admin/export?type=${type}`, { headers:{'x-admin-token':token} })
+    const r = await fetch(`/api/admin/export?type=${type}`, { headers: { 'x-admin-token': token } })
     const blob = await r.blob()
     const url = URL.createObjectURL(blob)
-    const a = document.createElement('a'); a.href=url; a.download=`project-space-${type}.csv`; a.click()
+    const a = document.createElement('a'); a.href = url; a.download = `project-space-${type}.csv`; a.click()
     URL.revokeObjectURL(url)
   }
 
   async function handleRemind() {
     setReminding(true); setReminderMsg('')
     try {
-      const r = await fetch('/api/admin/remind', { method:'POST', headers:{'Content-Type':'application/json','x-admin-token':token}, body:JSON.stringify({type:'all-pending'}) })
+      const r = await fetch('/api/admin/remind', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-token': token }, body: JSON.stringify({ type: 'all-pending' }) })
       const d = await r.json()
       setReminderMsg(d.message || `Sent ${d.sent} reminders`)
-    } catch { setReminderMsg('Failed to send reminders') } finally { setReminding(false) }
+    } catch { setReminderMsg('Failed') } finally { setReminding(false) }
   }
 
-  function handleLogout() { sessionStorage.removeItem('admin_token'); setToken(''); setStep('login'); setData(null) }
+  function handleLogout() { sessionStorage.removeItem('admin_token'); setToken(''); setPhase('auth'); setData(null) }
 
-  // Filter teams
   const filteredTeams = data?.teamList?.filter(t => {
     if (filterTech !== 'all' && t.technology !== filterTech) return false
     if (filterStatus === 'registered' && !t.registered) return false
     if (filterStatus === 'pending' && t.registered) return false
-    if (search) {
-      const s = search.toLowerCase()
-      return (t.projectTitle||'').toLowerCase().includes(s) || (t.leaderName||'').toLowerCase().includes(s) || (t.leaderRoll||'').toLowerCase().includes(s) || (t.teamNumber||'').toLowerCase().includes(s) || String(t.serialNumber).includes(s)
-    }
+    if (search) { const s = search.toLowerCase(); return (t.projectTitle || '').toLowerCase().includes(s) || (t.leaderName || '').toLowerCase().includes(s) || (t.leaderRoll || '').toLowerCase().includes(s) || (t.teamNumber || '').toLowerCase().includes(s) || String(t.serialNumber).includes(s) }
     return true
   }) || []
 
-  const techColors = {'Data Specialist':'#3b82f6','AWS Development':'#f59e0b','Full Stack':'#10b981','Google Flutter':'#06b6d4','ServiceNow':'#8b5cf6','VLSI':'#ef4444'}
+  const techColors = { 'Data Specialist': '#3b82f6', 'AWS Development': '#f59e0b', 'Full Stack': '#10b981', 'Google Flutter': '#06b6d4', 'ServiceNow': '#8b5cf6', 'VLSI': '#ef4444' }
 
-  // ═══ LOGIN / OTP SCREEN ═══
-  if (step !== 'dashboard') {
+  const maskedEmail = email ? email.replace(/(.{2})(.*)(@.*)/, (_, a, b, c) => a + '*'.repeat(Math.min(b.length, 6)) + c) : ''
+
+  // ═══ AUTH SCREEN ═══
+  if (phase === 'auth') {
+    const totalSteps = mode === 'login' ? 2 : 3
     return (
       <>
         <style>{`
@@ -103,41 +161,114 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 .adm-wrap{width:100%;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:#050008;position:relative}
 .adm-bg{position:fixed;inset:0;background:radial-gradient(ellipse at 30% 20%,rgba(253,28,0,.04),transparent 50%),radial-gradient(ellipse at 70% 80%,rgba(250,160,0,.03),transparent 50%);pointer-events:none}
-.adm-card{width:100%;max-width:400px;background:rgba(12,8,20,.9);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:40px 32px;backdrop-filter:blur(20px);animation:fadeUp .5s ease;position:relative;z-index:2}
-.adm-logo{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#fd1c00,#faa000);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:#fff;margin:0 auto 16px;box-shadow:0 0 24px rgba(253,28,0,.3)}
-.adm-title{font-family:'Orbitron',sans-serif;font-size:1rem;font-weight:700;letter-spacing:3px;text-align:center;color:#fff;margin-bottom:4px}
-.adm-sub{font-size:.78rem;color:rgba(255,255,255,.35);text-align:center;margin-bottom:28px}
-.adm-label{display:block;font-size:.65rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:6px}
-.adm-input{width:100%;padding:12px 16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;color:#fff;font-size:.88rem;outline:none;font-family:'DM Sans',sans-serif;transition:border-color .2s}
-.adm-input:focus{border-color:rgba(253,28,0,.3)}
-.adm-btn{width:100%;padding:13px;border-radius:12px;background:linear-gradient(135deg,#fd1c00,#fd3a20);border:none;color:#fff;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;margin-top:16px;transition:box-shadow .2s}
-.adm-btn:hover{box-shadow:0 4px 24px rgba(253,28,0,.3)}
-.adm-btn:disabled{opacity:.5;cursor:not-allowed}
-.adm-err{background:rgba(255,40,0,.06);border:1px solid rgba(255,40,0,.15);border-radius:10px;padding:10px 14px;font-size:.78rem;color:#ff6040;margin-bottom:14px}
-.adm-info{background:rgba(74,222,128,.06);border:1px solid rgba(74,222,128,.15);border-radius:10px;padding:10px 14px;font-size:.78rem;color:#4ade80;margin-bottom:14px}
-.adm-back{display:block;text-align:center;margin-top:14px;font-size:.76rem;color:rgba(255,255,255,.35);cursor:pointer;border:none;background:none;font-family:'DM Sans',sans-serif}
-.adm-back:hover{color:#fff}
+.adm-card{width:100%;max-width:420px;background:rgba(12,8,20,.9);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:40px 32px;backdrop-filter:blur(20px);animation:fadeUp .5s ease;position:relative;z-index:2}
 @media(max-width:480px){.adm-card{padding:28px 20px;border-radius:16px}}
         `}</style>
-        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Orbitron:wght@400;600;700&display=swap" rel="stylesheet"/>
+        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=Orbitron:wght@400;600;700&display=swap" rel="stylesheet" />
         <div className="adm-wrap">
-          <div className="adm-bg"/>
+          <div className="adm-bg" />
           <div className="adm-card">
-            <div className="adm-logo">PS</div>
-            <div className="adm-title">ADMIN PANEL</div>
-            <div className="adm-sub">{step==='login'?'Enter your admin email':'Enter the OTP sent to your email'}</div>
-            {error && <div className="adm-err">{error}</div>}
-            {step==='login' ? (<>
-              <label className="adm-label">Admin Email</label>
-              <input className="adm-input" placeholder="your@email.com" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleSendOTP()} autoFocus/>
-              <button className="adm-btn" onClick={handleSendOTP} disabled={loading||!email}>{loading?'Sending OTP...':'Send OTP →'}</button>
-              <button className="adm-back" onClick={()=>router.push('/')}>← Back to Home</button>
-            </>) : (<>
-              <div className="adm-info">OTP sent to {email}</div>
-              <label className="adm-label">Enter OTP</label>
-              <input className="adm-input" placeholder="6-digit code" value={otp} onChange={e=>setOtp(e.target.value.replace(/\D/,'').slice(0,6))} onKeyDown={e=>e.key==='Enter'&&handleVerifyOTP()} maxLength={6} autoFocus style={{letterSpacing:'6px',textAlign:'center',fontSize:'1.1rem'}}/>
-              <button className="adm-btn" onClick={handleVerifyOTP} disabled={loading||otp.length!==6}>{loading?'Verifying...':'Verify & Login →'}</button>
-              <button className="adm-back" onClick={()=>{setStep('login');setOtp('');setError('')}}>← Change email</button>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '24px' }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'linear-gradient(135deg,#fd1c00,#faa000)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '16px', color: '#fff', boxShadow: '0 0 24px rgba(253,28,0,.3)' }}>PS</div>
+              <div style={{ fontFamily: "'Orbitron',sans-serif", fontSize: '1rem', fontWeight: 700, letterSpacing: '3px', color: '#fff', marginTop: '12px' }}>
+                {mode === 'login' ? 'ADMIN LOGIN' : mode === 'create' ? 'CREATE ACCOUNT' : 'RESET PASSWORD'}
+              </div>
+              <div style={{ fontSize: '.78rem', color: 'rgba(255,255,255,.35)', marginTop: '4px' }}>
+                {mode === 'login' && step === 1 && 'Enter your admin email'}
+                {mode === 'login' && step === 2 && `Welcome back, ${adminName}`}
+                {mode === 'create' && step === 2 && 'Verify your email'}
+                {mode === 'create' && step === 3 && 'Set your login password'}
+                {mode === 'forgot' && step === 1 && 'Enter email to reset password'}
+                {mode === 'forgot' && step === 2 && 'Enter verification code'}
+                {mode === 'forgot' && step === 3 && 'Set new password'}
+              </div>
+            </div>
+
+            {/* Step dots */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '22px' }}>
+              {Array.from({ length: totalSteps }, (_, i) => i + 1).map(n => (
+                <React.Fragment key={n}>
+                  {n > 1 && <div style={{ width: '32px', height: '1px', background: step >= n ? 'rgba(255,96,64,0.35)' : 'rgba(255,255,255,0.1)' }} />}
+                  <div style={{ width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 600, background: step > n ? 'rgba(255,40,0,0.2)' : step === n ? '#ff2800' : 'rgba(255,255,255,0.06)', color: step > n ? '#ff6040' : step === n ? '#fff' : 'rgba(255,255,255,0.25)', boxShadow: step === n ? '0 0 14px rgba(255,40,0,0.4)' : 'none' }}>{step > n ? '✓' : n}</div>
+                </React.Fragment>
+              ))}
+            </div>
+
+            {error && <div style={{ background: 'rgba(255,40,0,.06)', border: '1px solid rgba(255,40,0,.15)', borderRadius: '10px', padding: '10px 14px', fontSize: '.78rem', color: '#ff6040', marginBottom: '14px', animation: 'fadeUp .3s ease' }}>{error}</div>}
+
+            {/* LOGIN - Step 1: Email */}
+            {mode === 'login' && step === 1 && (<>
+              <div style={{ marginBottom: '14px' }}>
+                <label style={{ display: 'block', fontSize: '.65rem', fontWeight: 600, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'rgba(255,255,255,.35)', marginBottom: '6px' }}>Admin Email</label>
+                <input style={{ width: '100%', padding: '12px 16px', background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.08)', borderRadius: '12px', color: '#fff', fontSize: '.88rem', outline: 'none', fontFamily: "'DM Sans',sans-serif" }} placeholder="admin@email.com" value={email} onChange={e => setEmail(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleCheckAndSendOTP()} autoFocus />
+              </div>
+              <button style={{ width: '100%', padding: '13px', borderRadius: '12px', background: 'linear-gradient(135deg,#fd1c00,#fd3a20)', border: 'none', color: '#fff', fontFamily: "'DM Sans',sans-serif", fontSize: '.88rem', fontWeight: 600, cursor: 'pointer' }} onClick={handleCheckAndSendOTP} disabled={loading || !email}>{loading ? 'Checking...' : 'Continue →'}</button>
+              <div style={{ textAlign: 'center', marginTop: '14px', fontSize: '.76rem', color: 'rgba(255,255,255,.35)', cursor: 'pointer' }} onClick={() => router.push('/')}>← Back to Home</div>
+            </>)}
+
+            {/* LOGIN - Step 2: Password */}
+            {mode === 'login' && step === 2 && (<>
+              <div style={{ marginBottom: '14px' }}>
+                <label style={{ display: 'block', fontSize: '.65rem', fontWeight: 600, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'rgba(255,255,255,.35)', marginBottom: '6px' }}>Password</label>
+                <div style={{ position: 'relative' }}>
+                  <input style={{ width: '100%', padding: '12px 16px', paddingRight: '52px', background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.08)', borderRadius: '12px', color: '#fff', fontSize: '.88rem', outline: 'none', fontFamily: "'DM Sans',sans-serif" }} type={showPass ? 'text' : 'password'} placeholder="Enter password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === 'Enter' && handlePasswordLogin()} autoFocus />
+                  <button style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'rgba(255,255,255,.35)', fontSize: '10px', cursor: 'pointer' }} onClick={() => setShowPass(v => !v)}>{showPass ? 'HIDE' : 'SHOW'}</button>
+                </div>
+              </div>
+              <button style={{ width: '100%', padding: '13px', borderRadius: '12px', background: 'linear-gradient(135deg,#fd1c00,#fd3a20)', border: 'none', color: '#fff', fontFamily: "'DM Sans',sans-serif", fontSize: '.88rem', fontWeight: 600, cursor: 'pointer' }} onClick={handlePasswordLogin} disabled={loading || !password}>{loading ? 'Logging in...' : 'Login →'}</button>
+              <div style={{ textAlign: 'center', marginTop: '12px', fontSize: '.76rem' }}><span style={{ color: '#fd1c00', cursor: 'pointer' }} onClick={() => { setMode('forgot'); setStep(1); setError(''); setPassword('') }}>Forgot password?</span></div>
+              <div style={{ textAlign: 'center', marginTop: '8px', fontSize: '.72rem', color: 'rgba(255,255,255,.25)', cursor: 'pointer' }} onClick={() => { setStep(1); setPassword(''); setError('') }}>← Change email</div>
+            </>)}
+
+            {/* CREATE - Step 2: OTP */}
+            {mode === 'create' && step === 2 && (<>
+              <div style={{ background: 'rgba(74,222,128,.06)', border: '1px solid rgba(74,222,128,.15)', borderRadius: '10px', padding: '10px 14px', fontSize: '.78rem', color: '#4ade80', marginBottom: '14px' }}>OTP sent to {maskedEmail}</div>
+              <div style={{ marginBottom: '14px' }}>
+                <label style={{ display: 'block', fontSize: '.65rem', fontWeight: 600, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'rgba(255,255,255,.35)', marginBottom: '6px' }}>Enter OTP</label>
+                <input style={{ width: '100%', padding: '12px 16px', background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.08)', borderRadius: '12px', color: '#fff', fontSize: '1.1rem', outline: 'none', fontFamily: "'DM Sans',sans-serif", letterSpacing: '6px', textAlign: 'center' }} placeholder="6-digit code" value={otp} onChange={e => setOtp(e.target.value.replace(/\D/, '').slice(0, 6))} onKeyDown={e => e.key === 'Enter' && handleVerifyOTP()} maxLength={6} autoFocus />
+              </div>
+              <button style={{ width: '100%', padding: '13px', borderRadius: '12px', background: 'linear-gradient(135deg,#fd1c00,#fd3a20)', border: 'none', color: '#fff', fontFamily: "'DM Sans',sans-serif", fontSize: '.88rem', fontWeight: 600, cursor: 'pointer' }} onClick={handleVerifyOTP} disabled={loading || otp.length !== 6}>{loading ? 'Verifying...' : 'Verify OTP →'}</button>
+            </>)}
+
+            {/* CREATE/FORGOT - Step 3: Set Password */}
+            {(mode === 'create' || mode === 'forgot') && step === 3 && (<>
+              <div style={{ marginBottom: '14px' }}>
+                <label style={{ display: 'block', fontSize: '.65rem', fontWeight: 600, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'rgba(255,255,255,.35)', marginBottom: '6px' }}>{mode === 'forgot' ? 'New Password' : 'Create Password'}</label>
+                <div style={{ position: 'relative' }}>
+                  <input style={{ width: '100%', padding: '12px 16px', paddingRight: '52px', background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.08)', borderRadius: '12px', color: '#fff', fontSize: '.88rem', outline: 'none', fontFamily: "'DM Sans',sans-serif" }} type={showPass ? 'text' : 'password'} placeholder="Enter password" value={password} onChange={e => setPassword(e.target.value)} autoFocus />
+                  <button style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'rgba(255,255,255,.35)', fontSize: '10px', cursor: 'pointer' }} onClick={() => setShowPass(v => !v)}>{showPass ? 'HIDE' : 'SHOW'}</button>
+                </div>
+                {password && (<div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>{passwordRules.map(r => (<div key={r.label} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '.65rem', color: r.test(password) ? '#4ade80' : 'rgba(255,255,255,.35)' }}><span style={{ width: '4px', height: '4px', borderRadius: '50%', background: 'currentColor' }} />{r.label}</div>))}</div>)}
+              </div>
+              <div style={{ marginBottom: '14px' }}>
+                <label style={{ display: 'block', fontSize: '.65rem', fontWeight: 600, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'rgba(255,255,255,.35)', marginBottom: '6px' }}>Confirm Password</label>
+                <div style={{ position: 'relative' }}>
+                  <input style={{ width: '100%', padding: '12px 16px', paddingRight: '52px', background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.08)', borderRadius: '12px', color: '#fff', fontSize: '.88rem', outline: 'none', fontFamily: "'DM Sans',sans-serif" }} type={showConfirm ? 'text' : 'password'} placeholder="Re-enter password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSetPassword()} />
+                  <button style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'rgba(255,255,255,.35)', fontSize: '10px', cursor: 'pointer' }} onClick={() => setShowConfirm(v => !v)}>{showConfirm ? 'HIDE' : 'SHOW'}</button>
+                </div>
+                {confirmPassword && password !== confirmPassword && <div style={{ fontSize: '.68rem', color: '#ff6040', marginTop: '4px' }}>Passwords do not match</div>}
+              </div>
+              <button style={{ width: '100%', padding: '13px', borderRadius: '12px', background: 'linear-gradient(135deg,#fd1c00,#fd3a20)', border: 'none', color: '#fff', fontFamily: "'DM Sans',sans-serif", fontSize: '.88rem', fontWeight: 600, cursor: 'pointer' }} onClick={handleSetPassword} disabled={loading || !password || !confirmPassword}>{loading ? 'Setting...' : mode === 'forgot' ? 'Reset Password →' : 'Create Account →'}</button>
+            </>)}
+
+            {/* FORGOT - Step 1: Email */}
+            {mode === 'forgot' && step === 1 && (<>
+              <div style={{ marginBottom: '14px' }}>
+                <label style={{ display: 'block', fontSize: '.65rem', fontWeight: 600, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'rgba(255,255,255,.35)', marginBottom: '6px' }}>Email</label>
+                <input style={{ width: '100%', padding: '12px 16px', background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.08)', borderRadius: '12px', color: '#fff', fontSize: '.88rem', outline: 'none', fontFamily: "'DM Sans',sans-serif" }} placeholder="admin@email.com" value={email} onChange={e => setEmail(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleForgotSendOTP()} autoFocus />
+              </div>
+              <button style={{ width: '100%', padding: '13px', borderRadius: '12px', background: 'linear-gradient(135deg,#fd1c00,#fd3a20)', border: 'none', color: '#fff', fontFamily: "'DM Sans',sans-serif", fontSize: '.88rem', fontWeight: 600, cursor: 'pointer' }} onClick={handleForgotSendOTP} disabled={loading || !email}>{loading ? 'Sending...' : 'Send Reset Code →'}</button>
+              <div style={{ textAlign: 'center', marginTop: '14px', fontSize: '.76rem' }}><span style={{ color: '#fd1c00', cursor: 'pointer' }} onClick={() => { setMode('login'); setStep(1); setError('') }}>← Back to Login</span></div>
+            </>)}
+
+            {/* FORGOT - Step 2: OTP */}
+            {mode === 'forgot' && step === 2 && (<>
+              <div style={{ background: 'rgba(74,222,128,.06)', border: '1px solid rgba(74,222,128,.15)', borderRadius: '10px', padding: '10px 14px', fontSize: '.78rem', color: '#4ade80', marginBottom: '14px' }}>Reset code sent to {maskedEmail}</div>
+              <div style={{ marginBottom: '14px' }}>
+                <label style={{ display: 'block', fontSize: '.65rem', fontWeight: 600, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'rgba(255,255,255,.35)', marginBottom: '6px' }}>Enter OTP</label>
+                <input style={{ width: '100%', padding: '12px 16px', background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.08)', borderRadius: '12px', color: '#fff', fontSize: '1.1rem', outline: 'none', fontFamily: "'DM Sans',sans-serif", letterSpacing: '6px', textAlign: 'center' }} placeholder="6-digit code" value={otp} onChange={e => setOtp(e.target.value.replace(/\D/, '').slice(0, 6))} onKeyDown={e => e.key === 'Enter' && handleVerifyOTP()} maxLength={6} autoFocus />
+              </div>
+              <button style={{ width: '100%', padding: '13px', borderRadius: '12px', background: 'linear-gradient(135deg,#fd1c00,#fd3a20)', border: 'none', color: '#fff', fontFamily: "'DM Sans',sans-serif", fontSize: '.88rem', fontWeight: 600, cursor: 'pointer' }} onClick={handleVerifyOTP} disabled={loading || otp.length !== 6}>{loading ? 'Verifying...' : 'Verify →'}</button>
             </>)}
           </div>
         </div>
@@ -148,10 +279,10 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
   // ═══ DASHBOARD ═══
   const s = data?.stats || {}
   const tabs = [
-    {id:'overview',label:'Overview',icon:'📊'},
-    {id:'mentors',label:'Mentors',icon:'👨‍🏫'},
-    {id:'teams',label:'Teams',icon:'👥'},
-    {id:'actions',label:'Actions',icon:'⚡'}
+    { id: 'overview', label: 'Overview', icon: '📊' },
+    { id: 'mentors', label: 'Mentors', icon: '👨‍🏫' },
+    { id: 'teams', label: 'Teams', icon: '👥' },
+    { id: 'actions', label: 'Actions', icon: '⚡' }
   ]
 
   return (
@@ -175,48 +306,35 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
 .db-tab:hover{color:rgba(255,255,255,.7);background:rgba(255,255,255,.03)}
 .db-tab.on{color:#fff;background:rgba(253,28,0,.08);border:1px solid rgba(253,28,0,.12)}
 .db-body{padding:24px 28px;max-width:1400px;margin:0 auto}
-
-/* Stats cards */
 .st-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
 .st-card{padding:22px 20px;border-radius:16px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);animation:countUp .5s ease both}
 .st-card:nth-child(2){animation-delay:.1s}.st-card:nth-child(3){animation-delay:.2s}.st-card:nth-child(4){animation-delay:.3s}
 .st-val{font-size:2rem;font-weight:800;color:#fff;line-height:1}
 .st-label{font-size:.68rem;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.5px;margin-top:6px;font-weight:500}
-.st-accent{color:#fd1c00}
-.st-green{color:#4ade80}
-.st-amber{color:#EEA727}
-.st-blue{color:#3b82f6}
-
-/* Progress bar */
 .prog-wrap{margin-bottom:28px;padding:20px 24px;border-radius:16px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04)}
 .prog-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 .prog-title{font-size:.82rem;font-weight:600;color:rgba(255,255,255,.7)}
 .prog-pct{font-size:1.2rem;font-weight:800;color:#fd1c00}
 .prog-bar{height:8px;border-radius:4px;background:rgba(255,255,255,.06);overflow:hidden}
 .prog-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#fd1c00,#faa000);transition:width 1s cubic-bezier(.4,0,.2,1)}
-
-/* Tech breakdown */
 .tech-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px}
-.tech-card{padding:18px 16px;border-radius:14px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);display:flex;align-items:center;gap:14px;animation:fadeUp .4s ease both}
+.tech-card{padding:18px 16px;border-radius:14px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);display:flex;align-items:center;gap:14px}
 .tech-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
 .tech-info{flex:1}
 .tech-name{font-size:.78rem;font-weight:600;color:rgba(255,255,255,.8)}
 .tech-stat{font-size:.65rem;color:rgba(255,255,255,.35);margin-top:2px}
 .tech-bar{height:4px;border-radius:2px;background:rgba(255,255,255,.06);margin-top:6px;overflow:hidden}
 .tech-bar-fill{height:100%;border-radius:2px;transition:width .8s ease}
-
-/* Mentor cards */
 .mn-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
 .mn-card{padding:20px;border-radius:14px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);cursor:pointer;transition:all .2s}
-.mn-card:hover{border-color:rgba(255,255,255,.1);background:rgba(255,255,255,.03)}
-.mn-card.expanded{border-color:rgba(253,28,0,.15);background:rgba(253,28,0,.02)}
+.mn-card:hover{border-color:rgba(255,255,255,.1)}
+.mn-card.expanded{border-color:rgba(253,28,0,.15)}
 .mn-hdr{display:flex;justify-content:space-between;align-items:center}
 .mn-name{font-size:.88rem;font-weight:600;color:#fff}
 .mn-badge{font-size:.65rem;padding:3px 10px;border-radius:6px;font-weight:500}
 .mn-badge.done{background:rgba(74,222,128,.08);color:#4ade80;border:1px solid rgba(74,222,128,.15)}
 .mn-badge.pending{background:rgba(238,167,39,.08);color:#EEA727;border:1px solid rgba(238,167,39,.15)}
 .mn-stats{display:flex;gap:16px;margin-top:10px;font-size:.72rem;color:rgba(255,255,255,.4)}
-.mn-stats span{display:flex;align-items:center;gap:4px}
 .mn-bar{height:4px;border-radius:2px;background:rgba(255,255,255,.06);margin-top:10px;overflow:hidden}
 .mn-bar-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#4ade80,#10b981);transition:width .6s ease}
 .mn-teams{margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.04);display:flex;flex-direction:column;gap:8px}
@@ -225,9 +343,6 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
 .mn-team-status{font-size:.65rem;padding:2px 8px;border-radius:4px}
 .mn-team-status.reg{background:rgba(74,222,128,.08);color:#4ade80}
 .mn-team-status.pen{background:rgba(255,255,255,.04);color:rgba(255,255,255,.35)}
-.mn-team-acc{font-size:.6rem;padding:2px 6px;border-radius:4px;background:rgba(59,130,246,.08);color:#3b82f6;margin-left:6px}
-
-/* Teams table */
 .tbl-controls{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
 .tbl-search{flex:1;min-width:200px;padding:10px 14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:10px;color:#fff;font-size:.82rem;outline:none;font-family:'DM Sans',sans-serif}
 .tbl-search:focus{border-color:rgba(253,28,0,.2)}
@@ -241,218 +356,58 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
 .tbl tr td:first-child{border-left:1px solid rgba(255,255,255,.02);border-radius:10px 0 0 10px}
 .tbl tr td:last-child{border-right:1px solid rgba(255,255,255,.02);border-radius:0 10px 10px 0}
 .tbl tr:hover td{background:rgba(255,255,255,.03)}
-.tbl-status{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:6px;font-size:.68rem;font-weight:500}
-.tbl-status.reg{background:rgba(74,222,128,.08);color:#4ade80}
-.tbl-status.pen{background:rgba(255,255,255,.04);color:rgba(255,255,255,.35)}
-.tbl-tech{font-size:.65rem;padding:3px 8px;border-radius:6px;font-weight:500;display:inline-block}
-.tbl-expand{background:none;border:none;color:rgba(255,255,255,.3);cursor:pointer;font-size:.72rem;padding:4px 8px;border-radius:6px;transition:all .2s;font-family:'DM Sans',sans-serif}
-.tbl-expand:hover{color:#fff;background:rgba(255,255,255,.05)}
+.tbl-expand{background:none;border:none;color:rgba(255,255,255,.3);cursor:pointer;font-size:.72rem;padding:4px 8px;border-radius:6px;font-family:'DM Sans',sans-serif}
 .tbl-detail{padding:16px 20px;background:rgba(255,255,255,.01);border:1px solid rgba(255,255,255,.03);border-radius:12px;margin:4px 0 8px;font-size:.74rem;color:rgba(255,255,255,.5)}
 .tbl-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
 .tbl-detail-item{padding:10px;border-radius:8px;background:rgba(255,255,255,.02)}
 .tbl-detail-label{font-size:.6rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
 .tbl-detail-val{font-size:.76rem;color:rgba(255,255,255,.7)}
-
-/* Actions */
 .act-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
 .act-card{padding:24px;border-radius:16px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04)}
 .act-title{font-size:.88rem;font-weight:600;color:#fff;margin-bottom:6px;display:flex;align-items:center;gap:8px}
 .act-desc{font-size:.74rem;color:rgba(255,255,255,.35);margin-bottom:16px;line-height:1.5}
 .act-btn{padding:10px 20px;border-radius:10px;border:none;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px}
-.act-btn.primary{background:linear-gradient(135deg,#fd1c00,#fd3a20);color:#fff;box-shadow:0 2px 12px rgba(253,28,0,.2)}
-.act-btn.primary:hover{box-shadow:0 4px 20px rgba(253,28,0,.35)}
+.act-btn.primary{background:linear-gradient(135deg,#fd1c00,#fd3a20);color:#fff}
 .act-btn.secondary{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.6)}
-.act-btn.secondary:hover{background:rgba(255,255,255,.08);color:#fff}
 .act-btn:disabled{opacity:.5;cursor:not-allowed}
 .act-msg{margin-top:10px;font-size:.74rem;padding:8px 12px;border-radius:8px;background:rgba(74,222,128,.06);color:#4ade80}
-
-/* Recent */
-.recent{margin-top:28px}
-.recent-title{font-size:.82rem;font-weight:600;color:rgba(255,255,255,.6);margin-bottom:12px;display:flex;align-items:center;gap:6px}
-.recent-list{display:flex;flex-direction:column;gap:8px}
-.recent-item{display:flex;align-items:center;gap:14px;padding:12px 16px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.03);animation:fadeUp .3s ease both}
+.recent-title{font-size:.82rem;font-weight:600;color:rgba(255,255,255,.6);margin-bottom:12px;margin-top:28px}
+.recent-item{display:flex;align-items:center;gap:14px;padding:12px 16px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.03);margin-bottom:8px}
 .recent-num{font-size:.82rem;font-weight:700;color:#fd1c00;min-width:60px}
-.recent-info{flex:1}
 .recent-proj{font-size:.78rem;font-weight:500;color:rgba(255,255,255,.75)}
 .recent-meta{font-size:.65rem;color:rgba(255,255,255,.3);margin-top:2px}
-.recent-time{font-size:.65rem;color:rgba(255,255,255,.25);white-space:nowrap}
-
-/* Responsive */
+.recent-time{font-size:.65rem;color:rgba(255,255,255,.25);white-space:nowrap;margin-left:auto}
 @media(max-width:900px){.st-grid{grid-template-columns:repeat(2,1fr)}.tech-grid{grid-template-columns:repeat(2,1fr)}.mn-grid{grid-template-columns:1fr}.act-grid{grid-template-columns:1fr}}
 @media(max-width:640px){.st-grid{grid-template-columns:1fr}.tech-grid{grid-template-columns:1fr}.db-hdr{padding:12px 16px}.db-body{padding:16px}.db-tabs{padding:10px 16px}.tbl-controls{flex-direction:column}.tbl{display:block;overflow-x:auto}.tbl-detail-grid{grid-template-columns:1fr}}
       `}</style>
-      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=Orbitron:wght@400;600;700&display=swap" rel="stylesheet"/>
+      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=Orbitron:wght@400;600;700&display=swap" rel="stylesheet" />
 
       <div className="db">
         <div className="db-hdr">
-          <div className="db-logo">
-            <div className="db-logo-icon">PS</div>
-            <div><div className="db-logo-text">ADMIN PANEL</div><div className="db-logo-sub">Project Space · May 2026</div></div>
-          </div>
-          <div style={{display:'flex',alignItems:'center',gap:10}}>
+          <div className="db-logo"><div className="db-logo-icon">PS</div><div><div className="db-logo-text">ADMIN PANEL</div><div className="db-logo-sub">Project Space · May 2026</div></div></div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <button className="db-logout" onClick={fetchDashboard}>↻ Refresh</button>
             <button className="db-logout" onClick={handleLogout}>Logout</button>
           </div>
         </div>
-
-        <div className="db-tabs">
-          {tabs.map(t => <button key={t.id} className={`db-tab ${activeTab===t.id?'on':''}`} onClick={()=>setActiveTab(t.id)}>{t.icon} {t.label}</button>)}
-        </div>
-
+        <div className="db-tabs">{tabs.map(t => <button key={t.id} className={`db-tab ${activeTab === t.id ? 'on' : ''}`} onClick={() => setActiveTab(t.id)}>{t.icon} {t.label}</button>)}</div>
         <div className="db-body">
-          {loading && !data && <div style={{textAlign:'center',padding:'60px',color:'rgba(255,255,255,.3)'}}>Loading dashboard...</div>}
-
+          {loading && !data && <div style={{ textAlign: 'center', padding: '60px', color: 'rgba(255,255,255,.3)' }}>Loading dashboard...</div>}
           {data && activeTab === 'overview' && (<>
             <div className="st-grid">
-              <div className="st-card"><div className="st-val st-accent">{s.totalTeams}</div><div className="st-label">Total Teams</div></div>
-              <div className="st-card"><div className="st-val st-green">{s.registeredCount}</div><div className="st-label">Registered</div></div>
-              <div className="st-card"><div className="st-val st-amber">{s.pendingCount}</div><div className="st-label">Pending</div></div>
-              <div className="st-card"><div className="st-val st-blue">{s.accountsCreated}</div><div className="st-label">Accounts Created</div></div>
+              <div className="st-card"><div className="st-val" style={{ color: '#fd1c00' }}>{s.totalTeams}</div><div className="st-label">Total Teams</div></div>
+              <div className="st-card"><div className="st-val" style={{ color: '#4ade80' }}>{s.registeredCount}</div><div className="st-label">Registered</div></div>
+              <div className="st-card"><div className="st-val" style={{ color: '#EEA727' }}>{s.pendingCount}</div><div className="st-label">Pending</div></div>
+              <div className="st-card"><div className="st-val" style={{ color: '#3b82f6' }}>{s.accountsCreated}</div><div className="st-label">Accounts Created</div></div>
             </div>
-
-            <div className="prog-wrap">
-              <div className="prog-hdr"><span className="prog-title">Registration Progress</span><span className="prog-pct">{s.progressPercent}%</span></div>
-              <div className="prog-bar"><div className="prog-fill" style={{width:`${s.progressPercent}%`}}/></div>
-            </div>
-
-            <div className="tech-grid">
-              {Object.entries(data.techBreakdown || {}).map(([tech,v]) => (
-                <div key={tech} className="tech-card">
-                  <div className="tech-dot" style={{background:techColors[tech]||'#888'}}/>
-                  <div className="tech-info">
-                    <div className="tech-name">{tech}</div>
-                    <div className="tech-stat">{v.registered}/{v.total} registered · {v.pending} pending</div>
-                    <div className="tech-bar"><div className="tech-bar-fill" style={{width:`${v.total>0?Math.round(v.registered/v.total*100):0}%`,background:techColors[tech]||'#888'}}/></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="recent">
-              <div className="recent-title">🕐 Recent Registrations</div>
-              <div className="recent-list">
-                {(data.recentRegistrations||[]).length===0 && <div style={{padding:'20px',textAlign:'center',color:'rgba(255,255,255,.2)',fontSize:'.78rem'}}>No registrations yet</div>}
-                {(data.recentRegistrations||[]).map((r,i) => (
-                  <div key={i} className="recent-item" style={{animationDelay:`${i*.05}s`}}>
-                    <div className="recent-num">{r.teamNumber}</div>
-                    <div className="recent-info"><div className="recent-proj">{r.projectTitle}</div><div className="recent-meta">{r.technology}</div></div>
-                    <div className="recent-time">{r.registeredAt ? new Date(r.registeredAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : ''}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <div className="prog-wrap"><div className="prog-hdr"><span className="prog-title">Registration Progress</span><span className="prog-pct">{s.progressPercent}%</span></div><div className="prog-bar"><div className="prog-fill" style={{ width: `${s.progressPercent}%` }} /></div></div>
+            <div className="tech-grid">{Object.entries(data.techBreakdown || {}).map(([tech, v]) => (<div key={tech} className="tech-card"><div className="tech-dot" style={{ background: techColors[tech] || '#888' }} /><div className="tech-info"><div className="tech-name">{tech}</div><div className="tech-stat">{v.registered}/{v.total} registered</div><div className="tech-bar"><div className="tech-bar-fill" style={{ width: `${v.total > 0 ? Math.round(v.registered / v.total * 100) : 0}%`, background: techColors[tech] || '#888' }} /></div></div></div>))}</div>
+            <div className="recent-title">🕐 Recent Registrations</div>
+            {(data.recentRegistrations || []).map((r, i) => (<div key={i} className="recent-item"><div className="recent-num">{r.teamNumber}</div><div><div className="recent-proj">{r.projectTitle}</div><div className="recent-meta">{r.technology}</div></div><div className="recent-time">{r.registeredAt ? new Date(r.registeredAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}</div></div>))}
           </>)}
-
-          {data && activeTab === 'mentors' && (<>
-            <div className="mn-grid">
-              {Object.entries(data.mentorBreakdown || {}).sort((a,b) => b[1].total - a[1].total).map(([name,v]) => (
-                <div key={name} className={`mn-card ${expandedMentor===name?'expanded':''}`} onClick={()=>setExpandedMentor(expandedMentor===name?null:name)}>
-                  <div className="mn-hdr">
-                    <div className="mn-name">{name}</div>
-                    <div className={`mn-badge ${v.registered===v.total?'done':'pending'}`}>{v.registered===v.total?'✓ All Done':`${v.pending} pending`}</div>
-                  </div>
-                  <div className="mn-stats">
-                    <span>📋 {v.total} teams</span>
-                    <span>✅ {v.registered} registered</span>
-                    <span>⏳ {v.pending} pending</span>
-                  </div>
-                  <div className="mn-bar"><div className="mn-bar-fill" style={{width:`${v.total>0?Math.round(v.registered/v.total*100):0}%`}}/></div>
-                  {expandedMentor===name && (
-                    <div className="mn-teams">
-                      {v.teams.map(t => (
-                        <div key={t.serialNumber} className="mn-team">
-                          <span className="mn-team-name">#{t.serialNumber} {t.projectTitle || t.leaderName}</span>
-                          <span className={`mn-team-status ${t.registered?'reg':'pen'}`}>{t.registered?'Registered':'Pending'}</span>
-                          {t.accountCreated && <span className="mn-team-acc">Account ✓</span>}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </>)}
-
-          {data && activeTab === 'teams' && (<>
-            <div className="tbl-controls">
-              <input className="tbl-search" placeholder="Search teams, leaders, projects..." value={search} onChange={e=>setSearch(e.target.value)}/>
-              <button className={`tbl-filter ${filterStatus==='all'?'on':''}`} onClick={()=>setFilterStatus('all')}>All</button>
-              <button className={`tbl-filter ${filterStatus==='registered'?'on':''}`} onClick={()=>setFilterStatus('registered')}>Registered</button>
-              <button className={`tbl-filter ${filterStatus==='pending'?'on':''}`} onClick={()=>setFilterStatus('pending')}>Pending</button>
-              <select className="tbl-filter" value={filterTech} onChange={e=>setFilterTech(e.target.value)} style={{appearance:'auto'}}>
-                <option value="all">All Technologies</option>
-                {Object.keys(data.techBreakdown||{}).map(t=><option key={t} value={t}>{t}</option>)}
-              </select>
-              <span className="tbl-count">{filteredTeams.length} teams</span>
-            </div>
-            <table className="tbl">
-              <thead><tr><th>#</th><th>Team</th><th>Project</th><th>Technology</th><th>Leader</th><th>Mentor</th><th>Status</th><th></th></tr></thead>
-              <tbody>
-                {filteredTeams.map(t => (<>
-                  <tr key={t.serialNumber}>
-                    <td style={{fontWeight:600,color:'rgba(255,255,255,.4)'}}>{t.serialNumber}</td>
-                    <td style={{fontWeight:600,color:'#fd1c00'}}>{t.teamNumber||'—'}</td>
-                    <td style={{maxWidth:'200px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{t.projectTitle||'—'}</td>
-                    <td><span className="tbl-tech" style={{background:`${techColors[t.technology]||'#888'}15`,color:techColors[t.technology]||'#888',border:`1px solid ${techColors[t.technology]||'#888'}30`}}>{t.technology}</span></td>
-                    <td>{t.leaderName}</td>
-                    <td style={{color:'rgba(255,255,255,.4)'}}>{t.mentorAssigned||'—'}</td>
-                    <td><span className={`tbl-status ${t.registered?'reg':'pen'}`}>{t.registered?'✓ Registered':'Pending'}</span></td>
-                    <td><button className="tbl-expand" onClick={()=>setExpandedTeam(expandedTeam===t.serialNumber?null:t.serialNumber)}>{expandedTeam===t.serialNumber?'▲':'▼'}</button></td>
-                  </tr>
-                  {expandedTeam===t.serialNumber && (
-                    <tr key={`detail-${t.serialNumber}`}><td colSpan={8}>
-                      <div className="tbl-detail">
-                        <div style={{fontWeight:600,color:'rgba(255,255,255,.6)',marginBottom:8}}>{t.projectTitle}</div>
-                        {t.projectDescription && <div style={{marginBottom:8,lineHeight:1.5}}>{t.projectDescription}</div>}
-                        <div className="tbl-detail-grid">
-                          <div className="tbl-detail-item"><div className="tbl-detail-label">Problem Statement</div><div className="tbl-detail-val">{t.problemStatement||'—'}</div></div>
-                          <div className="tbl-detail-item"><div className="tbl-detail-label">AI Usage</div><div className="tbl-detail-val">{t.aiUsage}</div></div>
-                          <div className="tbl-detail-item"><div className="tbl-detail-label">Tech Stack</div><div className="tbl-detail-val">{(t.techStack||[]).join(', ')||'—'}</div></div>
-                          <div className="tbl-detail-item"><div className="tbl-detail-label">Project Area</div><div className="tbl-detail-val">{(t.projectArea||[]).join(', ')||'—'}</div></div>
-                          <div className="tbl-detail-item"><div className="tbl-detail-label">Members ({t.memberCount})</div><div className="tbl-detail-val">{(t.members||[]).map(m=>`${m.name}${m.isLeader?' ★':''}`).join(', ')}</div></div>
-                          {t.registeredAt && <div className="tbl-detail-item"><div className="tbl-detail-label">Registered At</div><div className="tbl-detail-val">{new Date(t.registeredAt).toLocaleString('en-IN')}</div></div>}
-                        </div>
-                      </div>
-                    </td></tr>
-                  )}
-                </>))}
-              </tbody>
-            </table>
-          </>)}
-
-          {data && activeTab === 'actions' && (<>
-            <div className="act-grid">
-              <div className="act-card">
-                <div className="act-title">📧 Send Reminders</div>
-                <div className="act-desc">Send registration reminder emails to all team leaders who haven't registered yet ({s.pendingCount} teams pending)</div>
-                <button className="act-btn primary" onClick={handleRemind} disabled={reminding||s.pendingCount===0}>{reminding?'Sending...':'Send Reminders to All Pending Teams'}</button>
-                {reminderMsg && <div className="act-msg">{reminderMsg}</div>}
-              </div>
-              <div className="act-card">
-                <div className="act-title">📥 Export Data</div>
-                <div className="act-desc">Download team data and registration details as CSV files for reporting</div>
-                <div style={{display:'flex',gap:10}}>
-                  <button className="act-btn secondary" onClick={()=>handleExport('teams')}>Export All Teams</button>
-                  <button className="act-btn secondary" onClick={()=>handleExport('registrations')}>Export Registrations</button>
-                </div>
-              </div>
-              <div className="act-card">
-                <div className="act-title">📊 Quick Stats</div>
-                <div className="act-desc">Registration overview at a glance</div>
-                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginTop:8}}>
-                  <div style={{padding:'10px 12px',borderRadius:8,background:'rgba(255,255,255,.02)',fontSize:'.74rem'}}><span style={{color:'rgba(255,255,255,.35)'}}>Total Students</span><div style={{fontWeight:700,fontSize:'1.1rem',color:'#fff',marginTop:2}}>{s.totalStudents}</div></div>
-                  <div style={{padding:'10px 12px',borderRadius:8,background:'rgba(255,255,255,.02)',fontSize:'.74rem'}}><span style={{color:'rgba(255,255,255,.35)'}}>Accounts Created</span><div style={{fontWeight:700,fontSize:'1.1rem',color:'#3b82f6',marginTop:2}}>{s.accountsCreated}</div></div>
-                  <div style={{padding:'10px 12px',borderRadius:8,background:'rgba(255,255,255,.02)',fontSize:'.74rem'}}><span style={{color:'rgba(255,255,255,.35)'}}>Registered</span><div style={{fontWeight:700,fontSize:'1.1rem',color:'#4ade80',marginTop:2}}>{s.registeredCount}</div></div>
-                  <div style={{padding:'10px 12px',borderRadius:8,background:'rgba(255,255,255,.02)',fontSize:'.74rem'}}><span style={{color:'rgba(255,255,255,.35)'}}>Pending</span><div style={{fontWeight:700,fontSize:'1.1rem',color:'#EEA727',marginTop:2}}>{s.pendingCount}</div></div>
-                </div>
-              </div>
-              <div className="act-card">
-                <div className="act-title">🔄 Refresh Data</div>
-                <div className="act-desc">Reload all dashboard data to see the latest registration status</div>
-                <button className="act-btn secondary" onClick={fetchDashboard} disabled={loading}>{loading?'Loading...':'Refresh Dashboard'}</button>
-              </div>
-            </div>
-          </>)}
+          {data && activeTab === 'mentors' && (<div className="mn-grid">{Object.entries(data.mentorBreakdown || {}).sort((a, b) => b[1].total - a[1].total).map(([name, v]) => (<div key={name} className={`mn-card ${expandedMentor === name ? 'expanded' : ''}`} onClick={() => setExpandedMentor(expandedMentor === name ? null : name)}><div className="mn-hdr"><div className="mn-name">{name}</div><div className={`mn-badge ${v.registered === v.total ? 'done' : 'pending'}`}>{v.registered === v.total ? '✓ All Done' : `${v.pending} pending`}</div></div><div className="mn-stats"><span>📋 {v.total} teams</span><span>✅ {v.registered}</span><span>⏳ {v.pending}</span></div><div className="mn-bar"><div className="mn-bar-fill" style={{ width: `${v.total > 0 ? Math.round(v.registered / v.total * 100) : 0}%` }} /></div>{expandedMentor === name && (<div className="mn-teams">{v.teams.map(t => (<div key={t.serialNumber} className="mn-team"><span className="mn-team-name">#{t.serialNumber} {t.projectTitle || t.leaderName}</span><span className={`mn-team-status ${t.registered ? 'reg' : 'pen'}`}>{t.registered ? 'Registered' : 'Pending'}</span></div>))}</div>)}</div>))}</div>)}
+          {data && activeTab === 'teams' && (<><div className="tbl-controls"><input className="tbl-search" placeholder="Search teams..." value={search} onChange={e => setSearch(e.target.value)} /><button className={`tbl-filter ${filterStatus === 'all' ? 'on' : ''}`} onClick={() => setFilterStatus('all')}>All</button><button className={`tbl-filter ${filterStatus === 'registered' ? 'on' : ''}`} onClick={() => setFilterStatus('registered')}>Registered</button><button className={`tbl-filter ${filterStatus === 'pending' ? 'on' : ''}`} onClick={() => setFilterStatus('pending')}>Pending</button><select className="tbl-filter" value={filterTech} onChange={e => setFilterTech(e.target.value)} style={{ appearance: 'auto' }}><option value="all">All Technologies</option>{Object.keys(data.techBreakdown || {}).map(t => <option key={t} value={t}>{t}</option>)}</select><span className="tbl-count">{filteredTeams.length} teams</span></div><table className="tbl"><thead><tr><th>#</th><th>Team</th><th>Project</th><th>Technology</th><th>Leader</th><th>Mentor</th><th>Status</th><th></th></tr></thead><tbody>{filteredTeams.map(t => (<React.Fragment key={t.serialNumber}><tr><td style={{ fontWeight: 600, color: 'rgba(255,255,255,.4)' }}>{t.serialNumber}</td><td style={{ fontWeight: 600, color: '#fd1c00' }}>{t.teamNumber || '—'}</td><td style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.projectTitle || '—'}</td><td><span style={{ fontSize: '.65rem', padding: '3px 8px', borderRadius: '6px', background: `${techColors[t.technology] || '#888'}15`, color: techColors[t.technology] || '#888', border: `1px solid ${techColors[t.technology] || '#888'}30` }}>{t.technology}</span></td><td>{t.leaderName}</td><td style={{ color: 'rgba(255,255,255,.4)' }}>{t.mentorAssigned || '—'}</td><td><span style={{ fontSize: '.68rem', padding: '3px 10px', borderRadius: '6px', fontWeight: 500, background: t.registered ? 'rgba(74,222,128,.08)' : 'rgba(255,255,255,.04)', color: t.registered ? '#4ade80' : 'rgba(255,255,255,.35)' }}>{t.registered ? '✓ Registered' : 'Pending'}</span></td><td><button className="tbl-expand" onClick={() => setExpandedTeam(expandedTeam === t.serialNumber ? null : t.serialNumber)}>{expandedTeam === t.serialNumber ? '▲' : '▼'}</button></td></tr>{expandedTeam === t.serialNumber && (<tr><td colSpan={8}><div className="tbl-detail"><div style={{ fontWeight: 600, color: 'rgba(255,255,255,.6)', marginBottom: 8 }}>{t.projectTitle}</div>{t.projectDescription && <div style={{ marginBottom: 8, lineHeight: 1.5 }}>{t.projectDescription}</div>}<div className="tbl-detail-grid"><div className="tbl-detail-item"><div className="tbl-detail-label">Problem Statement</div><div className="tbl-detail-val">{t.problemStatement || '—'}</div></div><div className="tbl-detail-item"><div className="tbl-detail-label">AI Usage</div><div className="tbl-detail-val">{t.aiUsage}</div></div><div className="tbl-detail-item"><div className="tbl-detail-label">Tech Stack</div><div className="tbl-detail-val">{(t.techStack || []).join(', ') || '—'}</div></div><div className="tbl-detail-item"><div className="tbl-detail-label">Members ({t.memberCount})</div><div className="tbl-detail-val">{(t.members || []).map(m => `${m.name}${m.isLeader ? ' ★' : ''}`).join(', ')}</div></div></div></div></td></tr>)}</React.Fragment>))}</tbody></table></>)}
+          {data && activeTab === 'actions' && (<div className="act-grid"><div className="act-card"><div className="act-title">📧 Send Reminders</div><div className="act-desc">Send reminder emails to {s.pendingCount} pending team leaders</div><button className="act-btn primary" onClick={handleRemind} disabled={reminding || s.pendingCount === 0}>{reminding ? 'Sending...' : 'Send Reminders'}</button>{reminderMsg && <div className="act-msg">{reminderMsg}</div>}</div><div className="act-card"><div className="act-title">📥 Export Data</div><div className="act-desc">Download CSV reports</div><div style={{ display: 'flex', gap: 10 }}><button className="act-btn secondary" onClick={() => handleExport('teams')}>All Teams</button><button className="act-btn secondary" onClick={() => handleExport('registrations')}>Registrations</button></div></div><div className="act-card"><div className="act-title">📊 Quick Stats</div><div className="act-desc">At a glance</div><div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}><div style={{ padding: '10px', borderRadius: 8, background: 'rgba(255,255,255,.02)', fontSize: '.74rem' }}><span style={{ color: 'rgba(255,255,255,.35)' }}>Students</span><div style={{ fontWeight: 700, fontSize: '1.1rem', color: '#fff', marginTop: 2 }}>{s.totalStudents}</div></div><div style={{ padding: '10px', borderRadius: 8, background: 'rgba(255,255,255,.02)', fontSize: '.74rem' }}><span style={{ color: 'rgba(255,255,255,.35)' }}>Accounts</span><div style={{ fontWeight: 700, fontSize: '1.1rem', color: '#3b82f6', marginTop: 2 }}>{s.accountsCreated}</div></div></div></div><div className="act-card"><div className="act-title">🔄 Refresh</div><div className="act-desc">Reload latest data</div><button className="act-btn secondary" onClick={fetchDashboard} disabled={loading}>{loading ? 'Loading...' : 'Refresh'}</button></div></div>)}
         </div>
       </div>
     </>
