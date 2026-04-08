@@ -1,7 +1,5 @@
 import { sendMail } from '@/lib/mailer'
 import { createClient } from '@supabase/supabase-js'
-
-
 function rollToEmail(roll) {
   if (!roll) return null
   const r = roll.toUpperCase()
@@ -96,7 +94,7 @@ export async function POST(request) {
           subject: `🎉 Team ${teamNumber} Registered — ${projectTitle} | Project Space`,
           html: buildHtml(m.name)
         }
-        var result = await transporter.sendMail(mailOptions)
+        var result = await sendMail(mailOptions)
         console.log('✅ Sent to', m.email, result.messageId)
         sent++
       } catch (err) {
@@ -176,7 +174,7 @@ export async function POST(request) {
   </div>
 </body>
 </html>`
-          await transporter.sendMail({
+          await sendMail({
             from: `"Project Space" <${process.env.GMAIL_USER}>`,
             to: mentor.email,
             subject: `📋 Team ${teamNumber} Registered — ${projectTitle} | Project Space`,

@@ -1,6 +1,7 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import AuthBackground from '@/components/AuthBackground'
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -160,14 +161,13 @@ html,body{background:#050008;overflow:auto}
 body{font-family:'DM Sans',sans-serif;color:#fff}
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 .adm-wrap{width:100%;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:#050008;position:relative}
-.adm-bg{position:fixed;inset:0;background:radial-gradient(ellipse at 30% 20%,rgba(253,28,0,.04),transparent 50%),radial-gradient(ellipse at 70% 80%,rgba(250,160,0,.03),transparent 50%);pointer-events:none}
 .adm-card{width:100%;max-width:420px;background:rgba(12,8,20,.9);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:40px 32px;backdrop-filter:blur(20px);animation:fadeUp .5s ease;position:relative;z-index:2}
 @media(max-width:480px){.adm-card{padding:28px 20px;border-radius:16px}}
         `}</style>
         <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=Orbitron:wght@400;600;700&display=swap" rel="stylesheet" />
-        <div className="adm-wrap">
-          <div className="adm-bg" />
-          <div className="adm-card">
+        <AuthBackground>
+          <div className="adm-wrap">
+            <div className="adm-card">
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '24px' }}>
               <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'linear-gradient(135deg,#fd1c00,#faa000)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '16px', color: '#fff', boxShadow: '0 0 24px rgba(253,28,0,.3)' }}>PS</div>
               <div style={{ fontFamily: "'Orbitron',sans-serif", fontSize: '1rem', fontWeight: 700, letterSpacing: '3px', color: '#fff', marginTop: '12px' }}>
@@ -271,7 +271,8 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
               <button style={{ width: '100%', padding: '13px', borderRadius: '12px', background: 'linear-gradient(135deg,#fd1c00,#fd3a20)', border: 'none', color: '#fff', fontFamily: "'DM Sans',sans-serif", fontSize: '.88rem', fontWeight: 600, cursor: 'pointer' }} onClick={handleVerifyOTP} disabled={loading || otp.length !== 6}>{loading ? 'Verifying...' : 'Verify →'}</button>
             </>)}
           </div>
-        </div>
+          </div>
+        </AuthBackground>
       </>
     )
   }
