@@ -34,7 +34,7 @@ export async function GET(request) {
         const batch = rollNumbers.slice(i, i + 100)
         const { data: students } = await supabase
           .from('students')
-          .select('roll_number, name, email')
+          .select('roll_number, name, email, phone')
           .in('roll_number', batch)
         if (students) students.forEach(s => { studentMap[s.roll_number] = s })
       }
@@ -78,6 +78,7 @@ export async function GET(request) {
         registered: registeredSerials.has(t.serial_number),
         leaderRoll: t.leader_roll,
         leaderName: studentMap[t.leader_roll]?.name || t.leader_roll,
+        leaderPhone: studentMap[t.leader_roll]?.phone || '',
         accountCreated: accountSet.has(t.leader_roll)
       })
     }
@@ -109,7 +110,8 @@ export async function GET(request) {
         aiUsage: reg?.ai_usage || t.ai_usage || 'No',
         leaderRoll: t.leader_roll,
         leaderName: studentMap[t.leader_roll]?.name || t.leader_roll,
-        leaderAccountCreated: accountSet.has(t.leader_roll),
+        leaderPhone: studentMap[t.leader_roll]?.phone || '',
+        accountCreated: accountSet.has(t.leader_roll),
         members,
         memberCount: members.length
       }

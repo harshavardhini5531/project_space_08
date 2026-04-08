@@ -107,7 +107,7 @@ export default function MentorDashboard() {
             <span className="tc-leader-roll">{t.leaderRoll}</span>
           </div>
           <div className="tc-contact">
-            {t.leaderPhone && <a href={`tel:${t.leaderPhone}`} className="tc-phone">{I.phone} {t.leaderPhone}</a>}
+            {t.leaderPhone && t.leaderPhone.length >= 10 && <a href={`tel:${t.leaderPhone}`} className="tc-phone" title={t.leaderPhone}>{I.phone}</a>}
             {t.leaderEmail && <a href={`mailto:${t.leaderEmail}`} className="tc-email">{I.mail}</a>}
           </div>
         </div>
@@ -128,7 +128,7 @@ export default function MentorDashboard() {
                 <div key={m.rollNumber} className="tc-member">
                   <div className="tc-m-avatar" style={{background:m.isLeader?`linear-gradient(135deg,rgba(${glow},.4),rgba(${glow},.15))`:'rgba(255,255,255,.04)'}}>{m.name?.charAt(0)||'?'}</div>
                   <div className="tc-m-info"><div className="tc-m-name">{m.name} {m.isLeader && '★'}</div><div className="tc-m-roll">{m.rollNumber}</div></div>
-                  {m.phone && <a href={`tel:${m.phone}`} className="tc-m-phone">{I.phone}</a>}
+                  {m.phone && m.phone.length >= 10 && <a href={`tel:${m.phone}`} className="tc-m-phone" title={m.phone}>{I.phone}</a>}
                 </div>
               ))}</div>
             </div>
@@ -159,9 +159,9 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
 .md-sb-mname{font-size:.82rem;font-weight:600;color:#fff}
 .md-sb-mtech{font-size:.68rem;color:rgba(255,255,255,.35);margin-top:2px}
 .md-sb-nav{flex:1;padding:16px 12px;overflow-y:auto}
-.md-sb-item{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:10px;font-size:.78rem;color:rgba(255,255,255,.4);cursor:pointer;transition:all .2s;margin-bottom:4px;border:none;background:none;width:100%;text-align:left;font-family:'DM Sans',sans-serif}
+.md-sb-item{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:10px;font-size:.78rem;color:rgba(255,255,255,.55);cursor:pointer;transition:all .2s;margin-bottom:4px;border:none;background:none;width:100%;text-align:left;font-family:'DM Sans',sans-serif}
 .md-sb-item:hover{color:rgba(255,255,255,.7);background:rgba(255,255,255,.03)}
-.md-sb-item.on{color:#fff;background:rgba(253,28,0,.06);border:1px solid rgba(253,28,0,.08)}
+.md-sb-item.on{color:#fd1c00;background:rgba(253,28,0,.08);border:1px solid rgba(253,28,0,.12)}
 .md-sb-item svg{flex-shrink:0}
 .md-sb-footer{padding:16px 12px;border-top:1px solid rgba(255,255,255,.04)}
 .md-sb-logout{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;font-size:.78rem;color:rgba(255,255,255,.35);cursor:pointer;border:none;background:none;width:100%;text-align:left;font-family:'DM Sans',sans-serif;transition:all .2s}
