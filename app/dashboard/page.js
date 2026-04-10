@@ -112,7 +112,7 @@ function MyProfile({ user, hootData, videoRatings, videoLoading }) {
   return (
     <div className="mp">
       {/* ═══ HERO CARD ═══ */}
-      <div className="mp-hero">
+      <div className="mp-hero-row">
         <div className="mp-avatar-wrap">
           {!imgError ? (
             <img className="mp-avatar-img" src={s.image_url} alt={s.name}
@@ -121,6 +121,7 @@ function MyProfile({ user, hootData, videoRatings, videoLoading }) {
             <div className="mp-avatar">{(s.name||'?').charAt(0)}</div>
           )}
         </div>
+        <div className="mp-hero">
         <div className="mp-hero-info">
           <div className="mp-hero-name">{s.name}</div>
           <div className="mp-hero-roll"><Hash size={12}/> {s.roll_number} · {s.branch} · {s.college}</div>
@@ -146,6 +147,7 @@ function MyProfile({ user, hootData, videoRatings, videoLoading }) {
               <div><div className="mp-hd-lb" style={{color:"rgba(255,255,255,.55)"}}>Overall Attendance</div><div className="mp-hd-val">{overallAtt}%</div></div>
             </div>
           </div>
+        </div>
         </div>
       </div>
 
@@ -862,6 +864,7 @@ export default function Dashboard(){
     <>
       <style>{`
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.cdnfonts.com/css/astro');
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',sans-serif;}
 .dash{display:flex;height:100vh;color:#fff;}
@@ -932,13 +935,14 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
 /* ═══ MY PROFILE ═══ */
 .mp{display:flex;flex-direction:column;gap:20px;animation:mpIn .5s ease both;}
 @keyframes mpIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
-.mp-hero{display:flex;gap:20px;align-items:center;padding:22px 28px;border-radius:20px;background:linear-gradient(135deg,#fd1c00 0%,#fa0068 30%,#000000 70%);position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(232,29,2,.12);margin-left:120px;}
-.mp-hero::before{content:'';position:absolute;top:-80px;right:-80px;width:350px;height:350px;background:radial-gradient(circle,rgba(255,255,255,.1),transparent 55%);pointer-events:none;}
-.mp-avatar-wrap{position:absolute;left:-120px;top:50%;transform:translateY(-50%);flex-shrink:0;}
+.mp-hero-row{display:flex;align-items:center;gap:24px;}
+.mp-hero{flex:1;display:flex;align-items:center;padding:22px 28px;border-radius:20px;background:linear-gradient(135deg,#fd1c00 0%,#EEA727 20%,#fa0068 50%,#000000 80%);position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(232,29,2,.12);}
+.mp-hero::before{content:'';position:absolute;top:-80px;right:-80px;width:350px;height:350px;background:radial-gradient(circle,rgba(255,255,255,.08),transparent 55%);pointer-events:none;}
+.mp-avatar-wrap{flex-shrink:0;}
 .mp-avatar{width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.15);backdrop-filter:blur(16px);border:3px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;font-size:2.2rem;font-weight:800;color:#fff;box-shadow:0 6px 20px rgba(0,0,0,.2);overflow:hidden;}
 .mp-avatar-img{width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid rgba(255,255,255,.3);box-shadow:0 6px 20px rgba(0,0,0,.2);}
 .mp-hero-info{flex:1;}
-.mp-hero-name{font-size:1.35rem;font-weight:800;color:#fff;margin-bottom:3px;}
+.mp-hero-name{font-size:1.35rem;font-weight:800;color:#fff;margin-bottom:3px;font-family:'Astro',sans-serif;letter-spacing:1.5px;text-transform:uppercase;}
 .mp-hero-roll{font-size:.74rem;color:rgba(255,255,255,.75);display:flex;align-items:center;gap:6px;margin-bottom:12px;}
 .mp-hero-tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px;}
 .mp-badge{padding:6px 14px;border-radius:20px;font-size:.6rem;font-weight:700;letter-spacing:.5px;display:inline-flex;align-items:center;gap:4px;transition:transform .2s;}
@@ -1150,8 +1154,9 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
 .mob-menu-btn:active{background:rgba(253,28,0,.2);transform:scale(.95)}
 
 @media(max-width:900px){
-  .mp-hero{flex-direction:column;align-items:center;text-align:center;margin-left:0;padding:22px 20px;padding-top:65px;}
-  .mp-avatar-wrap{position:absolute;left:50%;top:-45px;transform:translateX(-50%);}
+  .mp-hero-row{flex-direction:column;align-items:center;gap:0;}
+  .mp-hero{flex-direction:column;align-items:center;text-align:center;padding:22px 20px;width:100%;}
+  .mp-avatar-wrap{margin-bottom:-20px;z-index:2;}
   .mp-hero-details{grid-template-columns:1fr 1fr;}
   .mp-hero-tags{justify-content:center;}
   .mp-hero-roll{justify-content:center;}
@@ -1223,10 +1228,10 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
 }
 @media(max-width:480px){
   .main-content{padding:12px 10px;}
-  .mp-hero{margin-left:0;padding:14px 12px;padding-top:50px;}
-  .mp-avatar{width:60px;height:60px;font-size:1.2rem;}
-  .mp-avatar-img{width:60px;height:60px;}
-  .mp-avatar-wrap{top:-32px;}
+  .mp-hero{padding:14px 12px;}
+  .mp-avatar{width:68px;height:68px;font-size:1.2rem;}
+  .mp-avatar-img{width:68px;height:68px;}
+  .mp-hero-name{font-size:.9rem;letter-spacing:.5px;}
   .mp-hero-name{font-size:.95rem;}
   .mp-hero-details{grid-template-columns:1fr;}
   .mp-pay-grid{grid-template-columns:1fr 1fr;}
