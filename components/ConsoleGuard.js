@@ -1,9 +1,9 @@
 'use client'
 import { useEffect } from 'react'
-if (process.env.NODE_ENV === 'development') return;
 
 export default function ConsoleGuard() {
   useEffect(() => {
+    if (process.env.NODE_ENV === 'development') return;
     // Disable right-click
     const handleContextMenu = (e) => {
       e.preventDefault()
