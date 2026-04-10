@@ -49,7 +49,7 @@ function Badge({text,color="#ff1d00",variant="default"}){
 }
 
 /* ═══ MY PROFILE ═══ */
-function MyProfile({ profile, loading, videoRatings, videoLoading, mayaCoding, mayaLoading }){
+function MyProfile({ profile, loading, videoRatings, videoLoading, mayaCoding, mayaLoading, hootData, codingLevel, problemsData }){
   if (loading) return <div style={{color:'rgba(255,255,255,.3)',textAlign:'center',padding:'60px 0'}}>Loading profile...</div>;
   if (!profile) return <div style={{color:'rgba(255,255,255,.4)',textAlign:'center',padding:'60px 0',fontSize:'.85rem'}}>Profile not found. Check if your roll number exists in the student database.</div>;
   const s = profile;
@@ -207,6 +207,114 @@ function MyProfile({ profile, loading, videoRatings, videoLoading, mayaCoding, m
           <div className="mp-card-title"><Briefcase size={16} style={{color:"#f59e0b"}}/> Placement / Internship</div>
           <div className="mp-stat-card" style={{maxWidth:320}}><div className="mp-stat-icon" style={{background:"rgba(245,158,11,.08)",borderColor:"rgba(245,158,11,.15)"}}><Briefcase size={16} style={{color:"#f59e0b"}}/></div><div className="mp-stat-info"><div className="mp-stat-label">Status</div><div className="mp-stat-value">{s.placement||"Not yet placed"}</div></div></div>
         </div>
+
+      </div>
+
+      {/* ASSESSMENTS SECTION */}
+      <div style={{marginTop:'28px'}}>
+  <div style={{marginBottom:'16px'}}>
+    <div style={{fontSize:'15px',fontWeight:700,color:'#fff',fontFamily:"'DM Sans',sans-serif"}}>Assessments</div>
+    <div style={{fontSize:'12px',color:'rgba(255,255,255,0.35)',fontFamily:"'DM Sans',sans-serif",marginTop:'3px'}}>Communication & coding evaluations</div>
+  </div>
+  <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(250px,1fr))',gap:'14px'}}>
+
+    {/* Self Intro Video */}
+    <div style={{background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:'14px',padding:'20px'}}>
+      <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'16px'}}>
+        <div style={{width:'3px',height:'16px',background:'#BDE8F5',borderRadius:'2px'}}/>
+        <span style={{fontSize:'11px',fontWeight:700,color:'#BDE8F5',fontFamily:"'DM Sans',sans-serif",letterSpacing:'0.06em',textTransform:'uppercase'}}>Self Intro Video</span>
+      </div>
+      <div style={{width:'100%',aspectRatio:'16/9',background:'rgba(189,232,245,0.04)',border:'1.5px dashed rgba(189,232,245,0.2)',borderRadius:'10px',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:'8px'}}>
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(189,232,245,0.4)" strokeWidth="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        <span style={{fontSize:'11px',color:'rgba(189,232,245,0.35)',fontFamily:"'DM Sans',sans-serif",textAlign:'center',lineHeight:1.5}}>Self introduction video<br/>will appear here</span>
+      </div>
+      <div style={{display:'flex',justifyContent:'center',marginTop:'12px'}}>
+        <div style={{display:'inline-flex',alignItems:'center',gap:'5px',background:'rgba(189,232,245,0.06)',border:'1px solid rgba(189,232,245,0.15)',borderRadius:'20px',padding:'4px 12px'}}>
+          <div style={{width:'5px',height:'5px',borderRadius:'50%',background:'#EEA727',boxShadow:'0 0 5px #EEA727'}}/>
+          <span style={{fontSize:'10px',color:'rgba(189,232,245,0.6)',fontFamily:"'DM Sans',sans-serif",fontWeight:600,letterSpacing:'0.05em'}}>PENDING UPLOAD</span>
+        </div>
+      </div>
+    </div>
+
+    {/* HOOT Result */}
+    <div style={{background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:'14px',padding:'20px'}}>
+      <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'16px'}}>
+        <div style={{width:'3px',height:'16px',background:'#EEA727',borderRadius:'2px'}}/>
+        <span style={{fontSize:'11px',fontWeight:700,color:'#EEA727',fontFamily:"'DM Sans',sans-serif",letterSpacing:'0.06em',textTransform:'uppercase'}}>HOOT — Communication</span>
+      </div>
+      {!hootData?(
+        <div style={{textAlign:'center',padding:'20px 0',color:'rgba(255,255,255,0.25)',fontSize:'12px',fontFamily:"'DM Sans',sans-serif"}}>No assessment data found</div>
+      ):(
+        <>
+          {[['Listening',hootData.listening,'#EEA727'],['Speaking',hootData.speaking,'#fd1c00'],['Reading',hootData.reading,'#10b981'],['Writing',hootData.writing,'#7B2FBE']].map(([label,val,color])=>(
+            <div key={label} style={{marginBottom:'12px'}}>
+              <div style={{display:'flex',justifyContent:'space-between',marginBottom:'5px'}}>
+                <span style={{fontSize:'12px',color:'#bbb',fontFamily:"'DM Sans',sans-serif",fontWeight:500}}>{label}</span>
+                <span style={{fontSize:'12px',fontWeight:700,color:color,fontFamily:"'DM Sans',sans-serif"}}>{val?.toFixed(1)}%</span>
+              </div>
+              <div style={{height:'7px',background:'rgba(255,255,255,0.05)',borderRadius:'4px',overflow:'hidden'}}>
+                <div style={{height:'100%',width:`${val}%`,background:color,borderRadius:'4px',boxShadow:`0 0 6px ${color}55`}}/>
+              </div>
+            </div>
+          ))}
+          <div style={{marginTop:'14px',paddingTop:'12px',borderTop:'1px solid rgba(255,255,255,0.06)',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+            <span style={{fontSize:'12px',color:'#666',fontFamily:"'DM Sans',sans-serif"}}>Overall</span>
+            <div style={{background:'rgba(238,167,39,0.1)',border:'1px solid rgba(238,167,39,0.25)',borderRadius:'7px',padding:'3px 10px'}}>
+              <span style={{fontSize:'15px',fontWeight:800,color:'#EEA727',fontFamily:"'DM Sans',sans-serif"}}>{hootData.total?.toFixed(1)}<span style={{fontSize:'10px',fontWeight:400,marginLeft:'2px'}}>/100</span></span>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+
+    {/* Coding Assessment */}
+    <div style={{background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:'14px',padding:'20px'}}>
+      <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'16px'}}>
+        <div style={{width:'3px',height:'16px',background:'#10b981',borderRadius:'2px'}}/>
+        <span style={{fontSize:'11px',fontWeight:700,color:'#10b981',fontFamily:"'DM Sans',sans-serif",letterSpacing:'0.06em',textTransform:'uppercase'}}>Coding Assessment</span>
+      </div>
+      {codingLevel&&(
+        <div style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:'16px',padding:'9px 12px',background:codingLevel==='Advanced'?'rgba(16,185,129,0.08)':'rgba(238,167,39,0.08)',border:`1px solid ${codingLevel==='Advanced'?'rgba(16,185,129,0.25)':'rgba(238,167,39,0.25)'}`,borderRadius:'9px'}}>
+          <span style={{fontSize:'16px'}}>{codingLevel==='Advanced'?'◆':'◈'}</span>
+          <div>
+            <div style={{fontSize:'10px',color:'#666',fontFamily:"'DM Sans',sans-serif",fontWeight:600,textTransform:'uppercase',letterSpacing:'0.05em'}}>Level</div>
+            <div style={{fontSize:'15px',fontWeight:800,color:codingLevel==='Advanced'?'#10b981':'#EEA727',fontFamily:"'DM Sans',sans-serif"}}>{codingLevel==='Advanced'?'Advanced':'Level 0'}</div>
+          </div>
+          {problemsData&&(
+            <div style={{marginLeft:'auto',textAlign:'right'}}>
+              <div style={{fontSize:'10px',color:'#666',fontFamily:"'DM Sans',sans-serif",fontWeight:600,textTransform:'uppercase',letterSpacing:'0.05em'}}>Solved</div>
+              <div style={{fontSize:'15px',fontWeight:800,color:'#fff',fontFamily:"'DM Sans',sans-serif"}}>{Object.values(problemsData).reduce((a,b)=>a+b,0)}</div>
+            </div>
+          )}
+        </div>
+      )}
+      {!problemsData?(
+        <div style={{textAlign:'center',padding:'12px 0',color:'rgba(255,255,255,0.25)',fontSize:'12px',fontFamily:"'DM Sans',sans-serif"}}>No problems data found</div>
+      ):(
+        <>
+          <div style={{fontSize:'10px',color:'#555',fontFamily:"'DM Sans',sans-serif",fontWeight:600,textTransform:'uppercase',letterSpacing:'0.05em',marginBottom:'10px'}}>Problems by Language</div>
+          {Object.entries(problemsData).sort(([,a],[,b])=>b-a).map(([lang,count])=>{
+            const max=Math.max(...Object.values(problemsData),1);
+            const LANGC={c:'#A8B9CC',cpp:'#659AD2',java:'#F89820',python:'#3572A5',sql:'#e38c00'};
+            const color=LANGC[lang.toLowerCase()]||'#BDE8F5';
+            return(
+              <div key={lang} style={{marginBottom:'9px'}}>
+                <div style={{display:'flex',justifyContent:'space-between',marginBottom:'4px',alignItems:'center'}}>
+                  <span style={{fontSize:'11px',fontWeight:600,color:color,fontFamily:"'DM Sans',sans-serif",textTransform:'uppercase',letterSpacing:'0.07em'}}>{lang.toUpperCase()}</span>
+                  <span style={{fontSize:'12px',fontWeight:700,color:'#fff',fontFamily:"'DM Sans',sans-serif",background:'rgba(255,255,255,0.07)',padding:'1px 7px',borderRadius:'4px'}}>{count}</span>
+                </div>
+                <div style={{height:'5px',background:'rgba(255,255,255,0.05)',borderRadius:'3px',overflow:'hidden'}}>
+                  <div style={{height:'100%',width:`${(count/max)*100}%`,background:color,borderRadius:'3px',boxShadow:`0 0 5px ${color}55`}}/>
+                </div>
+              </div>
+            );
+          })}
+        </>
+      )}
+    </div>
+
+  </div>
+</div>
       </div>
     </div>
   );
@@ -280,8 +388,10 @@ export default function Dashboard(){
   const [profile,setProfile]=useState(null);
   const [videoRatings,setVideoRatings]=useState(null);
   const [videoLoading,setVideoLoading]=useState(false);
-  const [mayaCoding,setMayaCoding]=useState(null);
   const [mayaLoading,setMayaLoading]=useState(false);
+  const [hootData,setHootData]=useState(null);
+  const [codingLevel,setCodingLevel]=useState(null);
+  const [problemsData,setProblemsData]=useState(null);
   const [loading,setLoading]=useState(true);
   const [isMobile,setIsMobile]=useState(false);
   const [mobileMenuOpen,setMobileMenuOpen]=useState(false);
@@ -329,6 +439,31 @@ export default function Dashboard(){
         .then(d=>{ if(d.ratings) setVideoRatings(d.ratings); })
         .catch(e=>console.error('Video ratings error:',e))
         .finally(()=>setVideoLoading(false));
+
+      // Fetch HOOT assessment
+      supabase.from('hoot_assessments').select('listening,speaking,reading,writing,total')
+        .eq('roll_number',roll).single()
+        .then(({data})=>{ if(data) setHootData(data); });
+
+      // Fetch Coding Level
+      supabase.from('coding_levels').select('level')
+        .eq('roll_number',roll).single()
+        .then(({data})=>{ if(data) setCodingLevel(data.level); });
+
+      // Fetch Problems from Maya API
+      fetch('https://maya.technicalhub.io/node/api/get-student-problems-count',{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({roll_no:roll})
+      }).then(r=>r.ok?r.json():null)
+        .then(json=>{
+          if(!json) return;
+          const skip=['roll_no','roll_number','student_id','id','total_problems','total'];
+          const langs={};
+          for(const [k,v] of Object.entries(json)){
+            if(!skip.includes(k.toLowerCase())&&typeof v==='number') langs[k]=v;
+          }
+          setProblemsData(langs);
+        }).catch(()=>{});
       // Maya coding data comes from student_profiles table (no external API call)
     } else { setLoading(false); }
   },[]);
@@ -625,7 +760,7 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
             </div>
           </div>
           <div className="main-content">
-            {active==="my-profile"?<MyProfile profile={profile} loading={loading} videoRatings={videoRatings} videoLoading={videoLoading} mayaCoding={mayaCoding} mayaLoading={mayaLoading}/>:
+            {active==="my-profile"?<MyProfile profile={profile} loading={loading} videoRatings={videoRatings} videoLoading={videoLoading} mayaCoding={mayaCoding} mayaLoading={mayaLoading} hootData={hootData} codingLevel={codingLevel} problemsData={problemsData}/>:
              active==="team-profile"?<TeamProfile user={user}/>:(
               <div className="page-placeholder">
                 <div className="page-icon">{activeItem&&<activeItem.icon size={36}/>}</div>
