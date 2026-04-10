@@ -1,5 +1,7 @@
 'use client'
 import { useState, useEffect } from "react";
+import { createClient } from "@supabase/supabase-js";
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 import { useRouter } from "next/navigation";
 import { getSession } from "@/lib/session";
 import {
@@ -760,7 +762,7 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
             </div>
           </div>
           <div className="main-content">
-            {active==="my-profile"?<MyProfile profile={profile} loading={loading} videoRatings={videoRatings} videoLoading={videoLoading} mayaCoding={mayaCoding} mayaLoading={mayaLoading} hootData={hootData} codingLevel={codingLevel} problemsData={problemsData}/>:
+            {active==="my-profile"?<MyProfile profile={profile} loading={loading} videoRatings={videoRatings} videoLoading={videoLoading} mayaCoding={profile} mayaLoading={mayaLoading} hootData={hootData} codingLevel={codingLevel} problemsData={problemsData}/>:
              active==="team-profile"?<TeamProfile user={user}/>:(
               <div className="page-placeholder">
                 <div className="page-icon">{activeItem&&<activeItem.icon size={36}/>}</div>
