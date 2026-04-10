@@ -123,17 +123,19 @@ function MyProfile({ user, hootData, videoRatings, videoLoading }) {
         </div>
         <div className="mp-hero">
         <div className="mp-hero-info">
-          <div className="mp-hero-name">{s.name}</div>
-          <div className="mp-hero-roll"><Hash size={12}/> {s.roll_number} · {s.branch} · {s.college}</div>
-          <div className="mp-hero-tags">
-            {s.technology && <span className="mp-badge" style={{background:"rgba(255,255,255,.92)",border:"none",color:"#b91c1c",boxShadow:"0 2px 10px rgba(0,0,0,.06)"}}>{s.technology}</span>}
-            {s.pool && <span className="mp-badge" style={{background:"rgba(255,255,255,.18)",border:"none",color:"#fff",boxShadow:"inset 0 0 0 1px rgba(255,255,255,.2)"}}>{s.pool}</span>}
-            {s.seat_type && <span className="mp-badge" style={{background:"rgba(255,255,255,.18)",border:"none",color:"#fff",boxShadow:"inset 0 0 0 1px rgba(255,255,255,.2)"}}>{s.seat_type}</span>}
-            {s.scholar_type && <span className="mp-badge" style={{background:"rgba(255,255,255,.18)",border:"none",color:"#fff",boxShadow:"inset 0 0 0 1px rgba(255,255,255,.2)"}}>{s.scholar_type}</span>}
-            {s.passout_year && <span className="mp-badge" style={{background:"rgba(255,255,255,.18)",border:"none",color:"#fff",boxShadow:"inset 0 0 0 1px rgba(255,255,255,.2)"}}>Class of {s.passout_year}</span>}
-            {s.is_eamcet && <span className="mp-badge" style={{background:"rgba(74,222,128,.08)",border:"none",color:"#4ade80"}}>EAMCET</span>}
+          <div className="mp-hero-left">
+            <div className="mp-hero-name">{s.name}</div>
+            <div className="mp-hero-roll"><Hash size={12}/> {s.roll_number} · {s.branch} · {s.college}</div>
+            <div className="mp-hero-tags">
+              {s.technology && <span className="mp-badge" style={{background:"rgba(255,255,255,.92)",border:"none",color:"#b91c1c",boxShadow:"0 2px 10px rgba(0,0,0,.06)"}}>{s.technology}</span>}
+              {s.pool && <span className="mp-badge" style={{background:"rgba(255,255,255,.18)",border:"none",color:"#fff",boxShadow:"inset 0 0 0 1px rgba(255,255,255,.2)"}}>{s.pool}</span>}
+              {s.seat_type && <span className="mp-badge" style={{background:"rgba(255,255,255,.18)",border:"none",color:"#fff",boxShadow:"inset 0 0 0 1px rgba(255,255,255,.2)"}}>{s.seat_type}</span>}
+              {s.scholar_type && <span className="mp-badge" style={{background:"rgba(255,255,255,.18)",border:"none",color:"#fff",boxShadow:"inset 0 0 0 1px rgba(255,255,255,.2)"}}>{s.scholar_type}</span>}
+              {s.passout_year && <span className="mp-badge" style={{background:"rgba(255,255,255,.18)",border:"none",color:"#fff",boxShadow:"inset 0 0 0 1px rgba(255,255,255,.2)"}}>Class of {s.passout_year}</span>}
+              {s.is_eamcet && <span className="mp-badge" style={{background:"rgba(74,222,128,.08)",border:"none",color:"#4ade80"}}>EAMCET</span>}
+            </div>
           </div>
-          <div className="mp-hero-details">
+          <div className="mp-hero-right">
             <div className="mp-hd">
               <div className="mp-hd-ic" style={{background:"#1abc9c",borderRadius:8,boxShadow:"0 4px 14px rgba(26,188,156,.35)"}}><Phone size={13} style={{color:"#fff"}}/></div>
               <div><div className="mp-hd-lb" style={{color:"rgba(255,255,255,.55)"}}>Mobile</div><div className="mp-hd-val">{s.mobile||'—'}</div></div>
@@ -144,7 +146,7 @@ function MyProfile({ user, hootData, videoRatings, videoLoading }) {
             </div>
             <div className="mp-hd">
               <div className="mp-hd-ic" style={{background:"#f1c40f",borderRadius:8,boxShadow:"0 4px 14px rgba(241,196,15,.35)"}}><Target size={13} style={{color:"#fff"}}/></div>
-              <div><div className="mp-hd-lb" style={{color:"rgba(255,255,255,.55)"}}>Overall Attendance</div><div className="mp-hd-val">{overallAtt}%</div></div>
+              <div><div className="mp-hd-lb" style={{color:"rgba(255,255,255,.55)"}}>Attendance</div><div className="mp-hd-val">{overallAtt}%</div></div>
             </div>
           </div>
         </div>
@@ -936,18 +938,20 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
 .mp{display:flex;flex-direction:column;gap:20px;animation:mpIn .5s ease both;}
 @keyframes mpIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 .mp-hero-row{display:flex;align-items:center;gap:24px;}
-.mp-hero{flex:1;display:flex;align-items:center;padding:14px 24px;border-radius:16px;background:linear-gradient(135deg,#fd1c00 0%,#000000 70%);position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(232,29,2,.12);}
+.mp-hero{flex:1;display:flex;align-items:center;padding:14px 24px;border-radius:16px;background:linear-gradient(135deg,#fd1c00 0%,#ff5349 30%,#000000 75%);position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(232,29,2,.12);}
 .mp-hero::before{content:'';position:absolute;top:-80px;right:-80px;width:350px;height:350px;background:radial-gradient(circle,rgba(255,255,255,.08),transparent 55%);pointer-events:none;}
 .mp-avatar-wrap{flex-shrink:0;}
-.mp-avatar{width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.15);backdrop-filter:blur(16px);border:3px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;font-size:2.2rem;font-weight:800;color:#fff;box-shadow:0 6px 20px rgba(0,0,0,.2);overflow:hidden;}
-.mp-avatar-img{width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid rgba(255,255,255,.3);box-shadow:0 6px 20px rgba(0,0,0,.2);}
-.mp-hero-info{flex:1;}
-.mp-hero-name{font-size:1.15rem;font-weight:800;color:#fff;margin-bottom:2px;font-family:'Astro',sans-serif;letter-spacing:1.5px;text-transform:uppercase;}
-.mp-hero-roll{font-size:.74rem;color:rgba(255,255,255,.75);display:flex;align-items:center;gap:6px;margin-bottom:6px;}
-.mp-hero-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;}
+.mp-avatar{width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.15);backdrop-filter:blur(16px);border:none;display:flex;align-items:center;justify-content:center;font-size:2.2rem;font-weight:800;color:#fff;box-shadow:0 0 20px rgba(253,28,0,.4),0 0 40px rgba(253,28,0,.15),0 8px 24px rgba(0,0,0,.3);overflow:hidden;}
+.mp-avatar-img{width:100px;height:100px;border-radius:50%;object-fit:cover;border:none;box-shadow:0 0 20px rgba(253,28,0,.4),0 0 40px rgba(253,28,0,.15),0 8px 24px rgba(0,0,0,.3);}
+.mp-hero-info{flex:1;display:flex;flex-wrap:wrap;align-items:center;gap:0;}
+.mp-hero-left{flex:1;min-width:200px;}
+.mp-hero-right{display:flex;gap:8px;flex-shrink:0;}
+.mp-hero-name{font-size:1.14rem;font-weight:800;color:#fff;margin-bottom:1px;font-family:'Astro',sans-serif;letter-spacing:1.5px;text-transform:uppercase;}
+.mp-hero-roll{font-size:.74rem;color:rgba(255,255,255,.75);display:flex;align-items:center;gap:6px;margin-bottom:4px;}
+.mp-hero-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:0;}
 .mp-badge{padding:4px 10px;border-radius:14px;font-size:.55rem;font-weight:700;letter-spacing:.5px;display:inline-flex;align-items:center;gap:4px;transition:transform .2s;}
-.mp-hero-details{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
-.mp-hd{display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:10px;background:rgba(255,255,255,.08);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.1);transition:all .25s;}
+.mp-hero-details{display:flex;flex-direction:column;gap:6px;}
+.mp-hd{display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:8px;background:rgba(255,255,255,.08);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.1);transition:all .25s;}
 .mp-hd:hover{background:rgba(255,255,255,.12);}
 .mp-hd-ic{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .mp-hd-lb{font-size:.5rem;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:2px;}
@@ -1155,8 +1159,13 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
 
 @media(max-width:900px){
   .mp-hero-row{flex-direction:column;align-items:center;gap:0;}
-  .mp-hero{flex-direction:column;align-items:center;text-align:center;padding:22px 20px;width:100%;}
+  .mp-hero{flex-direction:column;align-items:center;text-align:center;padding:18px 16px;width:100%;}
   .mp-avatar-wrap{margin-bottom:-20px;z-index:2;}
+  .mp-hero-info{flex-direction:column;}
+  .mp-hero-left{min-width:unset;width:100%;}
+  .mp-hero-right{flex-wrap:wrap;justify-content:center;margin-top:8px;}
+  .mp-hero-tags{justify-content:center;}
+  .mp-hero-roll{justify-content:center;}
   .mp-hero-details{grid-template-columns:1fr 1fr;}
   .mp-hero-tags{justify-content:center;}
   .mp-hero-roll{justify-content:center;}
