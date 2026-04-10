@@ -5,6 +5,14 @@ import AuthBackground from '@/components/AuthBackground'
 import { globalStyles, colors, fonts } from '@/lib/theme'
 import { PHASE } from '@/lib/phase'
 export default function RegisterPage() {
+  if (typeof window !== 'undefined') {
+    window.onerror = function(msg, src, line, col, err) {
+      document.body.innerHTML += `<div style="position:fixed;top:0;left:0;right:0;background:red;color:#fff;padding:20px;z-index:99999;font-size:13px;word-break:break-all">${msg} | ${src} | line:${line}</div>`;
+    }
+    window.onunhandledrejection = function(e) {
+      document.body.innerHTML += `<div style="position:fixed;top:0;left:0;right:0;background:darkred;color:#fff;padding:20px;z-index:99999;font-size:13px;word-break:break-all">PROMISE: ${e.reason}</div>`;
+    }
+  }
   const router = useRouter()
   const [step, setStep]                   = useState(1)
   const [rollNumber, setRollNumber]       = useState('')
