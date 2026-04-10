@@ -516,7 +516,7 @@ export default function RegisterPage() {
         <div className="robo-ground-light" />
       </div>
       <div className="robo-mascot">
-        <img className="robo-img" src="https://i.ibb.co/NdXXswGc/Gemini-Generated-Image-zecq2szecq2szecq-removebg-preview.png" alt="Robot mascot" />
+        <img className="robo-img" src="https://i.ibb.co/NdXXswGc/Gemini-Generated-Image-zecq2szecq2szecq-removebg-preview.png" alt="Robot mascot" onError={e=>e.target.style.display='none'} />
         <div className="robo-shadow" />
       </div>
     </AuthBackground>
