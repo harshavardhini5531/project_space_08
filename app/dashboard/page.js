@@ -932,9 +932,9 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
 /* ═══ MY PROFILE ═══ */
 .mp{display:flex;flex-direction:column;gap:20px;animation:mpIn .5s ease both;}
 @keyframes mpIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
-.mp-hero{display:flex;gap:0;align-items:stretch;padding:0;border-radius:20px;background:linear-gradient(135deg,hsla(7,94%,59%,1) 0%,hsla(7,98%,46%,1) 48%,hsla(30,92%,66%,1) 100%);position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(232,29,2,.12);}
+.mp-hero{display:flex;gap:0;align-items:stretch;padding:0;border-radius:20px;background:linear-gradient(135deg,#fd1c00 0%,#fa0068 50%,#000000 100%);position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(232,29,2,.12);}
 .mp-hero::before{content:'';position:absolute;top:-80px;right:-80px;width:350px;height:350px;background:radial-gradient(circle,rgba(255,255,255,.1),transparent 55%);pointer-events:none;}
-.mp-avatar-wrap{flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:20px 24px;background:rgba(0,0,0,.15);}
+.mp-avatar-wrap{flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:20px 24px;background:none;}
 .mp-avatar{width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.15);backdrop-filter:blur(16px);border:3px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;font-size:2.2rem;font-weight:800;color:#fff;box-shadow:0 6px 20px rgba(0,0,0,.2);overflow:hidden;}
 .mp-avatar-img{width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid rgba(255,255,255,.3);box-shadow:0 6px 20px rgba(0,0,0,.2);}
 .mp-hero-info{flex:1;padding:22px 28px;}
