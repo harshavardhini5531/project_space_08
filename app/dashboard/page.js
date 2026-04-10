@@ -473,21 +473,24 @@ function MyProfile({ user, hootData, videoRatings, videoLoading }) {
 
           <div className="mp-card">
             <div className="mp-card-title"><Layers size={16} style={{color:'#8b5cf6'}}/> Course-wise Attendance <span className="mp-card-count">{att.length} courses</span></div>
-            <div className="mp-att-list">
+            <div className="mp-att-grid">
               {att.sort((a,b)=>(b.percentage||0)-(a.percentage||0)).map((a,i)=>{
                 const pct=parseFloat(a.percentage||0).toFixed(1);
                 const isGood=pct>=75;
+                const color=isGood?'#4ade80':'#ef4444';
                 return(
-                  <div key={i} className="mp-att-item">
-                    <div className="mp-att-top">
-                      <div>
-                        <div className="mp-att-course">{a.technology_name}</div>
-                        <div className="mp-att-batch">{a.course_name} · {a.batch_name}</div>
-                      </div>
-                      <div className="mp-att-pct" style={{color:isGood?'#4ade80':'#ef4444'}}>{pct}%</div>
+                  <div key={i} className="mp-att-card">
+                    <div className="mp-att-card-head">
+                      <div className="mp-att-card-name">{a.technology_name}</div>
+                      <div className="mp-att-card-pct" style={{color}}>{pct}%</div>
                     </div>
-                    <div className="mp-att-bar-track"><div className="mp-att-bar-fill" style={{width:`${pct}%`,background:isGood?'linear-gradient(90deg,#4ade80,#22c55e)':'linear-gradient(90deg,#ef4444,#f97316)'}}/></div>
-                    <div className="mp-att-bottom"><span>Present: {a.present}</span><span>Absent: {a.absent}</span><span>Total: {a.total_sessions}</span></div>
+                    <div className="mp-att-card-sub">{a.course_name}</div>
+                    <div className="mp-att-card-bar"><div className="mp-att-card-fill" style={{width:`${pct}%`,background:color}}/></div>
+                    <div className="mp-att-card-nums">
+                      <span><span style={{color:'#4ade80'}}>{a.present}</span> present</span>
+                      <span><span style={{color:'#ef4444'}}>{a.absent}</span> absent</span>
+                      <span>{a.total_sessions} total</span>
+                    </div>
                   </div>
                 );
               })}
@@ -498,15 +501,17 @@ function MyProfile({ user, hootData, videoRatings, videoLoading }) {
           {courses.length > 0 && (
             <div className="mp-card">
               <div className="mp-card-title"><BookOpen size={16} style={{color:'#22d3ee'}}/> Enrolled Courses <span className="mp-card-count">{courses.length}</span></div>
-              {courses.map((c,i) => (
-                <div key={i} className="mp-list-item">
-                  <div className="mp-list-num" style={{background:'rgba(34,211,238,.06)',borderColor:'rgba(34,211,238,.12)',color:'#22d3ee'}}>{i+1}</div>
-                  <div className="mp-list-text">
-                    <strong style={{color:'rgba(255,255,255,.8)'}}>{c.technology_name}</strong>
-                    <span style={{color:'rgba(255,255,255,.3)',fontSize:'.65rem',display:'block',marginTop:1}}>{c.course_name} · {c.batch_name}</span>
+              <div className="mp-courses-grid">
+                {courses.map((c,i) => (
+                  <div key={i} className="mp-course-card">
+                    <div className="mp-course-num">{i+1}</div>
+                    <div className="mp-course-info">
+                      <div className="mp-course-tech">{c.technology_name}</div>
+                      <div className="mp-course-name">{c.course_name}</div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -947,9 +952,9 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
 /* Tabs */
 .mp-tabs{display:flex;gap:4px;padding:4px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);overflow-x:auto;-webkit-overflow-scrolling:touch;}
 .mp-tabs::-webkit-scrollbar{display:none;}
-.mp-tab{display:flex;align-items:center;gap:7px;padding:10px 18px;border-radius:10px;border:none;background:none;color:rgba(255,255,255,.4);font-size:.76rem;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .25s;white-space:nowrap;}
-.mp-tab:hover{color:rgba(255,255,255,.65);background:rgba(255,255,255,.04);}
-.mp-tab-active{background:linear-gradient(135deg,rgba(253,28,0,.15),rgba(250,160,0,.08))!important;color:#fff!important;box-shadow:0 2px 12px rgba(253,28,0,.1);}
+.mp-tab{display:flex;align-items:center;gap:7px;padding:10px 18px;border-radius:10px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);color:rgba(255,255,255,.4);font-size:.76rem;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .25s;white-space:nowrap;flex:1;justify-content:center;}
+.mp-tab:hover{color:rgba(255,255,255,.65);background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.1);}
+.mp-tab-active{background:linear-gradient(135deg,rgba(253,28,0,.15),rgba(250,160,0,.08))!important;color:#fff!important;box-shadow:0 2px 12px rgba(253,28,0,.1);border-color:rgba(253,28,0,.2)!important;}
 .mp-tab-active svg{color:#fd1c00!important;}
 .mp-tab-content{display:flex;flex-direction:column;gap:16px;animation:mpIn .4s ease both;}
 
@@ -1046,6 +1051,28 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
 .mp-cert-view{width:32px;height:32px;border-radius:8px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.15);display:flex;align-items:center;justify-content:center;color:#10b981;text-decoration:none;flex-shrink:0;transition:all .2s;}
 .mp-cert-view:hover{background:rgba(16,185,129,.15);}
 
+/* Attendance Grid */
+.mp-att-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.mp-att-card{padding:14px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);transition:all .2s;}
+.mp-att-card:hover{border-color:rgba(255,255,255,.12);transform:translateY(-1px);}
+.mp-att-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:4px;}
+.mp-att-card-name{font-size:.72rem;font-weight:700;color:rgba(255,255,255,.85);line-height:1.3;flex:1;}
+.mp-att-card-pct{font-size:.82rem;font-weight:800;flex-shrink:0;}
+.mp-att-card-sub{font-size:.56rem;color:rgba(255,255,255,.25);margin-bottom:8px;}
+.mp-att-card-bar{height:4px;border-radius:2px;background:rgba(255,255,255,.05);overflow:hidden;}
+.mp-att-card-fill{height:100%;border-radius:2px;}
+.mp-att-card-nums{display:flex;gap:8px;margin-top:8px;font-size:.55rem;color:rgba(255,255,255,.2);}
+.mp-att-card-nums span span{font-weight:700;}
+
+/* Courses Grid */
+.mp-courses-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.mp-course-card{display:flex;align-items:center;gap:10px;padding:12px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);transition:all .2s;}
+.mp-course-card:hover{border-color:rgba(34,211,238,.15);}
+.mp-course-num{width:26px;height:26px;border-radius:7px;background:rgba(34,211,238,.06);border:1px solid rgba(34,211,238,.12);display:flex;align-items:center;justify-content:center;font-size:.55rem;font-weight:800;color:#22d3ee;flex-shrink:0;}
+.mp-course-info{min-width:0;overflow:hidden;}
+.mp-course-tech{font-size:.7rem;font-weight:700;color:rgba(255,255,255,.8);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mp-course-name{font-size:.55rem;color:rgba(255,255,255,.25);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
 /* Assess grid */
 .mp-assess-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;}
 
@@ -1125,43 +1152,102 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
 @media(max-width:900px){
   .mp-hero{flex-direction:column;align-items:center;text-align:center;}
   .mp-hero-details{grid-template-columns:1fr 1fr;}
+  .mp-hero-tags{justify-content:center;}
+  .mp-hero-roll{justify-content:center;}
   .mp-grid{grid-template-columns:1fr;}
-  .mp-stats-grid,.mp-coding-grid{grid-template-columns:1fr;}
-  .mp-pay-grid{grid-template-columns:1fr 1fr;}
+  .mp-stats-grid,.mp-coding-grid{grid-template-columns:1fr 1fr;}
+  .mp-pay-grid{grid-template-columns:1fr 1fr 1fr;}
   .mp-info-grid{grid-template-columns:1fr 1fr;}
+  .mp-att-grid{grid-template-columns:1fr 1fr;}
+  .mp-courses-grid{grid-template-columns:1fr 1fr;}
+  .mp-stats-3{grid-template-columns:repeat(3,1fr)!important;}
+  .mp-stats-4{grid-template-columns:repeat(2,1fr)!important;}
+  .mp-difficulty-row{flex-wrap:wrap;}
+  .mp-diff-chip{min-width:55px;padding:8px 10px;}
+  .mp-assess-grid{grid-template-columns:1fr 1fr;}
   .tp-header{flex-direction:column;align-items:flex-start;gap:16px;}
   .tp-cards-grid{grid-template-columns:1fr 1fr;}
 }
 @media(max-width:768px){
   .sidebar:not(.mob-sidebar){display:none!important}
   .mob-sidebar{display:flex!important}
-  .topbar{padding:14px 16px}
-  .topbar-search{display:none}
-  .topbar-title{font-size:.9rem}
-  .main-content{padding:16px 14px}
-  .mp-hero{padding:24px 20px}
-  .mp-avatar{width:72px;height:72px;font-size:1.6rem}
-  .mp-avatar-img{width:72px;height:72px;}
-  .mp-hero-name{font-size:1.1rem}
-  .mp-hero-details{grid-template-columns:1fr}
-  .mp-hd{padding:8px 10px}
-  .mp-pay-grid{grid-template-columns:repeat(3,1fr)}
-  .tp-cards-grid{grid-template-columns:1fr}
-  .mp-info-grid{grid-template-columns:1fr}
+  .topbar{padding:14px 16px;}
+  .topbar-search{display:none;}
+  .topbar-title{font-size:.9rem;}
+  .main-content{padding:16px 12px;}
+  .mp-hero{padding:22px 18px;gap:18px;}
+  .mp-avatar{width:68px;height:68px;font-size:1.5rem;border-radius:16px;}
+  .mp-avatar-img{width:68px;height:68px;border-radius:16px;}
+  .mp-hero-name{font-size:1.05rem;}
+  .mp-hero-roll{font-size:.68rem;}
+  .mp-hero-details{grid-template-columns:1fr;}
+  .mp-hero-tags{gap:5px;}
+  .mp-hero-tags .mp-badge{padding:4px 10px;font-size:.55rem;}
+  .mp-hd{padding:8px 10px;}
+  .mp-hd-ic{width:30px;height:30px;}
+  .mp-hd-val{font-size:.76rem;}
+  .mp-pay-grid{grid-template-columns:repeat(3,1fr);}
+  .tp-cards-grid{grid-template-columns:1fr;}
+  .mp-info-grid{grid-template-columns:1fr 1fr;}
+  .mp-info-item{padding:8px 10px;}
+  .mp-info-icon{width:28px;height:28px;}
+  .mp-info-value{font-size:.7rem;}
+  .mp-stats-grid{grid-template-columns:1fr 1fr;}
   .mp-stats-3,.mp-stats-4{grid-template-columns:1fr 1fr!important;}
+  .mp-coding-grid{grid-template-columns:1fr!important;}
   .mp-tabs{padding:3px;gap:2px;}
-  .mp-tab{padding:8px 12px;font-size:.7rem;}
+  .mp-tab{padding:8px 12px;font-size:.68rem;gap:5px;}
   .mp-assess-grid{grid-template-columns:1fr!important;}
+  .mp-att-grid{grid-template-columns:1fr 1fr!important;}
+  .mp-courses-grid{grid-template-columns:1fr 1fr!important;}
+  .mp-card{padding:16px;border-radius:14px;}
+  .mp-card-title{font-size:.76rem;margin-bottom:12px;}
+  .mp-stat-card{padding:10px;gap:8px;}
+  .mp-stat-icon{width:30px;height:30px;}
+  .mp-stat-label{font-size:.48rem;}
+  .mp-stat-value{font-size:.78rem;}
+  .mp-hr-lang{width:80px;font-size:.65rem;}
+  .mp-lang-name{width:45px;font-size:.58rem;}
+  .mp-diff-chip{padding:7px 8px;min-width:50px;}
+  .mp-diff-label{font-size:.48rem;}
+  .mp-diff-val{font-size:.9rem;}
+  .mp-att-card{padding:12px;}
+  .mp-att-card-name{font-size:.66rem;}
+  .mp-att-card-pct{font-size:.76rem;}
+  .mp-att-card-nums{font-size:.5rem;gap:6px;}
+  .mp-course-card{padding:10px;gap:8px;}
+  .mp-course-num{width:22px;height:22px;font-size:.5rem;}
+  .mp-course-tech{font-size:.64rem;}
 }
 @media(max-width:480px){
-  .mp-hero-details{grid-template-columns:1fr}
-  .mp-pay-grid{grid-template-columns:1fr 1fr}
-  .mp-hero{padding:20px 16px}
-  .mp-stats-grid{grid-template-columns:1fr}
+  .main-content{padding:12px 10px;}
+  .mp-hero{padding:18px 14px;gap:14px;}
+  .mp-avatar{width:56px;height:56px;font-size:1.2rem;border-radius:14px;}
+  .mp-avatar-img{width:56px;height:56px;border-radius:14px;}
+  .mp-hero-name{font-size:.95rem;}
+  .mp-hero-details{grid-template-columns:1fr;}
+  .mp-pay-grid{grid-template-columns:1fr 1fr;}
+  .mp-stats-grid{grid-template-columns:1fr!important;}
   .mp-stats-3,.mp-stats-4{grid-template-columns:1fr!important;}
-  .topbar-credits{display:none}
+  .mp-info-grid{grid-template-columns:1fr!important;}
+  .mp-att-grid{grid-template-columns:1fr!important;}
+  .mp-courses-grid{grid-template-columns:1fr 1fr!important;}
+  .mp-assess-grid{grid-template-columns:1fr!important;}
+  .topbar-credits{display:none;}
   .mp-tab span{display:none;}
-  .mp-tab{padding:10px 14px;}
+  .mp-tab{padding:10px 14px;flex:0;justify-content:center;}
+  .mp-tabs{justify-content:center;}
+  .mp-card{padding:14px;border-radius:12px;}
+  .mp-difficulty-row{gap:5px;}
+  .mp-diff-chip{min-width:45px;padding:6px 6px;}
+  .mp-diff-label{font-size:.45rem;letter-spacing:.5px;}
+  .mp-diff-val{font-size:.82rem;}
+}
+@media(max-width:360px){
+  .mp-courses-grid{grid-template-columns:1fr!important;}
+  .mp-pay-grid{grid-template-columns:1fr 1fr;}
+  .mp-hero{padding:16px 12px;}
+  .mp-card{padding:12px;}
 }
       `}</style>
 
