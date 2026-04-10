@@ -333,8 +333,10 @@ export default function LandingPage() {
     const mount = sphereMountRef.current
     if (!mount) return
 
-    // Prevent duplicate spheres on re-render
-    if (mount.querySelector('canvas')) return
+    // Clean up old canvases from hot reload
+    while (mount.querySelector('canvas')) {
+      mount.querySelector('canvas').remove()
+    }
 
     const loadSphere = () => {
       const THREE = window.THREE
@@ -344,7 +346,18 @@ export default function LandingPage() {
       const camera = new THREE.PerspectiveCamera(60, W/H, 0.1, 1000)
       camera.position.z = 3
 
-      const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true })
+      let renderer
+      try {
+        renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true })
+      } catch(e) {
+        console.warn('WebGL failed, retrying without antialias...')
+        try {
+          renderer = new THREE.WebGLRenderer({ antialias:false, alpha:true })
+        } catch(e2) {
+          console.error('WebGL not available')
+          return
+        }
+      }
       renderer.setSize(W, H)
       renderer.setClearColor(0x000000, 0)
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
