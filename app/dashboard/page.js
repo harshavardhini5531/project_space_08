@@ -135,15 +135,15 @@ function MyProfile({ user, hootData, videoRatings, videoLoading }) {
           </div>
           <div className="mp-hero-details">
             <div className="mp-hd">
-              <div className="mp-hd-ic" style={{background:"#1abc9c",borderRadius:10,boxShadow:"0 4px 14px rgba(26,188,156,.35)"}}><Phone size={15} style={{color:"#fff"}}/></div>
+              <div className="mp-hd-ic" style={{background:"#1abc9c",borderRadius:8,boxShadow:"0 4px 14px rgba(26,188,156,.35)"}}><Phone size={13} style={{color:"#fff"}}/></div>
               <div><div className="mp-hd-lb" style={{color:"rgba(255,255,255,.55)"}}>Mobile</div><div className="mp-hd-val">{s.mobile||'—'}</div></div>
             </div>
             <div className="mp-hd">
-              <div className="mp-hd-ic" style={{background:"#3498db",borderRadius:10,boxShadow:"0 4px 14px rgba(52,152,219,.35)"}}><GraduationCap size={15} style={{color:"#fff"}}/></div>
+              <div className="mp-hd-ic" style={{background:"#3498db",borderRadius:8,boxShadow:"0 4px 14px rgba(52,152,219,.35)"}}><GraduationCap size={13} style={{color:"#fff"}}/></div>
               <div><div className="mp-hd-lb" style={{color:"rgba(255,255,255,.55)"}}>Entrance</div><div className="mp-hd-val">{s.entrance_type||'—'} {s.rank ? `· #${s.rank}` : ''}</div></div>
             </div>
             <div className="mp-hd">
-              <div className="mp-hd-ic" style={{background:"#f1c40f",borderRadius:10,boxShadow:"0 4px 14px rgba(241,196,15,.35)"}}><Target size={15} style={{color:"#fff"}}/></div>
+              <div className="mp-hd-ic" style={{background:"#f1c40f",borderRadius:8,boxShadow:"0 4px 14px rgba(241,196,15,.35)"}}><Target size={13} style={{color:"#fff"}}/></div>
               <div><div className="mp-hd-lb" style={{color:"rgba(255,255,255,.55)"}}>Overall Attendance</div><div className="mp-hd-val">{overallAtt}%</div></div>
             </div>
           </div>
@@ -936,22 +936,22 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
 .mp{display:flex;flex-direction:column;gap:20px;animation:mpIn .5s ease both;}
 @keyframes mpIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 .mp-hero-row{display:flex;align-items:center;gap:24px;}
-.mp-hero{flex:1;display:flex;align-items:center;padding:22px 28px;border-radius:20px;background:linear-gradient(135deg,#fd1c00 0%,#EEA727 20%,#fa0068 50%,#000000 80%);position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(232,29,2,.12);}
+.mp-hero{flex:1;display:flex;align-items:center;padding:14px 24px;border-radius:16px;background:linear-gradient(135deg,#fd1c00 0%,#000000 70%);position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(232,29,2,.12);}
 .mp-hero::before{content:'';position:absolute;top:-80px;right:-80px;width:350px;height:350px;background:radial-gradient(circle,rgba(255,255,255,.08),transparent 55%);pointer-events:none;}
 .mp-avatar-wrap{flex-shrink:0;}
 .mp-avatar{width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.15);backdrop-filter:blur(16px);border:3px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;font-size:2.2rem;font-weight:800;color:#fff;box-shadow:0 6px 20px rgba(0,0,0,.2);overflow:hidden;}
 .mp-avatar-img{width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid rgba(255,255,255,.3);box-shadow:0 6px 20px rgba(0,0,0,.2);}
 .mp-hero-info{flex:1;}
-.mp-hero-name{font-size:1.35rem;font-weight:800;color:#fff;margin-bottom:3px;font-family:'Astro',sans-serif;letter-spacing:1.5px;text-transform:uppercase;}
-.mp-hero-roll{font-size:.74rem;color:rgba(255,255,255,.75);display:flex;align-items:center;gap:6px;margin-bottom:12px;}
-.mp-hero-tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px;}
-.mp-badge{padding:6px 14px;border-radius:20px;font-size:.6rem;font-weight:700;letter-spacing:.5px;display:inline-flex;align-items:center;gap:4px;transition:transform .2s;}
-.mp-hero-details{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
-.mp-hd{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:12px;background:rgba(255,255,255,.08);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.1);transition:all .25s;}
+.mp-hero-name{font-size:1.15rem;font-weight:800;color:#fff;margin-bottom:2px;font-family:'Astro',sans-serif;letter-spacing:1.5px;text-transform:uppercase;}
+.mp-hero-roll{font-size:.74rem;color:rgba(255,255,255,.75);display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+.mp-hero-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;}
+.mp-badge{padding:4px 10px;border-radius:14px;font-size:.55rem;font-weight:700;letter-spacing:.5px;display:inline-flex;align-items:center;gap:4px;transition:transform .2s;}
+.mp-hero-details{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.mp-hd{display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:10px;background:rgba(255,255,255,.08);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.1);transition:all .25s;}
 .mp-hd:hover{background:rgba(255,255,255,.12);}
-.mp-hd-ic{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.mp-hd-ic{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .mp-hd-lb{font-size:.5rem;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:2px;}
-.mp-hd-val{font-size:.84rem;font-weight:800;color:#fff;}
+.mp-hd-val{font-size:.76rem;font-weight:800;color:#fff;}
 
 /* Tabs */
 .mp-tabs{display:flex;gap:4px;padding:4px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);overflow-x:auto;-webkit-overflow-scrolling:touch;}
