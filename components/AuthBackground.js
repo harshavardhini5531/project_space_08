@@ -298,7 +298,13 @@ export default function AuthBackground({ children }) {
       const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 1000)
       camera.position.z = 3
 
-      const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true })
+      let renderer;
+      try {
+        renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true })
+      } catch(e) {
+        return;
+      }
+      if (!renderer) return;
       renderer.setSize(SIZE, SIZE)
       renderer.setClearColor(0x000000, 0)
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
