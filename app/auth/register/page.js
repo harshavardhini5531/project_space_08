@@ -200,7 +200,7 @@ export default function RegisterPage() {
         <div className="ma-wrap">
           <div className="ma-stars" />
           <div className="ma-glow" />
-          <button className="ma-back" onClick={() => step === 1 ? router.push('/') : setStep(s => s-1)}>
+          <button className="ma-back" onClick={() => step === 1 ? window.location.href='/' : setStep(s => s-1)}>
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 3L5 8l5 5"/></svg>
             Back
           </button>
@@ -403,7 +403,7 @@ export default function RegisterPage() {
         }
       `}</style>
 
-      <button className="ps-back" onClick={() => step === 1 ? router.push('/') : setStep(s => s-1)}>
+      <button className="ps-back" onClick={() => step === 1 ? window.location.href='/' : setStep(s => s-1)}>
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
           <path d="M10 3L5 8l5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
