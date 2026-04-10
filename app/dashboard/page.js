@@ -317,7 +317,6 @@ function MyProfile({ profile, loading, videoRatings, videoLoading, mayaCoding, m
 
   </div>
 </div>
-      </div>
     </div>
   );
 }
