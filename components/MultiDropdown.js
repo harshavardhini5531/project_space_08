@@ -55,7 +55,7 @@ export default function MultiDropdown({ label, options, selected, onChange, coun
   const addC = () => { const v = custom.trim(); if (v && !selected.includes(v)) { onChange([...selected, v]); setCustom('') } }
 
   const uid = label.replace(/[^a-zA-Z]/g, '').toLowerCase()
-  const [r, g, b] = [const [r,g,b]=[parseInt(accent.slice(1,3),16),parseInt(accent.slice(3,5),16),parseInt(accent.slice(5,7),16)];, parseInt(accent.slice(3, 5), 16), parseInt(accent.slice(5, 7), 16)]
+  const [r,g,b]=[parseInt(accent.slice(1,3),16),parseInt(accent.slice(3,5),16),parseInt(accent.slice(5,7),16)];
   const rgb = `${r},${g},${b}`
   const isSearching = search.trim().length > 0
   const S = `.mdd-${uid}`
