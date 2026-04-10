@@ -15,6 +15,31 @@ export async function POST(request) {
       return Response.json({ error: 'Password must be at least 6 characters' }, { status: 400 })
     }
 
+    // Block non-leaders permanently
+    const { data: memberRow } = await supabase
+      .from('team_members')
+      .select('is_leader')
+      .eq('roll_number', rollNumber)
+      .eq('is_leader', true)
+      .single()
+
+    if (!memberRow) {
+      return Response.json({ error: 'Only team leaders can create accounts.' }, { status: 403 })
+    }
+
+    // Verify OTP was actually completed
+    const { data: otpRecord } = await supabase
+      .from('otp_codes')
+      .select('id')
+      .eq('roll_number', rollNumber)
+      .eq('used', true)
+      .limit(1)
+      .single()
+
+    if (!otpRecord) {
+      return Response.json({ error: 'OTP verification required first.' }, { status: 403 })
+    }
+
     const hash = await bcrypt.hash(password, 10)
 
     const { error } = await supabase

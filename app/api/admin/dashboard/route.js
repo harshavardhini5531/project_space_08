@@ -46,6 +46,7 @@ export async function GET(request) {
       .select('roll_number')
 
     const accountSet = new Set((accounts || []).map(a => a.roll_number))
+    const leaderRolls = new Set((teams || []).map(t => t.leader_roll))
 
     // Build stats
     const totalTeams = (teams || []).length
@@ -133,7 +134,7 @@ export async function GET(request) {
         pendingCount,
         progressPercent: totalTeams > 0 ? Math.round(registeredCount / totalTeams * 100) : 0,
         totalStudents: rollNumbers.length,
-        accountsCreated: accountSet.size
+        accountsCreated: (accounts || []).filter(a => leaderRolls.has(a.roll_number)).length
       },
       techBreakdown,
       mentorBreakdown,
