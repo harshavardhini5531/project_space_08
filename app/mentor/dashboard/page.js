@@ -107,7 +107,7 @@ export default function MentorDashboard() {
             <span className="tc-leader-roll">{t.leaderRoll}</span>
           </div>
           <div className="tc-contact">
-            {t.leaderPhone && t.leaderPhone.length >= 10 && <a href={`tel:${t.leaderPhone}`} className="tc-phone" title={t.leaderPhone}>{I.phone}</a>}
+            {t.leaderPhone && t.leaderPhone.length >= 10 && <a href={`tel:${t.leaderPhone}`} className="tc-phone" title={t.leaderPhone}>{I.phone}<span style={{marginLeft:'4px'}}>{t.leaderPhone}</span></a>}
             {t.leaderEmail && <a href={`mailto:${t.leaderEmail}`} className="tc-email">{I.mail}</a>}
           </div>
         </div>
@@ -241,6 +241,7 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
 .md-hamburger{background:none;border:none;color:#fff;font-size:1.2rem;cursor:pointer;padding:4px 8px}
 .md-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:40}
 .md-overlay.show{display:block}
+body.sb-open{overflow:hidden}
 
 @media(max-width:900px){
   .md-sb{position:fixed;left:0;top:0;transform:translateX(-100%);z-index:60}
@@ -259,12 +260,12 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
 
       <div className="md-layout">
         <div className="md-mobile-hdr">
-          <button className="md-hamburger" onClick={()=>setSidebarOpen(true)}>☰</button>
+          <button className="md-hamburger" onClick={()=>{setSidebarOpen(true);document.body.classList.add('sb-open')}}>☰</button>
           <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:'.7rem',fontWeight:700,letterSpacing:'2px'}}>MENTOR PANEL</div>
           <button className="md-hamburger" onClick={handleLogout}>{I.logout}</button>
         </div>
 
-        <div className={`md-overlay ${sidebarOpen?'show':''}`} onClick={()=>setSidebarOpen(false)}/>
+        <div className={`md-overlay ${sidebarOpen?'show':''}`} onClick={()=>{setSidebarOpen(false);document.body.classList.remove('sb-open')}}/>
 
         <div className={`md-sb ${sidebarOpen?'open':''}`}>
           <div className="md-sb-hdr">
@@ -272,7 +273,7 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
             {mentor && <div className="md-sb-mentor"><div className="md-sb-mname">{mentor.name}</div><div className="md-sb-mtech">{mentor.technology}</div></div>}
           </div>
           <div className="md-sb-nav">
-            {navItems.map(n => <button key={n.id} className={`md-sb-item ${activePage===n.id?'on':''}`} onClick={()=>{setActivePage(n.id);setSidebarOpen(false)}}>{n.icon}<span>{n.label}</span></button>)}
+            {navItems.map(n => <button key={n.id} className={`md-sb-item ${activePage===n.id?'on':''}`} onClick={()=>{setActivePage(n.id);setSidebarOpen(false);document.body.classList.remove('sb-open')}}>{n.icon}<span>{n.label}</span></button>)}
           </div>
           <div className="md-sb-footer"><button className="md-sb-logout" onClick={handleLogout}>{I.logout} Logout</button></div>
         </div>
