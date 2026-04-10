@@ -12,7 +12,7 @@ import {
   Target, Layers, CheckCircle, XCircle, Briefcase, Hash,
   Lightbulb, PenTool, Wrench, Bug, CloudUpload, FileText, Lock,
   AlertCircle, Send, X, Clock, MessageSquare, Zap, ChevronDown,
-  MapPin, Bus, Home, Github, Calendar, TrendingUp, BarChart3, Eye
+  MapPin, Bus, Home, Calendar, TrendingUp, BarChart3, Eye
 } from "lucide-react";
 
 const NAV_SECTIONS = [
@@ -180,7 +180,7 @@ function MyProfile({ user, hootData, videoRatings, videoLoading }) {
                 {icon:MapPin, label:'Town', value:s.town, color:'#f59e0b'},
                 {icon:Bus, label:'Bus Route', value:s.bus_route || s.bus_stage, color:'#8b5cf6'},
                 {icon:Home, label:'Hosteler', value:s.is_hosteler ? 'Yes' : 'No', color:'#10b981'},
-                {icon:Github, label:'GitHub', value:s.github_username || s.github_profile, color:'#fff'},
+                {icon:Code, label:'GitHub', value:s.github_username || s.github_profile, color:'#fff'},
               ].map((item,i) => (
                 <div key={i} className="mp-info-item">
                   <div className="mp-info-icon" style={{background:`${item.color}12`,borderColor:`${item.color}20`}}>
