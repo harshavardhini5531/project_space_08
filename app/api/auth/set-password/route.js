@@ -15,16 +15,35 @@ export async function POST(request) {
       return Response.json({ error: 'Password must be at least 6 characters' }, { status: 400 })
     }
 
-    // Block non-leaders permanently
+    // Block outsiders & unregistered team members
     const { data: memberRow } = await supabase
       .from('team_members')
-      .select('is_leader')
+      .select('is_leader, serial_number')
       .eq('roll_number', rollNumber)
-      .eq('is_leader', true)
       .single()
 
     if (!memberRow) {
-      return Response.json({ error: 'Only team leaders can create accounts.' }, { status: 403 })
+      return Response.json({ error: 'You are not part of any team. Contact your coordinator.' }, { status: 403 })
+    }
+
+    if (!memberRow.is_leader) {
+      const { data: teamRow } = await supabase
+        .from('teams')
+        .select('registered, leader_roll')
+        .eq('serial_number', memberRow.serial_number)
+        .single()
+
+      if (!teamRow?.registered) {
+        const { data: leaderStudent } = await supabase
+          .from('students')
+          .select('name')
+          .eq('roll_number', teamRow?.leader_roll)
+          .single()
+
+        return Response.json({
+          error: `Your team leader ${leaderStudent?.name || teamRow?.leader_roll || 'Unknown'} has not registered your team yet. Contact them first.`
+        }, { status: 403 })
+      }
     }
 
     // Verify OTP was actually completed

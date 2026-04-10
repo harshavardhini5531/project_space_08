@@ -150,44 +150,137 @@ function MyProfile({ profile, loading, videoRatings, videoLoading, mayaCoding, m
           </div>
         </div>
 
-        {/* Communication — Self-Intro Video Ratings */}
-        <div className="mp-card">
-          <div className="mp-card-title"><MessageSquare size={16} style={{color:"#f59e0b"}}/> Communication</div>
-          <div className="mp-sub-title" style={{marginBottom:12}}>Self-Introduction Video Ratings</div>
-          {videoRatings ? (
-            <div className="mp-video-ratings">
-              {[
-                {name:'Gemini AI',data:videoRatings.gemini,color:'#4285F4',logo:'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Google_Bard_logo.svg/1200px-Google_Bard_logo.svg.png'},
-                {name:'ChatGPT',data:videoRatings.chatgpt,color:'#10a37f',logo:'https://socialmarketing90.com/wp-content/uploads/2023/12/OpenAI-Insta-Version-SVG-8.svg'},
-                {name:'Claude AI',data:videoRatings.claude,color:'#cc785c',logo:'https://upload.wikimedia.org/wikipedia/commons/b/b0/Claude_AI_symbol.svg'},
-                {name:'Mentor',data:videoRatings.mentor,color:'#f59e0b',logo:'https://cdn-icons-png.flaticon.com/512/9187/9187532.png'},
-              ].map(({name,data,color,logo})=>(
-                <div key={name} className="mp-vr-row">
-                  <div className="mp-vr-logo" style={{borderColor:`${color}25`}}>
-                    <img src={logo} alt={name} style={{width:18,height:18,objectFit:'contain',filter:data?.overall?'none':'grayscale(1) brightness(2) opacity(0.3)'}}/>
-                  </div>
-                  <span className="mp-vr-name">{name}</span>
-                  <div className="mp-prog-bar" style={{flex:1}}>
-                    <div className="mp-prog-fill" style={{width:`${((data?.overall||0)/10)*100}%`,background:`linear-gradient(90deg,${color},${color}88)`}}/>
-                  </div>
-                  <span className="mp-vr-score" style={{color:data?.overall?color:'rgba(255,255,255,.15)'}}>{data?.overall ? `${data.overall}/10` : '—'}</span>
-                </div>
-              ))}
-              {(videoRatings.gemini?.level || videoRatings.chatgpt?.level || videoRatings.claude?.level) && (
-                <div style={{display:'flex',gap:6,marginTop:12,flexWrap:'wrap'}}>
-                  {videoRatings.gemini?.level && <Badge text={`Gemini: ${videoRatings.gemini.level}`} color="#4285F4"/>}
-                  {videoRatings.chatgpt?.level && <Badge text={`GPT: ${videoRatings.chatgpt.level}`} color="#10a37f"/>}
-                  {videoRatings.claude?.level && <Badge text={`Claude: ${videoRatings.claude.level}`} color="#cc785c"/>}
-                  {videoRatings.mentor?.level && <Badge text={`Mentor: ${videoRatings.mentor.level}`} color="#f59e0b"/>}
-                  {videoRatings.gemini?.readiness && <Badge text={`${videoRatings.gemini.readiness}% Interview Ready`} color="#4ade80" variant="success"/>}
-                </div>
-              )}
-            </div>
-          ) : (
-            <div style={{color:'rgba(255,255,255,.2)',fontSize:'.72rem',padding:'12px 0'}}>{videoLoading ? 'Loading ratings...' : 'No video ratings available'}</div>
-          )}
-        </div>
+      </div>
 
+      {/* ASSESSMENTS SECTION */}
+      <div style={{marginTop:'20px',marginBottom:'20px'}}>
+        <div style={{marginBottom:'14px'}}>
+          <div style={{fontSize:'15px',fontWeight:700,color:'#fff',fontFamily:"'DM Sans',sans-serif"}}>Assessments</div>
+          <div style={{fontSize:'12px',color:'rgba(255,255,255,0.35)',fontFamily:"'DM Sans',sans-serif",marginTop:'3px'}}>Communication & coding evaluations</div>
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(260px,1fr))',gap:'14px',alignItems:'start'}}>
+
+          {/* Video Ratings */}
+          <div style={{background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:'14px',padding:'18px'}}>
+            <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'14px'}}>
+              <div style={{width:'3px',height:'16px',background:'#f59e0b',borderRadius:'2px'}}/>
+              <span style={{fontSize:'11px',fontWeight:700,color:'#f59e0b',fontFamily:"'DM Sans',sans-serif",letterSpacing:'0.06em',textTransform:'uppercase'}}>Video Ratings</span>
+            </div>
+            {videoRatings ? (
+              <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
+                {[
+                  {name:'Gemini AI',data:videoRatings.gemini,color:'#4285F4',logo:'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Google_Bard_logo.svg/1200px-Google_Bard_logo.svg.png'},
+                  {name:'ChatGPT',data:videoRatings.chatgpt,color:'#10a37f',logo:'https://socialmarketing90.com/wp-content/uploads/2023/12/OpenAI-Insta-Version-SVG-8.svg'},
+                  {name:'Claude AI',data:videoRatings.claude,color:'#cc785c',logo:'https://upload.wikimedia.org/wikipedia/commons/b/b0/Claude_AI_symbol.svg'},
+                  {name:'Mentor',data:videoRatings.mentor,color:'#f59e0b',logo:'https://cdn-icons-png.flaticon.com/512/9187/9187532.png'},
+                ].map(({name,data,color,logo})=>(
+                  <div key={name} style={{display:'flex',alignItems:'center',gap:'8px',padding:'7px 10px',borderRadius:'9px',background:'rgba(255,255,255,0.02)',border:'1px solid rgba(255,255,255,0.04)'}}>
+                    <div style={{width:'28px',height:'28px',borderRadius:'7px',background:'rgba(255,255,255,0.04)',border:`1px solid ${color}25`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                      <img src={logo} alt={name} style={{width:16,height:16,objectFit:'contain',filter:data?.overall?'none':'grayscale(1) brightness(2) opacity(0.3)'}}/>
+                    </div>
+                    <span style={{fontSize:'11px',fontWeight:600,color:'rgba(255,255,255,0.5)',fontFamily:"'DM Sans',sans-serif",width:'65px',flexShrink:0}}>{name}</span>
+                    <div style={{flex:1,height:'5px',borderRadius:'3px',background:'rgba(255,255,255,0.05)',overflow:'hidden'}}>
+                      <div style={{height:'100%',width:`${((data?.overall||0)/10)*100}%`,background:`linear-gradient(90deg,${color},${color}88)`,borderRadius:'3px'}}/>
+                    </div>
+                    <span style={{fontSize:'11px',fontWeight:700,color:data?.overall?color:'rgba(255,255,255,0.15)',fontFamily:"'DM Sans',sans-serif",width:'36px',textAlign:'right',flexShrink:0}}>{data?.overall?`${data.overall}/10`:'—'}</span>
+                  </div>
+                ))}
+                {(videoRatings.gemini?.level||videoRatings.chatgpt?.level||videoRatings.claude?.level)&&(
+                  <div style={{display:'flex',gap:5,marginTop:6,flexWrap:'wrap'}}>
+                    {videoRatings.gemini?.level&&<Badge text={`Gemini: ${videoRatings.gemini.level}`} color="#4285F4"/>}
+                    {videoRatings.chatgpt?.level&&<Badge text={`GPT: ${videoRatings.chatgpt.level}`} color="#10a37f"/>}
+                    {videoRatings.claude?.level&&<Badge text={`Claude: ${videoRatings.claude.level}`} color="#cc785c"/>}
+                    {videoRatings.mentor?.level&&<Badge text={`Mentor: ${videoRatings.mentor.level}`} color="#f59e0b"/>}
+                    {videoRatings.gemini?.readiness&&<Badge text={`${videoRatings.gemini.readiness}% Ready`} color="#4ade80" variant="success"/>}
+                  </div>
+                )}
+              </div>
+            ):(
+              <div style={{fontSize:'12px',color:'rgba(255,255,255,0.25)',fontFamily:"'DM Sans',sans-serif",padding:'8px 0'}}>{videoLoading?'Loading ratings...':'No video ratings available'}</div>
+            )}
+          </div>
+
+          {/* HOOT Result */}
+          <div style={{background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:'14px',padding:'18px'}}>
+            <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'14px'}}>
+              <div style={{width:'3px',height:'16px',background:'#EEA727',borderRadius:'2px'}}/>
+              <span style={{fontSize:'11px',fontWeight:700,color:'#EEA727',fontFamily:"'DM Sans',sans-serif",letterSpacing:'0.06em',textTransform:'uppercase'}}>HOOT — Communication</span>
+            </div>
+            {!hootData?(
+              <div style={{fontSize:'12px',color:'rgba(255,255,255,0.25)',fontFamily:"'DM Sans',sans-serif",padding:'8px 0'}}>No assessment data found</div>
+            ):(
+              <>
+                {[['Listening',hootData.listening,'#EEA727'],['Speaking',hootData.speaking,'#fd1c00'],['Reading',hootData.reading,'#10b981'],['Writing',hootData.writing,'#7B2FBE']].map(([label,val,color])=>(
+                  <div key={label} style={{marginBottom:'10px'}}>
+                    <div style={{display:'flex',justifyContent:'space-between',marginBottom:'4px'}}>
+                      <span style={{fontSize:'12px',color:'#bbb',fontFamily:"'DM Sans',sans-serif",fontWeight:500}}>{label}</span>
+                      <span style={{fontSize:'12px',fontWeight:700,color:color,fontFamily:"'DM Sans',sans-serif"}}>{val?.toFixed(1)}%</span>
+                    </div>
+                    <div style={{height:'6px',background:'rgba(255,255,255,0.05)',borderRadius:'3px',overflow:'hidden'}}>
+                      <div style={{height:'100%',width:`${val}%`,background:color,borderRadius:'3px'}}/>
+                    </div>
+                  </div>
+                ))}
+                <div style={{marginTop:'12px',paddingTop:'10px',borderTop:'1px solid rgba(255,255,255,0.06)',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                  <span style={{fontSize:'12px',color:'#666',fontFamily:"'DM Sans',sans-serif"}}>Overall</span>
+                  <div style={{background:'rgba(238,167,39,0.1)',border:'1px solid rgba(238,167,39,0.25)',borderRadius:'7px',padding:'3px 10px'}}>
+                    <span style={{fontSize:'14px',fontWeight:800,color:'#EEA727',fontFamily:"'DM Sans',sans-serif"}}>{hootData.total?.toFixed(1)}<span style={{fontSize:'10px',fontWeight:400,marginLeft:'2px'}}>/100</span></span>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Coding Assessment */}
+          <div style={{background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:'14px',padding:'18px'}}>
+            <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'14px'}}>
+              <div style={{width:'3px',height:'16px',background:'#10b981',borderRadius:'2px'}}/>
+              <span style={{fontSize:'11px',fontWeight:700,color:'#10b981',fontFamily:"'DM Sans',sans-serif",letterSpacing:'0.06em',textTransform:'uppercase'}}>Coding Assessment</span>
+            </div>
+            {codingLevel&&(
+              <div style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:'14px',padding:'8px 12px',background:codingLevel==='Advanced'?'rgba(16,185,129,0.08)':'rgba(238,167,39,0.08)',border:`1px solid ${codingLevel==='Advanced'?'rgba(16,185,129,0.25)':'rgba(238,167,39,0.25)'}`,borderRadius:'9px'}}>
+                <span style={{fontSize:'16px'}}>{codingLevel==='Advanced'?'◆':'◈'}</span>
+                <div>
+                  <div style={{fontSize:'10px',color:'#666',fontFamily:"'DM Sans',sans-serif",fontWeight:600,textTransform:'uppercase',letterSpacing:'0.05em'}}>Level</div>
+                  <div style={{fontSize:'14px',fontWeight:800,color:codingLevel==='Advanced'?'#10b981':'#EEA727',fontFamily:"'DM Sans',sans-serif"}}>{codingLevel==='Advanced'?'Advanced':'Level 0'}</div>
+                </div>
+                {problemsData&&(
+                  <div style={{marginLeft:'auto',textAlign:'right'}}>
+                    <div style={{fontSize:'10px',color:'#666',fontFamily:"'DM Sans',sans-serif",fontWeight:600,textTransform:'uppercase',letterSpacing:'0.05em'}}>Solved</div>
+                    <div style={{fontSize:'14px',fontWeight:800,color:'#fff',fontFamily:"'DM Sans',sans-serif"}}>{Object.values(problemsData).reduce((a,b)=>a+b,0)}</div>
+                  </div>
+                )}
+              </div>
+            )}
+            {!problemsData?(
+              <div style={{fontSize:'12px',color:'rgba(255,255,255,0.25)',fontFamily:"'DM Sans',sans-serif",padding:'4px 0'}}>No problems data found</div>
+            ):(
+              <>
+                <div style={{fontSize:'10px',color:'#555',fontFamily:"'DM Sans',sans-serif",fontWeight:600,textTransform:'uppercase',letterSpacing:'0.05em',marginBottom:'8px'}}>Problems by Language</div>
+                {Object.entries(problemsData).sort(([,a],[,b])=>b-a).map(([lang,count])=>{
+                  const max=Math.max(...Object.values(problemsData),1);
+                  const LANGC={c:'#A8B9CC',cpp:'#659AD2',java:'#F89820',python:'#3572A5',sql:'#e38c00'};
+                  const color=LANGC[lang.toLowerCase()]||'#BDE8F5';
+                  return(
+                    <div key={lang} style={{marginBottom:'8px'}}>
+                      <div style={{display:'flex',justifyContent:'space-between',marginBottom:'3px',alignItems:'center'}}>
+                        <span style={{fontSize:'11px',fontWeight:600,color:color,fontFamily:"'DM Sans',sans-serif",textTransform:'uppercase',letterSpacing:'0.07em'}}>{lang.toUpperCase()}</span>
+                        <span style={{fontSize:'11px',fontWeight:700,color:'#fff',fontFamily:"'DM Sans',sans-serif",background:'rgba(255,255,255,0.07)',padding:'1px 6px',borderRadius:'4px'}}>{count}</span>
+                      </div>
+                      <div style={{height:'4px',background:'rgba(255,255,255,0.05)',borderRadius:'2px',overflow:'hidden'}}>
+                        <div style={{height:'100%',width:`${(count/max)*100}%`,background:color,borderRadius:'2px'}}/>
+                      </div>
+                    </div>
+                  );
+                })}
+              </>
+            )}
+          </div>
+
+        </div>
+      </div>
+
+      <div className="mp-grid">
         <div className="mp-card">
           <div className="mp-card-title"><Shield size={16} style={{color:"#10b981"}}/> Certifications <span className="mp-card-count">{s.cert_count||0}</span></div>
           {certs.length > 0 ? certs.map((c,i)=>(<div key={i} className="mp-list-item"><div className="mp-list-num" style={{background:"rgba(16,185,129,.06)",borderColor:"rgba(16,185,129,.12)",color:"#10b981"}}>{i+1}</div><div className="mp-list-text">{c}</div><CheckCircle size={15} style={{color:"#4ade80",flexShrink:0}}/></div>))
@@ -212,62 +305,6 @@ function MyProfile({ profile, loading, videoRatings, videoLoading, mayaCoding, m
 
       </div>
 
-      {/* ASSESSMENTS SECTION */}
-      <div style={{marginTop:'28px'}}>
-  <div style={{marginBottom:'16px'}}>
-    <div style={{fontSize:'15px',fontWeight:700,color:'#fff',fontFamily:"'DM Sans',sans-serif"}}>Assessments</div>
-    <div style={{fontSize:'12px',color:'rgba(255,255,255,0.35)',fontFamily:"'DM Sans',sans-serif",marginTop:'3px'}}>Communication & coding evaluations</div>
-  </div>
-  <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(250px,1fr))',gap:'14px'}}>
-
-    {/* Self Intro Video */}
-    <div style={{background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:'14px',padding:'20px'}}>
-      <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'16px'}}>
-        <div style={{width:'3px',height:'16px',background:'#BDE8F5',borderRadius:'2px'}}/>
-        <span style={{fontSize:'11px',fontWeight:700,color:'#BDE8F5',fontFamily:"'DM Sans',sans-serif",letterSpacing:'0.06em',textTransform:'uppercase'}}>Self Intro Video</span>
-      </div>
-      <div style={{width:'100%',aspectRatio:'16/9',background:'rgba(189,232,245,0.04)',border:'1.5px dashed rgba(189,232,245,0.2)',borderRadius:'10px',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:'8px'}}>
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(189,232,245,0.4)" strokeWidth="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-        <span style={{fontSize:'11px',color:'rgba(189,232,245,0.35)',fontFamily:"'DM Sans',sans-serif",textAlign:'center',lineHeight:1.5}}>Self introduction video<br/>will appear here</span>
-      </div>
-      <div style={{display:'flex',justifyContent:'center',marginTop:'12px'}}>
-        <div style={{display:'inline-flex',alignItems:'center',gap:'5px',background:'rgba(189,232,245,0.06)',border:'1px solid rgba(189,232,245,0.15)',borderRadius:'20px',padding:'4px 12px'}}>
-          <div style={{width:'5px',height:'5px',borderRadius:'50%',background:'#EEA727',boxShadow:'0 0 5px #EEA727'}}/>
-          <span style={{fontSize:'10px',color:'rgba(189,232,245,0.6)',fontFamily:"'DM Sans',sans-serif",fontWeight:600,letterSpacing:'0.05em'}}>PENDING UPLOAD</span>
-        </div>
-      </div>
-    </div>
-
-    {/* HOOT Result */}
-    <div style={{background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:'14px',padding:'20px'}}>
-      <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'16px'}}>
-        <div style={{width:'3px',height:'16px',background:'#EEA727',borderRadius:'2px'}}/>
-        <span style={{fontSize:'11px',fontWeight:700,color:'#EEA727',fontFamily:"'DM Sans',sans-serif",letterSpacing:'0.06em',textTransform:'uppercase'}}>HOOT — Communication</span>
-      </div>
-      {!hootData?(
-        <div style={{textAlign:'center',padding:'20px 0',color:'rgba(255,255,255,0.25)',fontSize:'12px',fontFamily:"'DM Sans',sans-serif"}}>No assessment data found</div>
-      ):(
-        <>
-          {[['Listening',hootData.listening,'#EEA727'],['Speaking',hootData.speaking,'#fd1c00'],['Reading',hootData.reading,'#10b981'],['Writing',hootData.writing,'#7B2FBE']].map(([label,val,color])=>(
-            <div key={label} style={{marginBottom:'12px'}}>
-              <div style={{display:'flex',justifyContent:'space-between',marginBottom:'5px'}}>
-                <span style={{fontSize:'12px',color:'#bbb',fontFamily:"'DM Sans',sans-serif",fontWeight:500}}>{label}</span>
-                <span style={{fontSize:'12px',fontWeight:700,color:color,fontFamily:"'DM Sans',sans-serif"}}>{val?.toFixed(1)}%</span>
-              </div>
-              <div style={{height:'7px',background:'rgba(255,255,255,0.05)',borderRadius:'4px',overflow:'hidden'}}>
-                <div style={{height:'100%',width:`${val}%`,background:color,borderRadius:'4px',boxShadow:`0 0 6px ${color}55`}}/>
-              </div>
-            </div>
-          ))}
-          <div style={{marginTop:'14px',paddingTop:'12px',borderTop:'1px solid rgba(255,255,255,0.06)',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-            <span style={{fontSize:'12px',color:'#666',fontFamily:"'DM Sans',sans-serif"}}>Overall</span>
-            <div style={{background:'rgba(238,167,39,0.1)',border:'1px solid rgba(238,167,39,0.25)',borderRadius:'7px',padding:'3px 10px'}}>
-              <span style={{fontSize:'15px',fontWeight:800,color:'#EEA727',fontFamily:"'DM Sans',sans-serif"}}>{hootData.total?.toFixed(1)}<span style={{fontSize:'10px',fontWeight:400,marginLeft:'2px'}}>/100</span></span>
-            </div>
-          </div>
-        </>
-      )}
-    </div>
 
     {/* Coding Assessment */}
     <div style={{background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:'14px',padding:'20px'}}>
@@ -316,8 +353,6 @@ function MyProfile({ profile, loading, videoRatings, videoLoading, mayaCoding, m
     </div>
 
   </div>
-</div>
-    </div>
   );
 }
 
