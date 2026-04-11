@@ -946,10 +946,10 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
 .mp-hero-row{display:flex;align-items:center;gap:24px;}
 .mp-hero{flex:1;display:flex;align-items:center;padding:14px 24px;border-radius:16px;background:linear-gradient(to right,#fd1c00 0%,#ff4e50 50%,#EEA727 100%);position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(253,28,0,.12),0 2px 8px rgba(238,167,39,.1);}
 .mp-hero::before{content:'';position:absolute;top:-80px;right:-80px;width:350px;height:350px;background:radial-gradient(circle,rgba(255,255,255,.08),transparent 55%);pointer-events:none;}
-.mp-avatar-wrap{flex-shrink:0;position:relative;width:140px;height:140px;display:flex;align-items:center;justify-content:center;}
-.mp-avatar-wrap-ring{position:absolute;width:140px;height:140px;background:#111;border-radius:50% 50% 50% 50%/60% 40% 60% 40%;z-index:0;animation:blobMorph 8s ease-in-out infinite;box-shadow:0 0 20px rgba(232,5,5,.25),0 0 45px rgba(253,28,0,.12),0 0 70px rgba(238,167,39,.06);}
+.mp-avatar-wrap{flex-shrink:0;position:relative;width:120px;height:120px;display:flex;align-items:center;justify-content:center;}
+.mp-avatar-wrap-ring{position:absolute;width:120px;height:120px;background:#111;border-radius:50% 50% 50% 50%/60% 40% 60% 40%;z-index:0;animation:blobMorph 8s ease-in-out infinite;box-shadow:0 0 20px rgba(232,5,5,.25),0 0 45px rgba(253,28,0,.12),0 0 70px rgba(238,167,39,.06);}
 @keyframes blobMorph{0%,100%{border-radius:50% 50% 50% 50%/60% 40% 60% 40%}25%{border-radius:40% 60% 60% 40%/50% 50% 60% 50%}50%{border-radius:50% 40% 50% 60%/40% 60% 40% 60%}75%{border-radius:60% 50% 40% 50%/60% 40% 50% 50%}}
-.mp-avatar{width:124px;height:124px;border-radius:50%;background:#111;border:none;display:flex;align-items:center;justify-content:center;font-size:2.2rem;font-weight:800;color:#fd1c00;overflow:hidden;position:relative;z-index:1;}
+.mp-avatar{width:106px;height:106px;border-radius:50%;background:#111;border:none;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:800;color:#fd1c00;overflow:hidden;position:relative;z-index:1;}
 .mp-avatar-img{width:150%;height:150%;border-radius:50%;object-fit:cover;display:block;margin:-25%;object-position:center top;}
 .mp-float-badge{position:absolute;z-index:5;border-radius:20px;padding:5px 12px;box-shadow:0 4px 16px rgba(0,0,0,.2);font-size:.55rem;font-weight:700;display:flex;align-items:center;gap:5px;backdrop-filter:blur(8px);white-space:nowrap;border:1px solid rgba(255,255,255,.08);}
 .mp-float-badge .mp-fb-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
