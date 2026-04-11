@@ -276,7 +276,447 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
       </>
     )
   }
+/* ═══ REPORT CARD COMPONENT ═══ */
+/* Add this function BEFORE the main Dashboard export in app/admin/page.js */
+/* Also add a "Report Card" tab to the admin tabs array */
 
+// This is a standalone component — paste it into admin/page.js
+
+function ReportCard() {
+  const [roll, setRoll] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [report, setReport] = useState(null);
+  const [error, setError] = useState('');
+  const [generating, setGenerating] = useState(false);
+
+  const fetchReport = async () => {
+    if (!roll.trim()) { setError('Enter a roll number'); return; }
+    setLoading(true); setError(''); setReport(null);
+    try {
+      const r = await fetch('/api/admin/report-card', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rollNumber: roll.trim().toUpperCase() })
+      });
+      const d = await r.json();
+      if (d.error) { setError(d.error); }
+      else if (d.report) { setReport(d.report); }
+    } catch { setError('Failed to fetch data'); }
+    finally { setLoading(false); }
+  };
+
+  const downloadPDF = async () => {
+    if (!report) return;
+    setGenerating(true);
+    try {
+      // Dynamically import jsPDF
+      const { default: jsPDF } = await import('jspdf');
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const w = 210, h = 297;
+      let y = 0;
+
+      // Colors
+      const RED = [253, 28, 0];
+      const BLACK = [0, 0, 0];
+      const WHITE = [255, 255, 255];
+      const GRAY = [120, 120, 120];
+      const DARK = [30, 30, 30];
+      const LIGHT_BG = [248, 248, 248];
+
+      // Header band
+      doc.setFillColor(...RED);
+      doc.rect(0, 0, w, 28, 'F');
+      doc.setFillColor(...BLACK);
+      doc.rect(0, 22, w, 6, 'F'); // black strip at bottom of header
+
+      doc.setTextColor(...WHITE);
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('PROJECT SPACE', 10, 12);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.text('STUDENT REPORT CARD', 10, 18);
+      doc.setFontSize(7);
+      doc.text(`Generated: ${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}`, w - 10, 12, { align: 'right' });
+      doc.text('Technical Hub · Aditya University', w - 10, 18, { align: 'right' });
+
+      y = 32;
+
+      // Helper functions
+      const sectionTitle = (title, yPos) => {
+        doc.setFillColor(253, 28, 0);
+        doc.rect(10, yPos, 2, 5, 'F');
+        doc.setTextColor(...DARK);
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.text(title, 15, yPos + 4);
+        return yPos + 8;
+      };
+
+      const labelValue = (label, value, x, yPos, labelW = 28) => {
+        doc.setTextColor(...GRAY);
+        doc.setFontSize(6.5);
+        doc.setFont('helvetica', 'normal');
+        doc.text(label, x, yPos);
+        doc.setTextColor(...DARK);
+        doc.setFontSize(7.5);
+        doc.setFont('helvetica', 'bold');
+        doc.text(String(value || '—'), x + labelW, yPos);
+      };
+
+      const drawBar = (x, yPos, width, pct, color) => {
+        doc.setFillColor(230, 230, 230);
+        doc.roundedRect(x, yPos, width, 2.5, 1, 1, 'F');
+        const fillW = Math.max(0, (pct / 100) * width);
+        doc.setFillColor(...color);
+        doc.roundedRect(x, yPos, fillW, 2.5, 1, 1, 'F');
+      };
+
+      // ═══ SECTION 1: PERSONAL INFO ═══
+      y = sectionTitle('PERSONAL INFORMATION', y);
+      
+      // Row 1
+      labelValue('Name', report.name, 10, y, 18);
+      labelValue('Roll No', report.roll_number, 75, y, 18);
+      labelValue('College', report.college, 140, y, 18);
+      y += 5;
+      // Row 2
+      labelValue('Branch', report.branch, 10, y, 18);
+      labelValue('Gender', report.gender, 75, y, 18);
+      labelValue('DOB', report.dob, 140, y, 18);
+      y += 5;
+      // Row 3
+      labelValue('Mobile', report.mobile, 10, y, 18);
+      labelValue('Email', report.email, 75, y, 18);
+      labelValue('Passout', report.passout_year, 140, y, 18);
+      y += 5;
+      // Row 4
+      labelValue('Technology', report.technology, 10, y, 22);
+      labelValue('Pool', report.pool, 75, y, 18);
+      labelValue('Rank', report.rank ? `#${report.rank}` : '—', 140, y, 18);
+      y += 5;
+      // Row 5
+      labelValue('Seat', report.seat_type, 10, y, 18);
+      labelValue('Scholar', report.scholar_type, 75, y, 18);
+      labelValue('Town', report.town, 140, y, 18);
+      y += 7;
+
+      // Separator
+      doc.setDrawColor(230, 230, 230);
+      doc.line(10, y, w - 10, y);
+      y += 3;
+
+      // ═══ SECTION 2: ACADEMICS ═══
+      y = sectionTitle('ACADEMIC PERFORMANCE', y);
+
+      // Academic stats in boxes
+      const academicData = [
+        { label: 'B.Tech CGPA', value: report.btech || '—' },
+        { label: 'B.Tech %', value: report.btech_pct ? `${report.btech_pct}%` : '—' },
+        { label: 'Inter/Diploma', value: report.inter ? `${report.inter}%` : '—' },
+        { label: 'SSC', value: report.ssc ? `${report.ssc}%` : '—' },
+        { label: 'Backlogs', value: report.backlogs || '0' },
+        { label: 'Badge Test', value: `${report.badge_test_pct}% (${report.badge_test_status || '—'})` },
+      ];
+
+      const boxW = 30, boxH = 10, boxGap = 2;
+      academicData.forEach((item, i) => {
+        const bx = 10 + (i % 6) * (boxW + boxGap);
+        doc.setFillColor(...LIGHT_BG);
+        doc.roundedRect(bx, y, boxW, boxH, 1.5, 1.5, 'F');
+        doc.setTextColor(...GRAY);
+        doc.setFontSize(5.5);
+        doc.setFont('helvetica', 'normal');
+        doc.text(item.label, bx + 2, y + 3.5);
+        doc.setTextColor(...DARK);
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'bold');
+        doc.text(String(item.value), bx + 2, y + 8);
+      });
+      y += boxH + 4;
+
+      // Separator
+      doc.setDrawColor(230, 230, 230);
+      doc.line(10, y, w - 10, y);
+      y += 3;
+
+      // ═══ SECTION 3: CODING PLATFORMS ═══
+      y = sectionTitle('CODING PROFILES', y);
+
+      const platforms = [];
+      if (report.leetcode) platforms.push({ name: 'LeetCode', total: report.leetcode.total, details: `E:${report.leetcode.easy} M:${report.leetcode.medium} H:${report.leetcode.hard} | Rank #${report.leetcode.rank} | Streak: ${report.leetcode.streak}d` });
+      if (report.hackerrank) platforms.push({ name: 'HackerRank', total: `${report.hackerrank.stars}★`, details: `Badges:${report.hackerrank.badges} Certs:${report.hackerrank.certs} | C:${report.hackerrank.c}★ Java:${report.hackerrank.java}★ Py:${report.hackerrank.python}★ SQL:${report.hackerrank.sql}★` });
+      if (report.codechef) platforms.push({ name: 'CodeChef', total: report.codechef.total, details: `Rating:${report.codechef.rating} (${report.codechef.stars}★) | Contests:${report.codechef.contests} | Streak:${report.codechef.streak}d` });
+      if (report.gfg) platforms.push({ name: 'GFG', total: report.gfg.total, details: `Score:${report.gfg.score} | Streak:${report.gfg.streak}d` });
+
+      platforms.forEach(p => {
+        doc.setTextColor(...RED);
+        doc.setFontSize(7);
+        doc.setFont('helvetica', 'bold');
+        doc.text(p.name, 10, y);
+        doc.setTextColor(...DARK);
+        doc.setFontSize(8);
+        doc.text(String(p.total), 38, y);
+        doc.setTextColor(...GRAY);
+        doc.setFontSize(6);
+        doc.setFont('helvetica', 'normal');
+        doc.text(p.details, 55, y);
+        y += 5;
+      });
+
+      // Maya Coding
+      if (report.mayaCoding) {
+        doc.setTextColor(...RED);
+        doc.setFontSize(7);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Maya Portal', 10, y);
+        doc.setTextColor(...DARK);
+        doc.setFontSize(6.5);
+        doc.setFont('helvetica', 'normal');
+        const langs = report.mayaCoding.languages ? Object.entries(report.mayaCoding.languages).map(([l, c]) => `${l.toUpperCase()}:${c}`).join(' ') : '';
+        doc.text(`Rank #${report.mayaCoding.globalRank} (Batch #${report.mayaCoding.batchRank}) | Score:${report.mayaCoding.score} | E:${report.mayaCoding.easy} M:${report.mayaCoding.medium} H:${report.mayaCoding.hard} | ${langs} | Time:${report.mayaCoding.totalTime}`, 38, y);
+        y += 5;
+      }
+
+      y += 2;
+      doc.setDrawColor(230, 230, 230);
+      doc.line(10, y, w - 10, y);
+      y += 3;
+
+      // ═══ SECTION 4: ATTENDANCE ═══
+      y = sectionTitle(`ATTENDANCE — Overall: ${report.overallAttendance}% (${report.totalPresent}/${report.totalSessions})`, y);
+
+      // Compact attendance grid
+      const attCols = 4;
+      const attBoxW = (w - 20 - (attCols - 1) * 2) / attCols;
+      report.attendance.forEach((a, i) => {
+        const col = i % attCols;
+        const row = Math.floor(i / attCols);
+        const ax = 10 + col * (attBoxW + 2);
+        const ay = y + row * 11;
+        
+        doc.setFillColor(...LIGHT_BG);
+        doc.roundedRect(ax, ay, attBoxW, 9, 1, 1, 'F');
+
+        doc.setTextColor(...DARK);
+        doc.setFontSize(6);
+        doc.setFont('helvetica', 'bold');
+        const techName = a.tech.length > 18 ? a.tech.substring(0, 18) + '..' : a.tech;
+        doc.text(techName, ax + 2, ay + 3.5);
+
+        const pctColor = parseFloat(a.pct) >= 75 ? [34, 197, 94] : [239, 68, 68];
+        doc.setTextColor(...pctColor);
+        doc.setFontSize(7);
+        doc.text(`${a.pct}%`, ax + attBoxW - 2, ay + 3.5, { align: 'right' });
+
+        // Mini bar
+        drawBar(ax + 2, ay + 5.5, attBoxW - 4, parseFloat(a.pct), pctColor);
+
+        doc.setTextColor(...GRAY);
+        doc.setFontSize(4.5);
+        doc.text(`P:${a.present} A:${a.absent} T:${a.total}`, ax + 2, ay + 8.5);
+      });
+      
+      const attRows = Math.ceil(report.attendance.length / attCols);
+      y += attRows * 11 + 2;
+
+      doc.setDrawColor(230, 230, 230);
+      doc.line(10, y, w - 10, y);
+      y += 3;
+
+      // ═══ SECTION 5: CERTIFICATIONS ═══
+      y = sectionTitle(`CERTIFICATIONS — Global:${report.certCounts.global} Training:${report.certCounts.training} Badges:${report.certCounts.badges} Internship:${report.certCounts.internship}`, y);
+
+      if (report.globalCerts.length > 0) {
+        doc.setTextColor(...DARK);
+        doc.setFontSize(6.5);
+        doc.setFont('helvetica', 'normal');
+        report.globalCerts.forEach((c, i) => {
+          doc.text(`${i + 1}. ${c}`, 14, y);
+          y += 4;
+        });
+      } else {
+        doc.setTextColor(...GRAY);
+        doc.setFontSize(6.5);
+        doc.text('No certifications recorded', 14, y);
+        y += 4;
+      }
+      y += 2;
+
+      // ═══ SECTION 6: APTITUDE ═══
+      if (report.aptMandatory) {
+        doc.setDrawColor(230, 230, 230);
+        doc.line(10, y, w - 10, y);
+        y += 3;
+        y = sectionTitle(`APTITUDE — ${report.aptMandatory.pct}% (${report.aptMandatory.attempts}/${report.aptMandatory.total} attempts)`, y);
+        doc.setTextColor(...DARK);
+        doc.setFontSize(6.5);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Easy:${report.aptMandatory.easy} Medium:${report.aptMandatory.medium} Hard:${report.aptMandatory.hard} | Aptitude:${report.aptMandatory.aptitude} Reasoning:${report.aptMandatory.reasoning} Verbal:${report.aptMandatory.verbal}`, 14, y);
+        y += 5;
+      }
+
+      // ═══ SECTION 7: COURSES, PAYMENTS, STATUS ═══
+      doc.setDrawColor(230, 230, 230);
+      doc.line(10, y, w - 10, y);
+      y += 3;
+
+      // Courses (compact, inline)
+      y = sectionTitle(`ENROLLED COURSES (${report.courses.length})`, y);
+      if (report.courses.length > 0) {
+        doc.setTextColor(...DARK);
+        doc.setFontSize(6);
+        doc.setFont('helvetica', 'normal');
+        const courseLine = report.courses.join(' · ');
+        const courseLines = doc.splitTextToSize(courseLine, w - 24);
+        doc.text(courseLines, 14, y);
+        y += courseLines.length * 3.5;
+      }
+      y += 2;
+
+      // Semesters
+      if (report.semesters.length > 0) {
+        doc.setTextColor(...GRAY);
+        doc.setFontSize(6);
+        doc.text(`Semesters: ${report.semesters.map((s, i) => `S${i+1}:${s}`).join(' · ')}`, 14, y);
+        y += 4;
+      }
+
+      // Payment row
+      doc.setTextColor(...GRAY);
+      doc.setFontSize(6);
+      const payLine = report.payments.map((p, i) => `T${i+1}:${p || 'Pending'}`).join('  ');
+      doc.text(`Payments: ${payLine}`, 14, y);
+      y += 4;
+
+      // Status row
+      doc.text(`Violations: ${report.violations} | Placement: ${report.placement}`, 14, y);
+      y += 6;
+
+      // ═══ FOOTER ═══
+      doc.setFillColor(...BLACK);
+      doc.rect(0, h - 10, w, 10, 'F');
+      doc.setFillColor(...RED);
+      doc.rect(0, h - 10, w, 1.5, 'F');
+
+      doc.setTextColor(...WHITE);
+      doc.setFontSize(6);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Project Space · Technical Hub · Aditya University', 10, h - 4);
+      doc.text('projectspace.technicalhub.io', w - 10, h - 4, { align: 'right' });
+
+      // Save
+      doc.save(`Report_Card_${report.roll_number}.pdf`);
+    } catch (err) {
+      console.error('PDF generation error:', err);
+      alert('Failed to generate PDF. Please try again.');
+    }
+    finally { setGenerating(false); }
+  };
+
+  return (
+    <div style={{ maxWidth: 600, margin: '0 auto' }}>
+      {/* Search Box */}
+      <div className="mp-card" style={{ marginBottom: 20 }}>
+        <div className="mp-card-title" style={{ marginBottom: 12 }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fd1c00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Generate Report Card
+        </div>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <input
+            type="text"
+            value={roll}
+            onChange={e => setRoll(e.target.value.toUpperCase())}
+            onKeyDown={e => e.key === 'Enter' && fetchReport()}
+            placeholder="Enter Roll Number (e.g. 23A91A61G9)"
+            style={{
+              flex: 1, padding: '10px 14px', borderRadius: 10,
+              background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.08)',
+              color: '#fff', fontFamily: "'DM Sans',sans-serif", fontSize: '.82rem',
+              outline: 'none',
+            }}
+          />
+          <button
+            onClick={fetchReport}
+            disabled={loading}
+            style={{
+              padding: '10px 22px', borderRadius: 10, border: 'none',
+              background: 'linear-gradient(135deg,#fd1c00,#ff5349)', color: '#fff',
+              fontFamily: "'DM Sans',sans-serif", fontSize: '.78rem', fontWeight: 700,
+              cursor: loading ? 'wait' : 'pointer', opacity: loading ? 0.6 : 1,
+            }}
+          >
+            {loading ? 'Loading...' : 'Fetch'}
+          </button>
+        </div>
+        {error && <div style={{ color: '#ef4444', fontSize: '.75rem', marginTop: 8 }}>{error}</div>}
+      </div>
+
+      {/* Report Preview */}
+      {report && (
+        <div className="mp-card">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <div>
+              <div style={{ fontSize: '1rem', fontWeight: 800, color: '#fff' }}>{report.name}</div>
+              <div style={{ fontSize: '.72rem', color: 'rgba(255,255,255,.4)' }}>{report.roll_number} · {report.branch} · {report.college}</div>
+            </div>
+            <button
+              onClick={downloadPDF}
+              disabled={generating}
+              style={{
+                padding: '10px 20px', borderRadius: 10, border: 'none',
+                background: generating ? 'rgba(255,255,255,.1)' : 'linear-gradient(135deg,#fd1c00,#ff5349)',
+                color: '#fff', fontFamily: "'DM Sans',sans-serif", fontSize: '.78rem',
+                fontWeight: 700, cursor: generating ? 'wait' : 'pointer',
+                display: 'flex', alignItems: 'center', gap: 6,
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              {generating ? 'Generating...' : 'Download PDF'}
+            </button>
+          </div>
+
+          {/* Preview sections */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
+            {[
+              { label: 'Technology', value: report.technology },
+              { label: 'Pool', value: report.pool },
+              { label: 'B.Tech CGPA', value: report.btech },
+              { label: 'Attendance', value: `${report.overallAttendance}%` },
+              { label: 'Backlogs', value: report.backlogs },
+              { label: 'Violations', value: report.violations },
+            ].map((item, i) => (
+              <div key={i} style={{ padding: '8px 10px', borderRadius: 8, background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.05)' }}>
+                <div style={{ fontSize: '.5rem', color: 'rgba(255,255,255,.3)', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600 }}>{item.label}</div>
+                <div style={{ fontSize: '.82rem', color: '#fff', fontWeight: 700, marginTop: 2 }}>{item.value || '—'}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Coding summary */}
+          <div style={{ padding: '10px 12px', borderRadius: 8, background: 'rgba(253,28,0,.04)', border: '1px solid rgba(253,28,0,.08)', marginBottom: 8 }}>
+            <div style={{ fontSize: '.55rem', color: 'rgba(255,255,255,.3)', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600, marginBottom: 4 }}>Coding Platforms</div>
+            <div style={{ fontSize: '.75rem', color: 'rgba(255,255,255,.7)' }}>
+              {[
+                report.leetcode && `LeetCode: ${report.leetcode.total}`,
+                report.hackerrank && `HackerRank: ${report.hackerrank.stars}★`,
+                report.codechef && `CodeChef: ${report.codechef.total}`,
+                report.gfg && `GFG: ${report.gfg.total}`,
+              ].filter(Boolean).join(' · ') || 'No data'}
+            </div>
+          </div>
+
+          {/* Certs summary */}
+          <div style={{ fontSize: '.68rem', color: 'rgba(255,255,255,.4)', marginTop: 8 }}>
+            Certifications: Global({report.certCounts.global}) · Training({report.certCounts.training}) · Badges({report.certCounts.badges}) · Internship({report.certCounts.internship})
+          </div>
+          <div style={{ fontSize: '.68rem', color: 'rgba(255,255,255,.4)', marginTop: 4 }}>
+            Courses: {report.courses.length} enrolled · Placement: {report.placement}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
   // ═══ DASHBOARD ═══
   const s = data?.stats || {}
   const tabs = [
