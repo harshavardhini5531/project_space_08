@@ -942,7 +942,7 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
 .mp-hero::before{content:'';position:absolute;top:-80px;right:-80px;width:350px;height:350px;background:radial-gradient(circle,rgba(255,255,255,.08),transparent 55%);pointer-events:none;}
 .mp-avatar-wrap{flex-shrink:0;}
 .mp-avatar{width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.1);border:3px solid rgba(249,212,35,.3);display:flex;align-items:center;justify-content:center;font-size:2.2rem;font-weight:800;color:#fff;box-shadow:0 0 24px rgba(249,212,35,.25),0 0 48px rgba(255,78,80,.12);overflow:hidden;}
-.mp-avatar-img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;}
+.mp-avatar-img{width:100px;height:100px;border-radius:50%;object-fit:cover;display:block;}
 .mp-hero-info{flex:1;display:flex;flex-wrap:wrap;align-items:center;gap:0;}
 .mp-hero-left{flex:1;min-width:200px;}
 .mp-hero-right{display:flex;gap:8px;flex-shrink:0;}
