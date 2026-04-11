@@ -938,11 +938,11 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
 .mp{display:flex;flex-direction:column;gap:20px;animation:mpIn .5s ease both;}
 @keyframes mpIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 .mp-hero-row{display:flex;align-items:center;gap:24px;}
-.mp-hero{flex:1;display:flex;align-items:center;padding:14px 24px;border-radius:16px;background:linear-gradient(135deg,#fd1c00 0%,#ff5349 30%,#000000 75%);position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(232,29,2,.12);}
+.mp-hero{flex:1;display:flex;align-items:center;padding:14px 24px;border-radius:16px;background:linear-gradient(to right,#f9d423 0%,#ff4e50 30%,#1a0000 70%,#000000 100%);position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(249,212,35,.08),0 2px 8px rgba(0,0,0,.4);}
 .mp-hero::before{content:'';position:absolute;top:-80px;right:-80px;width:350px;height:350px;background:radial-gradient(circle,rgba(255,255,255,.08),transparent 55%);pointer-events:none;}
 .mp-avatar-wrap{flex-shrink:0;}
-.mp-avatar{width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.15);backdrop-filter:blur(16px);border:none;display:flex;align-items:center;justify-content:center;font-size:2.2rem;font-weight:800;color:#fff;box-shadow:0 0 20px rgba(253,28,0,.4),0 0 40px rgba(253,28,0,.15),0 8px 24px rgba(0,0,0,.3);overflow:hidden;}
-.mp-avatar-img{width:100px;height:100px;border-radius:50%;object-fit:cover;border:none;box-shadow:0 0 20px rgba(253,28,0,.4),0 0 40px rgba(253,28,0,.15),0 8px 24px rgba(0,0,0,.3);}
+.mp-avatar{width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.1);border:3px solid rgba(249,212,35,.3);display:flex;align-items:center;justify-content:center;font-size:2.2rem;font-weight:800;color:#fff;box-shadow:0 0 24px rgba(249,212,35,.25),0 0 48px rgba(255,78,80,.12);overflow:hidden;}
+.mp-avatar-img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;}
 .mp-hero-info{flex:1;display:flex;flex-wrap:wrap;align-items:center;gap:0;}
 .mp-hero-left{flex:1;min-width:200px;}
 .mp-hero-right{display:flex;gap:8px;flex-shrink:0;}
