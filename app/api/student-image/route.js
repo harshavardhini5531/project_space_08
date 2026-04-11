@@ -51,7 +51,7 @@ export async function GET(request) {
   } catch {}
 
   if (!imageUrl) {
-    imageUrl = `https://mobile.technicalhub.io:5010/uploads/students-images/${roll}.png`;
+    imageUrl = `https://myprofile.technicalhub.io/student-info/${roll}.png`;
   }
 
   // Run background removal
