@@ -116,7 +116,7 @@ export async function POST(request) {
       college: academic?.college || sp.college || "",
       branch: Array.isArray(academic?.branch) ? academic.branch.join(", ") : (academic?.branch || sp.branch || ""),
       passout_year: academic?.passout_year || "",
-      image_url: sp.image_url || `/api/student-image?roll=${roll}`,
+      image_url: `/api/student-image?roll=${roll}`,
       github_profile: userByRoll?.github_profile || sp.github || "",
       github_username: userByRoll?.github_username || "",
       student_type: userByRoll?.student_type || "",
