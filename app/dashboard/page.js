@@ -115,6 +115,7 @@ function MyProfile({ user, hootData, videoRatings, videoLoading }) {
       <div className="mp-hero-row">
         <div className="mp-avatar-wrap">
           <div className="mp-avatar-wrap-ring"></div>
+          <div className="mp-avatar-wrap-ring2"></div>
           <div className="mp-avatar">
             {!imgError ? (
               <img className="mp-avatar-img" src={s.image_url} alt={s.name}
@@ -949,14 +950,16 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
 .mp-avatar-wrap{flex-shrink:0;position:relative;width:120px;height:120px;display:flex;align-items:center;justify-content:center;}
 .mp-avatar-wrap-ring{position:absolute;width:125px;height:125px;background:linear-gradient(to right,#fd1c00,#ff4e50,#EEA727);border-radius:50% 50% 50% 50%/60% 40% 60% 40%;z-index:0;animation:blobMorph 8s ease-in-out infinite,blobSpin 12s linear infinite;box-shadow:0 0 25px rgba(253,28,0,.3),0 0 50px rgba(238,167,39,.15),0 0 80px rgba(253,28,0,.06);}
 .mp-avatar-wrap-ring{position:absolute;width:125px;height:125px;background:linear-gradient(to right,#fd1c00,#ff4e50,#EEA727);border-radius:50% 50% 50% 50%/60% 40% 60% 40%;z-index:0;animation:blobMorph 8s ease-in-out infinite,blobSpin 12s linear infinite;box-shadow:0 0 25px rgba(253,28,0,.3),0 0 50px rgba(238,167,39,.15),0 0 80px rgba(253,2@keyframes blobMorph{0%,100%{border-radius:50% 50% 50% 50%/60% 40% 60% 40%;transform:rotate(0deg) scale(1)}20%{border-radius:40% 60% 60% 40%/50% 50% 60% 50%;transform:rotate(8deg) scale(1.03)}40%{border-radius:55% 45% 38% 62%/45% 55% 50% 50%;transform:rotate(-5deg) scale(.97)}60%{border-radius:50% 40% 50% 60%/40% 60% 40% 60%;transform:rotate(6deg) scale(1.02)}80%{border-radius:60% 50% 40% 50%/60% 40% 50% 50%;transform:rotate(-3deg) scale(.98)}}
-@keyframes blobSpin{0%{filter:hue-rotate(0deg)}50%{filter:hue-rotate(15deg)}100%{filter:hue-rotate(0deg)}}8,0,.06);}
-.mp-avatar{width:106px;height:106px;border-radius:50%;background:linear-gradient(135deg,#fd1c00,#EEA727);border:none;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:800;color:#fd1c00;overflow:hidden;position:relative;z-index:1;}
+@keyframes blobSpin{0%{filter:hue-rotate(0deg)}50%{filter:hue-rotate(15deg)}100%{filter:hue-rotate(0deg)}}
+@keyframes blobMorph2{0%,100%{border-radius:60% 40% 50% 50%/50% 60% 40% 50%;transform:rotate(0deg) scale(1)}25%{border-radius:50% 50% 40% 60%/60% 40% 50% 50%;transform:rotate(-6deg) scale(1.02)}50%{border-radius:40% 60% 55% 45%/50% 50% 45% 55%;transform:rotate(4deg) scale(.98)}75%{border-radius:55% 45% 50% 50%/40% 60% 55% 45%;transform:rotate(-3deg) scale(1.01)}}
+.mp-avatar-wrap-ring2{position:absolute;width:115px;height:115px;background:linear-gradient(to left,#EEA727,#ff4e50,#fd1c00);border-radius:60% 40% 50% 50%/50% 60% 40% 50%;z-index:0;animation:blobMorph2 7s ease-in-out infinite;opacity:.5;filter:blur(1px);}8,0,.06);}
+.mp-avatar{width:106px;height:106px;border-radius:50%;background:linear-gradient(135deg,#fd1c00,#EEA727);border:1.5px solid rgba(255,255,255,.7);display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:800;color:#fd1c00;overflow:hidden;position:relative;z-index:1;}
 .mp-avatar-img{width:150%;height:150%;border-radius:50%;object-fit:cover;display:block;margin:-25%;object-position:center top;}
-.mp-float-badge{position:absolute;z-index:5;border-radius:20px;padding:5px 12px;box-shadow:0 4px 16px rgba(0,0,0,.2);font-size:.55rem;font-weight:700;display:flex;align-items:center;gap:5px;backdrop-filter:blur(8px);white-space:nowrap;border:1px solid rgba(255,255,255,.08);}
+.mp-float-badge{position:absolute;z-index:5;border-radius:20px;padding:5px 12px;box-shadow:0 4px 16px rgba(0,0,0,.4);font-size:.55rem;font-weight:700;display:flex;align-items:center;gap:5px;backdrop-filter:blur(12px);white-space:nowrap;}
 .mp-float-badge .mp-fb-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
-.mp-fb-1{top:-8px;left:-20px;background:rgba(253,28,0,.15);color:#fd1c00;border-color:rgba(253,28,0,.2);animation:fbFloat 4s ease-in-out infinite;}
-.mp-fb-2{bottom:-8px;left:-14px;background:rgba(74,222,128,.1);color:#4ade80;border-color:rgba(74,222,128,.18);animation:fbFloat 4s ease-in-out infinite 1s;}
-.mp-fb-3{top:45%;right:-34px;background:rgba(59,130,246,.12);color:#60a5fa;border-color:rgba(59,130,246,.18);animation:fbFloat 4s ease-in-out infinite 2s;}
+.mp-fb-1{top:-8px;left:-20px;background:rgba(253,28,0,.9);color:#fff;border:1px solid rgba(253,28,0,1);animation:fbFloat 4s ease-in-out infinite;}
+.mp-fb-2{bottom:-8px;left:-14px;background:rgba(16,185,129,.85);color:#fff;border:1px solid rgba(16,185,129,.9);animation:fbFloat 4s ease-in-out infinite 1s;}
+.mp-fb-3{top:45%;right:-34px;background:rgba(59,130,246,.85);color:#fff;border:1px solid rgba(59,130,246,.9);animation:fbFloat 4s ease-in-out infinite 2s;}
 @keyframes fbFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 .mp-hero-info{flex:1;display:flex;flex-wrap:wrap;align-items:center;gap:0;}
 .mp-hero-left{flex:1;min-width:200px;}
