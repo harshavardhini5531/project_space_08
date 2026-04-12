@@ -148,7 +148,6 @@ export default function AdminDashboard() {
       </>
     )
   }
-
   // ═══ REPORT CARD ═══
   function ReportCard() {
     const [roll, setRoll] = useState('');
@@ -169,136 +168,105 @@ export default function AdminDashboard() {
         const { default: jsPDF } = await import('jspdf');
         const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
         const w = 210, h = 297; let y = 0;
-        const RED=[253,28,0],BLK=[0,0,0],WHT=[255,255,255],GRY=[120,120,120],DRK=[30,30,30],LBG=[248,248,248];
+        const R=[253,28,0],B=[0,0,0],W=[255,255,255],G=[120,120,120],D=[30,30,30],L=[245,245,245];
 
         // Header
-        doc.setFillColor(...RED); doc.rect(0, 0, w, 28, 'F');
-        doc.setFillColor(...BLK); doc.rect(0, 22, w, 6, 'F');
-        doc.setTextColor(...WHT); doc.setFontSize(16); doc.setFont('helvetica', 'bold');
-        doc.text('PROJECT SPACE', 10, 12);
-        doc.setFontSize(8); doc.setFont('helvetica', 'normal');
-        doc.text('STUDENT REPORT CARD', 10, 18);
-        doc.setFontSize(7);
-        doc.text(`Generated: ${new Date().toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'})}`, w-10, 12, {align:'right'});
-        doc.text('Technical Hub · Aditya University', w-10, 18, {align:'right'});
-        y = 32;
+        doc.setFillColor(...R); doc.rect(0,0,w,24,'F');
+        doc.setFillColor(...B); doc.rect(0,20,w,4,'F');
+        doc.setTextColor(...W); doc.setFontSize(14); doc.setFont('helvetica','bold'); doc.text('PROJECT SPACE',10,10);
+        doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.text('STUDENT REPORT CARD',10,15);
+        doc.text(`Generated: ${new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}`,w-10,10,{align:'right'});
+        doc.text('Technical Hub · Aditya University',w-10,15,{align:'right'});
+        y = 27;
 
-        // Helpers
-        const sec = (title, yp) => { doc.setFillColor(253,28,0); doc.rect(10, yp, 2, 5, 'F'); doc.setTextColor(...DRK); doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.text(title, 15, yp+4); return yp + 8; };
-        const lv = (l, v, x, yp, lw=22) => { doc.setTextColor(...GRY); doc.setFontSize(6.5); doc.setFont('helvetica','normal'); doc.text(l, x, yp); doc.setTextColor(...DRK); doc.setFontSize(7.5); doc.setFont('helvetica','bold'); doc.text(String(v||'—'), x+lw, yp); };
-        const sep = (yp) => { doc.setDrawColor(230,230,230); doc.line(10, yp, w-10, yp); return yp + 3; };
-        const dBar = (x, yp, wd, pct, c) => { doc.setFillColor(230,230,230); doc.roundedRect(x, yp, wd, 2.5, 1, 1, 'F'); doc.setFillColor(...c); doc.roundedRect(x, yp, Math.max(0,(pct/100)*wd), 2.5, 1, 1, 'F'); };
-        const statBox = (x, yp, bw, label, val) => { doc.setFillColor(...LBG); doc.roundedRect(x, yp, bw, 10, 1.5, 1.5, 'F'); doc.setTextColor(...GRY); doc.setFontSize(5.5); doc.setFont('helvetica','normal'); doc.text(label, x+2, yp+3.5); doc.setTextColor(...DRK); doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.text(String(val), x+2, yp+8); };
+        const sec = (t,yp) => { doc.setFillColor(253,28,0); doc.rect(10,yp,1.5,4,'F'); doc.setTextColor(...D); doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.text(t,14,yp+3); return yp+6; };
+        const lv = (l,v,x,yp,lw=20) => { doc.setTextColor(...G); doc.setFontSize(5.5); doc.setFont('helvetica','normal'); doc.text(l,x,yp); doc.setTextColor(...D); doc.setFontSize(6.5); doc.setFont('helvetica','bold'); doc.text(String(v||'—'),x+lw,yp); };
+        const sep = yp => { doc.setDrawColor(230,230,230); doc.line(10,yp,w-10,yp); return yp+2; };
+        const box = (x,yp,bw,lb,vl) => { doc.setFillColor(...L); doc.roundedRect(x,yp,bw,8,1,1,'F'); doc.setTextColor(...G); doc.setFontSize(4.5); doc.setFont('helvetica','normal'); doc.text(lb,x+1.5,yp+3); doc.setTextColor(...D); doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.text(String(vl),x+1.5,yp+6.5); };
+        const bar = (x,yp,wd,pct,c) => { doc.setFillColor(230,230,230); doc.roundedRect(x,yp,wd,2,1,1,'F'); doc.setFillColor(...c); doc.roundedRect(x,yp,Math.max(0,(pct/100)*wd),2,1,1,'F'); };
 
         // ══ PERSONAL INFO ══
         y = sec('PERSONAL INFORMATION', y);
-        lv('Name', report.name, 10, y, 16); lv('Roll No', report.roll_number, 70, y, 16); lv('College', report.college, 130, y, 16); y += 5;
-        lv('Branch', report.branch, 10, y, 16); lv('Gender', report.gender, 70, y, 16); lv('DOB', report.dob, 130, y, 16); y += 5;
-        lv('Mobile', report.mobile, 10, y, 16); lv('Email', report.email, 70, y, 16); lv('Passout', report.passout_year, 130, y, 16); y += 5;
-        lv('Technology', report.technology, 10, y, 20); lv('Pool', report.pool, 70, y, 16); lv('Rank', report.rank ? `#${report.rank}` : '—', 130, y, 16); y += 5;
-        lv('Seat', report.seat_type, 10, y, 16); lv('Scholar', report.scholar_type, 70, y, 16); lv('Town', report.town, 130, y, 16); y += 6;
+        lv('Name',report.name,10,y,14); lv('Roll',report.roll_number,65,y,12); lv('College',report.college,120,y,14); lv('Branch',report.branch,165,y,14); y+=4;
+        lv('Gender',report.gender,10,y,14); lv('Mobile',report.mobile,65,y,12); lv('Pool',report.pool,120,y,14); lv('Rank',report.rank?`#${report.rank}`:'—',165,y,14); y+=4;
+        lv('Seat',report.seat_type,10,y,14); lv('Scholar',report.scholar_type,65,y,12); lv('Town',report.town,120,y,14); lv('Tech',report.technology,165,y,14); y+=5;
         y = sep(y);
 
         // ══ ACADEMICS ══
         y = sec('ACADEMIC PERFORMANCE', y);
-        const acItems = [
-          {l:'SSC', v:report.ssc ? `${report.ssc}%` : '—'},
-          {l:'Inter/Dip', v:report.inter ? `${report.inter}%` : '—'},
-          {l:'B.Tech %', v:report.btech_pct ? `${report.btech_pct}%` : '—'},
-          {l:'CGPA', v:report.btech || '—'},
-          {l:'Backlogs', v:report.backlogs || '0'},
-          {l:'Badge Test', v:`${report.badge_test_pct || 0}% ${report.badge_test_status ? '('+report.badge_test_status+')' : ''}`},
-        ];
-        const bw = 30, bg = 2;
-        acItems.forEach((it, i) => statBox(10 + (i % 6) * (bw + bg), y, bw, it.l, it.v));
-        y += 14; y = sep(y);
+        const bw2=24, bg2=2; const acadArr=[{l:'SSC',v:report.ssc?`${report.ssc}%`:'—'},{l:'Inter/Dip',v:report.inter?`${report.inter}%`:'—'},{l:'B.Tech %',v:report.btech_pct?`${report.btech_pct}%`:'—'},{l:'CGPA',v:report.btech||'—'},{l:'Backlogs',v:report.backlogs||'0'},{l:'Badge Test',v:`${report.badge_test_pct||0}%`},{l:'Attendance',v:`${report.overallAttendance||0}%`}];
+        acadArr.forEach((it,i)=>box(10+i*(bw2+bg2),y,bw2,it.l,it.v));
+        y+=11; y=sep(y);
 
-        // ══ CODING PROFILES ══
+        // ══ CODING ══
         y = sec('CODING PROFILES', y);
-        const cp = [];
-        if (report.leetcode) cp.push({n:'LeetCode', t:report.leetcode.total, d:`E:${report.leetcode.easy} M:${report.leetcode.medium} H:${report.leetcode.hard} | Rank #${report.leetcode.rank} | Streak: ${report.leetcode.streak}d`});
-        if (report.hackerrank) cp.push({n:'HackerRank', t:`${report.hackerrank.stars}★`, d:`Badges:${report.hackerrank.badges} Certs:${report.hackerrank.certs} | C:${report.hackerrank.c}★ Java:${report.hackerrank.java}★ Py:${report.hackerrank.python}★ SQL:${report.hackerrank.sql}★`});
-        if (report.codechef) cp.push({n:'CodeChef', t:report.codechef.total, d:`Rating:${report.codechef.rating} (${report.codechef.stars}★) | Contests:${report.codechef.contests} | Streak:${report.codechef.streak}d`});
-        if (report.gfg) cp.push({n:'GFG', t:report.gfg.total, d:`Score:${report.gfg.score} | Streak:${report.gfg.streak}d`});
-        cp.forEach(p => { doc.setTextColor(...RED); doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.text(p.n, 10, y); doc.setTextColor(...DRK); doc.setFontSize(8); doc.text(String(p.t), 38, y); doc.setTextColor(...GRY); doc.setFontSize(6); doc.setFont('helvetica','normal'); doc.text(p.d, 52, y); y += 5; });
-        if (report.mayaCoding) {
-          doc.setTextColor(...RED); doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.text('Maya Portal', 10, y);
-          doc.setTextColor(...DRK); doc.setFontSize(6.5); doc.setFont('helvetica','normal');
-          const ml = report.mayaCoding.languages ? Object.entries(report.mayaCoding.languages).map(([l,c])=>`${l.toUpperCase()}:${c}`).join(' ') : '';
-          doc.text(`Rank #${report.mayaCoding.globalRank} (Batch #${report.mayaCoding.batchRank}) | Score:${report.mayaCoding.score} | E:${report.mayaCoding.easy} M:${report.mayaCoding.medium} H:${report.mayaCoding.hard} | ${ml}`, 38, y);
-          y += 5;
+        const cp=[];
+        if(report.leetcode) cp.push({n:'LeetCode',t:report.leetcode.total,d:`E:${report.leetcode.easy} M:${report.leetcode.medium} H:${report.leetcode.hard} | #${report.leetcode.rank} | ${report.leetcode.streak}d streak`});
+        if(report.hackerrank) cp.push({n:'HackerRank',t:`${report.hackerrank.stars}★`,d:`Badges:${report.hackerrank.badges} Certs:${report.hackerrank.certs}`});
+        if(report.codechef) cp.push({n:'CodeChef',t:report.codechef.total,d:`${report.codechef.rating} (${report.codechef.stars}★) | ${report.codechef.contests} contests`});
+        if(report.gfg) cp.push({n:'GFG',t:report.gfg.total,d:`Score:${report.gfg.score} | ${report.gfg.streak}d streak`});
+        if(cp.length===0){doc.setTextColor(...G);doc.setFontSize(6);doc.text('No coding profile data',14,y);y+=4}
+        cp.forEach(p=>{doc.setTextColor(...R);doc.setFontSize(6);doc.setFont('helvetica','bold');doc.text(p.n,10,y);doc.setTextColor(...D);doc.setFontSize(7);doc.text(String(p.t),34,y);doc.setTextColor(...G);doc.setFontSize(5.5);doc.setFont('helvetica','normal');doc.text(p.d,48,y);y+=4});
+        if(report.mayaCoding){doc.setTextColor(...R);doc.setFontSize(6);doc.setFont('helvetica','bold');doc.text('Maya Portal',10,y);doc.setTextColor(...D);doc.setFontSize(6);doc.setFont('helvetica','normal');doc.text(`Rank #${report.mayaCoding.globalRank} (Batch #${report.mayaCoding.batchRank}) | Score:${report.mayaCoding.score} | E:${report.mayaCoding.easy} M:${report.mayaCoding.medium} H:${report.mayaCoding.hard}`,34,y);y+=4}
+        y+=1; y=sep(y);
+
+        // ══ HOOT ══
+        if(report.hoot){
+          y=sec('HOOT COMMUNICATION',y);
+          const hd=[['Listening',report.hoot.listening,[238,167,39]],['Speaking',report.hoot.speaking,[253,28,0]],['Reading',report.hoot.reading,[16,185,129]],['Writing',report.hoot.writing,[123,47,190]]];
+          hd.forEach(([lb,vl,c])=>{doc.setTextColor(...G);doc.setFontSize(5.5);doc.text(lb,10,y+1.5);bar(35,y,50,vl||0,c);doc.setTextColor(...c);doc.setFontSize(6);doc.setFont('helvetica','bold');doc.text(`${(vl||0).toFixed?vl.toFixed(1):vl}%`,88,y+1.5);y+=4});
+          doc.setTextColor(238,167,39);doc.setFontSize(7);doc.setFont('helvetica','bold');doc.text(`Overall: ${report.hoot.total?.toFixed?report.hoot.total.toFixed(1):report.hoot.total}/100`,140,y-2);
+          y+=2; y=sep(y);
         }
-        y += 2; y = sep(y);
+
+        // ══ CODING ASSESSMENT ══
+        if(report.codingLevel||report.codingScore){
+          y=sec('CODING ASSESSMENT & BADGE TEST',y);
+          doc.setTextColor(...D);doc.setFontSize(6.5);doc.setFont('helvetica','bold');
+          doc.text(`Level: ${report.codingLevel||'—'}`,10,y);doc.text(`Score: ${report.codingScore||'—'}/100`,55,y);
+          doc.text(`Badge: ${report.badge_test_pct||0}% (${report.badge_test_status||'—'})`,100,y);y+=5;y=sep(y);
+        }
 
         // ══ ATTENDANCE ══
-        y = sec(`ATTENDANCE — Overall: ${report.overallAttendance}% (${report.totalPresent}/${report.totalSessions})`, y);
-        const ac2 = 4, aw = (w - 20 - (ac2-1)*2) / ac2;
-        report.attendance.forEach((a, i) => {
-          const col = i % ac2, row = Math.floor(i / ac2), ax = 10 + col*(aw+2), ay = y + row*11;
-          doc.setFillColor(...LBG); doc.roundedRect(ax, ay, aw, 9, 1, 1, 'F');
-          doc.setTextColor(...DRK); doc.setFontSize(6); doc.setFont('helvetica','bold');
-          doc.text(a.tech.length > 18 ? a.tech.substring(0,18)+'..' : a.tech, ax+2, ay+3.5);
-          const pc = parseFloat(a.pct) >= 75 ? [34,197,94] : [239,68,68];
-          doc.setTextColor(...pc); doc.setFontSize(7); doc.text(`${a.pct}%`, ax+aw-2, ay+3.5, {align:'right'});
-          dBar(ax+2, ay+5.5, aw-4, parseFloat(a.pct), pc);
-          doc.setTextColor(...GRY); doc.setFontSize(4.5); doc.text(`P:${a.present} A:${a.absent} T:${a.total}`, ax+2, ay+8.5);
-        });
-        y += Math.ceil(report.attendance.length / ac2) * 11 + 2; y = sep(y);
+        if(report.attendance?.length>0){
+          y=sec(`ATTENDANCE — Overall: ${report.overallAttendance}% (${report.totalPresent}/${report.totalSessions})`,y);
+          const ac2=4,aw=(w-20-(ac2-1)*2)/ac2;
+          report.attendance.forEach((a,i)=>{const col=i%ac2,row=Math.floor(i/ac2),ax=10+col*(aw+2),ay=y+row*9;doc.setFillColor(...L);doc.roundedRect(ax,ay,aw,7.5,1,1,'F');doc.setTextColor(...D);doc.setFontSize(5);doc.setFont('helvetica','bold');doc.text(a.tech.length>16?a.tech.substring(0,16)+'..':a.tech,ax+1.5,ay+3);const pc=parseFloat(a.pct)>=75?[34,197,94]:[239,68,68];doc.setTextColor(...pc);doc.setFontSize(6);doc.text(`${a.pct}%`,ax+aw-1.5,ay+3,{align:'right'});bar(ax+1.5,ay+4.5,aw-3,parseFloat(a.pct),pc)});
+          y+=Math.ceil(report.attendance.length/ac2)*9+2;y=sep(y);
+        }
 
         // ══ CERTIFICATIONS ══
-        y = sec(`CERTIFICATIONS — Global:${report.certCounts.global} Training:${report.certCounts.training} Badges:${report.certCounts.badges} Internship:${report.certCounts.internship}`, y);
-        if (report.globalCerts.length > 0) {
-          doc.setTextColor(...DRK); doc.setFontSize(6.5); doc.setFont('helvetica','normal');
-          report.globalCerts.forEach((c, i) => { doc.text(`${i+1}. ${c}`, 14, y); y += 4; });
-        } else { doc.setTextColor(...GRY); doc.setFontSize(6.5); doc.text('No certifications recorded', 14, y); y += 4; }
-        y += 2; y = sep(y);
+        y=sec(`CERTIFICATIONS — G:${report.certCounts?.global||0} T:${report.certCounts?.training||0} B:${report.certCounts?.badges||0} I:${report.certCounts?.internship||0}`,y);
+        if(report.globalCerts?.length>0){doc.setTextColor(...D);doc.setFontSize(5.5);doc.setFont('helvetica','normal');report.globalCerts.forEach((c,i)=>{doc.text(`${i+1}. ${c}`,14,y);y+=3.5})}else{doc.setTextColor(...G);doc.setFontSize(5.5);doc.text('No certifications',14,y);y+=3.5}
+        y+=1; y=sep(y);
 
         // ══ APTITUDE ══
-        if (report.aptMandatory) {
-          y = sec(`APTITUDE — ${report.aptMandatory.pct}% (${report.aptMandatory.attempts}/${report.aptMandatory.total} attempts)`, y);
-          doc.setTextColor(...DRK); doc.setFontSize(6.5); doc.setFont('helvetica','normal');
-          doc.text(`Easy:${report.aptMandatory.easy} Medium:${report.aptMandatory.medium} Hard:${report.aptMandatory.hard} | Aptitude:${report.aptMandatory.aptitude} Reasoning:${report.aptMandatory.reasoning} Verbal:${report.aptMandatory.verbal}`, 14, y);
-          y += 5; y = sep(y);
-        }
+        if(report.aptMandatory){y=sec(`APTITUDE — ${report.aptMandatory.pct}%`,y);doc.setTextColor(...D);doc.setFontSize(5.5);doc.setFont('helvetica','normal');doc.text(`E:${report.aptMandatory.easy} M:${report.aptMandatory.medium} H:${report.aptMandatory.hard} | Apt:${report.aptMandatory.aptitude} Reas:${report.aptMandatory.reasoning} Verb:${report.aptMandatory.verbal}`,14,y);y+=4;y=sep(y)}
 
-        // ══ COURSES ══
-        y = sec(`ENROLLED COURSES (${report.courses.length})`, y);
-        if (report.courses.length > 0) {
-          doc.setTextColor(...DRK); doc.setFontSize(6); doc.setFont('helvetica','normal');
-          const cl = doc.splitTextToSize(report.courses.join(' · '), w - 24);
-          doc.text(cl, 14, y); y += cl.length * 3.5;
-        }
-        y += 2;
-
-        // ══ SEMESTERS ══
-        if (report.semesters.length > 0) {
-          doc.setTextColor(...GRY); doc.setFontSize(6);
-          doc.text(`Semesters: ${report.semesters.map((s2, i) => `S${i+1}:${s2}`).join(' · ')}`, 14, y); y += 4;
-        }
-
-        // ══ PAYMENTS ══
-        doc.setTextColor(...GRY); doc.setFontSize(6);
-        doc.text(`Payments: ${report.payments.map((p, i) => `T${i+1}:${p || 'Pending'}`).join('  ')}`, 14, y); y += 4;
-
-        // ══ STATUS ══
-        doc.text(`Violations: ${report.violations} | Placement: ${report.placement}`, 14, y); y += 6;
+        // ══ COURSES + PAYMENTS + STATUS ══
+        y=sec(`COURSES (${report.courses?.length||0}) · PAYMENTS · STATUS`,y);
+        if(report.courses?.length>0){doc.setTextColor(...D);doc.setFontSize(5);doc.setFont('helvetica','normal');const cl=doc.splitTextToSize(report.courses.join(' · '),w-24);doc.text(cl,14,y);y+=cl.length*3}
+        y+=1;
+        doc.setTextColor(...G);doc.setFontSize(5.5);
+        if(report.semesters?.length>0)doc.text(`Semesters: ${report.semesters.map((s2,i)=>`S${i+1}:${s2}`).join(' · ')}`,14,y);y+=3;
+        doc.text(`Payments: ${(report.payments||[]).map((p,i)=>`T${i+1}:${p||'Pending'}`).join('  ')}`,14,y);y+=3;
+        doc.text(`Violations: ${report.violations||0} | Placement: ${report.placement||'Not yet placed'}`,14,y);y+=4;
 
         // Footer
-        doc.setFillColor(...BLK); doc.rect(0, h-10, w, 10, 'F');
-        doc.setFillColor(...RED); doc.rect(0, h-10, w, 1.5, 'F');
-        doc.setTextColor(...WHT); doc.setFontSize(6); doc.setFont('helvetica','normal');
-        doc.text('Project Space · Technical Hub · Aditya University', 10, h-4);
-        doc.text('projectspace.technicalhub.io', w-10, h-4, {align:'right'});
+        doc.setFillColor(...B);doc.rect(0,h-8,w,8,'F');doc.setFillColor(...R);doc.rect(0,h-8,w,1,'F');
+        doc.setTextColor(...W);doc.setFontSize(5.5);doc.setFont('helvetica','normal');
+        doc.text('Project Space · Technical Hub · Aditya University',10,h-3);
+        doc.text('projectspace.technicalhub.io',w-10,h-3,{align:'right'});
         doc.save(`Report_Card_${report.roll_number}.pdf`);
-      } catch(err) { console.error(err); alert('Failed to generate PDF.'); }
-      finally { setGen(false); }
+      } catch(err){console.error(err);alert('Failed to generate PDF.')} finally{setGen(false)}
     };
 
-    // ═══ REPORT CARD UI (matching HTML report design) ═══
-    const Sec = ({color, icon, children}) => <div style={{fontSize:'9px',fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color,marginBottom:6,marginTop:16,display:'flex',alignItems:'center',gap:5}}>{icon}{children}<span style={{flex:1,height:1,background:'linear-gradient(90deg,rgba(255,255,255,.05),transparent)'}}/></div>;
-    const InfoItem = ({label, value, bold}) => <div><div style={{fontSize:'8px',fontWeight:600,textTransform:'uppercase',letterSpacing:'.05em',color:'rgba(255,255,255,.25)',marginBottom:1}}>{label}</div><div style={{fontSize:'12px',fontWeight:bold?700:500,color:bold?'#fff':'rgba(255,255,255,.8)'}}>{value||'—'}</div></div>;
-    const StatBox = ({val, label, color}) => <div style={{textAlign:'center',padding:'8px 4px',borderRadius:8,background:'rgba(255,255,255,.02)',border:'1px solid rgba(255,255,255,.06)'}}><div style={{fontSize:'16px',fontWeight:800,color}}>{val}</div><div style={{fontSize:'8px',fontWeight:600,color:'rgba(255,255,255,.25)',textTransform:'uppercase',marginTop:1}}>{label}</div></div>;
-    const ProgBar = ({label, val, max, color}) => <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:5}}><div style={{fontSize:'10px',fontWeight:500,color:'rgba(255,255,255,.4)',width:70,flexShrink:0}}>{label}</div><div style={{flex:1,height:5,borderRadius:3,background:'rgba(255,255,255,.04)',overflow:'hidden'}}><div style={{height:'100%',borderRadius:3,background:color,width:`${(val/max)*100}%`}}/></div><div style={{fontSize:'10px',fontWeight:700,width:36,textAlign:'right',color}}>{val}{max===100?'%':'/'+max}</div></div>;
+    // ═══ UI COMPONENTS ═══
+    const Sec=({color,children})=><div style={{fontSize:'9px',fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color,marginBottom:6,marginTop:16,display:'flex',alignItems:'center',gap:5}}>{children}<span style={{flex:1,height:1,background:'linear-gradient(90deg,rgba(255,255,255,.05),transparent)'}}/></div>;
+    const Info=({l,v,bold})=><div><div style={{fontSize:'8px',fontWeight:600,textTransform:'uppercase',letterSpacing:'.05em',color:'rgba(255,255,255,.25)',marginBottom:1}}>{l}</div><div style={{fontSize:'12px',fontWeight:bold?700:500,color:bold?'#fff':'rgba(255,255,255,.8)'}}>{v||'—'}</div></div>;
+    const Stat=({v,l,c})=><div style={{textAlign:'center',padding:'8px 4px',borderRadius:8,background:'rgba(255,255,255,.02)',border:'1px solid rgba(255,255,255,.06)'}}><div style={{fontSize:'15px',fontWeight:800,color:c}}>{v}</div><div style={{fontSize:'7px',fontWeight:600,color:'rgba(255,255,255,.25)',textTransform:'uppercase',marginTop:1}}>{l}</div></div>;
+    const Prog=({l,v,c})=><div style={{display:'flex',alignItems:'center',gap:8,marginBottom:5}}><div style={{fontSize:'10px',fontWeight:500,color:'rgba(255,255,255,.4)',width:70,flexShrink:0}}>{l}</div><div style={{flex:1,height:5,borderRadius:3,background:'rgba(255,255,255,.04)',overflow:'hidden'}}><div style={{height:'100%',borderRadius:3,background:c,width:`${v||0}%`}}/></div><div style={{fontSize:'10px',fontWeight:700,width:40,textAlign:'right',color:c}}>{v?.toFixed?v.toFixed(1):v}%</div></div>;
+    const Star=({n,max=5,c})=><span style={{display:'inline-flex',gap:1}}>{Array.from({length:max},(_,i)=><span key={i} style={{color:i<n?c:'rgba(255,255,255,.1)',fontSize:13}}>★</span>)}</span>;
 
     return (
       <div style={{maxWidth:820,margin:'0 auto'}}>
@@ -317,69 +285,132 @@ export default function AdminDashboard() {
         {report && <>
           <div style={{background:'rgba(13,10,20,.9)',border:'1px solid rgba(255,255,255,.06)',borderRadius:14,overflow:'hidden'}}>
             {/* Header */}
-            <div style={{background:'linear-gradient(135deg,#0f0a18,#1a0e28)',padding:'16px 22px',display:'flex',alignItems:'center',justifyContent:'space-between',borderBottom:'1px solid rgba(255,255,255,.06)'}}>
+            <div style={{background:'linear-gradient(135deg,#0f0a18,#1a0e28)',padding:'14px 22px',display:'flex',alignItems:'center',justifyContent:'space-between',borderBottom:'1px solid rgba(255,255,255,.06)'}}>
               <div style={{display:'flex',alignItems:'center',gap:12}}>
-                <div style={{width:40,height:40,borderRadius:9,background:'linear-gradient(135deg,#fd1c00,#c41600)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'14px',fontWeight:800,color:'#fff'}}>PS</div>
-                <div><div style={{fontSize:'16px',fontWeight:700,color:'#fff'}}>Student Report Card</div><div style={{fontSize:'9px',color:'rgba(255,255,255,.35)',textTransform:'uppercase',letterSpacing:'.08em'}}>Project Space 2026 · Aditya University</div></div>
+                <div style={{width:38,height:38,borderRadius:9,background:'linear-gradient(135deg,#fd1c00,#c41600)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'13px',fontWeight:800,color:'#fff'}}>PS</div>
+                <div><div style={{fontSize:'15px',fontWeight:700,color:'#fff'}}>Student Report Card</div><div style={{fontSize:'8px',color:'rgba(255,255,255,.35)',textTransform:'uppercase',letterSpacing:'.08em'}}>Project Space 2026 · Aditya University</div></div>
               </div>
               <div style={{textAlign:'right'}}><div style={{fontSize:'12px',fontWeight:700,color:'#EEA727'}}>{report.college}</div><div style={{fontSize:'10px',color:'rgba(255,255,255,.35)'}}>{report.branch} · {report.technology}</div></div>
             </div>
 
             {/* Body */}
-            <div style={{padding:'14px 20px'}}>
-              <Sec color="#3b82f6" icon={IC.users}>Personal Information</Sec>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:'6px 10px'}}>
-                <InfoItem label="Name" value={report.name} bold/><InfoItem label="Roll Number" value={report.roll_number}/><InfoItem label="Gender" value={report.gender}/><InfoItem label="Mobile" value={report.mobile}/>
-                <InfoItem label="Pool" value={report.pool}/><InfoItem label="Seat Type" value={report.seat_type}/><InfoItem label="Scholar" value={report.scholar_type}/><InfoItem label="Town" value={report.town}/>
+            <div style={{padding:'10px 20px 16px'}}>
+
+              {/* ── PERSONAL INFO ── */}
+              <Sec color="#3b82f6">Personal Information</Sec>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:'5px 10px'}}>
+                <Info l="Name" v={report.name} bold/><Info l="Roll Number" v={report.roll_number}/><Info l="Gender" v={report.gender}/><Info l="Mobile" v={report.mobile}/>
+                <Info l="Pool" v={report.pool}/><Info l="Seat Type" v={report.seat_type}/><Info l="Scholar" v={report.scholar_type}/><Info l="Town" v={report.town}/>
               </div>
 
-              <Sec color="#EEA727" icon={IC.layers}>Academic Performance</Sec>
-              <div style={{display:'grid',gridTemplateColumns:'repeat(6,1fr)',gap:6}}>
-                <StatBox val={report.ssc ? `${report.ssc}%` : '—'} label="SSC" color="#EEA727"/>
-                <StatBox val={report.inter ? `${report.inter}%` : '—'} label="Inter" color="#EEA727"/>
-                <StatBox val={report.btech_pct ? `${report.btech_pct}%` : '—'} label="B.Tech" color="#3b82f6"/>
-                <StatBox val={report.btech || '—'} label="CGPA" color="#7B2FBE"/>
-                <StatBox val={report.backlogs || '0'} label="Backlogs" color={report.backlogs > 0 ? '#fd1c00' : '#10b981'}/>
-                <StatBox val={`${report.overallAttendance}%`} label="Attendance" color="#10b981"/>
+              {/* ── ACADEMICS ── */}
+              <Sec color="#EEA727">Academic Performance</Sec>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:5}}>
+                <Stat v={report.ssc?`${report.ssc}%`:'—'} l="SSC" c="#EEA727"/>
+                <Stat v={report.inter?`${report.inter}%`:'—'} l="Inter" c="#EEA727"/>
+                <Stat v={report.btech_pct?`${report.btech_pct}%`:'—'} l="B.Tech" c="#3b82f6"/>
+                <Stat v={report.btech||'—'} l="CGPA" c="#7B2FBE"/>
+                <Stat v={report.backlogs||'0'} l="Backlogs" c={report.backlogs>0?'#fd1c00':'#10b981'}/>
+                <Stat v={`${report.overallAttendance||0}%`} l="Attend." c="#10b981"/>
+                <Stat v={`${report.badge_test_pct||0}%`} l="Badge" c={report.badge_test_status==='Pass'?'#10b981':'#EEA727'}/>
               </div>
 
-              <Sec color="#06b6d4" icon={IC.layers}>Coding Profiles</Sec>
-              <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:6}}>
-                <StatBox val={report.leetcode?.total || '—'} label="LeetCode" color="#ffa116"/>
-                <StatBox val={report.gfg?.total || '—'} label="GFG" color="#2f8d46"/>
-                <StatBox val={report.codechef?.total || '—'} label="CodeChef" color="#5b4638"/>
-                <StatBox val={report.hackerrank ? `${report.hackerrank.stars}★` : '—'} label="HackerRank" color="#00ea64"/>
-                <StatBox val={report.mayaCoding?.score || '—'} label="Maya" color="#06b6d4"/>
+              {/* ── CODING PROFILES ── */}
+              <Sec color="#06b6d4">Coding Profiles</Sec>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:5}}>
+                <Stat v={report.leetcode?.total||'—'} l="LeetCode" c="#ffa116"/>
+                <Stat v={report.gfg?.total||'—'} l="GFG" c="#2f8d46"/>
+                <Stat v={report.codechef?.total||'—'} l="CodeChef" c="#5b4638"/>
+                <Stat v={report.hackerrank?`${report.hackerrank.stars}★`:'—'} l="HackerRank" c="#00ea64"/>
+                <Stat v={report.mayaCoding?.score||'—'} l="Maya" c="#06b6d4"/>
+              </div>
+              {/* Coding details */}
+              {report.leetcode&&<div style={{fontSize:'9px',color:'rgba(255,255,255,.35)',marginTop:4}}>LeetCode: E:{report.leetcode.easy} M:{report.leetcode.medium} H:{report.leetcode.hard} · Rank #{report.leetcode.rank} · Streak {report.leetcode.streak}d</div>}
+              {report.mayaCoding&&<div style={{fontSize:'9px',color:'rgba(255,255,255,.35)',marginTop:2}}>Maya: Global #{report.mayaCoding.globalRank} · Batch #{report.mayaCoding.batchRank} · E:{report.mayaCoding.easy} M:{report.mayaCoding.medium} H:{report.mayaCoding.hard}</div>}
+
+              {/* ── HOOT ASSESSMENT ── */}
+              {report.hoot && <>
+                <Sec color="#EEA727">HOOT — Communication Assessment</Sec>
+                <Prog l="Listening" v={report.hoot.listening} c="#EEA727"/>
+                <Prog l="Speaking" v={report.hoot.speaking} c="#fd1c00"/>
+                <Prog l="Reading" v={report.hoot.reading} c="#10b981"/>
+                <Prog l="Writing" v={report.hoot.writing} c="#7B2FBE"/>
+                <div style={{display:'flex',justifyContent:'flex-end',marginTop:4}}>
+                  <div style={{background:'rgba(238,167,39,.08)',border:'1px solid rgba(238,167,39,.2)',borderRadius:6,padding:'2px 10px'}}>
+                    <span style={{fontSize:'13px',fontWeight:800,color:'#EEA727'}}>{report.hoot.total?.toFixed?report.hoot.total.toFixed(1):report.hoot.total}<span style={{fontSize:'9px',fontWeight:400,marginLeft:2}}>/100</span></span>
+                  </div>
+                </div>
+              </>}
+
+              {/* ── CODING ASSESSMENT + BADGE TEST ── */}
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginTop:14}}>
+                <div>
+                  <Sec color="#10b981">Coding Assessment</Sec>
+                  <div style={{display:'flex',alignItems:'center',gap:10,padding:'9px 14px',borderRadius:9,background:'rgba(255,255,255,.02)',border:'1px solid rgba(255,255,255,.06)'}}>
+                    <span style={{fontSize:20}}>{report.codingLevel==='Advanced'?'🏆':'📝'}</span>
+                    <div><div style={{fontSize:'13px',fontWeight:700,color:report.codingLevel==='Advanced'?'#10b981':'#EEA727'}}>{report.codingLevel||'—'}</div><div style={{fontSize:'9px',color:'rgba(255,255,255,.35)'}}>Score: {report.codingScore||'—'}/100</div></div>
+                  </div>
+                </div>
+                <div>
+                  <Sec color="#7B2FBE">Badge Test</Sec>
+                  <div style={{display:'flex',alignItems:'center',gap:10,padding:'9px 14px',borderRadius:9,background:'rgba(255,255,255,.02)',border:'1px solid rgba(255,255,255,.06)'}}>
+                    <span style={{fontSize:20}}>{report.badge_test_status==='Pass'||report.badge_test_status==='Cleared'?'🎖️':'📋'}</span>
+                    <div><div style={{fontSize:'13px',fontWeight:700,color:report.badge_test_status==='Pass'||report.badge_test_status==='Cleared'?'#10b981':'#EEA727'}}>{report.badge_test_status||'—'}</div><div style={{fontSize:'9px',color:'rgba(255,255,255,.35)'}}>Level-1: {report.badge_test_pct||0}%</div></div>
+                  </div>
+                </div>
               </div>
 
-              <Sec color="#10b981" icon={IC.file}>Certifications ({report.certCounts?.global || 0})</Sec>
+              {/* ── CERTIFICATIONS ── */}
+              <Sec color="#10b981">Certifications (G:{report.certCounts?.global||0} · T:{report.certCounts?.training||0} · B:{report.certCounts?.badges||0} · I:{report.certCounts?.internship||0})</Sec>
               <div style={{display:'flex',flexWrap:'wrap',gap:3}}>
-                {report.globalCerts?.length > 0 ? report.globalCerts.map((c,i)=><span key={i} style={{fontSize:'9px',fontWeight:500,color:'rgba(255,255,255,.4)',background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.06)',padding:'2px 7px',borderRadius:4}}>{c}</span>) : <span style={{fontSize:'10px',color:'rgba(255,255,255,.25)'}}>No certifications</span>}
+                {report.globalCerts?.length>0?report.globalCerts.map((c,i)=><span key={i} style={{fontSize:'9px',fontWeight:500,color:'rgba(255,255,255,.4)',background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.06)',padding:'2px 7px',borderRadius:4}}>{c}</span>):<span style={{fontSize:'10px',color:'rgba(255,255,255,.2)'}}>No certifications recorded</span>}
               </div>
 
-              <Sec color="#7B2FBE" icon={IC.layers}>Courses & Attendance</Sec>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:6}}>
-                <StatBox val={report.courses?.length || 0} label="Courses" color="#7B2FBE"/>
-                <StatBox val={`${report.overallAttendance}%`} label="T-Hub Att." color="#10b981"/>
-                <StatBox val={report.badge_test_pct ? `${report.badge_test_pct}%` : '—'} label="Badge Test" color={report.badge_test_status === 'Pass' ? '#10b981' : '#EEA727'}/>
+              {/* ── APTITUDE ── */}
+              {report.aptMandatory&&<>
+                <Sec color="#3b82f6">Aptitude ({report.aptMandatory.pct}% · {report.aptMandatory.attempts}/{report.aptMandatory.total} attempts)</Sec>
+                <div style={{display:'grid',gridTemplateColumns:'repeat(6,1fr)',gap:5}}>
+                  <Stat v={report.aptMandatory.easy} l="Easy" c="#10b981"/>
+                  <Stat v={report.aptMandatory.medium} l="Medium" c="#EEA727"/>
+                  <Stat v={report.aptMandatory.hard} l="Hard" c="#fd1c00"/>
+                  <Stat v={report.aptMandatory.aptitude} l="Aptitude" c="#3b82f6"/>
+                  <Stat v={report.aptMandatory.reasoning} l="Reasoning" c="#7B2FBE"/>
+                  <Stat v={report.aptMandatory.verbal} l="Verbal" c="#06b6d4"/>
+                </div>
+              </>}
+
+              {/* ── COURSES ── */}
+              <Sec color="#7B2FBE">Courses & T-Hub ({report.courses?.length||0})</Sec>
+              <div style={{display:'flex',flexWrap:'wrap',gap:3}}>
+                {report.courses?.length>0?report.courses.map((c,i)=><span key={i} style={{fontSize:'9px',fontWeight:500,color:'rgba(255,255,255,.4)',background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.06)',padding:'2px 7px',borderRadius:4}}>{c}</span>):<span style={{fontSize:'10px',color:'rgba(255,255,255,.2)'}}>No courses</span>}
               </div>
 
-              <Sec color="#10b981" icon={IC.dl}>Payment Status</Sec>
-              <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:6}}>
-                {(report.payments || []).map((p, i) => {
-                  const paid = (p||'').toLowerCase() === 'paid';
-                  return <div key={i} style={{textAlign:'center',padding:'6px 4px',borderRadius:7,border:'1px solid',borderColor:paid?'rgba(16,185,129,.2)':'rgba(253,28,0,.12)',background:paid?'rgba(16,185,129,.06)':'rgba(253,28,0,.04)'}}><div style={{fontSize:'8px',fontWeight:600,color:'rgba(255,255,255,.25)',textTransform:'uppercase'}}>Term {i+1}</div><div style={{fontSize:'10px',fontWeight:700,marginTop:1,color:paid?'#10b981':'#fd1c00'}}>{paid?'✓ Paid':'Pending'}</div></div>
-                })}
+              {/* ── PAYMENT STATUS ── */}
+              <Sec color="#10b981">Payment Status</Sec>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:5}}>
+                {(report.payments||[]).map((p,i)=>{const pd=(p||'').toLowerCase()==='paid';return<div key={i} style={{textAlign:'center',padding:'6px 4px',borderRadius:7,border:'1px solid',borderColor:pd?'rgba(16,185,129,.2)':'rgba(253,28,0,.12)',background:pd?'rgba(16,185,129,.06)':'rgba(253,28,0,.04)'}}><div style={{fontSize:'7px',fontWeight:600,color:'rgba(255,255,255,.25)',textTransform:'uppercase'}}>Term {i+1}</div><div style={{fontSize:'10px',fontWeight:700,marginTop:1,color:pd?'#10b981':'#fd1c00'}}>{pd?'✓ Paid':'Pending'}</div></div>})}
               </div>
 
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginTop:16}}>
-                <div><Sec color="#fd1c00" icon={IC.bolt}>Placement</Sec><div style={{padding:'10px 14px',borderRadius:9,background:'rgba(255,255,255,.02)',border:'1px solid rgba(255,255,255,.06)'}}><div style={{fontSize:'14px',fontWeight:700,color:report.placement && report.placement !== 'Not yet placed' ? '#10b981' : 'rgba(255,255,255,.35)'}}>{report.placement || 'Not yet placed'}</div></div></div>
-                <div><Sec color="#EEA727" icon={IC.users}>Status</Sec><div style={{padding:'10px 14px',borderRadius:9,background:'rgba(255,255,255,.02)',border:'1px solid rgba(255,255,255,.06)'}}><div style={{fontSize:'10px',color:'rgba(255,255,255,.35)'}}>Violations: <span style={{fontWeight:700,color:report.violations > 0 ? '#fd1c00' : '#10b981'}}>{report.violations || 0}</span></div></div></div>
+              {/* ── PLACEMENT + VIOLATIONS ── */}
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginTop:14}}>
+                <div>
+                  <Sec color="#fd1c00">Placement</Sec>
+                  <div style={{padding:'10px 14px',borderRadius:9,background:'rgba(255,255,255,.02)',border:'1px solid rgba(255,255,255,.06)'}}>
+                    <div style={{fontSize:'13px',fontWeight:700,color:report.placement&&report.placement!=='Not yet placed'?'#10b981':'rgba(255,255,255,.3)'}}>{report.placement||'Not yet placed'}</div>
+                  </div>
+                </div>
+                <div>
+                  <Sec color="#EEA727">Status</Sec>
+                  <div style={{padding:'10px 14px',borderRadius:9,background:'rgba(255,255,255,.02)',border:'1px solid rgba(255,255,255,.06)'}}>
+                    <div style={{fontSize:'10px',color:'rgba(255,255,255,.35)'}}>Violations: <span style={{fontWeight:700,color:report.violations>0?'#fd1c00':'#10b981'}}>{report.violations||0}</span></div>
+                    {report.semesters?.length>0&&<div style={{fontSize:'9px',color:'rgba(255,255,255,.25)',marginTop:4}}>Semesters: {report.semesters.map((s2,i)=>`S${i+1}:${s2}`).join(' · ')}</div>}
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Footer */}
-            <div style={{padding:'10px 20px',borderTop:'1px solid rgba(255,255,255,.06)',display:'flex',justifyContent:'space-between',fontSize:'9px',color:'rgba(255,255,255,.25)'}}>
+            <div style={{padding:'8px 20px',borderTop:'1px solid rgba(255,255,255,.06)',display:'flex',justifyContent:'space-between',fontSize:'8px',color:'rgba(255,255,255,.2)'}}>
               <span>Technical Hub · Aditya University — ACET · AEC · ACOE</span>
               <span style={{fontWeight:600}}>Generated: {new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</span>
             </div>
@@ -394,7 +425,6 @@ export default function AdminDashboard() {
       </div>
     );
   }
-
   // ═══ DASHBOARD ═══
   if (!mounted) return null
   const s = data?.stats || {}
