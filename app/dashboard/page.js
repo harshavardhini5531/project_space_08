@@ -962,9 +962,9 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
 @keyframes fbFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 .mp-hero-info{flex:1;display:flex;flex-wrap:wrap;align-items:center;gap:12px;}
 .mp-hero-left{flex:1;min-width:200px;}
-.mp-hero-right{display:flex;flex-direction:column;gap:6px;flex-shrink:0;}
+.mp-hero-right{display:flex;gap:8px;flex-shrink:0;}
 .mp-hero-name{font-size:1.14rem;font-weight:800;color:#fff;margin-bottom:0;padding-bottom:0;line-height:1.2;font-family:'Astro',sans-serif;letter-spacing:1.5px;text-transform:uppercase;}
-.mp-hero-roll{font-size:.72rem;color:#000;font-weight:700;display:flex;align-items:center;gap:6px;margin-bottom:6px;margin-top:3px;line-height:1;}
+.mp-hero-roll{font-size:.72rem;color:#000;font-weight:700;display:flex;align-items:center;gap:6px;margin-bottom:16px;margin-top:3px;line-height:1;}
 .mp-hero-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:0;padding-bottom:0;}
 .mp-badge{padding:4px 10px;border-radius:14px;font-size:.55rem;font-weight:700;letter-spacing:.5px;display:inline-flex;align-items:center;gap:4px;transition:transform .2s;}
 .mp-hero-details{display:flex;flex-direction:column;gap:6px;}
