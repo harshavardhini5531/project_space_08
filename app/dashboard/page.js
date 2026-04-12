@@ -813,8 +813,8 @@ function ProjectStatus({ user }) {
   const [psUnread, setPsUnread] = useState(0);
   const psToastTimer = useRef(null);
 
-  const teamNumber = user?.teamNumber;
-  const rollNumber = user?.rollNumber;
+  const teamNumber = user?.teamNumber || user?.team_number || user?.team_number;
+  const rollNumber = user?.rollNumber || user?.roll_number || user?.roll_number;
 
   const fetchStatus = useCallback(async () => {
     if (!teamNumber) return;
@@ -883,8 +883,9 @@ function ProjectStatus({ user }) {
   function getStatus(stage, idx) {
     if (stage.status === 'completed') return 'completed';
     if (stage.status === 'in-review') return 'active';
-    if (stage.actionable || idx === 0) return 'ready';
-    if (idx > 0 && stages[idx - 1]?.status === 'completed') return 'ready';
+    if (stage.status === 'pending' && idx === 0) return 'ready';
+    if (stage.status === 'pending' && idx > 0 && stages[idx - 1]?.status === 'completed') return 'ready';
+    if (stage.actionable) return 'ready';
     return 'disabled';
   }
 
@@ -1011,12 +1012,12 @@ function ProjectStatus({ user }) {
 .ps-reject-msg{margin-top:8px;padding:8px 12px;border-radius:8px;background:rgba(253,28,0,.04);border:1px solid rgba(253,28,0,.1);font-size:11px;color:#ff6040}
 
 /* Toast */
-.ps-toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(80px);background:#13101a;border:1px solid rgba(255,29,0,.25);color:#fff;font-size:13px;font-weight:500;padding:12px 24px;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.4);display:flex;align-items:center;gap:10px;z-index:200;opacity:0;transition:all .5s cubic-bezier(.16,1,.3,1);pointer-events:none;backdrop-filter:blur(8px)}
+.ps-toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(80px);background:#13101a;border:1px solid rgba(255,29,0,.25);color:#fff;font-size:13px;font-weight:500;padding:12px 24px;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.4);display:flex;align-items:center;gap:10px;z-index:9999;opacity:0;transition:all .5s cubic-bezier(.16,1,.3,1);pointer-events:none;backdrop-filter:blur(8px)}
 .ps-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .ps-toast svg{width:18px;height:18px;fill:none;stroke-width:2;flex-shrink:0}
 
 /* Modal */
-.ps-modal-bg{position:fixed;inset:0;background:rgba(5,0,8,.88);display:flex;align-items:center;justify-content:center;z-index:200;backdrop-filter:blur(6px)}
+.ps-modal-bg{position:fixed;top:0;left:0;right:0;bottom:0;width:100vw;height:100vh;background:rgba(5,0,8,.88);display:flex;align-items:center;justify-content:center;z-index:9999;backdrop-filter:blur(6px)}
 .ps-modal{background:#13101a;border:1px solid rgba(255,29,0,.15);border-radius:20px;padding:32px;width:92%;max-width:420px;text-align:center;animation:psModIn .4s cubic-bezier(.16,1,.3,1);box-shadow:0 20px 80px rgba(0,0,0,.5)}
 @keyframes psModIn{from{opacity:0;transform:translateY(28px) scale(.92)}to{opacity:1;transform:translateY(0) scale(1)}}
 .ps-modal-icon{width:56px;height:56px;margin:0 auto 16px;border-radius:50%;background:rgba(255,29,0,.06);border:1px solid rgba(255,29,0,.15);display:flex;align-items:center;justify-content:center;animation:psModSpin .7s cubic-bezier(.34,1.56,.64,1)}
@@ -1297,7 +1298,7 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
 .topbar-credits{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:10px;background:linear-gradient(135deg,rgba(255,29,0,.08),rgba(253,28,0,.04));border:1px solid rgba(255,29,0,.15);font-size:.74rem;font-weight:600;color:#ff1d00;cursor:pointer;transition:all .2s;}
 .topbar-credits span{font-weight:800;font-size:.82rem;color:#fff;}
 .topbar-credits:hover{background:linear-gradient(135deg,rgba(250,160,0,.12),rgba(253,28,0,.06));border-color:rgba(250,160,0,.25);}
-.main-content{flex:1;overflow-y:auto;padding:28px 32px;}
+.main-content{flex:1;overflow-y:auto;padding:28px 32px;position:relative;}
 .main-content::-webkit-scrollbar{width:4px}.main-content::-webkit-scrollbar-thumb{background:rgba(253,28,0,.1);border-radius:4px;}
 
 .page-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:16px;}
