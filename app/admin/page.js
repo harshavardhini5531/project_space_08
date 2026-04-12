@@ -162,255 +162,315 @@ export default function AdminDashboard() {
       try { const r = await fetch('/api/admin/report-card', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rollNumber: roll.trim().toUpperCase() }) }); const d = await r.json(); if (d.error) setRcE(d.error); else if (d.report) setReport(d.report); } catch { setRcE('Failed to fetch data'); } finally { setRcL(false); }
     };
 
+    // ═══════════════════════════════════════════
+    // PDF GENERATION — fits everything on 1 page
+    // ═══════════════════════════════════════════
     const downloadPDF = async () => {
       if (!report) return; setGen(true);
       try {
         const { default: jsPDF } = await import('jspdf');
-        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const doc = new jsPDF('portrait', 'mm', 'a4');
         const w = 210, h = 297; let y = 0;
-        const R=[253,28,0],B=[0,0,0],W=[255,255,255],G=[120,120,120],D=[30,30,30],L=[245,245,245];
+        const R=[253,28,0],K=[0,0,0],W=[255,255,255],G=[130,130,130],D=[35,35,35],L=[246,246,246];
+        const c3=(hex)=>{const h=hex.replace('#','');return [parseInt(h.substring(0,2),16),parseInt(h.substring(2,4),16),parseInt(h.substring(4,6),16)]};
 
-        // Header
-        doc.setFillColor(...R); doc.rect(0,0,w,24,'F');
-        doc.setFillColor(...B); doc.rect(0,20,w,4,'F');
-        doc.setTextColor(...W); doc.setFontSize(14); doc.setFont('helvetica','bold'); doc.text('PROJECT SPACE',10,10);
-        doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.text('STUDENT REPORT CARD',10,15);
-        doc.text(`Generated: ${new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}`,w-10,10,{align:'right'});
-        doc.text('Technical Hub · Aditya University',w-10,15,{align:'right'});
-        y = 27;
+        // ── HEADER ──
+        doc.setFillColor(...R); doc.rect(0,0,w,20,'F');
+        doc.setFillColor(...K); doc.rect(0,17,w,3,'F');
+        doc.setTextColor(...W); doc.setFontSize(13); doc.setFont('helvetica','bold'); doc.text('PROJECT SPACE — STUDENT REPORT CARD',10,9);
+        doc.setFontSize(6); doc.setFont('helvetica','normal');
+        doc.text(`${report.college} · ${report.branch} · ${report.technology}`,10,14);
+        doc.text(`Generated: ${new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})} · Technical Hub · Aditya University`,w-10,9,{align:'right'});
+        doc.text('projectspace.technicalhub.io',w-10,14,{align:'right'});
+        y = 23;
 
-        const sec = (t,yp) => { doc.setFillColor(253,28,0); doc.rect(10,yp,1.5,4,'F'); doc.setTextColor(...D); doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.text(t,14,yp+3); return yp+6; };
-        const lv = (l,v,x,yp,lw=20) => { doc.setTextColor(...G); doc.setFontSize(5.5); doc.setFont('helvetica','normal'); doc.text(l,x,yp); doc.setTextColor(...D); doc.setFontSize(6.5); doc.setFont('helvetica','bold'); doc.text(String(v||'—'),x+lw,yp); };
-        const sep = yp => { doc.setDrawColor(230,230,230); doc.line(10,yp,w-10,yp); return yp+2; };
-        const box = (x,yp,bw,lb,vl) => { doc.setFillColor(...L); doc.roundedRect(x,yp,bw,8,1,1,'F'); doc.setTextColor(...G); doc.setFontSize(4.5); doc.setFont('helvetica','normal'); doc.text(lb,x+1.5,yp+3); doc.setTextColor(...D); doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.text(String(vl),x+1.5,yp+6.5); };
-        const bar = (x,yp,wd,pct,c) => { doc.setFillColor(230,230,230); doc.roundedRect(x,yp,wd,2,1,1,'F'); doc.setFillColor(...c); doc.roundedRect(x,yp,Math.max(0,(pct/100)*wd),2,1,1,'F'); };
+        // Helpers
+        const sec = (t,yp) => { doc.setFillColor(...R); doc.rect(10,yp,1.5,3.5,'F'); doc.setTextColor(...D); doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.text(t,13.5,yp+2.8); doc.setDrawColor(235,235,235); doc.line(13.5+doc.getTextWidth(t)+2,yp+1.8,w-10,yp+1.8); return yp+5.5; };
+        const lv = (l,v,x,yp) => { doc.setTextColor(...G); doc.setFontSize(5); doc.setFont('helvetica','normal'); doc.text(l,x,yp); doc.setTextColor(...D); doc.setFontSize(6); doc.setFont('helvetica','bold'); doc.text(String(v||'—'),x,yp+3.5); };
+        const box = (x,yp,bw,lb,vl,clr) => { doc.setFillColor(...L); doc.roundedRect(x,yp,bw,9,1,1,'F'); doc.setTextColor(...G); doc.setFontSize(4); doc.setFont('helvetica','normal'); doc.text(lb,x+bw/2,yp+3,{align:'center'}); doc.setTextColor(...(clr||D)); doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.text(String(vl),x+bw/2,yp+7.5,{align:'center'}); };
+        const bar = (x,yp,wd,pct,c) => { doc.setFillColor(235,235,235); doc.roundedRect(x,yp,wd,1.8,0.9,0.9,'F'); if(pct>0){doc.setFillColor(...c);doc.roundedRect(x,yp,Math.max(1,(pct/100)*wd),1.8,0.9,0.9,'F')} };
+        const sep = (yp) => { doc.setDrawColor(240,240,240); doc.line(10,yp,w-10,yp); return yp+1.5; };
 
-        // ══ PERSONAL INFO ══
+        // ── 1. PERSONAL INFO ──
         y = sec('PERSONAL INFORMATION', y);
-        lv('Name',report.name,10,y,14); lv('Roll',report.roll_number,65,y,12); lv('College',report.college,120,y,14); lv('Branch',report.branch,165,y,14); y+=4;
-        lv('Gender',report.gender,10,y,14); lv('Mobile',report.mobile,65,y,12); lv('Pool',report.pool,120,y,14); lv('Rank',report.rank?`#${report.rank}`:'—',165,y,14); y+=4;
-        lv('Seat',report.seat_type,10,y,14); lv('Scholar',report.scholar_type,65,y,12); lv('Town',report.town,120,y,14); lv('Tech',report.technology,165,y,14); y+=5;
+        const cols=[10,48,86,124,162];
+        lv('Name',report.name,cols[0],y); lv('Roll No',report.roll_number,cols[1],y); lv('Gender',report.gender,cols[2],y); lv('Mobile',report.mobile,cols[3],y); lv('DOB',report.dob||'—',cols[4],y); y+=7;
+        lv('Pool',report.pool,cols[0],y); lv('Seat',report.seat_type,cols[1],y); lv('Scholar',report.scholar_type,cols[2],y); lv('Town',report.town,cols[3],y); lv('Passout',report.passout_year||'—',cols[4],y); y+=7;
         y = sep(y);
 
-        // ══ ACADEMICS ══
+        // ── 2. ACADEMICS ──
         y = sec('ACADEMIC PERFORMANCE', y);
-        const bw2=24, bg2=2; const acadArr=[{l:'SSC',v:report.ssc?`${report.ssc}%`:'—'},{l:'Inter/Dip',v:report.inter?`${report.inter}%`:'—'},{l:'B.Tech %',v:report.btech_pct?`${report.btech_pct}%`:'—'},{l:'CGPA',v:report.btech||'—'},{l:'Backlogs',v:report.backlogs||'0'},{l:'Badge Test',v:`${report.badge_test_pct||0}%`},{l:'Attendance',v:`${report.overallAttendance||0}%`}];
-        acadArr.forEach((it,i)=>box(10+i*(bw2+bg2),y,bw2,it.l,it.v));
-        y+=11; y=sep(y);
+        const aw=24.5, ag=2.5;
+        box(10,y,aw,'SSC',report.ssc?`${report.ssc}%`:'—',c3('#EEA727'));
+        box(10+aw+ag,y,aw,'INTER',report.inter?`${report.inter}%`:'—',c3('#EEA727'));
+        box(10+2*(aw+ag),y,aw,'B.TECH %',report.btech_pct?`${report.btech_pct}%`:'—',c3('#3b82f6'));
+        box(10+3*(aw+ag),y,aw,'CGPA',report.btech||'—',c3('#7B2FBE'));
+        box(10+4*(aw+ag),y,aw,'BACKLOGS',String(report.backlogs||0),report.backlogs>0?R:c3('#10b981'));
+        box(10+5*(aw+ag),y,aw,'ATTEND.',`${report.overallAttendance||0}%`,c3('#10b981'));
+        box(10+6*(aw+ag),y,aw,'BADGE',`${report.badge_test_pct||0}%`,report.badge_test_status==='Pass'?c3('#10b981'):c3('#EEA727'));
+        y+=12; y=sep(y);
 
-        // ══ CODING ══
+        // ── 3. CODING PROFILES ──
         y = sec('CODING PROFILES', y);
-        const cp=[];
-        if(report.leetcode) cp.push({n:'LeetCode',t:report.leetcode.total,d:`E:${report.leetcode.easy} M:${report.leetcode.medium} H:${report.leetcode.hard} | #${report.leetcode.rank} | ${report.leetcode.streak}d streak`});
-        if(report.hackerrank) cp.push({n:'HackerRank',t:`${report.hackerrank.stars}★`,d:`Badges:${report.hackerrank.badges} Certs:${report.hackerrank.certs}`});
-        if(report.codechef) cp.push({n:'CodeChef',t:report.codechef.total,d:`${report.codechef.rating} (${report.codechef.stars}★) | ${report.codechef.contests} contests`});
-        if(report.gfg) cp.push({n:'GFG',t:report.gfg.total,d:`Score:${report.gfg.score} | ${report.gfg.streak}d streak`});
-        if(cp.length===0){doc.setTextColor(...G);doc.setFontSize(6);doc.text('No coding profile data',14,y);y+=4}
-        cp.forEach(p=>{doc.setTextColor(...R);doc.setFontSize(6);doc.setFont('helvetica','bold');doc.text(p.n,10,y);doc.setTextColor(...D);doc.setFontSize(7);doc.text(String(p.t),34,y);doc.setTextColor(...G);doc.setFontSize(5.5);doc.setFont('helvetica','normal');doc.text(p.d,48,y);y+=4});
-        if(report.mayaCoding){doc.setTextColor(...R);doc.setFontSize(6);doc.setFont('helvetica','bold');doc.text('Maya Portal',10,y);doc.setTextColor(...D);doc.setFontSize(6);doc.setFont('helvetica','normal');doc.text(`Rank #${report.mayaCoding.globalRank} (Batch #${report.mayaCoding.batchRank}) | Score:${report.mayaCoding.score} | E:${report.mayaCoding.easy} M:${report.mayaCoding.medium} H:${report.mayaCoding.hard}`,34,y);y+=4}
-        y+=1; y=sep(y);
+        const cw=36,cg=3;
+        box(10,y,cw,'LEETCODE',report.leetcode?.total||'—',c3('#ffa116'));
+        box(10+cw+cg,y,cw,'GFG',report.gfg?.total||'—',c3('#2f8d46'));
+        box(10+2*(cw+cg),y,cw,'CODECHEF',report.codechef?.total||'—',c3('#5b4638'));
+        box(10+3*(cw+cg),y,cw,'HACKERRANK',report.hackerrank?`${report.hackerrank.stars}★`:'—',c3('#00ea64'));
+        box(10+4*(cw+cg),y,cw-6,'MAYA',report.mayaCoding?.score||'—',c3('#06b6d4'));
+        y+=11;
+        // Details line
+        doc.setTextColor(...G); doc.setFontSize(4.5); doc.setFont('helvetica','normal');
+        const details = [];
+        if(report.leetcode) details.push(`LC: E${report.leetcode.easy} M${report.leetcode.medium} H${report.leetcode.hard} #${report.leetcode.rank} ${report.leetcode.streak}d`);
+        if(report.codechef) details.push(`CC: ${report.codechef.rating}(${report.codechef.stars}★) ${report.codechef.contests}c`);
+        if(report.hackerrank) details.push(`HR: ${report.hackerrank.badges}bdg ${report.hackerrank.certs}cert`);
+        if(report.gfg) details.push(`GFG: ${report.gfg.score}pts ${report.gfg.streak}d`);
+        if(report.mayaCoding) details.push(`Maya: G#${report.mayaCoding.globalRank} B#${report.mayaCoding.batchRank} E${report.mayaCoding.easy}M${report.mayaCoding.medium}H${report.mayaCoding.hard}`);
+        if(details.length>0) doc.text(details.join('  |  '),10,y);
+        y+=3; y=sep(y);
 
-        // ══ HOOT ══
+        // ── 4. HOOT + CODING ASSESSMENT + BADGE ──
+        y = sec('ASSESSMENTS — HOOT · CODING · BADGE', y);
         if(report.hoot){
-          y=sec('HOOT COMMUNICATION',y);
-          const hd=[['Listening',report.hoot.listening,[238,167,39]],['Speaking',report.hoot.speaking,[253,28,0]],['Reading',report.hoot.reading,[16,185,129]],['Writing',report.hoot.writing,[123,47,190]]];
-          hd.forEach(([lb,vl,c])=>{doc.setTextColor(...G);doc.setFontSize(5.5);doc.text(lb,10,y+1.5);bar(35,y,50,vl||0,c);doc.setTextColor(...c);doc.setFontSize(6);doc.setFont('helvetica','bold');doc.text(`${(vl||0).toFixed?vl.toFixed(1):vl}%`,88,y+1.5);y+=4});
-          doc.setTextColor(238,167,39);doc.setFontSize(7);doc.setFont('helvetica','bold');doc.text(`Overall: ${report.hoot.total?.toFixed?report.hoot.total.toFixed(1):report.hoot.total}/100`,140,y-2);
-          y+=2; y=sep(y);
-        }
+          const hx=10,hw=45;
+          [['Listening',report.hoot.listening,[238,167,39]],['Speaking',report.hoot.speaking,[253,28,0]],['Reading',report.hoot.reading,[16,185,129]],['Writing',report.hoot.writing,[123,47,190]]].forEach(([lb,vl,c],i)=>{
+            const hy=y+i*3.5;
+            doc.setTextColor(...G);doc.setFontSize(4.5);doc.text(lb,hx,hy+1.3);
+            bar(hx+16,hy,hw,vl||0,c);
+            doc.setTextColor(...c);doc.setFontSize(5);doc.setFont('helvetica','bold');doc.text(`${(vl||0).toFixed?vl.toFixed(1):vl}%`,hx+16+hw+2,hy+1.3);
+          });
+          doc.setTextColor(238,167,39);doc.setFontSize(6);doc.setFont('helvetica','bold');doc.text(`Total: ${report.hoot.total?.toFixed?report.hoot.total.toFixed(1):report.hoot.total}/100`,hx+16,y+15.5);
+        } else { doc.setTextColor(...G);doc.setFontSize(5);doc.text('No HOOT data',10,y+2) }
+        // Coding + Badge on right side
+        const rx=105;
+        doc.setTextColor(...D);doc.setFontSize(5.5);doc.setFont('helvetica','bold');
+        doc.text('CODING LEVEL',rx,y+1);
+        doc.setFillColor(...L);doc.roundedRect(rx,y+2.5,40,7,1,1,'F');
+        doc.setTextColor(...(report.codingLevel==='Advanced'?c3('#10b981'):c3('#EEA727')));doc.setFontSize(8);doc.text(report.codingLevel||'—',rx+20,y+7.5,{align:'center'});
+        doc.setTextColor(...G);doc.setFontSize(4.5);doc.setFont('helvetica','normal');doc.text(`Score: ${report.codingScore||'—'}/100`,rx,y+12);
 
-        // ══ CODING ASSESSMENT ══
-        if(report.codingLevel||report.codingScore){
-          y=sec('CODING ASSESSMENT & BADGE TEST',y);
-          doc.setTextColor(...D);doc.setFontSize(6.5);doc.setFont('helvetica','bold');
-          doc.text(`Level: ${report.codingLevel||'—'}`,10,y);doc.text(`Score: ${report.codingScore||'—'}/100`,55,y);
-          doc.text(`Badge: ${report.badge_test_pct||0}% (${report.badge_test_status||'—'})`,100,y);y+=5;y=sep(y);
-        }
+        doc.setTextColor(...D);doc.setFontSize(5.5);doc.setFont('helvetica','bold');
+        doc.text('BADGE TEST',rx+50,y+1);
+        doc.setFillColor(...L);doc.roundedRect(rx+50,y+2.5,40,7,1,1,'F');
+        doc.setTextColor(...(report.badge_test_status==='Pass'||report.badge_test_status==='Cleared'?c3('#10b981'):c3('#EEA727')));doc.setFontSize(8);doc.text(`${report.badge_test_pct||0}%`,rx+70,y+7.5,{align:'center'});
+        doc.setTextColor(...G);doc.setFontSize(4.5);doc.setFont('helvetica','normal');doc.text(`Status: ${report.badge_test_status||'—'}`,rx+50,y+12);
+        y+=18; y=sep(y);
 
-        // ══ ATTENDANCE ══
+        // ── 5. ATTENDANCE ──
         if(report.attendance?.length>0){
-          y=sec(`ATTENDANCE — Overall: ${report.overallAttendance}% (${report.totalPresent}/${report.totalSessions})`,y);
-          const ac2=4,aw=(w-20-(ac2-1)*2)/ac2;
-          report.attendance.forEach((a,i)=>{const col=i%ac2,row=Math.floor(i/ac2),ax=10+col*(aw+2),ay=y+row*9;doc.setFillColor(...L);doc.roundedRect(ax,ay,aw,7.5,1,1,'F');doc.setTextColor(...D);doc.setFontSize(5);doc.setFont('helvetica','bold');doc.text(a.tech.length>16?a.tech.substring(0,16)+'..':a.tech,ax+1.5,ay+3);const pc=parseFloat(a.pct)>=75?[34,197,94]:[239,68,68];doc.setTextColor(...pc);doc.setFontSize(6);doc.text(`${a.pct}%`,ax+aw-1.5,ay+3,{align:'right'});bar(ax+1.5,ay+4.5,aw-3,parseFloat(a.pct),pc)});
-          y+=Math.ceil(report.attendance.length/ac2)*9+2;y=sep(y);
+          y = sec(`ATTENDANCE — Overall ${report.overallAttendance}% (${report.totalPresent}/${report.totalSessions})`, y);
+          const ac=5,abw=(w-20-(ac-1)*1.5)/ac;
+          report.attendance.forEach((a,i)=>{
+            const col=i%ac,row=Math.floor(i/ac),ax=10+col*(abw+1.5),ay=y+row*6.5;
+            doc.setFillColor(...L);doc.roundedRect(ax,ay,abw,5.5,0.8,0.8,'F');
+            doc.setTextColor(...D);doc.setFontSize(4);doc.setFont('helvetica','bold');
+            doc.text(a.tech.length>14?a.tech.substring(0,14)+'..':a.tech,ax+1,ay+2.5);
+            const pc=parseFloat(a.pct)>=75?[34,197,94]:[239,68,68];
+            doc.setTextColor(...pc);doc.setFontSize(5);doc.text(`${a.pct}%`,ax+abw-1,ay+2.5,{align:'right'});
+            bar(ax+1,ay+3.8,abw-2,parseFloat(a.pct),pc);
+          });
+          y+=Math.ceil(report.attendance.length/ac)*6.5+1.5; y=sep(y);
         }
 
-        // ══ CERTIFICATIONS ══
-        y=sec(`CERTIFICATIONS — G:${report.certCounts?.global||0} T:${report.certCounts?.training||0} B:${report.certCounts?.badges||0} I:${report.certCounts?.internship||0}`,y);
-        if(report.globalCerts?.length>0){doc.setTextColor(...D);doc.setFontSize(5.5);doc.setFont('helvetica','normal');report.globalCerts.forEach((c,i)=>{doc.text(`${i+1}. ${c}`,14,y);y+=3.5})}else{doc.setTextColor(...G);doc.setFontSize(5.5);doc.text('No certifications',14,y);y+=3.5}
-        y+=1; y=sep(y);
+        // ── 6. CERTIFICATIONS ──
+        y = sec(`CERTIFICATIONS — G:${report.certCounts?.global||0} T:${report.certCounts?.training||0} B:${report.certCounts?.badges||0} I:${report.certCounts?.internship||0}`, y);
+        if(report.globalCerts?.length>0){doc.setTextColor(...D);doc.setFontSize(5);doc.setFont('helvetica','normal');const ct=report.globalCerts.map((c,i)=>`${i+1}.${c}`).join('  ');const cl=doc.splitTextToSize(ct,w-24);doc.text(cl,14,y);y+=cl.length*2.8}else{doc.setTextColor(...G);doc.setFontSize(5);doc.text('No certifications',14,y);y+=3}
+        y+=1;y=sep(y);
 
-        // ══ APTITUDE ══
-        if(report.aptMandatory){y=sec(`APTITUDE — ${report.aptMandatory.pct}%`,y);doc.setTextColor(...D);doc.setFontSize(5.5);doc.setFont('helvetica','normal');doc.text(`E:${report.aptMandatory.easy} M:${report.aptMandatory.medium} H:${report.aptMandatory.hard} | Apt:${report.aptMandatory.aptitude} Reas:${report.aptMandatory.reasoning} Verb:${report.aptMandatory.verbal}`,14,y);y+=4;y=sep(y)}
+        // ── 7. APTITUDE ──
+        if(report.aptMandatory){
+          y=sec(`APTITUDE — ${report.aptMandatory.pct}% (${report.aptMandatory.attempts}/${report.aptMandatory.total})`,y);
+          const abw2=27;
+          box(10,y,abw2,'EASY',report.aptMandatory.easy,c3('#10b981'));
+          box(10+abw2+2,y,abw2,'MEDIUM',report.aptMandatory.medium,c3('#EEA727'));
+          box(10+2*(abw2+2),y,abw2,'HARD',report.aptMandatory.hard,R);
+          box(10+3*(abw2+2),y,abw2,'APTITUDE',report.aptMandatory.aptitude,c3('#3b82f6'));
+          box(10+4*(abw2+2),y,abw2,'REASONING',report.aptMandatory.reasoning,c3('#7B2FBE'));
+          box(10+5*(abw2+2),y,abw2-2,'VERBAL',report.aptMandatory.verbal,c3('#06b6d4'));
+          y+=12;y=sep(y);
+        }
 
-        // ══ COURSES + PAYMENTS + STATUS ══
-        y=sec(`COURSES (${report.courses?.length||0}) · PAYMENTS · STATUS`,y);
-        if(report.courses?.length>0){doc.setTextColor(...D);doc.setFontSize(5);doc.setFont('helvetica','normal');const cl=doc.splitTextToSize(report.courses.join(' · '),w-24);doc.text(cl,14,y);y+=cl.length*3}
+        // ── 8. COURSES + PAYMENTS + STATUS ──
+        y=sec('COURSES · PAYMENTS · PLACEMENT',y);
+        if(report.courses?.length>0){doc.setTextColor(...D);doc.setFontSize(4.5);doc.setFont('helvetica','normal');const ct=report.courses.join(' · ');const cl=doc.splitTextToSize(ct,w-24);doc.text(cl,14,y);y+=cl.length*2.5}
         y+=1;
-        doc.setTextColor(...G);doc.setFontSize(5.5);
-        if(report.semesters?.length>0)doc.text(`Semesters: ${report.semesters.map((s2,i)=>`S${i+1}:${s2}`).join(' · ')}`,14,y);y+=3;
-        doc.text(`Payments: ${(report.payments||[]).map((p,i)=>`T${i+1}:${p||'Pending'}`).join('  ')}`,14,y);y+=3;
-        doc.text(`Violations: ${report.violations||0} | Placement: ${report.placement||'Not yet placed'}`,14,y);y+=4;
+        doc.setTextColor(...G);doc.setFontSize(5);doc.setFont('helvetica','normal');
+        const payStr=(report.payments||[]).map((p,i)=>`T${i+1}:${(p||'').toLowerCase()==='paid'?'✓':'✗'}`).join(' ');
+        doc.text(`Payments: ${payStr}`,10,y);
+        doc.text(`Semesters: ${(report.semesters||[]).map((s2,i)=>`S${i+1}:${s2}`).join(' ')}`,80,y);y+=3;
+        doc.text(`Placement: ${report.placement||'Not yet placed'}`,10,y);
+        doc.text(`Violations: ${report.violations||0}`,100,y);y+=3;
 
-        // Footer
-        doc.setFillColor(...B);doc.rect(0,h-8,w,8,'F');doc.setFillColor(...R);doc.rect(0,h-8,w,1,'F');
-        doc.setTextColor(...W);doc.setFontSize(5.5);doc.setFont('helvetica','normal');
-        doc.text('Project Space · Technical Hub · Aditya University',10,h-3);
-        doc.text('projectspace.technicalhub.io',w-10,h-3,{align:'right'});
+        // ── FOOTER ──
+        doc.setFillColor(...K);doc.rect(0,h-7,w,7,'F');doc.setFillColor(...R);doc.rect(0,h-7,w,0.8,'F');
+        doc.setTextColor(...W);doc.setFontSize(5);doc.setFont('helvetica','normal');
+        doc.text('Project Space · Technical Hub · Aditya University — ACET · AEC · ACOE',10,h-2.5);
+        doc.text('projectspace.technicalhub.io',w-10,h-2.5,{align:'right'});
         doc.save(`Report_Card_${report.roll_number}.pdf`);
       } catch(err){console.error(err);alert('Failed to generate PDF.')} finally{setGen(false)}
     };
 
-    // ═══ UI COMPONENTS ═══
-    const Sec=({color,children})=><div style={{fontSize:'9px',fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color,marginBottom:6,marginTop:16,display:'flex',alignItems:'center',gap:5}}>{children}<span style={{flex:1,height:1,background:'linear-gradient(90deg,rgba(255,255,255,.05),transparent)'}}/></div>;
-    const Info=({l,v,bold})=><div><div style={{fontSize:'8px',fontWeight:600,textTransform:'uppercase',letterSpacing:'.05em',color:'rgba(255,255,255,.25)',marginBottom:1}}>{l}</div><div style={{fontSize:'12px',fontWeight:bold?700:500,color:bold?'#fff':'rgba(255,255,255,.8)'}}>{v||'—'}</div></div>;
-    const Stat=({v,l,c})=><div style={{textAlign:'center',padding:'8px 4px',borderRadius:8,background:'rgba(255,255,255,.02)',border:'1px solid rgba(255,255,255,.06)'}}><div style={{fontSize:'15px',fontWeight:800,color:c}}>{v}</div><div style={{fontSize:'7px',fontWeight:600,color:'rgba(255,255,255,.25)',textTransform:'uppercase',marginTop:1}}>{l}</div></div>;
-    const Prog=({l,v,c})=><div style={{display:'flex',alignItems:'center',gap:8,marginBottom:5}}><div style={{fontSize:'10px',fontWeight:500,color:'rgba(255,255,255,.4)',width:70,flexShrink:0}}>{l}</div><div style={{flex:1,height:5,borderRadius:3,background:'rgba(255,255,255,.04)',overflow:'hidden'}}><div style={{height:'100%',borderRadius:3,background:c,width:`${v||0}%`}}/></div><div style={{fontSize:'10px',fontWeight:700,width:40,textAlign:'right',color:c}}>{v?.toFixed?v.toFixed(1):v}%</div></div>;
-    const Star=({n,max=5,c})=><span style={{display:'inline-flex',gap:1}}>{Array.from({length:max},(_,i)=><span key={i} style={{color:i<n?c:'rgba(255,255,255,.1)',fontSize:13}}>★</span>)}</span>;
+    // ═══════════════════════════
+    // UI HELPER COMPONENTS
+    // ═══════════════════════════
+    const Sec=({color,children})=><div style={{fontSize:'9px',fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color,marginBottom:6,marginTop:16,display:'flex',alignItems:'center',gap:5}}>{children}<span style={{flex:1,height:1,background:'linear-gradient(90deg,rgba(255,255,255,.06),transparent)'}}/></div>;
+    const Info=({l,v,bold})=><div><div style={{fontSize:'7.5px',fontWeight:600,textTransform:'uppercase',letterSpacing:'.05em',color:'rgba(255,255,255,.2)',marginBottom:1}}>{l}</div><div style={{fontSize:'12px',fontWeight:bold?700:500,color:bold?'#fff':'rgba(255,255,255,.75)'}}>{v||'—'}</div></div>;
+    const Stat=({v,l,c})=><div style={{textAlign:'center',padding:'7px 3px',borderRadius:8,background:'rgba(255,255,255,.02)',border:'1px solid rgba(255,255,255,.05)'}}><div style={{fontSize:'15px',fontWeight:800,color:c}}>{v}</div><div style={{fontSize:'7px',fontWeight:600,color:'rgba(255,255,255,.2)',textTransform:'uppercase',letterSpacing:'.04em',marginTop:1}}>{l}</div></div>;
+    const Prog=({l,v,c})=><div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4}}><div style={{fontSize:'10px',fontWeight:500,color:'rgba(255,255,255,.35)',width:65,flexShrink:0}}>{l}</div><div style={{flex:1,height:5,borderRadius:3,background:'rgba(255,255,255,.04)',overflow:'hidden'}}><div style={{height:'100%',borderRadius:3,background:c,width:`${v||0}%`}}/></div><div style={{fontSize:'10px',fontWeight:700,width:38,textAlign:'right',color:c}}>{v?.toFixed?v.toFixed(1):v}%</div></div>;
 
     return (
       <div style={{maxWidth:820,margin:'0 auto'}}>
-        {/* Search */}
-        <div style={{textAlign:'center',marginBottom:24}}>
-          <div style={{fontSize:'18px',fontWeight:700,color:'#fff',marginBottom:3}}>Student Report Card</div>
-          <div style={{fontSize:'11px',color:'rgba(255,255,255,.35)',marginBottom:16}}>Enter roll number to generate complete student profile</div>
-          <div style={{display:'flex',gap:8,maxWidth:380,margin:'0 auto'}}>
-            <input type="text" value={roll} onChange={e=>setRoll(e.target.value.toUpperCase())} onKeyDown={e=>e.key==='Enter'&&fetchReport()} placeholder="e.g. 23P31A4933" style={{flex:1,padding:'11px 14px',borderRadius:9,background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.08)',color:'#fff',fontFamily:"'DM Sans',sans-serif",fontSize:'14px',outline:'none'}}/>
-            <button onClick={fetchReport} disabled={rcL} style={{padding:'11px 22px',borderRadius:9,border:'none',background:'linear-gradient(135deg,#fd1c00,#c41600)',color:'#fff',fontFamily:"'DM Sans',sans-serif",fontSize:'13px',fontWeight:600,cursor:rcL?'wait':'pointer',whiteSpace:'nowrap'}}>{rcL?'Loading...':'Generate'}</button>
+        {/* ── SEARCH ── */}
+        <div style={{textAlign:'center',marginBottom:28}}>
+          <div style={{fontSize:'20px',fontWeight:700,color:'#fff',marginBottom:4}}>Student Report Card</div>
+          <div style={{fontSize:'11px',color:'rgba(255,255,255,.3)',marginBottom:18}}>Generate a complete student profile report with academic, coding, assessment &amp; attendance data</div>
+          <div style={{display:'flex',gap:8,maxWidth:400,margin:'0 auto'}}>
+            <input type="text" value={roll} onChange={e=>setRoll(e.target.value.toUpperCase())} onKeyDown={e=>e.key==='Enter'&&fetchReport()} placeholder="e.g. 23P31A4933" style={{flex:1,padding:'12px 16px',borderRadius:10,background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.08)',color:'#fff',fontFamily:"'DM Sans',sans-serif",fontSize:'14px',outline:'none'}}/>
+            <button onClick={fetchReport} disabled={rcL} style={{padding:'12px 24px',borderRadius:10,border:'none',background:'linear-gradient(135deg,#fd1c00,#c41600)',color:'#fff',fontFamily:"'DM Sans',sans-serif",fontSize:'13px',fontWeight:600,cursor:rcL?'wait':'pointer',whiteSpace:'nowrap'}}>{rcL?'Loading...':'Generate'}</button>
           </div>
-          {rcE&&<div style={{color:'#fd1c00',fontSize:'11px',marginTop:6}}>{rcE}</div>}
+          {rcE&&<div style={{color:'#fd1c00',fontSize:'11px',marginTop:8}}>{rcE}</div>}
         </div>
 
-        {/* Report Card */}
+        {/* ── REPORT CARD ── */}
         {report && <>
-          <div style={{background:'rgba(13,10,20,.9)',border:'1px solid rgba(255,255,255,.06)',borderRadius:14,overflow:'hidden'}}>
+          <div style={{background:'rgba(13,10,20,.95)',border:'1px solid rgba(255,255,255,.06)',borderRadius:14,overflow:'hidden'}}>
+
             {/* Header */}
-            <div style={{background:'linear-gradient(135deg,#0f0a18,#1a0e28)',padding:'14px 22px',display:'flex',alignItems:'center',justifyContent:'space-between',borderBottom:'1px solid rgba(255,255,255,.06)'}}>
-              <div style={{display:'flex',alignItems:'center',gap:12}}>
-                <div style={{width:38,height:38,borderRadius:9,background:'linear-gradient(135deg,#fd1c00,#c41600)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'13px',fontWeight:800,color:'#fff'}}>PS</div>
-                <div><div style={{fontSize:'15px',fontWeight:700,color:'#fff'}}>Student Report Card</div><div style={{fontSize:'8px',color:'rgba(255,255,255,.35)',textTransform:'uppercase',letterSpacing:'.08em'}}>Project Space 2026 · Aditya University</div></div>
+            <div style={{background:'linear-gradient(135deg,#120a1e,#1a0e28,#160c22)',padding:'14px 22px',display:'flex',alignItems:'center',justifyContent:'space-between',borderBottom:'1px solid rgba(255,255,255,.06)',position:'relative',overflow:'hidden'}}>
+              <div style={{position:'absolute',top:-30,right:-30,width:100,height:100,borderRadius:'50%',background:'radial-gradient(circle,rgba(253,28,0,.06),transparent 70%)'}}/>
+              <div style={{display:'flex',alignItems:'center',gap:12,zIndex:1}}>
+                <div style={{width:38,height:38,borderRadius:9,background:'linear-gradient(135deg,#fd1c00,#c41600)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,fontWeight:800,color:'#fff'}}>PS</div>
+                <div><div style={{fontSize:15,fontWeight:700,color:'#fff'}}>Student Report Card</div><div style={{fontSize:8,color:'rgba(255,255,255,.3)',textTransform:'uppercase',letterSpacing:'.08em'}}>Project Space 2026 · Aditya University</div></div>
               </div>
-              <div style={{textAlign:'right'}}><div style={{fontSize:'12px',fontWeight:700,color:'#EEA727'}}>{report.college}</div><div style={{fontSize:'10px',color:'rgba(255,255,255,.35)'}}>{report.branch} · {report.technology}</div></div>
+              <div style={{textAlign:'right',zIndex:1}}><div style={{fontSize:12,fontWeight:700,color:'#EEA727'}}>{report.college}</div><div style={{fontSize:10,color:'rgba(255,255,255,.3)'}}>{report.branch} · {report.technology}</div></div>
             </div>
 
             {/* Body */}
-            <div style={{padding:'10px 20px 16px'}}>
+            <div style={{padding:'8px 20px 18px'}}>
 
-              {/* ── PERSONAL INFO ── */}
-              <Sec color="#3b82f6">Personal Information</Sec>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:'5px 10px'}}>
-                <Info l="Name" v={report.name} bold/><Info l="Roll Number" v={report.roll_number}/><Info l="Gender" v={report.gender}/><Info l="Mobile" v={report.mobile}/>
-                <Info l="Pool" v={report.pool}/><Info l="Seat Type" v={report.seat_type}/><Info l="Scholar" v={report.scholar_type}/><Info l="Town" v={report.town}/>
+              {/* ══ 1. PERSONAL INFO ══ */}
+              <Sec color="#3b82f6">{IC.users} Personal Information</Sec>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:'4px 10px'}}>
+                <Info l="Name" v={report.name} bold/><Info l="Roll Number" v={report.roll_number}/><Info l="Gender" v={report.gender}/><Info l="Mobile" v={report.mobile}/><Info l="DOB" v={report.dob}/>
+                <Info l="Pool" v={report.pool}/><Info l="Seat Type" v={report.seat_type}/><Info l="Scholar" v={report.scholar_type}/><Info l="Town" v={report.town}/><Info l="Passout" v={report.passout_year}/>
               </div>
 
-              {/* ── ACADEMICS ── */}
-              <Sec color="#EEA727">Academic Performance</Sec>
+              {/* ══ 2. ACADEMICS ══ */}
+              <Sec color="#EEA727">{IC.layers} Academic Performance</Sec>
               <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:5}}>
                 <Stat v={report.ssc?`${report.ssc}%`:'—'} l="SSC" c="#EEA727"/>
                 <Stat v={report.inter?`${report.inter}%`:'—'} l="Inter" c="#EEA727"/>
                 <Stat v={report.btech_pct?`${report.btech_pct}%`:'—'} l="B.Tech" c="#3b82f6"/>
                 <Stat v={report.btech||'—'} l="CGPA" c="#7B2FBE"/>
-                <Stat v={report.backlogs||'0'} l="Backlogs" c={report.backlogs>0?'#fd1c00':'#10b981'}/>
+                <Stat v={String(report.backlogs||0)} l="Backlogs" c={report.backlogs>0?'#fd1c00':'#10b981'}/>
                 <Stat v={`${report.overallAttendance||0}%`} l="Attend." c="#10b981"/>
-                <Stat v={`${report.badge_test_pct||0}%`} l="Badge" c={report.badge_test_status==='Pass'?'#10b981':'#EEA727'}/>
+                <Stat v={`${report.badge_test_pct||0}%`} l="Badge" c={report.badge_test_status==='Pass'||report.badge_test_status==='Cleared'?'#10b981':'#EEA727'}/>
               </div>
 
-              {/* ── CODING PROFILES ── */}
-              <Sec color="#06b6d4">Coding Profiles</Sec>
+              {/* ══ 3. CODING PROFILES ══ */}
+              <Sec color="#06b6d4">{IC.layers} Coding Profiles</Sec>
               <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:5}}>
                 <Stat v={report.leetcode?.total||'—'} l="LeetCode" c="#ffa116"/>
                 <Stat v={report.gfg?.total||'—'} l="GFG" c="#2f8d46"/>
                 <Stat v={report.codechef?.total||'—'} l="CodeChef" c="#5b4638"/>
                 <Stat v={report.hackerrank?`${report.hackerrank.stars}★`:'—'} l="HackerRank" c="#00ea64"/>
-                <Stat v={report.mayaCoding?.score||'—'} l="Maya" c="#06b6d4"/>
+                <Stat v={report.mayaCoding?.score||'—'} l="Maya Portal" c="#06b6d4"/>
               </div>
-              {/* Coding details */}
-              {report.leetcode&&<div style={{fontSize:'9px',color:'rgba(255,255,255,.35)',marginTop:4}}>LeetCode: E:{report.leetcode.easy} M:{report.leetcode.medium} H:{report.leetcode.hard} · Rank #{report.leetcode.rank} · Streak {report.leetcode.streak}d</div>}
-              {report.mayaCoding&&<div style={{fontSize:'9px',color:'rgba(255,255,255,.35)',marginTop:2}}>Maya: Global #{report.mayaCoding.globalRank} · Batch #{report.mayaCoding.batchRank} · E:{report.mayaCoding.easy} M:{report.mayaCoding.medium} H:{report.mayaCoding.hard}</div>}
+              {(report.leetcode||report.mayaCoding||report.codechef)&&<div style={{fontSize:'9px',color:'rgba(255,255,255,.25)',marginTop:5,lineHeight:1.5}}>
+                {report.leetcode&&<span>LeetCode: E:{report.leetcode.easy} M:{report.leetcode.medium} H:{report.leetcode.hard} · Rank #{report.leetcode.rank} · Streak {report.leetcode.streak}d &nbsp;|&nbsp; </span>}
+                {report.codechef&&<span>CodeChef: {report.codechef.rating} ({report.codechef.stars}★) · {report.codechef.contests} contests &nbsp;|&nbsp; </span>}
+                {report.hackerrank&&<span>HackerRank: {report.hackerrank.badges} badges · {report.hackerrank.certs} certs &nbsp;|&nbsp; </span>}
+                {report.gfg&&<span>GFG: {report.gfg.score}pts · {report.gfg.streak}d streak &nbsp;|&nbsp; </span>}
+                {report.mayaCoding&&<span>Maya: Global #{report.mayaCoding.globalRank} · Batch #{report.mayaCoding.batchRank} · E:{report.mayaCoding.easy} M:{report.mayaCoding.medium} H:{report.mayaCoding.hard}</span>}
+              </div>}
 
-              {/* ── HOOT ASSESSMENT ── */}
-              {report.hoot && <>
-                <Sec color="#EEA727">HOOT — Communication Assessment</Sec>
-                <Prog l="Listening" v={report.hoot.listening} c="#EEA727"/>
-                <Prog l="Speaking" v={report.hoot.speaking} c="#fd1c00"/>
-                <Prog l="Reading" v={report.hoot.reading} c="#10b981"/>
-                <Prog l="Writing" v={report.hoot.writing} c="#7B2FBE"/>
-                <div style={{display:'flex',justifyContent:'flex-end',marginTop:4}}>
-                  <div style={{background:'rgba(238,167,39,.08)',border:'1px solid rgba(238,167,39,.2)',borderRadius:6,padding:'2px 10px'}}>
-                    <span style={{fontSize:'13px',fontWeight:800,color:'#EEA727'}}>{report.hoot.total?.toFixed?report.hoot.total.toFixed(1):report.hoot.total}<span style={{fontSize:'9px',fontWeight:400,marginLeft:2}}>/100</span></span>
+              {/* ══ 4. ASSESSMENTS — HOOT + CODING + BADGE ══ */}
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginTop:4}}>
+                {/* HOOT */}
+                <div>
+                  <Sec color="#EEA727">{IC.bell} HOOT — Communication</Sec>
+                  {report.hoot ? <>
+                    <Prog l="Listening" v={report.hoot.listening} c="#EEA727"/>
+                    <Prog l="Speaking" v={report.hoot.speaking} c="#fd1c00"/>
+                    <Prog l="Reading" v={report.hoot.reading} c="#10b981"/>
+                    <Prog l="Writing" v={report.hoot.writing} c="#7B2FBE"/>
+                    <div style={{display:'flex',justifyContent:'flex-end',marginTop:3}}>
+                      <div style={{background:'rgba(238,167,39,.08)',border:'1px solid rgba(238,167,39,.18)',borderRadius:6,padding:'2px 10px'}}>
+                        <span style={{fontSize:13,fontWeight:800,color:'#EEA727'}}>{report.hoot.total?.toFixed?report.hoot.total.toFixed(1):report.hoot.total}<span style={{fontSize:9,fontWeight:400,marginLeft:2}}>/100</span></span>
+                      </div>
+                    </div>
+                  </> : <div style={{fontSize:10,color:'rgba(255,255,255,.2)',padding:'12px 0'}}>No HOOT data</div>}
+                </div>
+
+                {/* Coding Assessment + Badge Test */}
+                <div>
+                  <Sec color="#10b981">{IC.bolt} Coding Level &amp; Badge Test</Sec>
+                  <div style={{display:'flex',gap:8,marginBottom:8}}>
+                    <div style={{flex:1,display:'flex',alignItems:'center',gap:8,padding:'8px 12px',borderRadius:9,background:report.codingLevel==='Advanced'?'rgba(16,185,129,.06)':'rgba(238,167,39,.06)',border:`1px solid ${report.codingLevel==='Advanced'?'rgba(16,185,129,.15)':'rgba(238,167,39,.15)'}`}}>
+                      <span style={{fontSize:18}}>{report.codingLevel==='Advanced'?'🏆':'📝'}</span>
+                      <div><div style={{fontSize:12,fontWeight:700,color:report.codingLevel==='Advanced'?'#10b981':'#EEA727'}}>{report.codingLevel||'—'}</div><div style={{fontSize:8,color:'rgba(255,255,255,.3)'}}>Score: {report.codingScore||'—'}/100</div></div>
+                    </div>
                   </div>
+                  <div style={{display:'flex',alignItems:'center',gap:8,padding:'8px 12px',borderRadius:9,background:'rgba(123,47,190,.06)',border:'1px solid rgba(123,47,190,.15)'}}>
+                    <span style={{fontSize:18}}>{report.badge_test_status==='Pass'||report.badge_test_status==='Cleared'?'🎖️':'📋'}</span>
+                    <div><div style={{fontSize:12,fontWeight:700,color:report.badge_test_status==='Pass'||report.badge_test_status==='Cleared'?'#10b981':'#EEA727'}}>{report.badge_test_status||'Not Attempted'}</div><div style={{fontSize:8,color:'rgba(255,255,255,.3)'}}>Level-1: {report.badge_test_pct||0}%</div></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ══ 5. ATTENDANCE ══ */}
+              {report.attendance?.length>0&&<>
+                <Sec color="#10b981">{IC.clk} Attendance — {report.overallAttendance}% Overall ({report.totalPresent}/{report.totalSessions})</Sec>
+                <div style={{display:'grid',gridTemplateColumns:`repeat(${isMobile?2:4},1fr)`,gap:5}}>
+                  {report.attendance.map((a,i)=>{const pc=parseFloat(a.pct);const clr=pc>=75?'#10b981':'#ef4444';return(<div key={i} style={{padding:'5px 8px',borderRadius:7,background:'rgba(255,255,255,.02)',border:'1px solid rgba(255,255,255,.04)'}}>
+                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:3}}>
+                      <span style={{fontSize:9,fontWeight:600,color:'rgba(255,255,255,.55)',maxWidth:'70%',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{a.tech}</span>
+                      <span style={{fontSize:10,fontWeight:700,color:clr}}>{a.pct}%</span>
+                    </div>
+                    <div style={{height:3,borderRadius:2,background:'rgba(255,255,255,.04)',overflow:'hidden'}}><div style={{height:'100%',borderRadius:2,background:clr,width:`${pc}%`}}/></div>
+                    <div style={{fontSize:7,color:'rgba(255,255,255,.15)',marginTop:2}}>P:{a.present} A:{a.absent} T:{a.total}</div>
+                  </div>)})}
                 </div>
               </>}
 
-              {/* ── CODING ASSESSMENT + BADGE TEST ── */}
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginTop:14}}>
-                <div>
-                  <Sec color="#10b981">Coding Assessment</Sec>
-                  <div style={{display:'flex',alignItems:'center',gap:10,padding:'9px 14px',borderRadius:9,background:'rgba(255,255,255,.02)',border:'1px solid rgba(255,255,255,.06)'}}>
-                    <span style={{fontSize:20}}>{report.codingLevel==='Advanced'?'🏆':'📝'}</span>
-                    <div><div style={{fontSize:'13px',fontWeight:700,color:report.codingLevel==='Advanced'?'#10b981':'#EEA727'}}>{report.codingLevel||'—'}</div><div style={{fontSize:'9px',color:'rgba(255,255,255,.35)'}}>Score: {report.codingScore||'—'}/100</div></div>
-                  </div>
-                </div>
-                <div>
-                  <Sec color="#7B2FBE">Badge Test</Sec>
-                  <div style={{display:'flex',alignItems:'center',gap:10,padding:'9px 14px',borderRadius:9,background:'rgba(255,255,255,.02)',border:'1px solid rgba(255,255,255,.06)'}}>
-                    <span style={{fontSize:20}}>{report.badge_test_status==='Pass'||report.badge_test_status==='Cleared'?'🎖️':'📋'}</span>
-                    <div><div style={{fontSize:'13px',fontWeight:700,color:report.badge_test_status==='Pass'||report.badge_test_status==='Cleared'?'#10b981':'#EEA727'}}>{report.badge_test_status||'—'}</div><div style={{fontSize:'9px',color:'rgba(255,255,255,.35)'}}>Level-1: {report.badge_test_pct||0}%</div></div>
-                  </div>
-                </div>
-              </div>
-
-              {/* ── CERTIFICATIONS ── */}
-              <Sec color="#10b981">Certifications (G:{report.certCounts?.global||0} · T:{report.certCounts?.training||0} · B:{report.certCounts?.badges||0} · I:{report.certCounts?.internship||0})</Sec>
+              {/* ══ 6. CERTIFICATIONS ══ */}
+              <Sec color="#10b981">{IC.file} Certifications (G:{report.certCounts?.global||0} · T:{report.certCounts?.training||0} · B:{report.certCounts?.badges||0} · I:{report.certCounts?.internship||0})</Sec>
               <div style={{display:'flex',flexWrap:'wrap',gap:3}}>
-                {report.globalCerts?.length>0?report.globalCerts.map((c,i)=><span key={i} style={{fontSize:'9px',fontWeight:500,color:'rgba(255,255,255,.4)',background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.06)',padding:'2px 7px',borderRadius:4}}>{c}</span>):<span style={{fontSize:'10px',color:'rgba(255,255,255,.2)'}}>No certifications recorded</span>}
+                {report.globalCerts?.length>0?report.globalCerts.map((c,i)=><span key={i} style={{fontSize:9,fontWeight:500,color:'rgba(255,255,255,.4)',background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.05)',padding:'2px 7px',borderRadius:4}}>{c}</span>):<span style={{fontSize:10,color:'rgba(255,255,255,.15)'}}>No certifications recorded</span>}
               </div>
 
-              {/* ── APTITUDE ── */}
+              {/* ══ 7. APTITUDE ══ */}
               {report.aptMandatory&&<>
-                <Sec color="#3b82f6">Aptitude ({report.aptMandatory.pct}% · {report.aptMandatory.attempts}/{report.aptMandatory.total} attempts)</Sec>
+                <Sec color="#3b82f6">{IC.layers} Aptitude — {report.aptMandatory.pct}% ({report.aptMandatory.attempts}/{report.aptMandatory.total} attempts)</Sec>
                 <div style={{display:'grid',gridTemplateColumns:'repeat(6,1fr)',gap:5}}>
-                  <Stat v={report.aptMandatory.easy} l="Easy" c="#10b981"/>
-                  <Stat v={report.aptMandatory.medium} l="Medium" c="#EEA727"/>
-                  <Stat v={report.aptMandatory.hard} l="Hard" c="#fd1c00"/>
-                  <Stat v={report.aptMandatory.aptitude} l="Aptitude" c="#3b82f6"/>
-                  <Stat v={report.aptMandatory.reasoning} l="Reasoning" c="#7B2FBE"/>
-                  <Stat v={report.aptMandatory.verbal} l="Verbal" c="#06b6d4"/>
+                  <Stat v={report.aptMandatory.easy} l="Easy" c="#10b981"/><Stat v={report.aptMandatory.medium} l="Medium" c="#EEA727"/><Stat v={report.aptMandatory.hard} l="Hard" c="#fd1c00"/>
+                  <Stat v={report.aptMandatory.aptitude} l="Aptitude" c="#3b82f6"/><Stat v={report.aptMandatory.reasoning} l="Reasoning" c="#7B2FBE"/><Stat v={report.aptMandatory.verbal} l="Verbal" c="#06b6d4"/>
                 </div>
               </>}
 
-              {/* ── COURSES ── */}
-              <Sec color="#7B2FBE">Courses & T-Hub ({report.courses?.length||0})</Sec>
+              {/* ══ 8. COURSES ══ */}
+              <Sec color="#7B2FBE">{IC.layers} Courses ({report.courses?.length||0})</Sec>
               <div style={{display:'flex',flexWrap:'wrap',gap:3}}>
-                {report.courses?.length>0?report.courses.map((c,i)=><span key={i} style={{fontSize:'9px',fontWeight:500,color:'rgba(255,255,255,.4)',background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.06)',padding:'2px 7px',borderRadius:4}}>{c}</span>):<span style={{fontSize:'10px',color:'rgba(255,255,255,.2)'}}>No courses</span>}
+                {report.courses?.length>0?report.courses.map((c,i)=><span key={i} style={{fontSize:9,fontWeight:500,color:'rgba(255,255,255,.35)',background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.05)',padding:'2px 7px',borderRadius:4}}>{c}</span>):<span style={{fontSize:10,color:'rgba(255,255,255,.15)'}}>No courses</span>}
               </div>
 
-              {/* ── PAYMENT STATUS ── */}
-              <Sec color="#10b981">Payment Status</Sec>
+              {/* ══ 9. PAYMENTS ══ */}
+              <Sec color="#10b981">{IC.dl} Payment Status</Sec>
               <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:5}}>
-                {(report.payments||[]).map((p,i)=>{const pd=(p||'').toLowerCase()==='paid';return<div key={i} style={{textAlign:'center',padding:'6px 4px',borderRadius:7,border:'1px solid',borderColor:pd?'rgba(16,185,129,.2)':'rgba(253,28,0,.12)',background:pd?'rgba(16,185,129,.06)':'rgba(253,28,0,.04)'}}><div style={{fontSize:'7px',fontWeight:600,color:'rgba(255,255,255,.25)',textTransform:'uppercase'}}>Term {i+1}</div><div style={{fontSize:'10px',fontWeight:700,marginTop:1,color:pd?'#10b981':'#fd1c00'}}>{pd?'✓ Paid':'Pending'}</div></div>})}
+                {(report.payments||[]).map((p,i)=>{const pd=(p||'').toLowerCase()==='paid';return (<div key={i} style={{textAlign:'center',padding:'5px 3px',borderRadius:7,border:'1px solid',borderColor:pd?'rgba(16,185,129,.18)':'rgba(253,28,0,.1)',background:pd?'rgba(16,185,129,.05)':'rgba(253,28,0,.03)'}}><div style={{fontSize:7,fontWeight:600,color:'rgba(255,255,255,.2)',textTransform:'uppercase'}}>Term {i+1}</div><div style={{fontSize:10,fontWeight:700,marginTop:1,color:pd?'#10b981':'#fd1c00'}}>{pd?'✓ Paid':'Pending'}</div></div>)})}
               </div>
 
-              {/* ── PLACEMENT + VIOLATIONS ── */}
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginTop:14}}>
-                <div>
-                  <Sec color="#fd1c00">Placement</Sec>
-                  <div style={{padding:'10px 14px',borderRadius:9,background:'rgba(255,255,255,.02)',border:'1px solid rgba(255,255,255,.06)'}}>
-                    <div style={{fontSize:'13px',fontWeight:700,color:report.placement&&report.placement!=='Not yet placed'?'#10b981':'rgba(255,255,255,.3)'}}>{report.placement||'Not yet placed'}</div>
-                  </div>
-                </div>
-                <div>
-                  <Sec color="#EEA727">Status</Sec>
-                  <div style={{padding:'10px 14px',borderRadius:9,background:'rgba(255,255,255,.02)',border:'1px solid rgba(255,255,255,.06)'}}>
-                    <div style={{fontSize:'10px',color:'rgba(255,255,255,.35)'}}>Violations: <span style={{fontWeight:700,color:report.violations>0?'#fd1c00':'#10b981'}}>{report.violations||0}</span></div>
-                    {report.semesters?.length>0&&<div style={{fontSize:'9px',color:'rgba(255,255,255,.25)',marginTop:4}}>Semesters: {report.semesters.map((s2,i)=>`S${i+1}:${s2}`).join(' · ')}</div>}
-                  </div>
-                </div>
+              {/* ══ 10. PLACEMENT + STATUS ══ */}
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginTop:12}}>
+                <div><Sec color="#fd1c00">{IC.bolt} Placement</Sec><div style={{padding:'9px 14px',borderRadius:9,background:'rgba(255,255,255,.02)',border:'1px solid rgba(255,255,255,.05)'}}><div style={{fontSize:13,fontWeight:700,color:report.placement&&report.placement!=='Not yet placed'?'#10b981':'rgba(255,255,255,.25)'}}>{report.placement||'Not yet placed'}</div></div></div>
+                <div><Sec color="#EEA727">{IC.grid} Status</Sec><div style={{padding:'9px 14px',borderRadius:9,background:'rgba(255,255,255,.02)',border:'1px solid rgba(255,255,255,.05)'}}><div style={{fontSize:10,color:'rgba(255,255,255,.3)'}}>Violations: <span style={{fontWeight:700,color:report.violations>0?'#fd1c00':'#10b981'}}>{report.violations||0}</span></div>{report.semesters?.length>0&&<div style={{fontSize:8,color:'rgba(255,255,255,.2)',marginTop:4}}>Semesters: {report.semesters.map((s2,i)=>`S${i+1}:${s2}`).join(' · ')}</div>}</div></div>
               </div>
+
             </div>
 
             {/* Footer */}
-            <div style={{padding:'8px 20px',borderTop:'1px solid rgba(255,255,255,.06)',display:'flex',justifyContent:'space-between',fontSize:'8px',color:'rgba(255,255,255,.2)'}}>
+            <div style={{padding:'8px 20px',borderTop:'1px solid rgba(255,255,255,.04)',display:'flex',justifyContent:'space-between',fontSize:8,color:'rgba(255,255,255,.18)'}}>
               <span>Technical Hub · Aditya University — ACET · AEC · ACOE</span>
               <span style={{fontWeight:600}}>Generated: {new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</span>
             </div>
@@ -418,8 +478,8 @@ export default function AdminDashboard() {
 
           {/* Download bar */}
           <div style={{display:'flex',justifyContent:'flex-end',gap:8,marginTop:14}}>
-            <button onClick={()=>{setReport(null);setRoll('')}} style={{fontSize:'12px',fontWeight:500,color:'rgba(255,255,255,.35)',background:'none',border:'1px solid rgba(255,255,255,.08)',padding:'9px 18px',borderRadius:9,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>← Search Another</button>
-            <button onClick={downloadPDF} disabled={gen} style={{display:'flex',alignItems:'center',gap:5,fontSize:'12px',fontWeight:600,color:'#fff',background:'linear-gradient(135deg,#fd1c00,#c41600)',border:'none',padding:'9px 20px',borderRadius:9,cursor:gen?'wait':'pointer',fontFamily:"'DM Sans',sans-serif"}}>{IC.dl} {gen?'Generating...':'Download PDF'}</button>
+            <button onClick={()=>{setReport(null);setRoll('')}} style={{fontSize:12,fontWeight:500,color:'rgba(255,255,255,.3)',background:'none',border:'1px solid rgba(255,255,255,.07)',padding:'10px 20px',borderRadius:10,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>← Search Another</button>
+            <button onClick={downloadPDF} disabled={gen} style={{display:'flex',alignItems:'center',gap:6,fontSize:12,fontWeight:600,color:'#fff',background:'linear-gradient(135deg,#fd1c00,#c41600)',border:'none',padding:'10px 22px',borderRadius:10,cursor:gen?'wait':'pointer',fontFamily:"'DM Sans',sans-serif"}}>{IC.dl} {gen?'Generating...':'Download PDF'}</button>
           </div>
         </>}
       </div>
