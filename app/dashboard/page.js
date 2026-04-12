@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { createClient } from "@supabase/supabase-js";
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 import { useRouter } from "next/navigation";
@@ -798,7 +798,372 @@ function TeamProfile({ user }){
     </div>
   );
 }
+/* ═══ PROJECT STATUS — MILESTONE TRACKER ═══ */
+function ProjectStatus({ user }) {
+  const [stages, setStages] = useState([]);
+  const [progress, setProgress] = useState({ completed:0, total:7, percent:0, credits:0 });
+  const [teamInfo, setTeamInfo] = useState(null);
+  const [mentor, setMentor] = useState(null);
+  const [psLoading, setPsLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [modalStage, setModalStage] = useState(null);
+  const [psToast, setPsToast] = useState(null);
+  const [psNotifs, setPsNotifs] = useState([]);
+  const [showPsNotif, setShowPsNotif] = useState(false);
+  const [psUnread, setPsUnread] = useState(0);
+  const psToastTimer = useRef(null);
 
+  const teamNumber = user?.teamNumber;
+  const rollNumber = user?.rollNumber;
+
+  const fetchStatus = useCallback(async () => {
+    if (!teamNumber) return;
+    setPsLoading(true);
+    try {
+      const r = await fetch(`/api/milestones/team-status?team=${teamNumber}`);
+      const d = await r.json();
+      if (d.stages) setStages(d.stages);
+      if (d.progress) setProgress(d.progress);
+      if (d.team) setTeamInfo(d.team);
+      if (d.mentor) setMentor(d.mentor);
+    } catch (err) { console.error(err); }
+    finally { setPsLoading(false); }
+  }, [teamNumber]);
+
+  useEffect(() => { fetchStatus(); }, [fetchStatus]);
+
+  // Notifications polling
+  useEffect(() => {
+    if (!rollNumber) return;
+    const fetchN = async () => {
+      try {
+        const r = await fetch(`/api/milestones/notifications?type=student&email=${rollNumber}&limit=10`);
+        const d = await r.json();
+        if (d.notifications) setPsNotifs(d.notifications);
+        if (d.unread_count !== undefined) setPsUnread(d.unread_count);
+      } catch {}
+    };
+    fetchN();
+    const iv = setInterval(fetchN, 30000);
+    return () => clearInterval(iv);
+  }, [rollNumber]);
+
+  async function handleSubmitReview() {
+    if (!modalStage || submitting) return;
+    setSubmitting(true);
+    try {
+      const r = await fetch('/api/milestones/submit-review', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teamNumber, stageNumber: modalStage.stage_number, submittedByRoll: rollNumber, submittedByName: user.name })
+      });
+      const d = await r.json();
+      if (!r.ok) { showPsToast(d.error || 'Failed', true); return; }
+      showPsToast(`Stage ${modalStage.stage_number}: ${modalStage.stage_name} sent for review!`);
+      setModalStage(null);
+      fetchStatus();
+    } catch { showPsToast('Network error', true); }
+    finally { setSubmitting(false); }
+  }
+
+  function showPsToast(msg, isError) {
+    setPsToast({ msg, isError });
+    clearTimeout(psToastTimer.current);
+    psToastTimer.current = setTimeout(() => setPsToast(null), 3500);
+  }
+
+  async function markAllPsRead() {
+    await fetch('/api/milestones/notifications', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'mark-all-read', type: 'student', email: rollNumber })
+    });
+    setPsUnread(0);
+    setPsNotifs(prev => prev.map(n => ({ ...n, read: true })));
+  }
+
+  function getStatus(stage, idx) {
+    if (stage.status === 'completed') return 'completed';
+    if (stage.status === 'in-review') return 'active';
+    if (stage.actionable || idx === 0) return 'ready';
+    if (idx > 0 && stages[idx - 1]?.status === 'completed') return 'ready';
+    return 'disabled';
+  }
+
+  const STAGE_META = [
+    { name:'Ideation', desc:'Brainstorm ideas, define the problem, and finalize the project concept', icon:'M9.663 17h4.674M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z', color:'#e8650a' },
+    { name:'Planning', desc:'Set milestones, assign responsibilities, and create the project timeline', icon:'M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 3h6v4H9zM9 14l2 2 4-4', color:'#1a73e8' },
+    { name:'Design', desc:'Create architecture diagrams, wireframes, and plan the system structure', icon:'M12 19l7-7 3 3-7 7-3-3zM18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5zM2 2l7.586 7.586', color:'#d93025' },
+    { name:'Development', desc:'Build core features, integrate components, and implement the solution', icon:'M16 18l6-6-6-6M8 6l-6 6 6 6', color:'#2d9d4f' },
+    { name:'Testing', desc:'Validate functionality, identify issues, and ensure quality standards', icon:'M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z', color:'#f5a623' },
+    { name:'Deployment', desc:'Launch the project, configure the environment, and go live', icon:'M22 12h-4l-3 9L9 3l-3 9H2', color:'#0d8abc' },
+    { name:'Documentation', desc:'Prepare the final report, user guide, and presentation materials', icon:'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8', color:'#e6c419' },
+  ];
+
+  if (psLoading && !stages.length) return <div style={{display:'flex',alignItems:'center',justifyContent:'center',minHeight:'60vh',color:'rgba(255,255,255,.3)',fontSize:'.8rem'}}><div className="mp-loading-spinner" style={{marginRight:10}}/> Loading milestones...</div>;
+
+  const pct = progress.percent;
+
+  return (
+    <div className="ps-wrap-inner">
+      <style>{`
+.ps-wrap-inner{animation:psIn .5s ease both}
+@keyframes psIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+/* Header */
+.ps-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.ps-header-left{display:flex;align-items:center;gap:14px}
+.ps-header-icon{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#ff1d00,#c41600);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(255,29,0,.2);flex-shrink:0;animation:psIconBob 3s ease-in-out infinite}
+@keyframes psIconBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.ps-header-icon svg{width:22px;height:22px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ps-header-title{font-size:1.2rem;font-weight:700;color:#fff}
+.ps-header-sub{font-size:.72rem;color:rgba(255,255,255,.35);margin-top:2px}
+.ps-header-right{display:flex;align-items:center;gap:10px}
+.ps-badge-pill{font-size:.72rem;font-weight:600;color:#ff1d00;background:rgba(255,29,0,.06);border:1px solid rgba(255,29,0,.18);padding:6px 16px;border-radius:100px}
+.ps-notif-wrap{position:relative}
+.ps-notif-btn2{width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.4);transition:all .2s;position:relative}
+.ps-notif-btn2:hover{background:rgba(255,255,255,.06);color:#fff}
+.ps-notif-badge{position:absolute;top:3px;right:3px;min-width:16px;height:16px;border-radius:8px;background:#ff1d00;font-size:9px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid #050008}
+.ps-notif-dd{position:absolute;top:44px;right:0;width:310px;background:#13101a;border:1px solid rgba(255,255,255,.08);border-radius:12px;z-index:100;box-shadow:0 12px 40px rgba(0,0,0,.6);max-height:340px;overflow-y:auto}
+.ps-notif-dd-hdr{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;border-bottom:1px solid rgba(255,255,255,.06);font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.06em}
+.ps-notif-dd-mark{font-size:10px;color:#ff1d00;cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif}
+.ps-notif-dd-item{padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.03)}
+.ps-notif-dd-item.unread{background:rgba(255,29,0,.03)}
+.ps-notif-dd-item-t{font-size:11px;font-weight:600;color:#fff;margin-bottom:2px}
+.ps-notif-dd-item-m{font-size:10px;color:rgba(255,255,255,.35);line-height:1.4}
+.ps-notif-dd-item-time{font-size:9px;color:rgba(255,255,255,.15);margin-top:3px}
+
+/* Progress */
+.ps-prog-wrap{margin-bottom:28px}
+.ps-prog-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.ps-prog-lb{font-size:11px;font-weight:600;color:rgba(255,255,255,.2);text-transform:uppercase;letter-spacing:.06em}
+.ps-prog-pct{font-size:13px;font-weight:700;color:#ff1d00}
+.ps-prog-track{height:4px;border-radius:4px;background:rgba(255,255,255,.06);overflow:hidden}
+.ps-prog-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#ff1d00,#f5a623,#2d9d4f);transition:width .8s cubic-bezier(.34,1.56,.64,1);position:relative}
+.ps-prog-fill::after{content:'';position:absolute;right:0;top:-2px;width:8px;height:8px;border-radius:50%;background:#fff;box-shadow:0 0 10px rgba(255,255,255,.5);animation:psDotPulse 1.5s ease-in-out infinite}
+@keyframes psDotPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.6}}
+.ps-prog-dots{display:flex;justify-content:space-between;margin-top:8px}
+.ps-prog-dot{width:8px;height:8px;border-radius:50%;border:1.5px solid rgba(255,255,255,.08);transition:all .4s cubic-bezier(.34,1.56,.64,1)}
+
+/* Timeline */
+.ps-tl{position:relative;padding-left:90px}
+.ps-tl::before{content:'';position:absolute;left:68px;top:0;bottom:0;width:2px;background:rgba(255,255,255,.06);border-radius:2px}
+
+@keyframes psStageSlide{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.ps-stage{position:relative;margin-bottom:16px;animation:psStageSlide .5s cubic-bezier(.16,1,.3,1) both}
+.ps-stage:last-child{margin-bottom:0}
+
+.ps-stage-label{position:absolute;left:-90px;top:22px;width:48px;text-align:right;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:rgba(255,255,255,.15);transition:color .4s}
+.ps-stage.completed .ps-stage-label,.ps-stage.active .ps-stage-label{color:var(--sc)}
+
+/* Dot */
+.ps-dot{position:absolute;left:-38px;top:14px;width:36px;height:36px;border-radius:50%;background:#13101a;border:2px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;z-index:3;transition:all .5s cubic-bezier(.34,1.56,.64,1)}
+.ps-dot svg{width:15px;height:15px;fill:none;stroke:rgba(255,255,255,.2);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:all .4s}
+.ps-stage.completed .ps-dot{background:var(--sc);border-color:var(--sc);box-shadow:0 0 16px color-mix(in srgb,var(--sc) 35%,transparent)}
+.ps-stage.completed .ps-dot svg{stroke:#fff}
+.ps-stage.completed:hover .ps-dot{transform:scale(1.12)}
+.ps-stage.active .ps-dot{border-color:var(--sc);animation:psActivePulse 2s ease-in-out infinite}
+.ps-stage.active .ps-dot svg{stroke:var(--sc)}
+@keyframes psActivePulse{0%,100%{box-shadow:0 0 10px color-mix(in srgb,var(--sc) 15%,transparent);transform:scale(1)}50%{box-shadow:0 0 22px color-mix(in srgb,var(--sc) 40%,transparent);transform:scale(1.06)}}
+
+/* Connector */
+.ps-conn{position:absolute;left:-21px;top:calc(14px + 36px);width:2px;height:calc(100% - 36px + 2px);z-index:2;border-radius:2px;display:none}
+.ps-stage.completed .ps-conn{display:block;background:var(--sc);box-shadow:0 0 8px color-mix(in srgb,var(--sc) 30%,transparent);animation:psLineGrow .7s .2s ease-out both}
+.ps-stage:last-child .ps-conn{display:none!important}
+@keyframes psLineGrow{from{transform:scaleY(0);transform-origin:top}to{transform:scaleY(1);transform-origin:top}}
+
+/* Card */
+.ps-card{background:rgba(13,10,20,.6);border:1px solid rgba(255,255,255,.05);border-radius:14px;padding:18px 20px;margin-left:10px;transition:all .3s cubic-bezier(.34,1.56,.64,1);position:relative;overflow:hidden}
+.ps-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:0;background:var(--sc);transition:height .5s}
+.ps-stage.completed .ps-card::before,.ps-stage.active .ps-card::before{height:100%}
+.ps-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.ps-stage.completed .ps-card{border-color:color-mix(in srgb,var(--sc) 15%,transparent);background:color-mix(in srgb,var(--sc) 3%,rgba(13,10,20,.6))}
+.ps-stage.active .ps-card{border-color:color-mix(in srgb,var(--sc) 20%,transparent);animation:psCardGlow 3s ease-in-out infinite}
+@keyframes psCardGlow{0%,100%{box-shadow:0 0 0 transparent}50%{box-shadow:0 4px 24px color-mix(in srgb,var(--sc) 10%,transparent)}}
+
+.ps-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.ps-stage-name{font-size:15px;font-weight:600;color:#fff;margin-bottom:4px;transition:color .4s}
+.ps-stage.completed .ps-stage-name,.ps-stage.active .ps-stage-name{color:var(--sc)}
+.ps-stage.disabled .ps-stage-name{color:rgba(255,255,255,.35)}
+.ps-stage-desc{font-size:12px;color:rgba(255,255,255,.35);line-height:1.5}
+.ps-stage.disabled .ps-stage-desc{color:rgba(255,255,255,.15)}
+
+.ps-chip{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:4px 12px;border-radius:100px;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:5px}
+.ps-chip svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.ps-chip.locked{color:rgba(255,255,255,.15);background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04)}
+.ps-chip.review{animation:psChipPulse 2s ease-in-out infinite}
+@keyframes psChipPulse{0%,100%{opacity:1}50%{opacity:.6}}
+
+.ps-actions{display:flex;align-items:center;gap:8px;margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.04)}
+.ps-btn{display:flex;align-items:center;gap:6px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;padding:9px 18px;border-radius:9px;cursor:pointer;transition:all .3s cubic-bezier(.34,1.56,.64,1);border:1px solid;position:relative;overflow:hidden}
+.ps-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .3s}
+.ps-btn-review{color:#ff1d00;background:rgba(255,29,0,.06);border-color:rgba(255,29,0,.18)}
+.ps-btn-review:hover:not(:disabled){background:rgba(255,29,0,.12);border-color:rgba(255,29,0,.35);transform:translateY(-2px);box-shadow:0 6px 20px rgba(255,29,0,.15)}
+.ps-btn-review:hover:not(:disabled) svg{transform:rotate(15deg) scale(1.1)}
+.ps-btn-review:disabled{opacity:.15;cursor:not-allowed;color:rgba(255,255,255,.2);background:rgba(255,255,255,.02);border-color:rgba(255,255,255,.04)}
+.ps-btn-review.pending{cursor:default;pointer-events:none;animation:psAwait 2.5s ease-in-out infinite}
+.ps-btn-review.pending svg{animation:psSpin 3s linear infinite}
+@keyframes psAwait{0%,100%{box-shadow:0 0 0 transparent}50%{box-shadow:0 0 18px color-mix(in srgb,var(--sc) 20%,transparent)}}
+@keyframes psSpin{to{transform:rotate(360deg)}}
+.ps-btn-done{color:rgba(255,255,255,.15);background:rgba(255,255,255,.02);border-color:rgba(255,255,255,.04);cursor:not-allowed;opacity:.2}
+.ps-btn-done.completed{opacity:1;cursor:default}
+
+.ps-mentor-row{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:11px;color:rgba(255,255,255,.35)}
+.ps-mentor-row svg{width:13px;height:13px;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.ps-reject-msg{margin-top:8px;padding:8px 12px;border-radius:8px;background:rgba(253,28,0,.04);border:1px solid rgba(253,28,0,.1);font-size:11px;color:#ff6040}
+
+/* Toast */
+.ps-toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(80px);background:#13101a;border:1px solid rgba(255,29,0,.25);color:#fff;font-size:13px;font-weight:500;padding:12px 24px;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.4);display:flex;align-items:center;gap:10px;z-index:200;opacity:0;transition:all .5s cubic-bezier(.16,1,.3,1);pointer-events:none;backdrop-filter:blur(8px)}
+.ps-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.ps-toast svg{width:18px;height:18px;fill:none;stroke-width:2;flex-shrink:0}
+
+/* Modal */
+.ps-modal-bg{position:fixed;inset:0;background:rgba(5,0,8,.88);display:flex;align-items:center;justify-content:center;z-index:200;backdrop-filter:blur(6px)}
+.ps-modal{background:#13101a;border:1px solid rgba(255,29,0,.15);border-radius:20px;padding:32px;width:92%;max-width:420px;text-align:center;animation:psModIn .4s cubic-bezier(.16,1,.3,1);box-shadow:0 20px 80px rgba(0,0,0,.5)}
+@keyframes psModIn{from{opacity:0;transform:translateY(28px) scale(.92)}to{opacity:1;transform:translateY(0) scale(1)}}
+.ps-modal-icon{width:56px;height:56px;margin:0 auto 16px;border-radius:50%;background:rgba(255,29,0,.06);border:1px solid rgba(255,29,0,.15);display:flex;align-items:center;justify-content:center;animation:psModSpin .7s cubic-bezier(.34,1.56,.64,1)}
+@keyframes psModSpin{0%{transform:scale(0) rotate(-120deg)}100%{transform:scale(1) rotate(0)}}
+.ps-modal-icon svg{width:24px;height:24px;stroke:#ff1d00;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ps-modal-title{font-size:16px;font-weight:600;color:#fff;margin-bottom:8px}
+.ps-modal-desc{font-size:12.5px;color:rgba(255,255,255,.35);line-height:1.5;margin-bottom:14px}
+.ps-modal-mentor{font-size:12px;font-weight:500;color:#EEA727;margin-bottom:20px;display:flex;align-items:center;justify-content:center;gap:6px}
+.ps-modal-mentor svg{width:14px;height:14px;stroke:#EEA727;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ps-modal-btns{display:flex;gap:10px;justify-content:center}
+.ps-modal-btn{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:11px 24px;border-radius:11px;cursor:pointer;transition:all .3s cubic-bezier(.34,1.56,.64,1);border:none}
+.ps-modal-btn.confirm{color:#fff;background:linear-gradient(135deg,#ff1d00,#c41600);box-shadow:0 4px 16px rgba(255,29,0,.2)}
+.ps-modal-btn.confirm:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(255,29,0,.3)}
+.ps-modal-btn.confirm:disabled{opacity:.5;cursor:not-allowed}
+.ps-modal-btn.cancel{color:rgba(255,255,255,.35);background:transparent;border:1px solid rgba(255,255,255,.08)}
+.ps-modal-btn.cancel:hover{border-color:rgba(255,255,255,.2);color:#fff}
+
+@media(max-width:640px){
+  .ps-header{flex-direction:column;align-items:flex-start;gap:10px}
+  .ps-tl{padding-left:60px}
+  .ps-tl::before{left:42px}
+  .ps-stage-label{left:-60px;width:32px;font-size:8px}
+  .ps-dot{left:-26px;width:28px;height:28px}
+  .ps-dot svg{width:12px;height:12px}
+  .ps-conn{left:-13px;top:calc(14px + 28px)}
+  .ps-card{padding:14px;margin-left:6px;border-radius:12px}
+  .ps-stage-name{font-size:13px}
+  .ps-stage-desc{font-size:11px}
+  .ps-actions{flex-direction:column;align-items:stretch}
+  .ps-btn{justify-content:center}
+  .ps-notif-dd{width:280px;right:-20px}
+}
+      `}</style>
+
+      {/* Header */}
+      <div className="ps-header">
+        <div className="ps-header-left">
+          <div className="ps-header-icon"><svg viewBox="0 0 24 24"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg></div>
+          <div>
+            <div className="ps-header-title">Project Status</div>
+            <div className="ps-header-sub">{teamInfo?.project_title || teamNumber || 'Track your project'}</div>
+          </div>
+        </div>
+        <div className="ps-header-right">
+          {/* Notification bell */}
+          <div className="ps-notif-wrap">
+            <div className="ps-notif-btn2" onClick={() => setShowPsNotif(!showPsNotif)}>
+              <Bell size={16}/>
+              {psUnread > 0 && <div className="ps-notif-badge">{psUnread}</div>}
+            </div>
+            {showPsNotif && (
+              <div className="ps-notif-dd" onClick={e => e.stopPropagation()}>
+                <div className="ps-notif-dd-hdr">
+                  <span>Notifications</span>
+                  {psUnread > 0 && <button className="ps-notif-dd-mark" onClick={markAllPsRead}>Mark all read</button>}
+                </div>
+                {psNotifs.length === 0 ? <div style={{padding:20,textAlign:'center',fontSize:11,color:'rgba(255,255,255,.15)'}}>No notifications</div> :
+                  psNotifs.map(n => (
+                    <div key={n.id} className={`ps-notif-dd-item ${!n.read?'unread':''}`}>
+                      <div className="ps-notif-dd-item-t">{n.title}</div>
+                      <div className="ps-notif-dd-item-m">{n.message}</div>
+                      <div className="ps-notif-dd-item-time">{new Date(n.created_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div>
+                    </div>
+                  ))
+                }
+              </div>
+            )}
+          </div>
+          <div className="ps-badge-pill">{progress.completed} / 7 Completed</div>
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div className="ps-prog-wrap">
+        <div className="ps-prog-top"><span className="ps-prog-lb">Overall Progress</span><span className="ps-prog-pct">{pct}%</span></div>
+        <div className="ps-prog-track"><div className="ps-prog-fill" style={{width:`${pct}%`}}/></div>
+        <div className="ps-prog-dots">
+          {STAGE_META.map((st, i) => {
+            const filled = stages[i]?.status === 'completed';
+            return <div key={i} className="ps-prog-dot" style={filled ? {background:st.color,borderColor:st.color,boxShadow:`0 0 6px ${st.color}50`} : {}} title={`Stage ${i+1}: ${st.name}`}/>
+          })}
+        </div>
+      </div>
+
+      {/* Timeline */}
+      <div className="ps-tl">
+        {STAGE_META.map((st, idx) => {
+          const s = stages[idx] || { status: 'pending', actionable: idx === 0 };
+          const status = getStatus(s, idx);
+          const isCom = status === 'completed', isAct = status === 'active', isRdy = status === 'ready', isDis = status === 'disabled';
+
+          return (
+            <div key={idx} className={`ps-stage ${status}`} style={{'--sc': st.color, animationDelay: `${idx * 0.08}s`}}>
+              <div className="ps-stage-label">S-{idx+1}</div>
+              <div className="ps-dot"><svg viewBox="0 0 24 24"><path d={st.icon}/></svg></div>
+              <div className="ps-conn"/>
+              <div className="ps-card">
+                <div className="ps-card-top">
+                  <div>
+                    <div className="ps-stage-name">{st.name}</div>
+                    <div className="ps-stage-desc">{st.desc}</div>
+                  </div>
+                  {isAct && <span className="ps-chip review" style={{color:st.color,background:`${st.color}12`,border:`1px solid ${st.color}40`}}><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> In Review</span>}
+                  {isDis && <span className="ps-chip locked"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Locked</span>}
+                  {isCom && <span className="ps-chip" style={{color:st.color,background:`${st.color}12`,border:`1px solid ${st.color}30`}}><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Done</span>}
+                </div>
+
+                <div className="ps-actions">
+                  {isRdy && <button className="ps-btn ps-btn-review" onClick={() => setModalStage({stage_number:idx+1,stage_name:st.name,...st,...s})}><svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg><span>Mark for Review</span></button>}
+                  {isAct && <button className="ps-btn ps-btn-review pending" style={{color:st.color,background:`${st.color}0F`,borderColor:`${st.color}30`}}><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>Awaiting Mentor</span></button>}
+                  {isDis && <button className="ps-btn ps-btn-review" disabled><svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg><span>Mark for Review</span></button>}
+                  {isCom ? <button className="ps-btn ps-btn-done completed" style={{color:st.color,background:`${st.color}12`,borderColor:`${st.color}30`}}><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span>Completed</span></button> : <button className="ps-btn ps-btn-done" disabled><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span>Completed</span></button>}
+                </div>
+
+                {isAct && <div className="ps-mentor-row"><svg viewBox="0 0 24 24" style={{stroke:st.color}}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Sent to <strong style={{marginLeft:3}}>{mentor?.name || teamInfo?.mentor_assigned || 'Mentor'}</strong></div>}
+                {isCom && s.reviewed_by_name && <div className="ps-mentor-row"><svg viewBox="0 0 24 24" style={{stroke:st.color}}><polyline points="20 6 9 17 4 12"/></svg> Approved by <strong style={{marginLeft:3}}>{s.reviewed_by_name}</strong> · {s.reviewed_at && new Date(s.reviewed_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div>}
+                {s.status === 'pending' && s.mentor_comment && <div className="ps-reject-msg">Mentor feedback: "{s.mentor_comment}"</div>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Toast */}
+      <div className={`ps-toast ${psToast ? 'show' : ''}`}>
+        <svg viewBox="0 0 24 24" style={{stroke:psToast?.isError?'#ef4444':'#10b981'}}>{psToast?.isError ? <><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></> : <><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></>}</svg>
+        <span>{psToast?.msg}</span>
+      </div>
+
+      {/* Modal */}
+      {modalStage && (
+        <div className="ps-modal-bg" onClick={() => !submitting && setModalStage(null)}>
+          <div className="ps-modal" onClick={e => e.stopPropagation()}>
+            <div className="ps-modal-icon"><svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg></div>
+            <div className="ps-modal-title">Send "{modalStage.name}" for Review?</div>
+            <div className="ps-modal-desc">Your mentor will be notified to review Stage {modalStage.stage_number}: {modalStage.name}. They will visit your team to verify.</div>
+            {(mentor || teamInfo?.mentor_assigned) && <div className="ps-modal-mentor"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> {mentor?.name || teamInfo?.mentor_assigned}</div>}
+            <div className="ps-modal-btns">
+              <button className="ps-modal-btn cancel" onClick={() => setModalStage(null)} disabled={submitting}>Cancel</button>
+              <button className="ps-modal-btn confirm" onClick={handleSubmitReview} disabled={submitting}>{submitting ? 'Sending...' : 'Send for Review'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 /* ═══ MAIN DASHBOARD ═══ */
 export default function Dashboard(){
   const router = useRouter();
@@ -1305,7 +1670,7 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
                 {(isMobile||!collapsed)&&<div className="sb-section-header">{sec.title}</div>}
                 {sec.items.map(item=>(
                   <div key={item.id} className={`sb-item ${active===item.id?"active":""}`}
-                    onClick={()=>{if(item.id==='project-status'){router.push('/dashboard/project-status')}else{setActive(item.id)};if(isMobile)setMobileMenuOpen(false)}}
+                    onClick={()=>{setActive(item.id);if(isMobile)setMobileMenuOpen(false)}}
                     onMouseEnter={()=>!isMobile&&collapsed&&setHovered(item.id)} onMouseLeave={()=>setHovered(null)}
                     style={{padding:(!isMobile&&collapsed)?"10px 0":"9px 16px",margin:(!isMobile&&collapsed)?"2px 8px":"2px 10px",justifyContent:(!isMobile&&collapsed)?"center":"flex-start",gap:(!isMobile&&collapsed)?0:12,borderRadius:(!isMobile&&collapsed)?12:10}}>
                     <div className="sb-item-icon"><item.icon size={18}/></div>
@@ -1338,7 +1703,8 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
           </div>
           <div className="main-content">
             {active==="my-profile"?<MyProfile user={user} hootData={hootData} videoRatings={videoRatings} videoLoading={videoLoading}/>:
-             active==="team-profile"?<TeamProfile user={user}/>:(
+             active==="team-profile"?<TeamProfile user={user}/>:
+             active==="project-status"?<ProjectStatus user={user}/>:(
               <div className="page-placeholder">
                 <div className="page-icon">{activeItem&&<activeItem.icon size={36}/>}</div>
                 <div className="page-label">{PAGE_TITLES[active]}</div>
