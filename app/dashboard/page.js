@@ -132,7 +132,7 @@ function MyProfile({ user, hootData, videoRatings, videoLoading }) {
         <div className="mp-hero-info">
           <div className="mp-hero-left">
             <div className="mp-hero-name">{s.name}</div>
-            <div className="mp-hero-roll"><Hash size={12}/> {s.roll_number} · {s.branch} · {s.college}</div>
+            <div className="mp-hero-roll">{s.roll_number} · {s.branch} · {s.college}</div>
             <div className="mp-hero-tags">
               {s.technology && <span className="mp-badge" style={{background:"rgba(255,255,255,.92)",border:"none",color:"#b91c1c",boxShadow:"0 2px 10px rgba(0,0,0,.06)"}}>{s.technology}</span>}
               {s.pool && <span className="mp-badge" style={{background:"rgba(255,255,255,.18)",border:"none",color:"#fff",boxShadow:"inset 0 0 0 1px rgba(255,255,255,.2)"}}>{s.pool}</span>}
@@ -953,7 +953,7 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
 @keyframes blobSpin{0%{filter:hue-rotate(0deg)}50%{filter:hue-rotate(15deg)}100%{filter:hue-rotate(0deg)}}
 @keyframes blobMorph2{0%,100%{border-radius:60% 40% 50% 50%/50% 60% 40% 50%;transform:rotate(0deg) scale(1)}25%{border-radius:50% 50% 40% 60%/60% 40% 50% 50%;transform:rotate(-6deg) scale(1.02)}50%{border-radius:40% 60% 55% 45%/50% 50% 45% 55%;transform:rotate(4deg) scale(.98)}75%{border-radius:55% 45% 50% 50%/40% 60% 55% 45%;transform:rotate(-3deg) scale(1.01)}}
 .mp-avatar-wrap-ring2{position:absolute;width:115px;height:115px;background:linear-gradient(to left,#EEA727,#ff4e50,#fd1c00);border-radius:60% 40% 50% 50%/50% 60% 40% 50%;z-index:2;animation:blobMorph2 7s ease-in-out infinite;opacity:.5;filter:blur(1px);}
-.mp-avatar{width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,#fd1c00,#EEA727);border:none;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:800;color:#fd1c00;overflow:hidden;position:relative;z-index:3;margin-top:-2px;}
+.mp-hero{flex:1;display:flex;align-items:center;padding:6px 24px 14px;border-radius:16px;background:linear-gradient(to right,#fd1c00 0%,#ff4e50 50%,#EEA727 100%);position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(253,28,0,.12),0 2px 8px rgba(238,167,39,.1);}
 .mp-avatar-img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;}
 .mp-float-badge{position:absolute;z-index:5;border-radius:12px;padding:3px 8px;box-shadow:0 3px 12px rgba(0,0,0,.4);font-size:.5rem;font-weight:700;backdrop-filter:blur(12px);white-space:nowrap;letter-spacing:.3px;}
 .mp-fb-1{top:-14px;left:-10px;background:rgba(139,92,246,.9);color:#fff;border:1px solid rgba(139,92,246,1);animation:fbFloat 4s ease-in-out infinite;}
@@ -964,7 +964,7 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
 .mp-hero-left{flex:1;min-width:200px;}
 .mp-hero-right{display:flex;gap:8px;flex-shrink:0;}
 .mp-hero-name{font-size:1.14rem;font-weight:800;color:#fff;margin-bottom:1px;font-family:'Astro',sans-serif;letter-spacing:1.5px;text-transform:uppercase;}
-.mp-hero-roll{font-size:.74rem;color:rgba(255,255,255,.75);display:flex;align-items:center;gap:6px;margin-bottom:4px;}
+.mp-hero-roll{font-size:.74rem;color:#000;display:flex;align-items:center;gap:6px;margin-bottom:3px;}
 .mp-hero-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:0;}
 .mp-badge{padding:4px 10px;border-radius:14px;font-size:.55rem;font-weight:700;letter-spacing:.5px;display:inline-flex;align-items:center;gap:4px;transition:transform .2s;}
 .mp-hero-details{display:flex;flex-direction:column;gap:6px;}
