@@ -1305,7 +1305,7 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
                 {(isMobile||!collapsed)&&<div className="sb-section-header">{sec.title}</div>}
                 {sec.items.map(item=>(
                   <div key={item.id} className={`sb-item ${active===item.id?"active":""}`}
-                    onClick={()=>{setActive(item.id);if(isMobile)setMobileMenuOpen(false)}}
+                    onClick={()=>{if(item.id==='project-status'){router.push('/dashboard/project-status')}else{setActive(item.id)};if(isMobile)setMobileMenuOpen(false)}}
                     onMouseEnter={()=>!isMobile&&collapsed&&setHovered(item.id)} onMouseLeave={()=>setHovered(null)}
                     style={{padding:(!isMobile&&collapsed)?"10px 0":"9px 16px",margin:(!isMobile&&collapsed)?"2px 8px":"2px 10px",justifyContent:(!isMobile&&collapsed)?"center":"flex-start",gap:(!isMobile&&collapsed)?0:12,borderRadius:(!isMobile&&collapsed)?12:10}}>
                     <div className="sb-item-icon"><item.icon size={18}/></div>
