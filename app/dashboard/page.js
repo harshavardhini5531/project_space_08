@@ -963,9 +963,9 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
 .mp-hero-info{flex:1;display:flex;flex-wrap:wrap;align-items:center;gap:0;}
 .mp-hero-left{flex:1;min-width:200px;}
 .mp-hero-right{display:flex;gap:8px;flex-shrink:0;}
-.mp-hero-name{font-size:1.14rem;font-weight:800;color:#fff;margin-bottom:1px;font-family:'Astro',sans-serif;letter-spacing:1.5px;text-transform:uppercase;}
-.mp-hero-roll{font-size:.74rem;color:#000;font-weight:700;display:flex;align-items:center;gap:6px;margin-bottom:4px;}
-.mp-hero-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:0;}
+.mp-hero-name{font-size:1.14rem;font-weight:800;color:#fff;margin-bottom:3px;font-family:'Astro',sans-serif;letter-spacing:1.5px;text-transform:uppercase;margin-top:-10px;}
+.mp-hero-roll{font-size:.74rem;color:#000;font-weight:700;display:flex;align-items:center;gap:6px;margin-bottom:3px;margin-top:0;}
+.mp-hero-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:0;padding-bottom:5px;}
 .mp-badge{padding:4px 10px;border-radius:14px;font-size:.55rem;font-weight:700;letter-spacing:.5px;display:inline-flex;align-items:center;gap:4px;transition:transform .2s;}
 .mp-hero-details{display:flex;flex-direction:column;gap:6px;}
 .mp-hd{display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:8px;background:rgba(255,255,255,.08);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.1);transition:all .25s;}
