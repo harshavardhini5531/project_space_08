@@ -122,7 +122,7 @@ export default function AdminDashboard() {
     {id:'mentors',label:'Mentors',icon:IC.users},
     {id:'teams',label:'Teams',icon:IC.layers},
     {id:'actions',label:'Actions',icon:IC.bolt},
-    {id:'milestones',label:'Milestones',icon:IC.layers},
+    {id:'milestones',label:'Project Status',icon:IC.layers},
     {id:'leaderboard',label:'Leaderboard',icon:IC.bolt},
     {id:'report-card',label:'Report Card',icon:IC.file},
   ]
@@ -530,7 +530,9 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
 .ad-sb-item:nth-child(5){animation-delay:.2s}
 .ad-sb-item:hover{color:rgba(255,255,255,.7);background:rgba(255,255,255,.03)}
 /* Active — white pill background like reference */
-.ad-sb-item.on{color:#fd1c00;background:rgba(253,28,0,.08);font-weight:600;border:1px solid rgba(253,28,0,.1);box-shadow:0 2px 12px rgba(253,28,0,.08)}
+.ad-sb-item.on{color:#fff;background:linear-gradient(135deg,rgba(253,28,0,.12),rgba(250,160,0,.06));font-weight:600;position:relative}
+.ad-sb-item.on::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:20px;border-radius:0 3px 3px 0;background:linear-gradient(180deg,#fd1c00,#faa000);box-shadow:0 0 8px rgba(253,28,0,.4)}
+.ad-sb-item.on svg{color:#fd1c00!important}
 .ad-sb-item svg{flex-shrink:0;opacity:.7;transition:opacity .2s}
 .ad-sb-item.on svg{opacity:1;stroke:#fd1c00}
 
@@ -761,18 +763,43 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
               <div className="ad-ac"><div className="ad-ati">{IC.grid} Quick Stats</div><div className="ad-ad">At a glance</div><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}><div style={{padding:10,borderRadius:8,background:'rgba(255,255,255,.02)',fontSize:'.72rem'}}><span style={{color:'rgba(255,255,255,.25)'}}>Students</span><div style={{fontWeight:700,fontSize:'1.1rem',color:'#fff',marginTop:2}}>{s.totalStudents}</div></div><div style={{padding:10,borderRadius:8,background:'rgba(255,255,255,.02)',fontSize:'.72rem'}}><span style={{color:'rgba(255,255,255,.25)'}}>Accounts</span><div style={{fontWeight:700,fontSize:'1.1rem',color:'#3b82f6',marginTop:2}}>{s.accountsCreated}</div></div></div></div>
               <div className="ad-ac"><div className="ad-ati">{IC.ref} Refresh</div><div className="ad-ad">Reload latest data</div><button className="ad-ab se" onClick={fetchDashboard} disabled={loading}>{loading?'Loading...':'Refresh'}</button></div>
             </div>}
-            {/* MILESTONES */}
+            {/* PROJECT STATUS */}
             {activeTab === 'milestones' && <div className="adm-lb">
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20}}>
-                <div><div style={{fontSize:'1.1rem',fontWeight:700,color:'#fff'}}>Milestone Activity</div><div style={{fontSize:'.72rem',color:'rgba(255,255,255,.3)',marginTop:2}}>Recent stage submissions and approvals</div></div>
+                <div><div style={{fontSize:'1.1rem',fontWeight:700,color:'#fff'}}>Project Status</div><div style={{fontSize:'.72rem',color:'rgba(255,255,255,.3)',marginTop:2}}>All milestone submissions across teams</div></div>
                 <div className="adm-notif-wrap">
                   <div className="adm-notif-btn" onClick={()=>setShowAdNotif(!showAdNotif)}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>{adUnread>0&&<div className="adm-notif-badge">{adUnread}</div>}</div>
-                  {showAdNotif&&<div className="adm-notif-dd" onClick={e=>e.stopPropagation()}><div className="adm-notif-dd-hdr"><span>Activity</span>{adUnread>0&&<button className="adm-notif-dd-mark" onClick={markAdNotifsRead}>Mark all read</button>}</div>{adNotifs.length===0?<div style={{padding:20,textAlign:'center',fontSize:11,color:'rgba(255,255,255,.15)'}}>No activity yet</div>:adNotifs.map(n=><div key={n.id} className={`adm-notif-item ${!n.read?'unread':''}`}><div className="adm-notif-item-t">{n.title}</div><div className="adm-notif-item-m">{n.message}</div><div className="adm-notif-item-time">{new Date(n.created_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div></div>)}</div>}
+                  {showAdNotif&&<div className="adm-notif-dd" onClick={e=>e.stopPropagation()}><div className="adm-notif-dd-hdr"><span>Activity</span>{adUnread>0&&<button className="adm-notif-dd-mark" onClick={markAdNotifsRead}>Mark all read</button>}</div>{adNotifs.length===0?<div style={{padding:20,textAlign:'center',fontSize:11,color:'rgba(255,255,255,.15)'}}>No activity</div>:adNotifs.map(n=><div key={n.id} className={`adm-notif-item ${!n.read?'unread':''}`}><div className="adm-notif-item-t">{n.title}</div><div className="adm-notif-item-m">{n.message}</div><div className="adm-notif-item-time">{new Date(n.created_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div></div>)}</div>}
                 </div>
               </div>
-              {adNotifs.filter(n=>n.type==='review-request').length>0&&<><div style={{fontSize:'.8rem',fontWeight:600,color:'rgba(255,255,255,.5)',marginBottom:10}}>Pending Reviews</div>{adNotifs.filter(n=>n.type==='review-request'&&!n.read).map((n,i)=><div key={n.id} className="adm-ms-card"><div className="adm-ms-top"><div><div className="adm-ms-team">{n.team_number}</div><div className="adm-ms-stage">Stage {n.stage_number}: {n.title?.split('→')[1]?.trim()||n.title}</div><div className="adm-ms-meta">{new Date(n.created_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div></div><span className={`adm-ms-badge ${n.type==='review-request'?'review':n.type==='approved'?'approved':'rejected'}`}>{n.type==='review-request'?'In Review':n.type==='approved'?'Approved':'Rejected'}</span></div></div>)}</>}
-              {adNotifs.filter(n=>n.type==='approved').length>0&&<><div style={{fontSize:'.8rem',fontWeight:600,color:'rgba(255,255,255,.5)',marginBottom:10,marginTop:20}}>Recently Approved</div>{adNotifs.filter(n=>n.type==='approved').slice(0,10).map((n,i)=><div key={n.id} className="adm-ms-card"><div className="adm-ms-top"><div><div className="adm-ms-team">{n.team_number}</div><div className="adm-ms-stage">{n.title}</div><div className="adm-ms-meta">{n.message}</div></div><span className="adm-ms-badge approved">Approved</span></div></div>)}</>}
-              {adNotifs.length===0&&!adLbLoading&&<div style={{textAlign:'center',padding:40,color:'rgba(255,255,255,.15)',fontSize:'.8rem'}}>No milestone activity yet</div>}
+
+              <div style={{overflowX:'auto'}}>
+                <table className="adm-lb-tbl" style={{minWidth:900}}>
+                  <thead><tr><th>Team</th><th>Project</th><th>Leader</th><th>Stage</th><th>Review Sent</th><th>Mentor</th><th>Status</th><th>Action</th><th>Comments</th><th>Approved/Rejected</th><th>Time Taken</th></tr></thead>
+                  <tbody>
+                    {adNotifs.length===0&&<tr><td colSpan={11} style={{textAlign:'center',padding:30,color:'rgba(255,255,255,.15)'}}>No milestone activity yet</td></tr>}
+                    {adNotifs.map((n,i)=>{
+                      const reviewTime = n.created_at ? new Date(n.created_at) : null;
+                      const isApproved = n.type==='approved';
+                      const isRejected = n.type==='rejected';
+                      const isReview = n.type==='review-request';
+                      return <tr key={n.id}>
+                        <td style={{fontWeight:700,color:'#fd1c00'}}>{n.team_number||'—'}</td>
+                        <td style={{maxWidth:140,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',color:'rgba(255,255,255,.5)'}}>{n.message?.split('marked')[0]?.trim()||'—'}</td>
+                        <td style={{fontSize:'.7rem',color:'rgba(255,255,255,.4)'}}>{n.message?.match(/Submitted by (.+?)[\.\,]/)?.[1]||'—'}</td>
+                        <td><span style={{fontSize:'.62rem',padding:'2px 8px',borderRadius:5,background:'rgba(255,255,255,.04)',color:'rgba(255,255,255,.5)'}}>S-{n.stage_number}</span></td>
+                        <td style={{fontSize:'.65rem',color:'rgba(255,255,255,.3)'}}>{reviewTime?reviewTime.toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):''}</td>
+                        <td style={{fontSize:'.7rem',color:'rgba(255,255,255,.4)'}}>{n.message?.match(/Mentor: (.+?)$/)?.[1]||n.title?.match(/by (.+?)$/)?.[1]||'—'}</td>
+                        <td><span className={`adm-ms-badge ${isReview?'review':isApproved?'approved':'rejected'}`}>{isReview?'In Review':isApproved?'Approved':'Rejected'}</span></td>
+                        <td style={{fontSize:'.68rem',color:'rgba(255,255,255,.4)'}}>{isApproved?'Approved':isRejected?'Rejected':isReview?'Pending':'—'}</td>
+                        <td style={{fontSize:'.65rem',color:'rgba(255,255,255,.3)',maxWidth:120,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{isRejected?(n.message||'—'):'—'}</td>
+                        <td style={{fontSize:'.65rem',color:'rgba(255,255,255,.3)'}}>{(isApproved||isRejected)?reviewTime?.toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):''}</td>
+                        <td style={{fontSize:'.65rem',color:'rgba(255,255,255,.3)'}}>{(isApproved||isRejected)&&reviewTime?'—':'—'}</td>
+                      </tr>
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>}
 
             {/* LEADERBOARD */}

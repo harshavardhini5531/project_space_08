@@ -111,7 +111,7 @@ export default function MentorDashboard() {
     {id:'pending', label:'Pending', icon:I.clock},
     {id:'techprojects', label:`${mentor?.technology || 'Tech'} Projects`, icon:I.code},
     {id:'allteams', label:'All My Teams', icon:I.users},
-    {id:'reviews', label:'Reviews', icon:I.star},
+    {id:'reviews', label:'Project Status', icon:I.star},
     {id:'leaderboard', label:'Leaderboard', icon:I.star},
     {id:'settings', label:'Settings', icon:I.settings},
   ]
@@ -438,18 +438,36 @@ body.sb-open{overflow:hidden}
               <div className="md-page-sub">{myTeams.length} teams assigned</div>
               {myTeams.map(t=><TeamCard key={t.serialNumber} t={t}/>)}
             </>)}
-            {/* REVIEWS */}
+            {/* PROJECT STATUS */}
             {activePage==='reviews' && (<div className="rv-section">
-              <div className="md-page-title">STAGE REVIEWS</div>
-              <div className="md-page-sub" style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}><span>Pending milestone reviews from your teams</span>
+              <div className="md-page-title">PROJECT STATUS</div>
+              <div className="md-page-sub" style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}><span>Review submissions from your teams</span>
                 <div className="lb-notif-wrap"><div className="lb-notif-btn" onClick={()=>setShowReviewNotif(!showReviewNotif)}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>{reviewUnread>0&&<div className="lb-notif-badge">{reviewUnread}</div>}</div>
                 {showReviewNotif&&<div className="lb-notif-dd" onClick={e=>e.stopPropagation()}><div className="lb-notif-dd-hdr"><span>Notifications</span>{reviewUnread>0&&<button className="lb-notif-dd-mark" onClick={async()=>{await fetch('/api/milestones/notifications',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'mark-all-read',type:'mentor',email:mentor?.email})});setReviewUnread(0);setReviewNotifs(p=>p.map(n=>({...n,read:true})))}}>Mark all read</button>}</div>{reviewNotifs.length===0?<div style={{padding:20,textAlign:'center',fontSize:11,color:'rgba(255,255,255,.15)'}}>No notifications</div>:reviewNotifs.map(n=><div key={n.id} className={`lb-notif-item ${!n.read?'unread':''}`}><div className="lb-notif-item-t">{n.title}</div><div className="lb-notif-item-m">{n.message}</div><div className="lb-notif-item-time">{new Date(n.created_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div></div>)}</div>}</div>
               </div>
-              <div className="rv-stats"><div className="rv-stat"><div className="rv-stat-val" style={{color:'#EEA727'}}>{reviews.stats?.pending_reviews||0}</div><div className="rv-stat-lb">Pending Reviews</div></div><div className="rv-stat"><div className="rv-stat-val" style={{color:'#4ade80'}}>{reviews.stats?.total_completed_stages||0}</div><div className="rv-stat-lb">Stages Done</div></div><div className="rv-stat"><div className="rv-stat-val" style={{color:'#3b82f6'}}>{reviews.stats?.total_teams||0}</div><div className="rv-stat-lb">Your Teams</div></div></div>
+
+              <div className="rv-stats"><div className="rv-stat"><div className="rv-stat-val" style={{color:'#EEA727'}}>{reviews.stats?.pending_reviews||0}</div><div className="rv-stat-lb">Pending</div></div><div className="rv-stat"><div className="rv-stat-val" style={{color:'#4ade80'}}>{reviews.stats?.total_completed_stages||0}</div><div className="rv-stat-lb">Approved</div></div><div className="rv-stat"><div className="rv-stat-val" style={{color:'#3b82f6'}}>{reviews.stats?.total_teams||0}</div><div className="rv-stat-lb">Teams</div></div></div>
+
               {reviewsLoading&&<div style={{textAlign:'center',padding:30,color:'rgba(255,255,255,.2)'}}>Loading...</div>}
               {!reviewsLoading&&reviews.pending?.length===0&&<div className="rv-empty">No pending reviews — all caught up!</div>}
-              {reviews.pending?.map((p,i)=><div key={p.id||i} className="rv-card" style={{animationDelay:`${i*.05}s`}}><div className="rv-card-top"><div><div className="rv-team">{p.team_number}</div><div className="rv-stage">Stage {p.stage_number}: {p.stage_name}</div><div className="rv-meta">By {p.submitted_by_name||p.submitted_by_roll} · {p.submitted_at&&new Date(p.submitted_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div>{p.project_title&&<div className="rv-project">{p.project_title}</div>}</div><div className="rv-stage-badge"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Stage {p.stage_number}</div></div><div className="rv-actions"><button className="rv-btn approve" disabled={actionLoading===`${p.team_number}-${p.stage_number}`} onClick={()=>handleMilestoneAction(p.team_number,p.stage_number,'approve')}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>{actionLoading===`${p.team_number}-${p.stage_number}`?'Processing...':'Approve'}</button><button className="rv-btn reject" disabled={actionLoading===`${p.team_number}-${p.stage_number}`} onClick={()=>setRejectModal(p)}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Reject</button></div></div>)}
-              {reviews.teams?.length>0&&<><div className="md-page-sub" style={{marginTop:28,fontWeight:700,color:'rgba(255,255,255,.5)'}}>Team Progress</div><div className="rv-progress">{reviews.teams.map(t=><div key={t.team_number} className="rv-team-prog"><div style={{fontWeight:700,color:'#fd1c00',fontSize:'.8rem',minWidth:60}}>{t.team_number}</div><div className="rv-team-prog-info"><div className="rv-team-prog-name">{t.project_title||'Untitled'}</div><div className="rv-team-prog-sub">{t.completed}/7 done · {t.in_review} reviewing</div></div><div className="rv-team-prog-bar"><div className="rv-team-prog-fill" style={{width:`${t.percent}%`}}/></div><div className="rv-team-prog-pct" style={{color:t.percent>=70?'#4ade80':t.percent>=40?'#EEA727':'rgba(255,255,255,.3)'}}>{t.percent}%</div></div>)}</div></>}
+
+              {reviews.pending?.length>0&&<div style={{overflowX:'auto'}}>
+                <table className="lb-table" style={{minWidth:700}}>
+                  <thead><tr><th>Team</th><th>Project</th><th>Stage</th><th>Submitted By</th><th>Time</th><th>Status</th><th>Action</th></tr></thead>
+                  <tbody>{reviews.pending.map((p,i)=><tr key={p.id||i}>
+                    <td style={{fontWeight:700,color:'#fd1c00'}}>{p.team_number}</td>
+                    <td style={{maxWidth:160,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',color:'rgba(255,255,255,.6)'}}>{p.project_title||'—'}</td>
+                    <td><span style={{fontSize:'.65rem',padding:'3px 10px',borderRadius:6,background:'rgba(238,167,39,.08)',color:'#EEA727',border:'1px solid rgba(238,167,39,.15)'}}>S-{p.stage_number}: {p.stage_name}</span></td>
+                    <td style={{fontSize:'.72rem',color:'rgba(255,255,255,.5)'}}>{p.submitted_by_name||p.submitted_by_roll}</td>
+                    <td style={{fontSize:'.68rem',color:'rgba(255,255,255,.3)'}}>{p.submitted_at?new Date(p.submitted_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):''}</td>
+                    <td><span style={{fontSize:'.62rem',padding:'3px 10px',borderRadius:6,background:'rgba(238,167,39,.08)',color:'#EEA727',border:'1px solid rgba(238,167,39,.15)'}}>In Review</span></td>
+                    <td style={{display:'flex',gap:6}}><button className="rv-btn approve" style={{padding:'6px 14px',fontSize:'.7rem'}} disabled={actionLoading===`${p.team_number}-${p.stage_number}`} onClick={()=>handleMilestoneAction(p.team_number,p.stage_number,'approve')}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>{actionLoading===`${p.team_number}-${p.stage_number}`?'...':'Approve'}</button><button className="rv-btn reject" style={{padding:'6px 14px',fontSize:'.7rem'}} disabled={actionLoading===`${p.team_number}-${p.stage_number}`} onClick={()=>setRejectModal(p)}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Reject</button></td>
+                  </tr>)}</tbody>
+                </table>
+              </div>}
+
+              {/* Team Progress */}
+              {reviews.teams?.length>0&&<><div style={{fontSize:'.82rem',fontWeight:700,color:'rgba(255,255,255,.5)',marginTop:28,marginBottom:12}}>Team Progress</div><div className="rv-progress">{reviews.teams.map(t=><div key={t.team_number} className="rv-team-prog"><div style={{fontWeight:700,color:'#fd1c00',fontSize:'.8rem',minWidth:60}}>{t.team_number}</div><div className="rv-team-prog-info"><div className="rv-team-prog-name">{t.project_title||'Untitled'}</div><div className="rv-team-prog-sub">{t.completed}/7 done · {t.in_review} reviewing</div></div><div className="rv-team-prog-bar"><div className="rv-team-prog-fill" style={{width:`${t.percent}%`}}/></div><div className="rv-team-prog-pct" style={{color:t.percent>=70?'#4ade80':t.percent>=40?'#EEA727':'rgba(255,255,255,.3)'}}>{t.percent}%</div></div>)}</div></>}
             </div>)}
 
             {/* LEADERBOARD */}
