@@ -28,6 +28,16 @@ export default function MentorDashboard() {
   const [newPass, setNewPass] = useState('')
   const [passMsg, setPassMsg] = useState('')
   const [passLoading, setPassLoading] = useState(false)
+  const [reviews, setReviews] = useState({ pending: [], teams: [], stats: {} })
+  const [reviewsLoading, setReviewsLoading] = useState(false)
+  const [leaderboard, setLeaderboard] = useState({ leaderboard: [], stats: {} })
+  const [lbLoading, setLbLoading] = useState(false)
+  const [actionLoading, setActionLoading] = useState(null)
+  const [rejectModal, setRejectModal] = useState(null)
+  const [rejectComment, setRejectComment] = useState('')
+  const [reviewNotifs, setReviewNotifs] = useState([])
+  const [reviewUnread, setReviewUnread] = useState(0)
+  const [showReviewNotif, setShowReviewNotif] = useState(false)
 
   useEffect(() => { const c=()=>setIsMobile(window.innerWidth<900); c(); window.addEventListener('resize',c); return ()=>window.removeEventListener('resize',c) }, [])
 
@@ -64,6 +74,34 @@ export default function MentorDashboard() {
 
   function handleLogout() { sessionStorage.removeItem('mentor_token'); sessionStorage.removeItem('mentor_data'); router.push('/mentor') }
 
+  useEffect(() => {
+    if (!mentor) return;
+    fetchReviews(); fetchLeaderboard();
+    const iv = setInterval(() => { fetchReviews(); fetchLeaderboard(); }, 30000);
+    return () => clearInterval(iv);
+  }, [mentor]);
+
+  async function fetchReviews() {
+    if (!mentor?.name) return; setReviewsLoading(true);
+    try { const r = await fetch(`/api/milestones/pending-reviews?mentor=${encodeURIComponent(mentor.name)}`); const d = await r.json(); setReviews(d); } catch (e) { console.error(e); } finally { setReviewsLoading(false); }
+  }
+
+  async function fetchLeaderboard() {
+    setLbLoading(true);
+    try { const r = await fetch('/api/milestones/leaderboard?limit=50'); const d = await r.json(); setLeaderboard(d); } catch (e) { console.error(e); } finally { setLbLoading(false); }
+  }
+
+  async function handleMilestoneAction(teamNumber, stageNumber, action, comment) {
+    setActionLoading(`${teamNumber}-${stageNumber}`);
+    try { const r = await fetch('/api/milestones/mentor-action', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ teamNumber, stageNumber, action, mentorEmail:mentor.email, mentorName:mentor.name, comment:comment||'' }) }); const d = await r.json(); if (r.ok) { fetchReviews(); fetchLeaderboard(); setRejectModal(null); setRejectComment(''); } else alert(d.error||'Failed'); } catch { alert('Network error'); } finally { setActionLoading(null); }
+  }
+
+  useEffect(() => {
+    if (!mentor?.email) return;
+    const fetchN = async () => { try { const r = await fetch(`/api/milestones/notifications?type=mentor&email=${encodeURIComponent(mentor.email)}&limit=15`); const d = await r.json(); setReviewNotifs(d.notifications||[]); setReviewUnread(d.unread_count||0); } catch {} };
+    fetchN(); const iv = setInterval(fetchN, 30000); return () => clearInterval(iv);
+  }, [mentor]);
+
   const glowColors = { 'Data Specialist':'59,130,246', 'AWS Development':'245,158,11', 'Full Stack':'16,185,129', 'Google Flutter':'6,182,212', 'ServiceNow':'139,92,246', 'VLSI':'239,68,68' }
   const solidColors = { 'Data Specialist':'#3b82f6', 'AWS Development':'#f59e0b', 'Full Stack':'#10b981', 'Google Flutter':'#06b6d4', 'ServiceNow':'#8b5cf6', 'VLSI':'#ef4444' }
 
@@ -73,6 +111,8 @@ export default function MentorDashboard() {
     {id:'pending', label:'Pending', icon:I.clock},
     {id:'techprojects', label:`${mentor?.technology || 'Tech'} Projects`, icon:I.code},
     {id:'allteams', label:'All My Teams', icon:I.users},
+    {id:'reviews', label:'Reviews', icon:I.star},
+    {id:'leaderboard', label:'Leaderboard', icon:I.star},
     {id:'settings', label:'Settings', icon:I.settings},
   ]
 
@@ -255,6 +295,77 @@ body.sb-open{overflow:hidden}
   .tc-members{grid-template-columns:1fr}
 }
 @media(max-width:480px){.md-stats{grid-template-columns:repeat(2,1fr)}}
+
+.rv-section{animation:fadeUp .4s ease both}
+.rv-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+.rv-stat{padding:18px 16px;border-radius:14px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);text-align:center}
+.rv-stat-val{font-size:1.6rem;font-weight:800;line-height:1}
+.rv-stat-lb{font-size:.6rem;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:1.5px;margin-top:4px;font-weight:600}
+.rv-empty{text-align:center;padding:40px;color:rgba(255,255,255,.2);font-size:.8rem}
+.rv-card{padding:18px 20px;border-radius:14px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);margin-bottom:12px;transition:all .2s;animation:fadeUp .4s ease both}
+.rv-card:hover{border-color:rgba(255,255,255,.08)}
+.rv-card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px}
+.rv-team{font-size:1rem;font-weight:700;color:#fd1c00}
+.rv-stage{font-size:.82rem;font-weight:600;color:#fff}
+.rv-stage-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:6px;font-size:.62rem;font-weight:600;background:rgba(238,167,39,.08);color:#EEA727;border:1px solid rgba(238,167,39,.15)}
+.rv-meta{font-size:.68rem;color:rgba(255,255,255,.3);margin-top:4px}
+.rv-project{font-size:.74rem;color:rgba(255,255,255,.45);margin-top:6px}
+.rv-actions{display:flex;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.04)}
+.rv-btn{padding:9px 20px;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.76rem;font-weight:600;cursor:pointer;transition:all .25s;border:1px solid;display:flex;align-items:center;gap:6px}
+.rv-btn:disabled{opacity:.4;cursor:not-allowed}
+.rv-btn.approve{color:#4ade80;background:rgba(74,222,128,.06);border-color:rgba(74,222,128,.18)}
+.rv-btn.approve:hover:not(:disabled){background:rgba(74,222,128,.12);border-color:rgba(74,222,128,.3);transform:translateY(-1px);box-shadow:0 4px 16px rgba(74,222,128,.12)}
+.rv-btn.reject{color:#ff6040;background:rgba(255,96,64,.06);border-color:rgba(255,96,64,.15)}
+.rv-btn.reject:hover:not(:disabled){background:rgba(255,96,64,.1);border-color:rgba(255,96,64,.25)}
+.rv-progress{display:flex;flex-direction:column;gap:10px;margin-top:20px}
+.rv-team-prog{padding:14px 18px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);display:flex;align-items:center;gap:16px}
+.rv-team-prog-info{flex:1;min-width:0}
+.rv-team-prog-name{font-size:.8rem;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rv-team-prog-sub{font-size:.62rem;color:rgba(255,255,255,.25);margin-top:2px}
+.rv-team-prog-bar{flex:0 0 120px;height:6px;border-radius:3px;background:rgba(255,255,255,.06);overflow:hidden}
+.rv-team-prog-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#fd1c00,#4ade80);transition:width .6s ease}
+.rv-team-prog-pct{font-size:.82rem;font-weight:800;width:45px;text-align:right;flex-shrink:0}
+.lb-section{animation:fadeUp .4s ease both}
+.lb-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.lb-stat{padding:16px 14px;border-radius:14px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);text-align:center}
+.lb-stat-val{font-size:1.4rem;font-weight:800;line-height:1}
+.lb-stat-lb{font-size:.55rem;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:1.5px;margin-top:4px;font-weight:600}
+.lb-table{width:100%;border-collapse:separate;border-spacing:0 5px}
+.lb-table th{text-align:left;padding:7px 12px;font-size:.55rem;font-weight:600;color:rgba(255,255,255,.2);text-transform:uppercase;letter-spacing:1.5px}
+.lb-table td{padding:10px 12px;background:rgba(255,255,255,.015);border-top:1px solid rgba(255,255,255,.02);border-bottom:1px solid rgba(255,255,255,.02);font-size:.76rem;color:rgba(255,255,255,.6)}
+.lb-table tr td:first-child{border-left:1px solid rgba(255,255,255,.02);border-radius:10px 0 0 10px}
+.lb-table tr td:last-child{border-right:1px solid rgba(255,255,255,.02);border-radius:0 10px 10px 0}
+.lb-table tr:hover td{background:rgba(255,255,255,.03)}
+.lb-rank{font-weight:800;font-size:.85rem}
+.lb-rank.gold{color:#f59e0b}.lb-rank.silver{color:#94a3b8}.lb-rank.bronze{color:#c68a5b}
+.lb-bar{width:80px;height:5px;border-radius:3px;background:rgba(255,255,255,.06);overflow:hidden;display:inline-block;vertical-align:middle;margin-right:6px}
+.lb-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#fd1c00,#4ade80)}
+.lb-notif-wrap{position:relative;display:inline-block;margin-left:12px}
+.lb-notif-btn{width:36px;height:36px;border-radius:9px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.4);position:relative}
+.lb-notif-btn:hover{background:rgba(255,255,255,.06);color:#fff}
+.lb-notif-badge{position:absolute;top:3px;right:3px;min-width:14px;height:14px;border-radius:7px;background:#fd1c00;font-size:8px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;padding:0 3px;border:1.5px solid #050008}
+.lb-notif-dd{position:absolute;top:42px;right:0;width:300px;background:#13101a;border:1px solid rgba(255,255,255,.08);border-radius:12px;z-index:100;box-shadow:0 12px 40px rgba(0,0,0,.6);max-height:320px;overflow-y:auto}
+.lb-notif-dd-hdr{padding:8px 14px;border-bottom:1px solid rgba(255,255,255,.06);font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.06em;display:flex;justify-content:space-between}
+.lb-notif-dd-mark{font-size:10px;color:#fd1c00;cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif}
+.lb-notif-item{padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.03)}
+.lb-notif-item.unread{background:rgba(253,28,0,.03)}
+.lb-notif-item-t{font-size:11px;font-weight:600;color:#fff;margin-bottom:2px}
+.lb-notif-item-m{font-size:10px;color:rgba(255,255,255,.3);line-height:1.4}
+.lb-notif-item-time{font-size:9px;color:rgba(255,255,255,.15);margin-top:3px}
+.rv-modal-bg{position:fixed;top:0;left:0;right:0;bottom:0;width:100vw;height:100vh;background:rgba(5,0,8,.88);display:flex;align-items:center;justify-content:center;z-index:9999;backdrop-filter:blur(6px)}
+.rv-modal{background:#13101a;border:1px solid rgba(255,96,64,.15);border-radius:18px;padding:28px;width:92%;max-width:400px;animation:fadeUp .3s ease}
+.rv-modal-title{font-size:15px;font-weight:600;color:#fff;margin-bottom:8px}
+.rv-modal-desc{font-size:12px;color:rgba(255,255,255,.35);margin-bottom:16px}
+.rv-modal-ta{width:100%;padding:10px 14px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:#fff;font-size:.82rem;font-family:'DM Sans',sans-serif;outline:none;resize:vertical;min-height:80px}
+.rv-modal-ta:focus{border-color:rgba(255,96,64,.3)}
+.rv-modal-actions{display:flex;gap:10px;margin-top:16px;justify-content:flex-end}
+.rv-modal-btn{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:10px 22px;border-radius:10px;cursor:pointer;border:none;transition:all .2s}
+.rv-modal-btn.cancel{color:rgba(255,255,255,.35);background:transparent;border:1px solid rgba(255,255,255,.08)}
+.rv-modal-btn.cancel:hover{border-color:rgba(255,255,255,.2);color:#fff}
+.rv-modal-btn.reject{color:#fff;background:linear-gradient(135deg,#ff4040,#c41600);box-shadow:0 4px 14px rgba(255,64,64,.2)}
+.rv-modal-btn.reject:hover{transform:translateY(-1px)}
+.rv-modal-btn:disabled{opacity:.5;cursor:not-allowed}
+@media(max-width:900px){.rv-stats{grid-template-columns:1fr 1fr}.lb-stats{grid-template-columns:repeat(2,1fr)}.lb-table{display:block;overflow-x:auto}.rv-team-prog{flex-wrap:wrap;gap:8px}.rv-team-prog-bar{flex:1 1 100%}}
       `}</style>
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=Orbitron:wght@400;600;700&display=swap" rel="stylesheet"/>
 
@@ -327,7 +438,28 @@ body.sb-open{overflow:hidden}
               <div className="md-page-sub">{myTeams.length} teams assigned</div>
               {myTeams.map(t=><TeamCard key={t.serialNumber} t={t}/>)}
             </>)}
+            {/* REVIEWS */}
+            {activePage==='reviews' && (<div className="rv-section">
+              <div className="md-page-title">STAGE REVIEWS</div>
+              <div className="md-page-sub" style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}><span>Pending milestone reviews from your teams</span>
+                <div className="lb-notif-wrap"><div className="lb-notif-btn" onClick={()=>setShowReviewNotif(!showReviewNotif)}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>{reviewUnread>0&&<div className="lb-notif-badge">{reviewUnread}</div>}</div>
+                {showReviewNotif&&<div className="lb-notif-dd" onClick={e=>e.stopPropagation()}><div className="lb-notif-dd-hdr"><span>Notifications</span>{reviewUnread>0&&<button className="lb-notif-dd-mark" onClick={async()=>{await fetch('/api/milestones/notifications',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'mark-all-read',type:'mentor',email:mentor?.email})});setReviewUnread(0);setReviewNotifs(p=>p.map(n=>({...n,read:true})))}}>Mark all read</button>}</div>{reviewNotifs.length===0?<div style={{padding:20,textAlign:'center',fontSize:11,color:'rgba(255,255,255,.15)'}}>No notifications</div>:reviewNotifs.map(n=><div key={n.id} className={`lb-notif-item ${!n.read?'unread':''}`}><div className="lb-notif-item-t">{n.title}</div><div className="lb-notif-item-m">{n.message}</div><div className="lb-notif-item-time">{new Date(n.created_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div></div>)}</div>}</div>
+              </div>
+              <div className="rv-stats"><div className="rv-stat"><div className="rv-stat-val" style={{color:'#EEA727'}}>{reviews.stats?.pending_reviews||0}</div><div className="rv-stat-lb">Pending Reviews</div></div><div className="rv-stat"><div className="rv-stat-val" style={{color:'#4ade80'}}>{reviews.stats?.total_completed_stages||0}</div><div className="rv-stat-lb">Stages Done</div></div><div className="rv-stat"><div className="rv-stat-val" style={{color:'#3b82f6'}}>{reviews.stats?.total_teams||0}</div><div className="rv-stat-lb">Your Teams</div></div></div>
+              {reviewsLoading&&<div style={{textAlign:'center',padding:30,color:'rgba(255,255,255,.2)'}}>Loading...</div>}
+              {!reviewsLoading&&reviews.pending?.length===0&&<div className="rv-empty">No pending reviews — all caught up!</div>}
+              {reviews.pending?.map((p,i)=><div key={p.id||i} className="rv-card" style={{animationDelay:`${i*.05}s`}}><div className="rv-card-top"><div><div className="rv-team">{p.team_number}</div><div className="rv-stage">Stage {p.stage_number}: {p.stage_name}</div><div className="rv-meta">By {p.submitted_by_name||p.submitted_by_roll} · {p.submitted_at&&new Date(p.submitted_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div>{p.project_title&&<div className="rv-project">{p.project_title}</div>}</div><div className="rv-stage-badge"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Stage {p.stage_number}</div></div><div className="rv-actions"><button className="rv-btn approve" disabled={actionLoading===`${p.team_number}-${p.stage_number}`} onClick={()=>handleMilestoneAction(p.team_number,p.stage_number,'approve')}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>{actionLoading===`${p.team_number}-${p.stage_number}`?'Processing...':'Approve'}</button><button className="rv-btn reject" disabled={actionLoading===`${p.team_number}-${p.stage_number}`} onClick={()=>setRejectModal(p)}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Reject</button></div></div>)}
+              {reviews.teams?.length>0&&<><div className="md-page-sub" style={{marginTop:28,fontWeight:700,color:'rgba(255,255,255,.5)'}}>Team Progress</div><div className="rv-progress">{reviews.teams.map(t=><div key={t.team_number} className="rv-team-prog"><div style={{fontWeight:700,color:'#fd1c00',fontSize:'.8rem',minWidth:60}}>{t.team_number}</div><div className="rv-team-prog-info"><div className="rv-team-prog-name">{t.project_title||'Untitled'}</div><div className="rv-team-prog-sub">{t.completed}/7 done · {t.in_review} reviewing</div></div><div className="rv-team-prog-bar"><div className="rv-team-prog-fill" style={{width:`${t.percent}%`}}/></div><div className="rv-team-prog-pct" style={{color:t.percent>=70?'#4ade80':t.percent>=40?'#EEA727':'rgba(255,255,255,.3)'}}>{t.percent}%</div></div>)}</div></>}
+            </div>)}
 
+            {/* LEADERBOARD */}
+            {activePage==='leaderboard' && (<div className="lb-section">
+              <div className="md-page-title">LEADERBOARD</div>
+              <div className="md-page-sub">All teams ranked by project completion</div>
+              <div className="lb-stats"><div className="lb-stat"><div className="lb-stat-val" style={{color:'#fd1c00'}}>{leaderboard.stats?.total_teams||0}</div><div className="lb-stat-lb">Teams</div></div><div className="lb-stat"><div className="lb-stat-val" style={{color:'#4ade80'}}>{leaderboard.stats?.teams_all_done||0}</div><div className="lb-stat-lb">All Done</div></div><div className="lb-stat"><div className="lb-stat-val" style={{color:'#EEA727'}}>{leaderboard.stats?.avg_progress||0}%</div><div className="lb-stat-lb">Avg Progress</div></div><div className="lb-stat"><div className="lb-stat-val" style={{color:'#3b82f6'}}>{leaderboard.stats?.total_completed_stages||0}</div><div className="lb-stat-lb">Stages Done</div></div></div>
+              {lbLoading&&<div style={{textAlign:'center',padding:30,color:'rgba(255,255,255,.2)'}}>Loading...</div>}
+              {!lbLoading&&<table className="lb-table"><thead><tr><th>Rank</th><th>Team</th><th>Project</th><th>Tech</th><th>Progress</th><th>Credits</th></tr></thead><tbody>{(leaderboard.leaderboard||[]).map(t=><tr key={t.team_number}><td><span className={`lb-rank ${t.rank===1?'gold':t.rank===2?'silver':t.rank===3?'bronze':''}`}>#{t.rank}</span></td><td style={{fontWeight:700,color:'#fd1c00'}}>{t.team_number}</td><td style={{maxWidth:180,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{t.project_title||'—'}</td><td><span style={{fontSize:'.62rem',padding:'2px 8px',borderRadius:5,background:'rgba(255,255,255,.04)',color:'rgba(255,255,255,.5)'}}>{t.technology}</span></td><td><div className="lb-bar"><div className="lb-bar-fill" style={{width:`${t.percent}%`}}/></div><span style={{fontSize:'.72rem',fontWeight:700,color:t.percent>=70?'#4ade80':t.percent>=40?'#EEA727':'rgba(255,255,255,.3)'}}>{t.completed_stages}/7</span></td><td style={{fontWeight:700,color:'#EEA727'}}>{t.total_credits}</td></tr>)}</tbody></table>}
+            </div>)}
             {/* SETTINGS */}
             {activePage==='settings' && (<>
               <div className="md-page-title">SETTINGS</div>
@@ -352,6 +484,20 @@ body.sb-open{overflow:hidden}
           </>)}
         </div>
       </div>
+
+      {rejectModal && (
+        <div className="rv-modal-bg" onClick={()=>setRejectModal(null)}>
+          <div className="rv-modal" onClick={e=>e.stopPropagation()}>
+            <div className="rv-modal-title">Reject Stage {rejectModal.stage_number}: {rejectModal.stage_name}?</div>
+            <div className="rv-modal-desc">Team {rejectModal.team_number} will be notified to revise.</div>
+            <textarea className="rv-modal-ta" placeholder="Add feedback (optional)..." value={rejectComment} onChange={e=>setRejectComment(e.target.value)}/>
+            <div className="rv-modal-actions">
+              <button className="rv-modal-btn cancel" onClick={()=>{setRejectModal(null);setRejectComment('')}}>Cancel</button>
+              <button className="rv-modal-btn reject" disabled={actionLoading} onClick={()=>handleMilestoneAction(rejectModal.team_number,rejectModal.stage_number,'reject',rejectComment)}>{actionLoading?'Rejecting...':'Reject Stage'}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

@@ -27,6 +27,11 @@ export default function AdminDashboard() {
   const [expandedMentor, setExpandedMentor] = useState(null)
   const [reminding, setReminding] = useState(false)
   const [reminderMsg, setReminderMsg] = useState('')
+  const [adLeaderboard, setAdLeaderboard] = useState({ leaderboard: [], stats: {} })
+  const [adLbLoading, setAdLbLoading] = useState(false)
+  const [adNotifs, setAdNotifs] = useState([])
+  const [adUnread, setAdUnread] = useState(0)
+  const [showAdNotif, setShowAdNotif] = useState(false)
   const [mobNav, setMobNav] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [mounted, setMounted] = useState(false)
@@ -78,6 +83,11 @@ export default function AdminDashboard() {
   async function handleRemind() { setReminding(true); setReminderMsg(''); try { const r = await fetch('/api/admin/remind', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-token': token }, body: JSON.stringify({ type: 'all-pending' }) }); const d = await r.json(); setReminderMsg(d.message || `Sent ${d.sent} reminders`) } catch { setReminderMsg('Failed') } finally { setReminding(false) } }
   function handleLogout() { sessionStorage.removeItem('admin_token'); setToken(''); setPhase('auth'); setData(null) }
 
+  useEffect(() => { if (phase==='dashboard') { fetchAdLeaderboard(); fetchAdNotifs(); const iv=setInterval(()=>{fetchAdLeaderboard();fetchAdNotifs()},30000); return ()=>clearInterval(iv) } }, [phase])
+  async function fetchAdLeaderboard() { setAdLbLoading(true); try { const r=await fetch('/api/milestones/leaderboard?limit=50'); const d=await r.json(); setAdLeaderboard(d); } catch(e){console.error(e)} finally{setAdLbLoading(false)} }
+  async function fetchAdNotifs() { try { const r=await fetch('/api/milestones/notifications?type=admin&email=admin&limit=20'); const d=await r.json(); setAdNotifs(d.notifications||[]); setAdUnread(d.unread_count||0); } catch{} }
+  async function markAdNotifsRead() { await fetch('/api/milestones/notifications',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'mark-all-read',type:'admin'})}); setAdUnread(0); setAdNotifs(p=>p.map(n=>({...n,read:true}))); }
+
   const filteredTeams = data?.teamList?.filter(t => {
     if (filterTech !== 'all' && t.technology !== filterTech) return false
     if (filterStatus === 'registered' && !t.registered) return false
@@ -112,6 +122,8 @@ export default function AdminDashboard() {
     {id:'mentors',label:'Mentors',icon:IC.users},
     {id:'teams',label:'Teams',icon:IC.layers},
     {id:'actions',label:'Actions',icon:IC.bolt},
+    {id:'milestones',label:'Milestones',icon:IC.layers},
+    {id:'leaderboard',label:'Leaderboard',icon:IC.bolt},
     {id:'report-card',label:'Report Card',icon:IC.file},
   ]
 
@@ -633,6 +645,44 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
 .mp-card-title{font-size:.85rem;font-weight:600;color:#fff;display:flex;align-items:center;gap:8px}
 
 @media(max-width:640px){.ad-stats{grid-template-columns:1fr 1fr}.ad-tg{grid-template-columns:1fr}.ad-fc{flex-direction:column}.ad-tt{display:block;overflow-x:auto}}
+.adm-lb{animation:fadeUp .4s ease both}
+.adm-lb-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.adm-lb-stat{padding:18px 16px;border-radius:14px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);text-align:center}
+.adm-lb-sv{font-size:1.5rem;font-weight:800;line-height:1}
+.adm-lb-sl{font-size:.55rem;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:1.5px;margin-top:4px;font-weight:600}
+.adm-lb-tbl{width:100%;border-collapse:separate;border-spacing:0 5px}
+.adm-lb-tbl th{text-align:left;padding:7px 12px;font-size:.55rem;font-weight:600;color:rgba(255,255,255,.2);text-transform:uppercase;letter-spacing:1.5px}
+.adm-lb-tbl td{padding:10px 12px;background:rgba(255,255,255,.015);border-top:1px solid rgba(255,255,255,.02);border-bottom:1px solid rgba(255,255,255,.02);font-size:.76rem;color:rgba(255,255,255,.6)}
+.adm-lb-tbl tr td:first-child{border-left:1px solid rgba(255,255,255,.02);border-radius:10px 0 0 10px}
+.adm-lb-tbl tr td:last-child{border-right:1px solid rgba(255,255,255,.02);border-radius:0 10px 10px 0}
+.adm-lb-tbl tr:hover td{background:rgba(255,255,255,.03)}
+.adm-lb-rank{font-weight:800;font-size:.85rem}
+.adm-lb-rank.gold{color:#f59e0b}.adm-lb-rank.silver{color:#94a3b8}.adm-lb-rank.bronze{color:#c68a5b}
+.adm-lb-bar{width:80px;height:5px;border-radius:3px;background:rgba(255,255,255,.06);overflow:hidden;display:inline-block;vertical-align:middle;margin-right:6px}
+.adm-lb-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#fd1c00,#4ade80)}
+.adm-ms-card{padding:16px 18px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);margin-bottom:10px;animation:fadeUp .4s ease both}
+.adm-ms-card:hover{border-color:rgba(255,255,255,.08)}
+.adm-ms-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.adm-ms-team{font-size:.85rem;font-weight:700;color:#fd1c00}
+.adm-ms-stage{font-size:.76rem;font-weight:600;color:#fff}
+.adm-ms-meta{font-size:.62rem;color:rgba(255,255,255,.25);margin-top:3px}
+.adm-ms-badge{font-size:.58rem;padding:3px 10px;border-radius:6px;font-weight:600}
+.adm-ms-badge.review{background:rgba(238,167,39,.08);color:#EEA727;border:1px solid rgba(238,167,39,.15)}
+.adm-ms-badge.approved{background:rgba(74,222,128,.08);color:#4ade80;border:1px solid rgba(74,222,128,.15)}
+.adm-ms-badge.rejected{background:rgba(255,96,64,.08);color:#ff6040;border:1px solid rgba(255,96,64,.15)}
+.adm-notif-wrap{position:relative;display:inline-block}
+.adm-notif-btn{width:36px;height:36px;border-radius:9px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.4);position:relative}
+.adm-notif-btn:hover{background:rgba(255,255,255,.06);color:#fff}
+.adm-notif-badge{position:absolute;top:3px;right:3px;min-width:14px;height:14px;border-radius:7px;background:#fd1c00;font-size:8px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;padding:0 3px;border:1.5px solid #050008}
+.adm-notif-dd{position:absolute;top:42px;right:0;width:320px;background:#13101a;border:1px solid rgba(255,255,255,.08);border-radius:12px;z-index:100;box-shadow:0 12px 40px rgba(0,0,0,.6);max-height:340px;overflow-y:auto}
+.adm-notif-dd-hdr{padding:8px 14px;border-bottom:1px solid rgba(255,255,255,.06);font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.06em;display:flex;justify-content:space-between}
+.adm-notif-dd-mark{font-size:10px;color:#fd1c00;cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif}
+.adm-notif-item{padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.03)}
+.adm-notif-item.unread{background:rgba(253,28,0,.03)}
+.adm-notif-item-t{font-size:11px;font-weight:600;color:#fff;margin-bottom:2px}
+.adm-notif-item-m{font-size:10px;color:rgba(255,255,255,.3);line-height:1.4}
+.adm-notif-item-time{font-size:9px;color:rgba(255,255,255,.15);margin-top:3px}
+@media(max-width:900px){.adm-lb-stats{grid-template-columns:repeat(2,1fr)}.adm-lb-tbl{display:block;overflow-x:auto}}
 `
 
   // Sidebar content (shared between desktop and mobile)
@@ -710,6 +760,28 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
               <div className="ad-ac"><div className="ad-ati">{IC.dl} Export Data</div><div className="ad-ad">Download CSV reports</div><div style={{display:'flex',gap:10}}><button className="ad-ab se" onClick={()=>handleExport('teams')}>All Teams</button><button className="ad-ab se" onClick={()=>handleExport('registrations')}>Registrations</button></div></div>
               <div className="ad-ac"><div className="ad-ati">{IC.grid} Quick Stats</div><div className="ad-ad">At a glance</div><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}><div style={{padding:10,borderRadius:8,background:'rgba(255,255,255,.02)',fontSize:'.72rem'}}><span style={{color:'rgba(255,255,255,.25)'}}>Students</span><div style={{fontWeight:700,fontSize:'1.1rem',color:'#fff',marginTop:2}}>{s.totalStudents}</div></div><div style={{padding:10,borderRadius:8,background:'rgba(255,255,255,.02)',fontSize:'.72rem'}}><span style={{color:'rgba(255,255,255,.25)'}}>Accounts</span><div style={{fontWeight:700,fontSize:'1.1rem',color:'#3b82f6',marginTop:2}}>{s.accountsCreated}</div></div></div></div>
               <div className="ad-ac"><div className="ad-ati">{IC.ref} Refresh</div><div className="ad-ad">Reload latest data</div><button className="ad-ab se" onClick={fetchDashboard} disabled={loading}>{loading?'Loading...':'Refresh'}</button></div>
+            </div>}
+            {/* MILESTONES */}
+            {activeTab === 'milestones' && <div className="adm-lb">
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20}}>
+                <div><div style={{fontSize:'1.1rem',fontWeight:700,color:'#fff'}}>Milestone Activity</div><div style={{fontSize:'.72rem',color:'rgba(255,255,255,.3)',marginTop:2}}>Recent stage submissions and approvals</div></div>
+                <div className="adm-notif-wrap">
+                  <div className="adm-notif-btn" onClick={()=>setShowAdNotif(!showAdNotif)}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>{adUnread>0&&<div className="adm-notif-badge">{adUnread}</div>}</div>
+                  {showAdNotif&&<div className="adm-notif-dd" onClick={e=>e.stopPropagation()}><div className="adm-notif-dd-hdr"><span>Activity</span>{adUnread>0&&<button className="adm-notif-dd-mark" onClick={markAdNotifsRead}>Mark all read</button>}</div>{adNotifs.length===0?<div style={{padding:20,textAlign:'center',fontSize:11,color:'rgba(255,255,255,.15)'}}>No activity yet</div>:adNotifs.map(n=><div key={n.id} className={`adm-notif-item ${!n.read?'unread':''}`}><div className="adm-notif-item-t">{n.title}</div><div className="adm-notif-item-m">{n.message}</div><div className="adm-notif-item-time">{new Date(n.created_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div></div>)}</div>}
+                </div>
+              </div>
+              {adNotifs.filter(n=>n.type==='review-request').length>0&&<><div style={{fontSize:'.8rem',fontWeight:600,color:'rgba(255,255,255,.5)',marginBottom:10}}>Pending Reviews</div>{adNotifs.filter(n=>n.type==='review-request'&&!n.read).map((n,i)=><div key={n.id} className="adm-ms-card"><div className="adm-ms-top"><div><div className="adm-ms-team">{n.team_number}</div><div className="adm-ms-stage">Stage {n.stage_number}: {n.title?.split('→')[1]?.trim()||n.title}</div><div className="adm-ms-meta">{new Date(n.created_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div></div><span className={`adm-ms-badge ${n.type==='review-request'?'review':n.type==='approved'?'approved':'rejected'}`}>{n.type==='review-request'?'In Review':n.type==='approved'?'Approved':'Rejected'}</span></div></div>)}</>}
+              {adNotifs.filter(n=>n.type==='approved').length>0&&<><div style={{fontSize:'.8rem',fontWeight:600,color:'rgba(255,255,255,.5)',marginBottom:10,marginTop:20}}>Recently Approved</div>{adNotifs.filter(n=>n.type==='approved').slice(0,10).map((n,i)=><div key={n.id} className="adm-ms-card"><div className="adm-ms-top"><div><div className="adm-ms-team">{n.team_number}</div><div className="adm-ms-stage">{n.title}</div><div className="adm-ms-meta">{n.message}</div></div><span className="adm-ms-badge approved">Approved</span></div></div>)}</>}
+              {adNotifs.length===0&&!adLbLoading&&<div style={{textAlign:'center',padding:40,color:'rgba(255,255,255,.15)',fontSize:'.8rem'}}>No milestone activity yet</div>}
+            </div>}
+
+            {/* LEADERBOARD */}
+            {activeTab === 'leaderboard' && <div className="adm-lb">
+              <div style={{fontSize:'1.1rem',fontWeight:700,color:'#fff',marginBottom:4}}>Leaderboard</div>
+              <div style={{fontSize:'.72rem',color:'rgba(255,255,255,.3)',marginBottom:20}}>All teams ranked by project completion progress</div>
+              <div className="adm-lb-stats"><div className="adm-lb-stat"><div className="adm-lb-sv" style={{color:'#fd1c00'}}>{adLeaderboard.stats?.total_teams||0}</div><div className="adm-lb-sl">Total Teams</div></div><div className="adm-lb-stat"><div className="adm-lb-sv" style={{color:'#4ade80'}}>{adLeaderboard.stats?.teams_all_done||0}</div><div className="adm-lb-sl">All Complete</div></div><div className="adm-lb-stat"><div className="adm-lb-sv" style={{color:'#EEA727'}}>{adLeaderboard.stats?.avg_progress||0}%</div><div className="adm-lb-sl">Avg Progress</div></div><div className="adm-lb-stat"><div className="adm-lb-sv" style={{color:'#3b82f6'}}>{adLeaderboard.stats?.total_completed_stages||0}</div><div className="adm-lb-sl">Stages Done</div></div></div>
+              {adLbLoading&&<div style={{textAlign:'center',padding:30,color:'rgba(255,255,255,.2)'}}>Loading...</div>}
+              {!adLbLoading&&<table className="adm-lb-tbl"><thead><tr><th>Rank</th><th>Team</th><th>Project</th><th>Technology</th><th>Mentor</th><th>Progress</th><th>Credits</th></tr></thead><tbody>{(adLeaderboard.leaderboard||[]).map(t=><tr key={t.team_number}><td><span className={`adm-lb-rank ${t.rank===1?'gold':t.rank===2?'silver':t.rank===3?'bronze':''}`}>#{t.rank}</span></td><td style={{fontWeight:700,color:'#fd1c00'}}>{t.team_number}</td><td style={{maxWidth:160,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{t.project_title||'—'}</td><td><span style={{fontSize:'.6rem',padding:'2px 8px',borderRadius:5,background:'rgba(255,255,255,.04)',color:'rgba(255,255,255,.45)'}}>{t.technology}</span></td><td style={{fontSize:'.7rem',color:'rgba(255,255,255,.35)'}}>{t.mentor||'—'}</td><td><div className="adm-lb-bar"><div className="adm-lb-bar-fill" style={{width:`${t.percent}%`}}/></div><span style={{fontSize:'.72rem',fontWeight:700,color:t.percent>=70?'#4ade80':t.percent>=40?'#EEA727':'rgba(255,255,255,.3)'}}>{t.completed_stages}/7</span></td><td style={{fontWeight:700,color:'#EEA727'}}>{t.total_credits}</td></tr>)}</tbody></table>}
             </div>}
 
             {/* REPORT CARD */}
