@@ -1,0 +1,107 @@
+// app/api/milestones/pending-reviews/route.js
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+)
+
+export async function GET(request) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const mentorName = searchParams.get('mentor')
+    const mentorEmail = searchParams.get('email')
+
+    if (!mentorName && !mentorEmail) {
+      return Response.json({ error: 'Mentor name or email required' }, { status: 400 })
+    }
+
+    // 1. Get all teams assigned to this mentor
+    const query = supabase.from('teams').select('team_number, technology, serial_number')
+    if (mentorName) query.eq('mentor_assigned', mentorName)
+
+    const { data: teams, error: teamErr } = await query
+    if (teamErr) throw teamErr
+
+    const teamNumbers = (teams || []).map(t => t.team_number).filter(Boolean)
+    if (teamNumbers.length === 0) {
+      return Response.json({ pending: [], teams: [], stats: { pending: 0, completed: 0, total: 0 } })
+    }
+
+    // 2. Get all submissions for these teams
+    const { data: allSubs, error: subErr } = await supabase
+      .from('milestone_submissions')
+      .select('*')
+      .in('team_number', teamNumbers)
+      .order('submitted_at', { ascending: false })
+
+    if (subErr) throw subErr
+
+    // 3. Get stage names
+    const { data: stages } = await supabase
+      .from('milestone_stages')
+      .select('stage_number, stage_name')
+
+    const stageMap = {}
+    ;(stages || []).forEach(s => { stageMap[s.stage_number] = s.stage_name })
+
+    // 4. Get team registration info for project titles
+    const { data: regs } = await supabase
+      .from('team_registrations')
+      .select('team_number, project_title')
+      .in('team_number', teamNumbers)
+
+    const regMap = {}
+    ;(regs || []).forEach(r => { regMap[r.team_number] = r.project_title })
+
+    // 5. Build pending reviews list
+    const pending = (allSubs || [])
+      .filter(s => s.status === 'in-review')
+      .map(s => ({
+        ...s,
+        stage_name: stageMap[s.stage_number] || `Stage ${s.stage_number}`,
+        project_title: regMap[s.team_number] || '',
+        technology: (teams || []).find(t => t.team_number === s.team_number)?.technology || '',
+      }))
+
+    // 6. Build team progress summary
+    const teamProgress = teamNumbers.map(tn => {
+      const teamSubs = (allSubs || []).filter(s => s.team_number === tn)
+      const completed = teamSubs.filter(s => s.status === 'completed').length
+      const inReview = teamSubs.filter(s => s.status === 'in-review').length
+      const lastCompleted = teamSubs
+        .filter(s => s.status === 'completed')
+        .sort((a, b) => new Date(b.reviewed_at) - new Date(a.reviewed_at))[0]
+
+      return {
+        team_number: tn,
+        project_title: regMap[tn] || '',
+        technology: (teams || []).find(t => t.team_number === tn)?.technology || '',
+        completed,
+        in_review: inReview,
+        pending: 7 - completed - inReview,
+        percent: Math.round((completed / 7) * 100),
+        last_completed_at: lastCompleted?.reviewed_at || null,
+      }
+    }).sort((a, b) => b.completed - a.completed || new Date(a.last_completed_at || '2099') - new Date(b.last_completed_at || '2099'))
+
+    // 7. Stats
+    const totalCompleted = teamProgress.reduce((s, t) => s + t.completed, 0)
+    const totalPending = pending.length
+
+    return Response.json({
+      pending,
+      teams: teamProgress,
+      stats: {
+        pending_reviews: totalPending,
+        total_teams: teamNumbers.length,
+        total_completed_stages: totalCompleted,
+        avg_progress: Math.round(totalCompleted / teamNumbers.length),
+      }
+    })
+
+  } catch (err) {
+    console.error('Pending reviews error:', err)
+    return Response.json({ error: 'Failed to fetch reviews' }, { status: 500 })
+  }
+}
