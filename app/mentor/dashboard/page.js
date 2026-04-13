@@ -199,9 +199,14 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
 .md-sb-mname{font-size:.82rem;font-weight:600;color:#fff}
 .md-sb-mtech{font-size:.68rem;color:rgba(255,255,255,.35);margin-top:2px}
 .md-sb-nav{flex:1;padding:16px 12px;overflow-y:auto}
-.md-sb-item{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:10px;font-size:.78rem;color:rgba(255,255,255,.55);cursor:pointer;transition:all .2s;margin-bottom:4px;border:none;background:none;width:100%;text-align:left;font-family:'DM Sans',sans-serif}
+.md-sb-item{display:flex;align-items:center;gap:12px;padding:9px 16px;margin:2px 10px;border-radius:10px;font-size:.8rem;color:rgba(255,255,255,.45);cursor:pointer;transition:all .25s;margin-bottom:0;border:none;background:none;width:calc(100% - 20px);text-align:left;font-family:'DM Sans',sans-serif;position:relative;overflow:hidden}
+.md-sb-item svg{flex-shrink:0;width:34px;height:34px;padding:8px;border-radius:9px;transition:all .25s}
 .md-sb-item:hover{color:rgba(255,255,255,.7);background:rgba(255,255,255,.03)}
-.md-sb-item.on{color:#fd1c00;background:rgba(253,28,0,.08);border:1px solid rgba(253,28,0,.12)}
+.md-sb-item.on{color:#fff;background:linear-gradient(135deg,rgba(253,28,0,.12),rgba(250,160,0,.06));font-weight:600;position:relative}
+.md-sb-item.on::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:20px;border-radius:0 3px 3px 0;background:linear-gradient(180deg,#fd1c00,#faa000);box-shadow:0 0 8px rgba(253,28,0,.4)}
+.md-sb-item.on svg{background:linear-gradient(135deg,#fd1c00,#faa000)!important;color:#fff!important;box-shadow:0 0 14px rgba(253,28,0,.2)}
+.md-sb-item:hover{background:rgba(255,255,255,.03)}
+.md-sb-item:hover svg{color:rgba(255,255,255,.65)}
 .md-sb-item svg{flex-shrink:0}
 .md-sb-footer{padding:16px 12px;border-top:1px solid rgba(255,255,255,.04)}
 .md-sb-logout{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;font-size:.78rem;color:rgba(255,255,255,.35);cursor:pointer;border:none;background:none;width:100%;text-align:left;font-family:'DM Sans',sans-serif;transition:all .2s}

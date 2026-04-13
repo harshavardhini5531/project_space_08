@@ -522,7 +522,8 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
 
 /* Nav items — spacious with big gaps */
 .ad-sb-nav{flex:1;display:flex;flex-direction:column;gap:6px;padding:0 4px}
-.ad-sb-item{display:flex;align-items:center;gap:14px;padding:13px 16px;border-radius:12px;border:none;cursor:pointer;background:none;color:rgba(255,255,255,.4);font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:500;transition:all .25s;width:100%;text-align:left;animation:navIn .4s ease both}
+.ad-sb-item{display:flex;align-items:center;gap:12px;padding:9px 16px;margin:2px 10px;border-radius:10px;border:none;cursor:pointer;background:none;color:rgba(255,255,255,.45);font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:500;transition:all .25s;width:calc(100% - 20px);text-align:left;animation:navIn .4s ease both;position:relative;overflow:hidden}
+.ad-sb-item svg{flex-shrink:0;width:34px;height:34px;padding:8px;border-radius:9px;transition:all .25s}
 .ad-sb-item:nth-child(1){animation-delay:0s}
 .ad-sb-item:nth-child(2){animation-delay:.05s}
 .ad-sb-item:nth-child(3){animation-delay:.1s}
@@ -532,7 +533,9 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
 /* Active — white pill background like reference */
 .ad-sb-item.on{color:#fff;background:linear-gradient(135deg,rgba(253,28,0,.12),rgba(250,160,0,.06));font-weight:600;position:relative}
 .ad-sb-item.on::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:20px;border-radius:0 3px 3px 0;background:linear-gradient(180deg,#fd1c00,#faa000);box-shadow:0 0 8px rgba(253,28,0,.4)}
-.ad-sb-item.on svg{color:#fd1c00!important}
+.ad-sb-item.on svg{background:linear-gradient(135deg,#fd1c00,#faa000)!important;color:#fff!important;box-shadow:0 0 14px rgba(253,28,0,.2)}
+.ad-sb-item:hover{background:rgba(255,255,255,.03)}
+.ad-sb-item:hover svg{color:rgba(255,255,255,.65)}
 .ad-sb-item svg{flex-shrink:0;opacity:.7;transition:opacity .2s}
 .ad-sb-item.on svg{opacity:1;stroke:#fd1c00}
 
