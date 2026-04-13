@@ -1,4 +1,6 @@
 'use client'
+// Register push notifications
+import { registerPushNotifications } from '@/lib/pushNotifications'
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createClient } from "@supabase/supabase-js";
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
@@ -1196,6 +1198,7 @@ export default function Dashboard(){
     const roll = u.rollNumber || u.roll_number || '';
     const role = u.role || 'member';
     setUser({ ...u, rollNumber: roll, name: u.name || '', role });
+    if (roll) { import('@/lib/pushNotifications').then(m => m.registerPushNotifications(roll, 'student')).catch(() => {}) }
 
     if (roll) {
       // Fetch profile for sidebar display

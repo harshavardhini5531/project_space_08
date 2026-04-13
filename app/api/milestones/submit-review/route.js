@@ -167,6 +167,15 @@ export async function POST(request) {
       }
     }
 
+    // 9. Send push notification to mentor + admin
+    try {
+      const pushBase = { title: `📋 ${teamNumber} — Review Request`, body: `Stage ${stageNumber}: ${stageName} — by ${submittedByName || submittedByRoll}`, type: 'review-request', teamNumber, stageNumber }
+      if (mentorEmail) {
+        await fetch(new URL('/api/push', request.url).toString(), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'send', recipientEmail: mentorEmail, url: '/mentor/dashboard', ...pushBase }) }).catch(() => {})
+      }
+      await fetch(new URL('/api/push', request.url).toString(), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'send', recipientType: 'admin', url: '/admin', ...pushBase }) }).catch(() => {})
+    } catch (pushErr) { console.error('Push error:', pushErr) }
+
     return Response.json({
       success: true,
       message: `Stage ${stageNumber}: ${stageName} marked for review`,

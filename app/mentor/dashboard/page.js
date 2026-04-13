@@ -48,6 +48,7 @@ export default function MentorDashboard() {
     const m = JSON.parse(saved)
     setMentor(m)
     fetchDashboard(m.email, token)
+    import('@/lib/pushNotifications').then(mod => mod.registerPushNotifications(m.email, 'mentor')).catch(() => {})
   }, [])
 
   async function fetchDashboard(email, token) {
@@ -370,7 +371,7 @@ body.sb-open{overflow:hidden}
 .rv-modal-btn.reject{color:#fff;background:linear-gradient(135deg,#ff4040,#c41600);box-shadow:0 4px 14px rgba(255,64,64,.2)}
 .rv-modal-btn.reject:hover{transform:translateY(-1px)}
 .rv-modal-btn:disabled{opacity:.5;cursor:not-allowed}
-@media(max-width:900px){.rv-stats{grid-template-columns:1fr 1fr}.lb-stats{grid-template-columns:repeat(2,1fr)}.lb-table{display:block;overflow-x:auto}.rv-team-prog{flex-wrap:wrap;gap:8px}.rv-team-prog-bar{flex:1 1 100%}}
+@media(max-width:900px){.rv-stats{grid-template-columns:1fr 1fr}.lb-stats{grid-template-columns:repeat(2,1fr)}.lb-table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;font-size:.7rem}.lb-table td,.lb-table th{padding:8px 10px;white-space:nowrap}.rv-team-prog{flex-wrap:wrap;gap:8px}.rv-team-prog-bar{flex:1 1 100%}}
       `}</style>
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=Orbitron:wght@400;600;700&display=swap" rel="stylesheet"/>
 

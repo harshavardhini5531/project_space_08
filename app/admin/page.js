@@ -69,7 +69,7 @@ export default function AdminDashboard() {
   }
   async function handlePasswordLogin() {
     setError(''); setLoading(true)
-    try { const r = await fetch('/api/admin/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'password-login', email, password }) }); const d = await r.json(); if (!r.ok) { setError(d.error); return }; setToken(d.token); sessionStorage.setItem('admin_token', d.token); setPhase('dashboard') } catch { setError('Network error') } finally { setLoading(false) }
+    try { const r = await fetch('/api/admin/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'password-login', email, password }) }); const d = await r.json(); if (!r.ok) { setError(d.error); return }; setToken(d.token); sessionStorage.setItem('admin_token', d.token); setPhase('dashboard'); import('@/lib/pushNotifications').then(mod => mod.registerPushNotifications(email, 'admin')).catch(() => {}) } catch { setError('Network error') } finally { setLoading(false) }
   }
   async function handleForgotSendOTP() {
     setError(''); setLoading(true)
@@ -121,7 +121,6 @@ export default function AdminDashboard() {
     {id:'overview',label:'Overview',icon:IC.grid},
     {id:'mentors',label:'Mentors',icon:IC.users},
     {id:'teams',label:'Teams',icon:IC.layers},
-    {id:'actions',label:'Actions',icon:IC.bolt},
     {id:'milestones',label:'Project Status',icon:IC.layers},
     {id:'leaderboard',label:'Leaderboard',icon:IC.bolt},
     {id:'report-card',label:'Report Card',icon:IC.file},
@@ -533,7 +532,7 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
 /* Active — white pill background like reference */
 .ad-sb-item.on{color:#fff;background:linear-gradient(135deg,rgba(253,28,0,.12),rgba(250,160,0,.06));font-weight:600;position:relative}
 .ad-sb-item.on::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:20px;border-radius:0 3px 3px 0;background:linear-gradient(180deg,#fd1c00,#faa000);box-shadow:0 0 8px rgba(253,28,0,.4)}
-.ad-sb-item.on svg{background:linear-gradient(135deg,#fd1c00,#faa000)!important;color:#fff!important;box-shadow:0 0 14px rgba(253,28,0,.2)}
+.ad-sb-item.on svg{background:linear-gradient(135deg,#fd1c00,#faa000)!important;stroke:#fff!important;color:#fff!important;box-shadow:0 0 14px rgba(253,28,0,.2)}
 .ad-sb-item:hover{background:rgba(255,255,255,.03)}
 .ad-sb-item:hover svg{color:rgba(255,255,255,.65)}
 .ad-sb-item svg{flex-shrink:0;opacity:.7;transition:opacity .2s}
@@ -687,7 +686,7 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
 .adm-notif-item-t{font-size:11px;font-weight:600;color:#fff;margin-bottom:2px}
 .adm-notif-item-m{font-size:10px;color:rgba(255,255,255,.3);line-height:1.4}
 .adm-notif-item-time{font-size:9px;color:rgba(255,255,255,.15);margin-top:3px}
-@media(max-width:900px){.adm-lb-stats{grid-template-columns:repeat(2,1fr)}.adm-lb-tbl{display:block;overflow-x:auto}}
+@media(max-width:900px){.adm-lb-stats{grid-template-columns:repeat(2,1fr)}.adm-lb-tbl{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;font-size:.7rem}.adm-lb-tbl td,.adm-lb-tbl th{padding:8px 10px;white-space:nowrap}}
 `
 
   // Sidebar content (shared between desktop and mobile)
@@ -759,13 +758,6 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
             {/* TEAMS */}
             {data && activeTab === 'teams' && <><div className="ad-fc"><input className="ad-fi" placeholder="Search teams, projects, leaders..." value={search} onChange={e=>setSearch(e.target.value)}/><button className={`ad-ff ${filterStatus==='all'?'on':''}`} onClick={()=>setFilterStatus('all')}>All</button><button className={`ad-ff ${filterStatus==='registered'?'on':''}`} onClick={()=>setFilterStatus('registered')}>Registered</button><button className={`ad-ff ${filterStatus==='pending'?'on':''}`} onClick={()=>setFilterStatus('pending')}>Pending</button><select className="ad-ff" value={filterTech} onChange={e=>setFilterTech(e.target.value)} style={{appearance:'auto'}}><option value="all">All Technologies</option>{Object.keys(data.techBreakdown||{}).map(t=><option key={t} value={t}>{t}</option>)}</select><span className="ad-fn">{filteredTeams.length} teams</span></div><table className="ad-tt"><thead><tr><th>#</th><th>Team</th><th>Project</th><th>Technology</th><th>Leader</th><th>Mentor</th><th>Status</th><th></th></tr></thead><tbody>{filteredTeams.map(t=><React.Fragment key={t.serialNumber}><tr><td style={{fontWeight:600,color:'rgba(255,255,255,.3)'}}>{t.serialNumber}</td><td style={{fontWeight:600,color:'#fd1c00'}}>{t.teamNumber||'—'}</td><td style={{maxWidth:200,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{t.projectTitle||'—'}</td><td><span style={{fontSize:'.62rem',padding:'3px 8px',borderRadius:6,background:`${TC[t.technology]||'#888'}15`,color:TC[t.technology]||'#888',border:`1px solid ${TC[t.technology]||'#888'}30`}}>{t.technology}</span></td><td><span>{t.leaderName}</span>{t.leaderPhone&&t.leaderPhone.length>=10&&<a href={`tel:${t.leaderPhone}`} style={{marginLeft:6,color:'rgba(255,255,255,.2)',textDecoration:'none'}} title={t.leaderPhone}>{IC.ph}</a>}</td><td style={{color:'rgba(255,255,255,.3)'}}>{t.mentorAssigned||'—'}</td><td><span style={{fontSize:'.65rem',padding:'3px 10px',borderRadius:6,fontWeight:500,background:t.registered?'rgba(74,222,128,.08)':'rgba(255,255,255,.04)',color:t.registered?'#4ade80':'rgba(255,255,255,.3)'}}>{t.registered?'✓ Registered':'Pending'}</span></td><td><button className="ad-te" onClick={()=>setExpandedTeam(expandedTeam===t.serialNumber?null:t.serialNumber)}>{expandedTeam===t.serialNumber?'▲':'▼'}</button></td></tr>{expandedTeam===t.serialNumber&&<tr><td colSpan={8}><div className="ad-tdl"><div style={{fontWeight:600,color:'rgba(255,255,255,.55)',marginBottom:8}}>{t.projectTitle}</div>{t.projectDescription&&<div style={{marginBottom:8,lineHeight:1.5}}>{t.projectDescription}</div>}<div className="ad-tdg"><div className="ad-tdi"><div className="ad-tdla">Problem Statement</div><div className="ad-tdv">{t.problemStatement||'—'}</div></div><div className="ad-tdi"><div className="ad-tdla">AI Usage</div><div className="ad-tdv">{t.aiUsage}</div></div><div className="ad-tdi"><div className="ad-tdla">Tech Stack</div><div className="ad-tdv">{(t.techStack||[]).join(', ')||'—'}</div></div><div className="ad-tdi"><div className="ad-tdla">Members ({t.memberCount})</div><div className="ad-tdv">{(t.members||[]).map(m=>`${m.name}${m.isLeader?' ★':''}`).join(', ')}</div></div></div></div></td></tr>}</React.Fragment>)}</tbody></table></>}
 
-            {/* ACTIONS */}
-            {data && activeTab === 'actions' && <div className="ad-ag">
-              <div className="ad-ac"><div className="ad-ati">{IC.mail} Send Reminders</div><div className="ad-ad">Send reminder emails to {s.pendingCount} pending team leaders</div><button className="ad-ab pr" onClick={handleRemind} disabled={reminding||s.pendingCount===0}>{reminding?'Sending...':'Send Reminders'}</button>{reminderMsg&&<div className="ad-am">{reminderMsg}</div>}</div>
-              <div className="ad-ac"><div className="ad-ati">{IC.dl} Export Data</div><div className="ad-ad">Download CSV reports</div><div style={{display:'flex',gap:10}}><button className="ad-ab se" onClick={()=>handleExport('teams')}>All Teams</button><button className="ad-ab se" onClick={()=>handleExport('registrations')}>Registrations</button></div></div>
-              <div className="ad-ac"><div className="ad-ati">{IC.grid} Quick Stats</div><div className="ad-ad">At a glance</div><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}><div style={{padding:10,borderRadius:8,background:'rgba(255,255,255,.02)',fontSize:'.72rem'}}><span style={{color:'rgba(255,255,255,.25)'}}>Students</span><div style={{fontWeight:700,fontSize:'1.1rem',color:'#fff',marginTop:2}}>{s.totalStudents}</div></div><div style={{padding:10,borderRadius:8,background:'rgba(255,255,255,.02)',fontSize:'.72rem'}}><span style={{color:'rgba(255,255,255,.25)'}}>Accounts</span><div style={{fontWeight:700,fontSize:'1.1rem',color:'#3b82f6',marginTop:2}}>{s.accountsCreated}</div></div></div></div>
-              <div className="ad-ac"><div className="ad-ati">{IC.ref} Refresh</div><div className="ad-ad">Reload latest data</div><button className="ad-ab se" onClick={fetchDashboard} disabled={loading}>{loading?'Loading...':'Refresh'}</button></div>
-            </div>}
             {/* PROJECT STATUS */}
             {activeTab === 'milestones' && <div className="adm-lb">
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20}}>

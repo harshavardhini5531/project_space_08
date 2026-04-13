@@ -89,6 +89,11 @@ export async function POST(request) {
         type: 'approved',
       })
 
+      // 7a. Push notification to student
+      try {
+        await fetch(new URL('/api/push', request.url).toString(), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'send', recipientEmail: submission.submitted_by_roll, title: `✅ ${stageName} Approved!`, body: `${mentorName} approved Stage ${stageNumber}. ${stageNumber < 7 ? 'Next stage unlocked!' : 'All stages complete! 🎉'}`, type: 'approved', teamNumber, stageNumber, url: '/dashboard' }) }).catch(() => {})
+      } catch {}
+
       return Response.json({
         success: true,
         message: `Stage ${stageNumber}: ${stageName} approved`,
@@ -137,6 +142,11 @@ export async function POST(request) {
         message: comment || 'Needs more work',
         type: 'rejected',
       })
+
+      // 6b. Push notification to student
+      try {
+        await fetch(new URL('/api/push', request.url).toString(), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'send', recipientEmail: submission.submitted_by_roll, title: `❌ ${stageName} — Revision Needed`, body: `${mentorName} sent Stage ${stageNumber} back. ${comment || 'Needs more work'}`, type: 'rejected', teamNumber, stageNumber, url: '/dashboard' }) }).catch(() => {})
+      } catch {}
 
       return Response.json({
         success: true,
