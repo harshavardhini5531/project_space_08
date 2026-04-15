@@ -25,6 +25,7 @@ export default function RegisterPage() {
   const [showPass, setShowPass]           = useState(false)
   const [showConfirm, setShowConfirm]     = useState(false)
   const [isMobile, setIsMobile]           = useState(false)
+  const [registered, setRegistered]       = useState(false)
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768)
     check()
@@ -81,7 +82,7 @@ export default function RegisterPage() {
       const data = await res.json()
       if (!res.ok) { setError(data.error); return }
       sessionStorage.setItem('registeredRoll', rollNumber)
-      router.push('/auth/leader-login')
+      setRegistered(true)
     } catch { setError('Network error. Try again.') }
     finally { setLoading(false) }
   }
@@ -226,7 +227,16 @@ export default function RegisterPage() {
 
             <ErrorBanner />
 
-            {step === 1 && (<>
+            {registered && (
+              <div style={{textAlign:'center',padding:'20px 0'}}>
+                <div style={{width:'60px',height:'60px',borderRadius:'50%',background:'rgba(74,222,128,0.12)',border:'1px solid rgba(74,222,128,0.25)',display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 16px',fontSize:'28px'}}>✓</div>
+                <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:'0.9rem',fontWeight:600,color:'#4ade80',letterSpacing:'2px',marginBottom:'8px'}}>ACCOUNT CREATED</div>
+                <div style={{fontSize:'0.75rem',color:'rgba(255,255,255,0.5)',lineHeight:1.6,marginBottom:'20px'}}>Your account has been created successfully.<br/>Please wait for further instructions to login and register your team.</div>
+                <button style={{padding:'12px 28px',background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'10px',color:'rgba(255,255,255,0.7)',fontFamily:"'Poppins',sans-serif",fontSize:'0.8rem',cursor:'pointer'}} onClick={()=>window.location.href='/'}>← Back to Home</button>
+              </div>
+            )}
+
+            {!registered && step === 1 && (<>
               <div style={{marginBottom:'14px'}}>
                 <label style={{display:'block',fontSize:'0.65rem',fontWeight:500,letterSpacing:'1.5px',textTransform:'uppercase',color:'rgba(255,255,255,0.4)',marginBottom:'5px'}}>Roll Number</label>
                 <input style={{width:'100%',padding:'11px 14px',background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'10px',color:'#fff',fontFamily:"'Poppins',sans-serif",fontSize:'0.85rem',outline:'none'}}
@@ -244,7 +254,7 @@ export default function RegisterPage() {
               )}
             </>)}
 
-            {step === 2 && (<>
+            {!registered && step === 2 && (<>
               {studentInfo && (
                 <div style={{background:'rgba(255,40,0,0.08)',border:'1px solid rgba(255,40,0,0.2)',borderRadius:'10px',padding:'10px 12px',fontSize:'0.75rem',color:'rgba(255,255,255,0.65)',marginBottom:'14px'}}>
                   Hi <strong style={{color:'#ff6040'}}>{studentInfo.name}</strong>! OTP sent to <strong style={{color:'#ff6040'}}>{maskedEmail}</strong>
@@ -265,7 +275,7 @@ export default function RegisterPage() {
               </div>
             </>)}
 
-            {step === 3 && (<>
+            {!registered && step === 3 && (<>
               <div style={{marginBottom:'14px'}}>
                 <label style={{display:'block',fontSize:'0.65rem',fontWeight:500,letterSpacing:'1.5px',textTransform:'uppercase',color:'rgba(255,255,255,0.4)',marginBottom:'5px'}}>Create Password</label>
                 <div style={{position:'relative'}}>
@@ -428,7 +438,17 @@ export default function RegisterPage() {
 
           <ErrorBanner />
 
-          {step === 1 && (
+          {registered ? (
+            <div style={{textAlign:'center',padding:'24px 0'}}>
+              <div style={{width:'64px',height:'64px',borderRadius:'50%',background:'rgba(74,222,128,0.12)',border:'1px solid rgba(74,222,128,0.25)',display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 18px',fontSize:'30px'}}>✓</div>
+              <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:'1rem',fontWeight:600,color:'#4ade80',letterSpacing:'3px',marginBottom:'10px'}}>ACCOUNT CREATED</div>
+              <div style={{fontSize:'0.8rem',color:'rgba(255,255,255,0.5)',lineHeight:1.7,marginBottom:'24px'}}>Your account has been created successfully.<br/>Please wait for further instructions to login and register your team.</div>
+              <button style={{margin:'0 auto',display:'flex',alignItems:'center',gap:'6px',padding:'12px 28px',background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'10px',color:'rgba(255,255,255,0.7)',fontFamily:"'Poppins',sans-serif",fontSize:'0.8rem',cursor:'pointer'}} onClick={()=>window.location.href='/'}>
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 3L5 8l5 5"/></svg>
+                Back to Home
+              </button>
+            </div>
+          ) : step === 1 ? (
             <>
               <div className="field">
                 <label className="ps-label">Roll Number</label>
@@ -445,9 +465,7 @@ export default function RegisterPage() {
                 </div>
               )}
             </>
-          )}
-
-          {step === 2 && (
+          ) : step === 2 ? (
             <>
               {studentInfo && (
                 <div className="ps-info">
@@ -468,9 +486,7 @@ export default function RegisterPage() {
                 Didn&apos;t receive it? <button onClick={() => { setStep(1); setOtp('') }}>Resend OTP</button>
               </div>
             </>
-          )}
-
-          {step === 3 && (
+          ) : step === 3 ? (
             <>
               <div className="field">
                 <label className="ps-label">Create Password</label>
@@ -514,7 +530,7 @@ export default function RegisterPage() {
                 {loading ? 'Creating Account...' : 'Create Account →'}
               </button>
             </>
-          )}
+          ) : null}
         </div>
       </div>
 
