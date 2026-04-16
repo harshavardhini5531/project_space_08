@@ -1363,17 +1363,16 @@ function ProjectDetails({ user }) {
 .pd-showcase{background:#0c0614;border:1px solid rgba(255,255,255,.06);border-radius:18px;overflow:hidden;position:relative;min-height:560px;display:flex;flex-direction:column}
 
 /* Header with gradient */
-.pd-show-hdr{padding:36px 40px;background:linear-gradient(135deg,#1a1a1a 0%,#2d2d2d 50%,#0a0a0a 100%);position:relative;overflow:hidden}
+.pd-show-hdr{padding:24px 32px;background:linear-gradient(135deg,#1a1a1a 0%,#2d2d2d 50%,#0a0a0a 100%);position:relative;overflow:hidden}
 .pd-show-hdr-inner{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
 .pd-show-hdr-left{flex:1;min-width:0}
-.pd-show-mentor{display:flex;align-items:center;gap:12px;padding:14px 18px;border-radius:14px;background:rgba(255,255,255,.06);backdrop-filter:blur(10px);border:1px solid rgba(238,167,39,.25);flex-shrink:0}
-.pd-show-mentor-photo{width:54px;height:54px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid rgba(238,167,39,.5);background:linear-gradient(135deg,#2a2a2a,#0a0a0a);box-shadow:0 4px 12px rgba(238,167,39,.2)}
+.pd-show-mentor{display:flex;flex-direction:column;align-items:center;gap:8px;flex-shrink:0}
+.pd-show-mentor-photo{width:64px;height:64px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid rgba(238,167,39,.5);background:linear-gradient(135deg,#2a2a2a,#0a0a0a);box-shadow:0 4px 16px rgba(238,167,39,.2)}
 .pd-show-mentor-photo img{width:100%;height:100%;object-fit:cover;display:block}
-.pd-show-mentor-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:1.1rem;font-weight:800;color:#EEA727}
-.pd-show-mentor-info{display:flex;flex-direction:column;min-width:0}
-.pd-show-mentor-label{font-family:'DM Sans',sans-serif;font-size:.52rem;color:#EEA727;letter-spacing:2px;font-weight:700;margin-bottom:2px}
-.pd-show-mentor-name{font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;color:#fff;line-height:1.2;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
-.pd-show-mentor-email{font-family:'DM Sans',sans-serif;font-size:.58rem;color:rgba(255,255,255,.55);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+.pd-show-mentor-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:1.2rem;font-weight:800;color:#EEA727}
+.pd-show-mentor-info{display:flex;flex-direction:column;align-items:center;min-width:0}
+.pd-show-mentor-label{font-family:'DM Sans',sans-serif;font-size:.5rem;color:rgba(238,167,39,.8);letter-spacing:2px;font-weight:700;margin-bottom:2px;text-align:center}
+.pd-show-mentor-name{font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:700;color:#fff;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;text-align:center}
 .pd-show-hdr::before{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 0%,transparent 40%,rgba(253,28,0,.08) 50%,rgba(238,167,39,.12) 55%,rgba(255,255,255,.08) 60%,transparent 70%,transparent 100%);background-size:200% 100%;animation:shinyWave 4s linear infinite;pointer-events:none}
 .pd-show-hdr::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 50%,rgba(253,28,0,.04),transparent 50%),radial-gradient(circle at 70% 50%,rgba(238,167,39,.04),transparent 50%);pointer-events:none;animation:glowShift 6s ease-in-out infinite}
 @keyframes shinyWave{0%{background-position:-100% 0}100%{background-position:200% 0}}
@@ -1545,7 +1544,6 @@ function ProjectDetails({ user }) {
                       <div className="pd-show-mentor-info">
                         <div className="pd-show-mentor-label">MENTOR</div>
                         <div className="pd-show-mentor-name">{details.mentorDetails.name}</div>
-                        <div className="pd-show-mentor-email">{details.mentorDetails.email}</div>
                       </div>
                     </div>
                   )}
