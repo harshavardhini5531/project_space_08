@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { sendOTPEmail } from '@/lib/mailer'
+import { rateLimitResponse } from '@/lib/rate-limit'
 
 export async function POST(request) {
   try {
@@ -9,6 +10,24 @@ export async function POST(request) {
 
     if (!rollNumber) {
       return Response.json({ error: 'Roll number is required' }, { status: 400 })
+    }
+
+    // Rate limit: max 1 OTP per 60 seconds per roll number
+    const cooldownCheck = rateLimitResponse(`otp-cooldown:${rollNumber}`, 1, 60 * 1000)
+    if (cooldownCheck) {
+      return Response.json(
+        { error: 'Please wait 60 seconds before requesting another OTP.' },
+        { status: 429 }
+      )
+    }
+
+    // Rate limit: max 5 OTPs per 24 hours per roll number
+    const dailyCheck = rateLimitResponse(`otp-daily:${rollNumber}`, 5, 24 * 60 * 60 * 1000)
+    if (dailyCheck) {
+      return Response.json(
+        { error: 'You have requested too many OTPs today. Please try again tomorrow or contact your coordinator.' },
+        { status: 429 }
+      )
     }
 
     // Check student exists

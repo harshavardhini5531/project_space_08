@@ -21,6 +21,17 @@ export async function POST(request) {
       return Response.json({ error: 'Team not found' }, { status: 404 })
     }
 
+    // Fetch mentor details if mentor is assigned
+    let mentorData = null
+    if (team.mentor_assigned) {
+      const { data: mentor } = await supabase
+        .from('mentors')
+        .select('name, email, image_url, technology, emp_id, batch')
+        .eq('name', team.mentor_assigned)
+        .single()
+      if (mentor) mentorData = mentor
+    }
+
     // Get registration data
     const { data: registration } = await supabase
       .from('team_registrations')
@@ -78,6 +89,7 @@ export async function POST(request) {
         batch: team.batch,
         registered: team.registered,
         mentor: team.mentor_assigned,
+        mentorDetails: mentorData,
         leaderRoll: team.leader_roll,
         projectTitle: registration?.project_title || team.project_title || '',
         projectDescription: registration?.project_description || team.project_description || '',
