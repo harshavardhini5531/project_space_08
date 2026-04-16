@@ -59,9 +59,30 @@ function MyProfile({ user, hootData, videoRatings, videoLoading }) {
   const [hubLoading, setHubLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [imgError, setImgError] = useState(false);
+  const [shortName, setShortName] = useState('');
+  const [editingShort, setEditingShort] = useState(false);
+  const [shortDraft, setShortDraft] = useState('');
+  const [shortSaving, setShortSaving] = useState(false);
+  const [shortMsg, setShortMsg] = useState(null);
 
   const roll = user?.rollNumber || '';
+  useEffect(() => {
+    if (!roll) return;
+    fetch('/api/auth/team-data', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rollNumber: roll })
+    })
+      .then(r => r.json())
+      .then(d => {
+        const me = (d.members || []).find(m => m.roll_number === roll);
+        if (me?.short_name) setShortName(me.short_name);
+      })
+      .catch(() => {});
+  }, [roll]);
 
+  useEffect(() => {
+    if (!roll) { setHubLoading(false); return; }
+    fetch('/api/student-hub-profile', {
   useEffect(() => {
     if (!roll) { setHubLoading(false); return; }
     fetch('/api/student-hub-profile', {
@@ -102,28 +123,6 @@ function MyProfile({ user, hootData, videoRatings, videoLoading }) {
 
   const semesters = [s.sem1, s.sem2, s.sem3, s.sem4, s.sem5].filter(Boolean);
   const badgePct = parseFloat(s.badge_test_pct) || 0;
-
-  // Short name state
-  const [shortName, setShortName] = useState('');
-  const [editingShort, setEditingShort] = useState(false);
-  const [shortDraft, setShortDraft] = useState('');
-  const [shortSaving, setShortSaving] = useState(false);
-  const [shortMsg, setShortMsg] = useState(null);
-
-  // Fetch current short_name from team_members
-  useEffect(() => {
-    if (!roll) return;
-    fetch('/api/auth/team-data', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rollNumber: roll })
-    })
-      .then(r => r.json())
-      .then(d => {
-        const me = (d.members || []).find(m => m.roll_number === roll);
-        if (me?.short_name) setShortName(me.short_name);
-      })
-      .catch(() => {});
-  }, [roll]);
 
   async function saveShortName() {
     const trimmed = shortDraft.trim();
