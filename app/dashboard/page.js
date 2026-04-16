@@ -14,7 +14,7 @@ import {
   Target, Layers, CheckCircle, XCircle, Briefcase, Hash,
   Lightbulb, PenTool, Wrench, Bug, CloudUpload, FileText, Lock,
   AlertCircle, Send, X, Clock, MessageSquare, Zap, ChevronDown,
-  MapPin, Bus, Home, Calendar, TrendingUp, BarChart3, Eye
+  MapPin, Bus, Home, Calendar, TrendingUp, BarChart3, Eye, Mail
 } from "lucide-react";
 
 const NAV_SECTIONS = [
@@ -854,29 +854,42 @@ function TeamProfile({ user }){
       </div>
       <div className="tp-members-header"><div className="tp-members-count"><span>{members.length}</span> Team Members</div></div>
       <div className="tp-cards-grid">
-        {members.map((m,i)=>{
+        {[...members].sort((a,b)=>{
+          // Me first, then leader, then rest by roll number
+          if (a.roll_number === myRoll) return -1;
+          if (b.roll_number === myRoll) return 1;
+          if (a.is_leader && !b.is_leader) return -1;
+          if (!a.is_leader && b.is_leader) return 1;
+          return (a.roll_number||'').localeCompare(b.roll_number||'');
+        }).map((m,i)=>{
           const isMe = m.roll_number === myRoll;
           const isLeader = m.is_leader;
           return(
-          <div key={m.roll_number||i} className="tp-card" style={{animationDelay:`${i*.06}s`,border:isMe?'1px solid rgba(253,28,0,.2)':'1px solid rgba(255,255,255,.06)'}}>
+          <div key={m.roll_number||i} className="tp-card" style={{animationDelay:`${i*.06}s`,border:isMe?'1px solid rgba(253,28,0,.3)':isLeader?'1px solid rgba(238,167,39,.2)':'1px solid rgba(255,255,255,.06)'}}>
             <div className="tp-card-top">
-              <div className="tp-card-avatar" style={isMe?{borderColor:'rgba(253,28,0,.3)',background:'linear-gradient(135deg,rgba(253,28,0,.2),rgba(250,160,0,.1))'}:{}}>{m.image_url?<img src={m.image_url} alt={m.name} style={{width:'100%',height:'100%',borderRadius:'inherit',objectFit:'cover'}} onError={e=>{e.target.style.display='none'}}/>:null}{(!m.image_url)&&(m.name||'?').charAt(0)}<div className="tp-card-online"/></div>
-              <div style={{display:'flex',gap:'6px',flexWrap:'wrap'}}>
-                {isLeader && <span className="tp-tag tp-tag-leader">Team Leader</span>}
+              <div className="tp-card-avatar" style={isMe?{borderColor:'rgba(253,28,0,.4)',background:'linear-gradient(135deg,rgba(253,28,0,.2),rgba(250,160,0,.1))'}:isLeader?{borderColor:'rgba(238,167,39,.3)',background:'linear-gradient(135deg,rgba(238,167,39,.15),rgba(238,167,39,.05))'}:{}}>{m.image_url?<img src={m.image_url} alt={m.name} style={{width:'100%',height:'100%',borderRadius:'inherit',objectFit:'cover'}} onError={e=>{e.target.style.display='none'}}/>:null}{(!m.image_url)&&(m.name||'?').charAt(0)}<div className="tp-card-online"/></div>
+              <div style={{display:'flex',gap:'6px',flexWrap:'wrap',justifyContent:'flex-end'}}>
                 {isMe && <span className="tp-tag tp-tag-you">You</span>}
+                {isLeader && <span className="tp-tag tp-tag-leader">Team Leader</span>}
               </div>
             </div>
-            <div className="tp-card-name">{m.name}</div>
+            <div className="tp-card-name">{m.name||'—'}</div>
             <div className="tp-card-role">{isLeader?'Team Leader':'Member'}</div>
             <div className="tp-card-details">
               <div className="tp-card-detail-row">
                 <div className="tp-card-detail"><div className="tp-card-detail-lb">Branch</div><div className="tp-card-detail-val">{m.branch||'—'}</div></div>
-                <div className="tp-card-detail"><div className="mp-card-detail-lb">Roll No</div><div className="tp-card-detail-val">{m.roll_number}</div></div>
+                <div className="tp-card-detail"><div className="tp-card-detail-lb">Roll No</div><div className="tp-card-detail-val">{m.roll_number||'—'}</div></div>
               </div>
+              {m.short_name && (
+                <div className="tp-card-detail-row" style={{marginTop:'10px'}}>
+                  <div className="tp-card-detail"><div className="tp-card-detail-lb">Short Name</div><div className="tp-card-detail-val">{m.short_name}</div></div>
+                  <div className="tp-card-detail"><div className="tp-card-detail-lb">College</div><div className="tp-card-detail-val">{m.college||'—'}</div></div>
+                </div>
+              )}
             </div>
             <div className="tp-card-contact">
-              {m.email && <div className="tp-card-contact-row"><Phone size={12}/><span>{m.email}</span></div>}
-              {m.phone && <div className="tp-card-contact-row"><Phone size={12}/><span>{m.phone}</span></div>}
+              <div className="tp-card-contact-row"><Mail size={12}/><span>{m.email||'—'}</span></div>
+              <div className="tp-card-contact-row"><Phone size={12}/><span>{m.phone||'—'}</span></div>
             </div>
           </div>
           );
