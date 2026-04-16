@@ -1447,6 +1447,8 @@ function ProjectDetails({ user }) {
   .pd-info-sections{padding:16px 18px 20px}
   .pd-info-grid{grid-template-columns:1fr}
   .pd-members-strip{grid-template-columns:repeat(auto-fit,minmax(90px,1fr))}
+  .pd-mentor-card{flex-direction:column;align-items:flex-start;text-align:left;padding:14px}
+  .pd-mentor-photo{width:56px;height:56px}
   .pd-member-name-big{font-size:.7rem}
   .pd-member-name-sub{font-size:.52rem}
   .pd-tech-tab{padding:8px 12px;font-size:.66rem}
@@ -1526,6 +1528,27 @@ function ProjectDetails({ user }) {
 
               {/* Info Sections */}
               <div className="pd-info-sections">
+                {details.mentorDetails && (
+                  <div className="pd-mentor-card">
+                    <div className="pd-mentor-photo">
+                      {details.mentorDetails.image_url ? (
+                        <img src={details.mentorDetails.image_url} alt={details.mentorDetails.name} onError={e=>{e.target.style.display='none';e.target.nextElementSibling.style.display='flex'}}/>
+                      ) : null}
+                      <div className="pd-mentor-photo-fallback" style={{display: details.mentorDetails.image_url ? 'none' : 'flex'}}>
+                        {(details.mentorDetails.name||'?').charAt(0).toUpperCase()}
+                      </div>
+                    </div>
+                    <div className="pd-mentor-info">
+                      <div className="pd-mentor-label">ASSIGNED MENTOR</div>
+                      <div className="pd-mentor-name">{details.mentorDetails.name}</div>
+                      <div className="pd-mentor-meta">
+                        <span><Mail size={10}/> {details.mentorDetails.email}</span>
+                        {details.mentorDetails.emp_id && <span>· ID: {details.mentorDetails.emp_id}</span>}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {details.projectDescription && (
                   <div className="pd-info-card">
                     <div className="pd-info-title"><FileText size={11} style={{color:'#EEA727'}}/> Project Description</div>
