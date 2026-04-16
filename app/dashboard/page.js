@@ -103,6 +103,54 @@ function MyProfile({ user, hootData, videoRatings, videoLoading }) {
   const semesters = [s.sem1, s.sem2, s.sem3, s.sem4, s.sem5].filter(Boolean);
   const badgePct = parseFloat(s.badge_test_pct) || 0;
 
+  // Short name state
+  const [shortName, setShortName] = useState('');
+  const [editingShort, setEditingShort] = useState(false);
+  const [shortDraft, setShortDraft] = useState('');
+  const [shortSaving, setShortSaving] = useState(false);
+  const [shortMsg, setShortMsg] = useState(null);
+
+  // Fetch current short_name from team_members
+  useEffect(() => {
+    if (!roll) return;
+    fetch('/api/auth/team-data', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rollNumber: roll })
+    })
+      .then(r => r.json())
+      .then(d => {
+        const me = (d.members || []).find(m => m.roll_number === roll);
+        if (me?.short_name) setShortName(me.short_name);
+      })
+      .catch(() => {});
+  }, [roll]);
+
+  async function saveShortName() {
+    const trimmed = shortDraft.trim();
+    if (!trimmed) { setShortMsg({ type: 'error', text: 'Short name cannot be empty' }); return; }
+    if (trimmed.length > 15) { setShortMsg({ type: 'error', text: 'Max 15 characters' }); return; }
+    if (!/^[A-Za-z ]+$/.test(trimmed)) { setShortMsg({ type: 'error', text: 'Only letters and spaces allowed' }); return; }
+
+    setShortSaving(true);
+    setShortMsg(null);
+    try {
+      const r = await fetch('/api/auth/update-short-name', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rollNumber: roll, shortName: trimmed })
+      });
+      const d = await r.json();
+      if (!r.ok) { setShortMsg({ type: 'error', text: d.error || 'Failed to save' }); return; }
+      setShortName(trimmed);
+      setEditingShort(false);
+      setShortMsg({ type: 'success', text: 'Short name updated!' });
+      setTimeout(() => setShortMsg(null), 3000);
+    } catch {
+      setShortMsg({ type: 'error', text: 'Network error' });
+    } finally {
+      setShortSaving(false);
+    }
+  }
+
   const tabs = [
     { id: 'overview', label: 'Overview', icon: User },
     { id: 'coding', label: 'Coding', icon: Code },
@@ -176,6 +224,47 @@ function MyProfile({ user, hootData, videoRatings, videoLoading }) {
          ═══════════════════════════════════════════════ */}
       {activeTab === 'overview' && (
         <div className="mp-tab-content">
+
+          {/* Short Name Card */}
+          <div className="mp-card" style={{background:'linear-gradient(135deg,rgba(253,28,0,.06),rgba(238,167,39,.03))',borderColor:'rgba(253,28,0,.15)'}}>
+            <div className="mp-card-title"><User size={16} style={{color:'#fd1c00'}}/> Your Short Name <span style={{fontSize:'.55rem',color:'rgba(255,255,255,.3)',fontWeight:400,marginLeft:'auto'}}>Shown on team & leaderboard</span></div>
+            {!editingShort ? (
+              <div style={{display:'flex',alignItems:'center',gap:12,flexWrap:'wrap'}}>
+                <div style={{padding:'10px 18px',borderRadius:10,background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,255,255,.08)',fontSize:'.95rem',fontWeight:700,color:'#fff',minWidth:120}}>
+                  {shortName || <span style={{color:'rgba(255,255,255,.3)',fontStyle:'italic',fontWeight:400}}>Not set</span>}
+                </div>
+                <button onClick={()=>{setShortDraft(shortName);setEditingShort(true);setShortMsg(null)}} style={{display:'flex',alignItems:'center',gap:6,padding:'9px 16px',borderRadius:10,background:'rgba(253,28,0,.08)',border:'1px solid rgba(253,28,0,.2)',color:'#fd1c00',fontFamily:"'DM Sans',sans-serif",fontSize:'.72rem',fontWeight:600,cursor:'pointer'}}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  {shortName ? 'Edit' : 'Set Short Name'}
+                </button>
+              </div>
+            ) : (
+              <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
+                <input
+                  type="text"
+                  value={shortDraft}
+                  onChange={e=>setShortDraft(e.target.value)}
+                  onKeyDown={e=>{if(e.key==='Enter')saveShortName();if(e.key==='Escape'){setEditingShort(false);setShortMsg(null)}}}
+                  maxLength={15}
+                  placeholder="e.g. Harsha"
+                  autoFocus
+                  style={{padding:'10px 14px',borderRadius:10,background:'rgba(255,255,255,.05)',border:'1px solid rgba(253,28,0,.3)',color:'#fff',fontFamily:"'DM Sans',sans-serif",fontSize:'.9rem',fontWeight:600,outline:'none',minWidth:160,flex:'1 1 160px'}}
+                />
+                <button onClick={saveShortName} disabled={shortSaving} style={{padding:'10px 18px',borderRadius:10,background:'linear-gradient(135deg,#fd1c00,#ff5535)',border:'none',color:'#fff',fontFamily:"'DM Sans',sans-serif",fontSize:'.72rem',fontWeight:600,cursor:shortSaving?'wait':'pointer',opacity:shortSaving?.6:1}}>
+                  {shortSaving?'Saving...':'Save'}
+                </button>
+                <button onClick={()=>{setEditingShort(false);setShortMsg(null)}} disabled={shortSaving} style={{padding:'10px 16px',borderRadius:10,background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.1)',color:'rgba(255,255,255,.6)',fontFamily:"'DM Sans',sans-serif",fontSize:'.72rem',fontWeight:500,cursor:'pointer'}}>
+                  Cancel
+                </button>
+                <div style={{fontSize:'.58rem',color:'rgba(255,255,255,.35)',width:'100%',marginTop:4}}>Max 15 chars · Letters & spaces only · Unique within team</div>
+              </div>
+            )}
+            {shortMsg && (
+              <div style={{marginTop:10,padding:'8px 12px',borderRadius:8,background:shortMsg.type==='success'?'rgba(74,222,128,.08)':'rgba(253,28,0,.08)',border:`1px solid ${shortMsg.type==='success'?'rgba(74,222,128,.2)':'rgba(253,28,0,.2)'}`,fontSize:'.72rem',color:shortMsg.type==='success'?'#4ade80':'#ff6040',fontWeight:500}}>
+                {shortMsg.text}
+              </div>
+            )}
+          </div>
 
           {/* Personal Info */}
           <div className="mp-card">
