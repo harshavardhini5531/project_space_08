@@ -14,7 +14,7 @@ import {
   Target, Layers, CheckCircle, XCircle, Briefcase, Hash,
   Lightbulb, PenTool, Wrench, Bug, CloudUpload, FileText, Lock,
   AlertCircle, Send, X, Clock, MessageSquare, Zap, ChevronDown,
-  MapPin, Bus, Home, Calendar, TrendingUp, BarChart3, Eye, Mail
+  MapPin, Bus, Home, Calendar, TrendingUp, BarChart3, Eye, Mail, Sparkles, Cpu, Search
 } from "lucide-react";
 
 const NAV_SECTIONS = [
@@ -1265,6 +1265,342 @@ function ProjectStatus({ user }) {
     </div>
   );
 }
+/* ═══ PROJECT DETAILS — BROWSE ALL PROJECTS ═══ */
+function ProjectDetails({ user }) {
+  const [projects, setProjects] = useState([]);
+  const [selectedTeam, setSelectedTeam] = useState(null);
+  const [details, setDetails] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [detailsLoading, setDetailsLoading] = useState(false);
+  const [activeTech, setActiveTech] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const myTeamNumber = user?.teamNumber || '';
+
+  // Fetch all projects once
+  useEffect(() => {
+    fetch('/api/projects/list')
+      .then(r => r.json())
+      .then(d => {
+        if (d.projects) {
+          setProjects(d.projects);
+          // Default to user's own team, or first project
+          const myProject = d.projects.find(p => p.teamNumber === myTeamNumber);
+          const initial = myProject || d.projects[0];
+          if (initial) setSelectedTeam(initial.teamNumber);
+        }
+      })
+      .catch(e => console.error('Fetch projects error:', e))
+      .finally(() => setLoading(false));
+  }, [myTeamNumber]);
+
+  // Fetch details when selection changes
+  useEffect(() => {
+    if (!selectedTeam) return;
+    setDetailsLoading(true);
+    fetch('/api/projects/details', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ teamNumber: selectedTeam })
+    })
+      .then(r => r.json())
+      .then(d => { if (d.project) setDetails(d.project); })
+      .catch(e => console.error('Fetch details error:', e))
+      .finally(() => setDetailsLoading(false));
+  }, [selectedTeam]);
+
+  // Unique technologies
+  const technologies = ['all', ...Array.from(new Set(projects.map(p => p.technology).filter(Boolean)))];
+
+  // Filter projects by tech + search
+  const filteredProjects = projects.filter(p => {
+    const matchesTech = activeTech === 'all' || p.technology === activeTech;
+    const matchesSearch = !searchQuery ||
+      p.projectTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.teamNumber?.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesTech && matchesSearch;
+  });
+
+  const TECH_COLORS = {
+    'AWS Development': '#ff9900',
+    'Google Flutter': '#42a5f5',
+    'Full Stack': '#4ade80',
+    'Data Specialist': '#a78bfa',
+    'ServiceNow': '#22c55e',
+    'VLSI': '#ef4444',
+    'SkillupCoder': '#f59e0b',
+    'SkillUp_ACET': '#ec4899'
+  };
+
+  const getTechColor = (tech) => TECH_COLORS[tech] || '#fd1c00';
+
+  if (loading) {
+    return (
+      <div style={{display:'flex',alignItems:'center',justifyContent:'center',minHeight:'60vh',color:'rgba(255,255,255,.3)',fontSize:'.8rem'}}>
+        <div className="mp-loading-spinner" style={{marginRight:10}}/> Loading projects...
+      </div>
+    );
+  }
+
+  return (
+    <div className="pd-wrap">
+      <style>{`
+.pd-wrap{display:flex;flex-direction:column;gap:16px;animation:pdIn .5s ease both;}
+@keyframes pdIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+/* Tech tabs */
+.pd-tech-tabs{display:flex;gap:6px;padding:6px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);overflow-x:auto;-webkit-overflow-scrolling:touch}
+.pd-tech-tabs::-webkit-scrollbar{display:none}
+.pd-tech-tab{display:flex;align-items:center;gap:6px;padding:9px 16px;border-radius:10px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);color:rgba(255,255,255,.45);font-size:.72rem;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .25s;white-space:nowrap;flex-shrink:0}
+.pd-tech-tab:hover{color:rgba(255,255,255,.75);border-color:rgba(255,255,255,.15)}
+.pd-tech-tab.active{background:linear-gradient(135deg,rgba(253,28,0,.15),rgba(238,167,39,.08))!important;color:#fff!important;border-color:rgba(253,28,0,.3)!important;box-shadow:0 2px 12px rgba(253,28,0,.1)}
+.pd-tech-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+
+/* Main layout */
+.pd-main{display:grid;grid-template-columns:1fr 340px;gap:16px;min-height:0}
+
+/* Showcase */
+.pd-showcase{background:#0c0614;border:1px solid rgba(255,255,255,.06);border-radius:18px;overflow:hidden;position:relative;min-height:560px;display:flex;flex-direction:column}
+
+/* Header with gradient */
+.pd-show-hdr{padding:28px 32px;background:linear-gradient(135deg,var(--tc,#fd1c00) 0%,color-mix(in srgb,var(--tc,#fd1c00) 60%,#000 40%) 100%);position:relative;overflow:hidden}
+.pd-show-hdr::before{content:'';position:absolute;top:-80px;right:-80px;width:280px;height:280px;background:radial-gradient(circle,rgba(255,255,255,.12),transparent 55%);pointer-events:none}
+.pd-show-meta{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-family:'DM Sans',sans-serif}
+.pd-show-badge{padding:4px 12px;border-radius:6px;background:rgba(255,255,255,.15);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.25);font-size:.62rem;font-weight:700;letter-spacing:1.5px;color:#fff}
+.pd-show-tech{padding:4px 12px;border-radius:6px;background:rgba(255,255,255,.9);color:var(--tc,#fd1c00);font-size:.6rem;font-weight:800;letter-spacing:1px;text-transform:uppercase}
+.pd-show-title{font-family:'Astro','Orbitron',sans-serif;font-size:1.8rem;font-weight:800;color:#fff;line-height:1.1;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;word-break:break-word}
+.pd-show-sub{font-size:.78rem;color:rgba(255,255,255,.85);font-weight:500}
+
+/* Members strip */
+.pd-members-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:2px;padding:0;background:#0c0614}
+.pd-member-col{position:relative;aspect-ratio:3/4;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.01));transition:all .3s}
+.pd-member-col:hover{transform:scale(1.03);z-index:2}
+.pd-member-col::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,color-mix(in srgb,var(--tc,#fd1c00) 75%,transparent) 100%);pointer-events:none}
+.pd-member-img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(.3) contrast(1.05)}
+.pd-member-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:2.2rem;font-weight:800;color:rgba(255,255,255,.3);background:linear-gradient(180deg,rgba(255,255,255,.04),color-mix(in srgb,var(--tc,#fd1c00) 18%,transparent))}
+.pd-member-name{position:absolute;bottom:14px;left:0;right:0;text-align:center;z-index:3;padding:0 6px}
+.pd-member-name-big{font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:800;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.5);line-height:1.2;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pd-member-name-sub{font-size:.58rem;color:rgba(255,255,255,.85);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pd-member-leader-star{position:absolute;top:8px;right:8px;z-index:3;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;font-size:11px;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+
+/* Info sections */
+.pd-info-sections{padding:22px 32px 28px;display:flex;flex-direction:column;gap:18px;flex:1}
+.pd-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.pd-info-card{padding:16px 18px;border-radius:12px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06)}
+.pd-info-title{font-size:.58rem;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.pd-info-text{font-size:.82rem;color:rgba(255,255,255,.85);line-height:1.6;font-weight:500}
+.pd-info-text-muted{color:rgba(255,255,255,.4);font-style:italic}
+
+/* Chips */
+.pd-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.pd-chip{padding:5px 12px;border-radius:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);font-size:.68rem;color:rgba(255,255,255,.8);font-weight:500}
+.pd-chip.tech{background:rgba(16,185,129,.08);border-color:rgba(16,185,129,.2);color:#34d399}
+.pd-chip.ai{background:rgba(242,29,50,.08);border-color:rgba(242,29,50,.25);color:#ff6b7a}
+.pd-chip.area{background:rgba(238,167,39,.08);border-color:rgba(238,167,39,.25);color:#EEA727}
+
+/* Right sidebar — project list */
+.pd-sidebar{background:rgba(12,6,20,.6);border:1px solid rgba(255,255,255,.06);border-radius:18px;display:flex;flex-direction:column;overflow:hidden;max-height:calc(100vh - 180px)}
+.pd-sidebar-hdr{padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.05);flex-shrink:0}
+.pd-sidebar-title{font-size:.72rem;font-weight:700;color:rgba(255,255,255,.9);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px}
+.pd-search-wrap{position:relative;display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
+.pd-search-wrap:focus-within{border-color:rgba(253,28,0,.3)}
+.pd-search-wrap input{flex:1;background:none;border:none;outline:none;color:#fff;font-family:'DM Sans',sans-serif;font-size:.74rem}
+.pd-search-wrap input::placeholder{color:rgba(255,255,255,.3)}
+.pd-search-wrap svg{color:rgba(255,255,255,.3);flex-shrink:0}
+
+.pd-list{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:6px}
+.pd-list::-webkit-scrollbar{width:4px}.pd-list::-webkit-scrollbar-thumb{background:rgba(253,28,0,.15);border-radius:4px}
+.pd-list-item{padding:12px 14px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);cursor:pointer;transition:all .2s;position:relative}
+.pd-list-item:hover{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12);transform:translateX(2px)}
+.pd-list-item.active{background:linear-gradient(135deg,rgba(253,28,0,.1),rgba(238,167,39,.05));border-color:rgba(253,28,0,.25);box-shadow:0 2px 12px rgba(253,28,0,.08)}
+.pd-list-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:60%;border-radius:0 3px 3px 0;background:linear-gradient(180deg,#fd1c00,#EEA727)}
+.pd-list-title{font-size:.78rem;font-weight:700;color:#fff;line-height:1.3;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.pd-list-meta{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:4px}
+.pd-list-team-num{font-size:.55rem;font-weight:700;color:rgba(253,28,0,.85);letter-spacing:1px;font-family:'Orbitron',sans-serif}
+.pd-list-tech-pill{padding:3px 8px;border-radius:5px;font-size:.5rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px}
+
+.pd-empty{padding:40px 20px;text-align:center;color:rgba(255,255,255,.3);font-size:.78rem}
+
+/* Mobile */
+@media(max-width:1100px){
+  .pd-main{grid-template-columns:1fr}
+  .pd-sidebar{max-height:400px;order:-1}
+}
+@media(max-width:768px){
+  .pd-show-hdr{padding:20px}
+  .pd-show-title{font-size:1.3rem}
+  .pd-info-sections{padding:16px 18px 20px}
+  .pd-info-grid{grid-template-columns:1fr}
+  .pd-members-strip{grid-template-columns:repeat(auto-fit,minmax(90px,1fr))}
+  .pd-member-name-big{font-size:.7rem}
+  .pd-member-name-sub{font-size:.52rem}
+  .pd-tech-tab{padding:8px 12px;font-size:.66rem}
+  .pd-sidebar{max-height:350px}
+  .pd-list-item{padding:10px}
+  .pd-list-title{font-size:.72rem}
+}
+@media(max-width:480px){
+  .pd-show-title{font-size:1.1rem}
+  .pd-show-hdr{padding:16px}
+  .pd-info-sections{padding:14px}
+  .pd-members-strip{grid-template-columns:repeat(3,1fr)}
+}
+      `}</style>
+
+      {/* Technology Tabs */}
+      <div className="pd-tech-tabs">
+        {technologies.map(tech => (
+          <button
+            key={tech}
+            className={`pd-tech-tab ${activeTech === tech ? 'active' : ''}`}
+            onClick={() => setActiveTech(tech)}
+            style={activeTech === tech ? {'--tc': getTechColor(tech)} : {}}
+          >
+            <span className="pd-tech-dot" style={{background: tech === 'all' ? '#fd1c00' : getTechColor(tech)}}/>
+            {tech === 'all' ? `All (${projects.length})` : tech}
+          </button>
+        ))}
+      </div>
+
+      <div className="pd-main">
+        {/* Main Showcase */}
+        <div className="pd-showcase" style={{'--tc': getTechColor(details?.technology)}}>
+          {detailsLoading ? (
+            <div style={{display:'flex',alignItems:'center',justifyContent:'center',flex:1,color:'rgba(255,255,255,.3)',fontSize:'.78rem'}}>
+              <div className="mp-loading-spinner" style={{marginRight:10}}/> Loading project...
+            </div>
+          ) : !details ? (
+            <div className="pd-empty">
+              <FolderKanban size={32} style={{color:'rgba(255,255,255,.15)',marginBottom:12}}/>
+              <div>Select a project from the list</div>
+            </div>
+          ) : (
+            <>
+              {/* Header */}
+              <div className="pd-show-hdr">
+                <div className="pd-show-meta">
+                  <span className="pd-show-badge">{details.teamNumber}</span>
+                  <span className="pd-show-tech">{details.technology}</span>
+                </div>
+                <div className="pd-show-title">{details.projectTitle}</div>
+                <div className="pd-show-sub">
+                  {details.members.length} Members · Mentor: {details.mentor || 'Not assigned'} · {details.batch || 'Drive Ready'}
+                </div>
+              </div>
+
+              {/* Members Strip */}
+              {details.members.length > 0 && (
+                <div className="pd-members-strip">
+                  {details.members.map((m, i) => (
+                    <div key={m.rollNumber||i} className="pd-member-col">
+                      {m.isLeader && <div className="pd-member-leader-star">👑</div>}
+                      {m.imageUrl ? (
+                        <img className="pd-member-img" src={m.imageUrl} alt={m.name} onError={e=>{e.target.style.display='none';e.target.nextElementSibling.style.display='flex'}}/>
+                      ) : null}
+                      <div className="pd-member-fallback" style={{display: m.imageUrl ? 'none' : 'flex'}}>
+                        {(m.name||'?').charAt(0).toUpperCase()}
+                      </div>
+                      <div className="pd-member-name">
+                        <div className="pd-member-name-big">{m.shortName || (m.name||'').split(' ')[0]}</div>
+                        <div className="pd-member-name-sub">{m.branch || m.college}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Info Sections */}
+              <div className="pd-info-sections">
+                {details.projectDescription && (
+                  <div className="pd-info-card">
+                    <div className="pd-info-title"><FileText size={11} style={{color:'#EEA727'}}/> Project Description</div>
+                    <div className="pd-info-text">{details.projectDescription}</div>
+                  </div>
+                )}
+
+                {details.problemStatement && (
+                  <div className="pd-info-card">
+                    <div className="pd-info-title"><Target size={11} style={{color:'#fd1c00'}}/> Problem Statement</div>
+                    <div className="pd-info-text">{details.problemStatement}</div>
+                  </div>
+                )}
+
+                <div className="pd-info-grid">
+                  {details.projectArea?.length > 0 && (
+                    <div className="pd-info-card">
+                      <div className="pd-info-title"><Layers size={11} style={{color:'#EEA727'}}/> Project Area</div>
+                      <div className="pd-chips">
+                        {details.projectArea.map((a, i) => <span key={i} className="pd-chip area">{a}</span>)}
+                      </div>
+                    </div>
+                  )}
+
+                  {details.techStack?.length > 0 && (
+                    <div className="pd-info-card">
+                      <div className="pd-info-title"><Cpu size={11} style={{color:'#10b981'}}/> Tech Stack</div>
+                      <div className="pd-chips">
+                        {details.techStack.map((t, i) => <span key={i} className="pd-chip tech">{t}</span>)}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {details.aiUsage === 'Yes' && (
+                  <div className="pd-info-card" style={{background:'rgba(242,29,50,.04)',borderColor:'rgba(242,29,50,.15)'}}>
+                    <div className="pd-info-title"><Sparkles size={11} style={{color:'#f21d32'}}/> AI Integration</div>
+                    {details.aiCapabilities && <div className="pd-info-text" style={{marginBottom:10}}>{details.aiCapabilities}</div>}
+                    {details.aiTools?.length > 0 && (
+                      <div className="pd-chips">
+                        {details.aiTools.map((t, i) => <span key={i} className="pd-chip ai">{t}</span>)}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Right Sidebar — Project List */}
+        <div className="pd-sidebar">
+          <div className="pd-sidebar-hdr">
+            <div className="pd-sidebar-title">Projects ({filteredProjects.length})</div>
+            <div className="pd-search-wrap">
+              <Search size={14}/>
+              <input
+                type="text"
+                placeholder="Search title or team..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="pd-list">
+            {filteredProjects.length === 0 ? (
+              <div className="pd-empty">No projects found</div>
+            ) : (
+              filteredProjects.map(p => (
+                <div
+                  key={p.teamNumber}
+                  className={`pd-list-item ${selectedTeam === p.teamNumber ? 'active' : ''}`}
+                  onClick={() => setSelectedTeam(p.teamNumber)}
+                >
+                  <div className="pd-list-title">{p.projectTitle}</div>
+                  <div className="pd-list-meta">
+                    <span className="pd-list-team-num">{p.teamNumber}</span>
+                    <span className="pd-list-tech-pill" style={{background:`${getTechColor(p.technology)}18`,color:getTechColor(p.technology),border:`1px solid ${getTechColor(p.technology)}30`}}>
+                      {p.technology}
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 /* ═══ MAIN DASHBOARD ═══ */
 export default function Dashboard(){
   const router = useRouter();
@@ -1815,6 +2151,7 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
           <div className="main-content">
             {active==="my-profile"?<MyProfile user={user} hootData={hootData} videoRatings={videoRatings} videoLoading={videoLoading}/>:
              active==="team-profile"?<TeamProfile user={user}/>:
+             active==="project-details"?<ProjectDetails user={user}/>:
              active==="project-status"?<ProjectStatus user={user}/>:(
               <div className="page-placeholder">
                 <div className="page-icon">{activeItem&&<activeItem.icon size={36}/>}</div>
