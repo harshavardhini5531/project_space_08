@@ -1256,6 +1256,15 @@ function ProjectStatus({ user }) {
 export default function Dashboard(){
   const router = useRouter();
   const [active,setActive]=useState("my-profile");
+  // Force non-admin users back to my-profile if they somehow land on a hidden section
+  useEffect(() => {
+    if (!user) return;
+    const ADMIN = '23A91A61G9';
+    const isAdm = (user.rollNumber || '').toUpperCase() === ADMIN;
+    if (!isAdm && active !== 'my-profile' && active !== 'team-profile') {
+      setActive('my-profile');
+    }
+  }, [user, active]);
   const [collapsed,setCollapsed]=useState(false);
   const [hovered,setHovered]=useState(null);
   const [user,setUser]=useState(null);
@@ -1317,7 +1326,17 @@ export default function Dashboard(){
     } else { setLoading(false); }
   },[]);
 
-  const activeItem=NAV_SECTIONS.flatMap(s=>s.items).find(i=>i.id===active);
+  // Only admin roll sees all sections; others see only My Profile + Team Profile
+  const ADMIN_ROLL = '23A91A61G9';
+  const currentRoll = user?.rollNumber || '';
+  const isAdmin = currentRoll.toUpperCase() === ADMIN_ROLL;
+  const VISIBLE_NAV_SECTIONS = isAdmin
+    ? NAV_SECTIONS
+    : NAV_SECTIONS.map(sec => ({
+        ...sec,
+        items: sec.items.filter(i => i.id === 'my-profile' || i.id === 'team-profile')
+      })).filter(sec => sec.items.length > 0);
+  const activeItem=VISIBLE_NAV_SECTIONS.flatMap(s=>s.items).find(i=>i.id===active);
   const displayName = profile?.name || user?.name || 'Student';
   const displayTeam = user?.teamNumber || profile?.roll_number || '';
 
@@ -1754,7 +1773,7 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
           </div>
 
           <div className="sb-nav">
-            {NAV_SECTIONS.map(sec=>(
+            {VISIBLE_NAV_SECTIONS.map(sec=>(
               <div key={sec.title} className="sb-section">
                 {(isMobile||!collapsed)&&<div className="sb-section-header">{sec.title}</div>}
                 {sec.items.map(item=>(
