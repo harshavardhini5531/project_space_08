@@ -1363,8 +1363,11 @@ function ProjectDetails({ user }) {
 .pd-showcase{background:#0c0614;border:1px solid rgba(255,255,255,.06);border-radius:18px;overflow:hidden;position:relative;min-height:560px;display:flex;flex-direction:column}
 
 /* Header with gradient */
-.pd-show-hdr{padding:28px 32px;background:linear-gradient(135deg,#fd1c00 0%,#EEA727 100%);position:relative;overflow:hidden}
-.pd-show-hdr::before{content:'';position:absolute;top:-80px;right:-80px;width:280px;height:280px;background:radial-gradient(circle,rgba(255,255,255,.12),transparent 55%);pointer-events:none}
+.pd-show-hdr{padding:28px 32px;background:linear-gradient(135deg,#1a1a1a 0%,#2d2d2d 50%,#0a0a0a 100%);position:relative;overflow:hidden}
+.pd-show-hdr::before{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 0%,transparent 40%,rgba(253,28,0,.08) 50%,rgba(238,167,39,.12) 55%,rgba(255,255,255,.08) 60%,transparent 70%,transparent 100%);background-size:200% 100%;animation:shinyWave 4s linear infinite;pointer-events:none}
+.pd-show-hdr::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 50%,rgba(253,28,0,.04),transparent 50%),radial-gradient(circle at 70% 50%,rgba(238,167,39,.04),transparent 50%);pointer-events:none;animation:glowShift 6s ease-in-out infinite}
+@keyframes shinyWave{0%{background-position:-100% 0}100%{background-position:200% 0}}
+@keyframes glowShift{0%,100%{opacity:.6}50%{opacity:1}}
 .pd-show-meta{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-family:'DM Sans',sans-serif}
 .pd-show-badge{padding:4px 12px;border-radius:6px;background:rgba(255,255,255,.15);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.25);font-size:.62rem;font-weight:700;letter-spacing:1.5px;color:#fff}
 .pd-show-tech{padding:4px 12px;border-radius:6px;background:rgba(255,255,255,.9);color:var(--tc,#fd1c00);font-size:.6rem;font-weight:800;letter-spacing:1px;text-transform:uppercase}
