@@ -14,7 +14,7 @@ import {
   Target, Layers, CheckCircle, XCircle, Briefcase, Hash,
   Lightbulb, PenTool, Wrench, Bug, CloudUpload, FileText, Lock,
   AlertCircle, Send, X, Clock, MessageSquare, Zap, ChevronDown,
-  MapPin, Bus, Home, Calendar, TrendingUp, BarChart3, Eye, Mail, Sparkles, Cpu, Search
+  MapPin, Bus, Home, Calendar, TrendingUp, BarChart3, Eye, Mail, Sparkles, Cpu
 } from "lucide-react";
 
 const NAV_SECTIONS = [
