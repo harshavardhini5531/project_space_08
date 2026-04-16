@@ -1380,7 +1380,7 @@ function ProjectDetails({ user }) {
 .pd-show-meta{display:flex;align-items:center;gap:10px;margin-bottom:22px;font-family:'DM Sans',sans-serif}
 .pd-show-badge{padding:6px 14px;border-radius:8px;background:linear-gradient(135deg,rgba(253,28,0,.2),rgba(238,167,39,.15));backdrop-filter:blur(10px);border:1px solid rgba(253,28,0,.35);font-size:.66rem;font-weight:800;letter-spacing:2px;color:#fff;font-family:'DM Sans',sans-serif}
 .pd-show-tech{padding:6px 14px;border-radius:8px;background:rgba(255,255,255,.95);color:#fd1c00;font-size:.62rem;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;font-family:'DM Sans',sans-serif}
-.pd-show-title{font-family:'Astro','Orbitron',sans-serif;font-size:1.6rem;font-weight:800;color:#fff;line-height:1.05;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;word-break:break-word;background:linear-gradient(135deg,#fff 0%,#EEA727 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.pd-show-title{font-family:'Astro','Orbitron',sans-serif;font-size:1.9rem;font-weight:800;color:#fff;line-height:1.1;letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;word-break:break-word;text-shadow:0 2px 20px rgba(238,167,39,.3),0 0 40px rgba(253,28,0,.15)}
 .pd-show-sub{font-size:.8rem;color:rgba(255,255,255,.75);font-weight:500;font-family:'DM Sans',sans-serif;letter-spacing:.3px}
 
 /* Members strip */
