@@ -1363,7 +1363,7 @@ function ProjectDetails({ user }) {
 .pd-showcase{background:#0c0614;border:1px solid rgba(255,255,255,.06);border-radius:18px;overflow:hidden;position:relative;min-height:560px;display:flex;flex-direction:column}
 
 /* Header with gradient */
-.pd-show-hdr{padding:28px 32px;background:linear-gradient(135deg,var(--tc,#fd1c00) 0%,color-mix(in srgb,var(--tc,#fd1c00) 60%,#000 40%) 100%);position:relative;overflow:hidden}
+.pd-show-hdr{padding:28px 32px;background:linear-gradient(135deg,#fd1c00 0%,#EEA727 100%);position:relative;overflow:hidden}
 .pd-show-hdr::before{content:'';position:absolute;top:-80px;right:-80px;width:280px;height:280px;background:radial-gradient(circle,rgba(255,255,255,.12),transparent 55%);pointer-events:none}
 .pd-show-meta{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-family:'DM Sans',sans-serif}
 .pd-show-badge{padding:4px 12px;border-radius:6px;background:rgba(255,255,255,.15);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.25);font-size:.62rem;font-weight:700;letter-spacing:1.5px;color:#fff}
@@ -1375,12 +1375,12 @@ function ProjectDetails({ user }) {
 .pd-members-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:2px;padding:0;background:#0c0614}
 .pd-member-col{position:relative;aspect-ratio:3/4;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.01));transition:all .3s}
 .pd-member-col:hover{transform:scale(1.03);z-index:2}
-.pd-member-col::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,color-mix(in srgb,var(--tc,#fd1c00) 75%,transparent) 100%);pointer-events:none}
-.pd-member-img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(.3) contrast(1.05)}
+.pd-member-col::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(0,0,0,.85) 100%);pointer-events:none}
+.pd-member-img{width:100%;height:100%;object-fit:cover;display:block}
 .pd-member-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:2.2rem;font-weight:800;color:rgba(255,255,255,.3);background:linear-gradient(180deg,rgba(255,255,255,.04),color-mix(in srgb,var(--tc,#fd1c00) 18%,transparent))}
 .pd-member-name{position:absolute;bottom:14px;left:0;right:0;text-align:center;z-index:3;padding:0 6px}
-.pd-member-name-big{font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:800;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.5);line-height:1.2;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pd-member-name-sub{font-size:.58rem;color:rgba(255,255,255,.85);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pd-member-name-big{font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:700;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.8);line-height:1.2;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pd-member-name-sub{font-family:'DM Sans',sans-serif;font-size:.58rem;color:rgba(255,255,255,.9);font-weight:600;letter-spacing:.3px;text-shadow:0 2px 8px rgba(0,0,0,.7);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pd-member-leader-star{position:absolute;top:8px;right:8px;z-index:3;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;font-size:11px;box-shadow:0 2px 8px rgba(0,0,0,.3)}
 
 /* Info sections */
@@ -1414,10 +1414,10 @@ function ProjectDetails({ user }) {
 .pd-list-item:hover{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12);transform:translateX(2px)}
 .pd-list-item.active{background:linear-gradient(135deg,rgba(253,28,0,.1),rgba(238,167,39,.05));border-color:rgba(253,28,0,.25);box-shadow:0 2px 12px rgba(253,28,0,.08)}
 .pd-list-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:60%;border-radius:0 3px 3px 0;background:linear-gradient(180deg,#fd1c00,#EEA727)}
-.pd-list-title{font-size:.78rem;font-weight:700;color:#fff;line-height:1.3;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.pd-list-title{font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:600;color:#fff;line-height:1.3;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .pd-list-meta{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:4px}
-.pd-list-team-num{font-size:.55rem;font-weight:700;color:rgba(253,28,0,.85);letter-spacing:1px;font-family:'Orbitron',sans-serif}
-.pd-list-tech-pill{padding:3px 8px;border-radius:5px;font-size:.5rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px}
+.pd-list-team-num{font-family:'DM Sans',sans-serif;font-size:.62rem;font-weight:700;color:rgba(253,28,0,.85);letter-spacing:1px}
+.pd-list-tech-pill{font-family:'DM Sans',sans-serif;padding:3px 8px;border-radius:5px;font-size:.54rem;font-weight:600;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px}
 
 .pd-empty{padding:40px 20px;text-align:center;color:rgba(255,255,255,.3);font-size:.78rem}
 
@@ -1464,7 +1464,7 @@ function ProjectDetails({ user }) {
 
       <div className="pd-main">
         {/* Main Showcase */}
-        <div className="pd-showcase" style={{'--tc': getTechColor(details?.technology)}}>
+        <div className="pd-showcase">
           {detailsLoading ? (
             <div style={{display:'flex',alignItems:'center',justifyContent:'center',flex:1,color:'rgba(255,255,255,.3)',fontSize:'.78rem'}}>
               <div className="mp-loading-spinner" style={{marginRight:10}}/> Loading project...
@@ -1501,8 +1501,8 @@ function ProjectDetails({ user }) {
                         {(m.name||'?').charAt(0).toUpperCase()}
                       </div>
                       <div className="pd-member-name">
-                        <div className="pd-member-name-big">{m.shortName || (m.name||'').split(' ')[0]}</div>
-                        <div className="pd-member-name-sub">{m.branch || m.college}</div>
+                        <div className="pd-member-name-big">{m.name || m.rollNumber}</div>
+                        <div className="pd-member-name-sub">{m.rollNumber}</div>
                       </div>
                     </div>
                   ))}
