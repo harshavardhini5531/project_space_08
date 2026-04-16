@@ -1377,7 +1377,7 @@ function ProjectDetails({ user }) {
 .pd-show-hdr::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 50%,rgba(253,28,0,.04),transparent 50%),radial-gradient(circle at 70% 50%,rgba(238,167,39,.04),transparent 50%);pointer-events:none;animation:glowShift 6s ease-in-out infinite}
 @keyframes shinyWave{0%{background-position:-100% 0}100%{background-position:200% 0}}
 @keyframes glowShift{0%,100%{opacity:.6}50%{opacity:1}}
-.pd-show-meta{display:flex;align-items:center;gap:10px;margin-bottom:16px;font-family:'DM Sans',sans-serif}
+.pd-show-meta{display:flex;align-items:center;gap:10px;margin-bottom:22px;font-family:'DM Sans',sans-serif}
 .pd-show-badge{padding:6px 14px;border-radius:8px;background:linear-gradient(135deg,rgba(253,28,0,.2),rgba(238,167,39,.15));backdrop-filter:blur(10px);border:1px solid rgba(253,28,0,.35);font-size:.66rem;font-weight:800;letter-spacing:2px;color:#fff;font-family:'DM Sans',sans-serif}
 .pd-show-tech{padding:6px 14px;border-radius:8px;background:rgba(255,255,255,.95);color:#fd1c00;font-size:.62rem;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;font-family:'DM Sans',sans-serif}
 .pd-show-title{font-family:'Astro','Orbitron',sans-serif;font-size:1.6rem;font-weight:800;color:#fff;line-height:1.05;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;word-break:break-word;background:linear-gradient(135deg,#fff 0%,#EEA727 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
