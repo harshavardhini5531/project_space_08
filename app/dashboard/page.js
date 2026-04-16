@@ -1363,26 +1363,47 @@ function ProjectDetails({ user }) {
 .pd-showcase{background:#0c0614;border:1px solid rgba(255,255,255,.06);border-radius:18px;overflow:hidden;position:relative;min-height:560px;display:flex;flex-direction:column}
 
 /* Header with gradient */
-.pd-show-hdr{padding:28px 32px;background:linear-gradient(135deg,#1a1a1a 0%,#2d2d2d 50%,#0a0a0a 100%);position:relative;overflow:hidden}
+.pd-show-hdr{padding:36px 40px;background:linear-gradient(135deg,#1a1a1a 0%,#2d2d2d 50%,#0a0a0a 100%);position:relative;overflow:hidden}
+.pd-show-hdr-inner{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.pd-show-hdr-left{flex:1;min-width:0}
+.pd-show-mentor{display:flex;align-items:center;gap:12px;padding:14px 18px;border-radius:14px;background:rgba(255,255,255,.06);backdrop-filter:blur(10px);border:1px solid rgba(238,167,39,.25);flex-shrink:0}
+.pd-show-mentor-photo{width:54px;height:54px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid rgba(238,167,39,.5);background:linear-gradient(135deg,#2a2a2a,#0a0a0a);box-shadow:0 4px 12px rgba(238,167,39,.2)}
+.pd-show-mentor-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.pd-show-mentor-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:1.1rem;font-weight:800;color:#EEA727}
+.pd-show-mentor-info{display:flex;flex-direction:column;min-width:0}
+.pd-show-mentor-label{font-family:'DM Sans',sans-serif;font-size:.52rem;color:#EEA727;letter-spacing:2px;font-weight:700;margin-bottom:2px}
+.pd-show-mentor-name{font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;color:#fff;line-height:1.2;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+.pd-show-mentor-email{font-family:'DM Sans',sans-serif;font-size:.58rem;color:rgba(255,255,255,.55);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
 .pd-show-hdr::before{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 0%,transparent 40%,rgba(253,28,0,.08) 50%,rgba(238,167,39,.12) 55%,rgba(255,255,255,.08) 60%,transparent 70%,transparent 100%);background-size:200% 100%;animation:shinyWave 4s linear infinite;pointer-events:none}
 .pd-show-hdr::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 50%,rgba(253,28,0,.04),transparent 50%),radial-gradient(circle at 70% 50%,rgba(238,167,39,.04),transparent 50%);pointer-events:none;animation:glowShift 6s ease-in-out infinite}
 @keyframes shinyWave{0%{background-position:-100% 0}100%{background-position:200% 0}}
 @keyframes glowShift{0%,100%{opacity:.6}50%{opacity:1}}
-.pd-show-meta{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-family:'DM Sans',sans-serif}
-.pd-show-badge{padding:4px 12px;border-radius:6px;background:rgba(255,255,255,.15);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.25);font-size:.62rem;font-weight:700;letter-spacing:1.5px;color:#fff}
-.pd-show-tech{padding:4px 12px;border-radius:6px;background:rgba(255,255,255,.9);color:var(--tc,#fd1c00);font-size:.6rem;font-weight:800;letter-spacing:1px;text-transform:uppercase}
-.pd-show-title{font-family:'Astro','Orbitron',sans-serif;font-size:1.8rem;font-weight:800;color:#fff;line-height:1.1;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;word-break:break-word}
-.pd-show-sub{font-size:.78rem;color:rgba(255,255,255,.85);font-weight:500}
+.pd-show-meta{display:flex;align-items:center;gap:10px;margin-bottom:16px;font-family:'DM Sans',sans-serif}
+.pd-show-badge{padding:6px 14px;border-radius:8px;background:linear-gradient(135deg,rgba(253,28,0,.2),rgba(238,167,39,.15));backdrop-filter:blur(10px);border:1px solid rgba(253,28,0,.35);font-size:.66rem;font-weight:800;letter-spacing:2px;color:#fff;font-family:'DM Sans',sans-serif}
+.pd-show-tech{padding:6px 14px;border-radius:8px;background:rgba(255,255,255,.95);color:#fd1c00;font-size:.62rem;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;font-family:'DM Sans',sans-serif}
+.pd-show-title{font-family:'Astro','Orbitron',sans-serif;font-size:2.2rem;font-weight:800;color:#fff;line-height:1.05;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;word-break:break-word;background:linear-gradient(135deg,#fff 0%,#EEA727 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.pd-show-sub{font-size:.8rem;color:rgba(255,255,255,.75);font-weight:500;font-family:'DM Sans',sans-serif;letter-spacing:.3px}
 
 /* Members strip */
 .pd-members-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:2px;padding:0;background:#0c0614}
-.pd-member-col{position:relative;aspect-ratio:3/4;overflow:hidden;background:linear-gradient(135deg,#2a2a2a 0%,#1a1a1a 30%,#0a0a0a 60%,#151515 100%);transition:all .3s}
-.pd-member-col::before{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 0%,transparent 30%,rgba(255,255,255,.03) 50%,rgba(255,255,255,.02) 55%,transparent 70%,transparent 100%);background-size:200% 100%;animation:silkShine 6s ease-in-out infinite;pointer-events:none;z-index:1}
+.pd-member-col{position:relative;aspect-ratio:3/4;overflow:hidden;background:#10233d;transition:all .3s}
+.pd-member-col::before{content:'';position:absolute;inset:0;background:
+  radial-gradient(ellipse at 20% 30%, rgba(120,160,220,.22), transparent 50%),
+  radial-gradient(ellipse at 80% 70%, rgba(80,130,200,.18), transparent 55%),
+  linear-gradient(110deg, transparent 0%, transparent 35%, rgba(180,210,240,.08) 50%, rgba(200,220,255,.05) 55%, transparent 70%, transparent 100%);
+  background-size: 150% 150%, 180% 180%, 250% 100%;
+  background-position: 0% 0%, 100% 100%, -100% 0;
+  animation: silkFlow 8s ease-in-out infinite, silkShine 5s linear infinite;
+  pointer-events:none;z-index:1;mix-blend-mode:screen}
+@keyframes silkFlow{
+  0%,100%{background-position: 0% 0%, 100% 100%, -100% 0;}
+  50%{background-position: 100% 100%, 0% 0%, 200% 0;}
+}
 @keyframes silkShine{0%{background-position:-100% 0}100%{background-position:200% 0}}
 .pd-member-col:hover{transform:scale(1.03);z-index:2}
 .pd-member-col::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(0,0,0,.9) 100%);pointer-events:none;z-index:2}
 .pd-member-img{width:100%;height:100%;object-fit:cover;display:block}
-.pd-member-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:2.2rem;font-weight:800;color:rgba(255,255,255,.35);background:linear-gradient(135deg,#2a2a2a 0%,#1a1a1a 40%,#0a0a0a 100%);position:relative;z-index:1}
+.pd-member-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:2.2rem;font-weight:800;color:rgba(255,255,255,.5);background:#10233d;position:relative;z-index:1}
 .pd-member-name{position:absolute;bottom:14px;left:0;right:0;text-align:center;z-index:3;padding:0 6px}
 .pd-member-name-big{font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:700;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.8);line-height:1.2;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pd-member-name-sub{font-family:'DM Sans',sans-serif;font-size:.58rem;color:rgba(255,255,255,.9);font-weight:600;letter-spacing:.3px;text-shadow:0 2px 8px rgba(0,0,0,.7);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -1445,8 +1466,10 @@ function ProjectDetails({ user }) {
   .pd-sidebar{max-height:400px;order:-1}
 }
 @media(max-width:768px){
-  .pd-show-hdr{padding:20px}
-  .pd-show-title{font-size:1.3rem}
+  .pd-show-hdr{padding:24px 20px}
+  .pd-show-hdr-inner{flex-direction:column;align-items:flex-start;gap:16px}
+  .pd-show-mentor{width:100%;padding:10px 14px}
+  .pd-show-title{font-size:1.5rem;letter-spacing:1px}
   .pd-info-sections{padding:16px 18px 20px}
   .pd-info-grid{grid-template-columns:1fr}
   .pd-members-strip{grid-template-columns:repeat(auto-fit,minmax(90px,1fr))}
@@ -1498,13 +1521,34 @@ function ProjectDetails({ user }) {
             <>
               {/* Header */}
               <div className="pd-show-hdr">
-                <div className="pd-show-meta">
-                  <span className="pd-show-badge">{details.teamNumber}</span>
-                  <span className="pd-show-tech">{details.technology}</span>
-                </div>
-                <div className="pd-show-title">{details.projectTitle}</div>
-                <div className="pd-show-sub">
-                  {details.members.length} Members · Mentor: {details.mentor || 'Not assigned'} · {details.batch || 'Drive Ready'}
+                <div className="pd-show-hdr-inner">
+                  <div className="pd-show-hdr-left">
+                    <div className="pd-show-meta">
+                      <span className="pd-show-badge">{details.teamNumber}</span>
+                      <span className="pd-show-tech">{details.technology}</span>
+                    </div>
+                    <div className="pd-show-title">{details.projectTitle}</div>
+                    <div className="pd-show-sub">
+                      {details.members.length} Members · {details.batch || 'Drive Ready'}
+                    </div>
+                  </div>
+                  {details.mentorDetails && (
+                    <div className="pd-show-mentor">
+                      <div className="pd-show-mentor-photo">
+                        {details.mentorDetails.image_url ? (
+                          <img src={details.mentorDetails.image_url} alt={details.mentorDetails.name} onError={e=>{e.target.style.display='none';e.target.nextElementSibling.style.display='flex'}}/>
+                        ) : null}
+                        <div className="pd-show-mentor-fallback" style={{display: details.mentorDetails.image_url ? 'none' : 'flex'}}>
+                          {(details.mentorDetails.name||'?').charAt(0).toUpperCase()}
+                        </div>
+                      </div>
+                      <div className="pd-show-mentor-info">
+                        <div className="pd-show-mentor-label">MENTOR</div>
+                        <div className="pd-show-mentor-name">{details.mentorDetails.name}</div>
+                        <div className="pd-show-mentor-email">{details.mentorDetails.email}</div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1531,27 +1575,6 @@ function ProjectDetails({ user }) {
 
               {/* Info Sections */}
               <div className="pd-info-sections">
-                {details.mentorDetails && (
-                  <div className="pd-mentor-card">
-                    <div className="pd-mentor-photo">
-                      {details.mentorDetails.image_url ? (
-                        <img src={details.mentorDetails.image_url} alt={details.mentorDetails.name} onError={e=>{e.target.style.display='none';e.target.nextElementSibling.style.display='flex'}}/>
-                      ) : null}
-                      <div className="pd-mentor-photo-fallback" style={{display: details.mentorDetails.image_url ? 'none' : 'flex'}}>
-                        {(details.mentorDetails.name||'?').charAt(0).toUpperCase()}
-                      </div>
-                    </div>
-                    <div className="pd-mentor-info">
-                      <div className="pd-mentor-label">ASSIGNED MENTOR</div>
-                      <div className="pd-mentor-name">{details.mentorDetails.name}</div>
-                      <div className="pd-mentor-meta">
-                        <span><Mail size={10}/> {details.mentorDetails.email}</span>
-                        {details.mentorDetails.emp_id && <span>· ID: {details.mentorDetails.emp_id}</span>}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
                 {details.projectDescription && (
                   <div className="pd-info-card">
                     <div className="pd-info-title"><FileText size={11} style={{color:'#EEA727'}}/> Project Description</div>
