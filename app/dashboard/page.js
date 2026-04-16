@@ -83,9 +83,6 @@ function MyProfile({ user, hootData, videoRatings, videoLoading }) {
   useEffect(() => {
     if (!roll) { setHubLoading(false); return; }
     fetch('/api/student-hub-profile', {
-  useEffect(() => {
-    if (!roll) { setHubLoading(false); return; }
-    fetch('/api/student-hub-profile', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ rollNumber: roll }),
