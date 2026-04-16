@@ -1256,15 +1256,6 @@ function ProjectStatus({ user }) {
 export default function Dashboard(){
   const router = useRouter();
   const [active,setActive]=useState("my-profile");
-  // Force non-admin users back to my-profile if they somehow land on a hidden section
-  useEffect(() => {
-    if (!user) return;
-    const ADMIN = '23A91A61G9';
-    const isAdm = (user.rollNumber || '').toUpperCase() === ADMIN;
-    if (!isAdm && active !== 'my-profile' && active !== 'team-profile') {
-      setActive('my-profile');
-    }
-  }, [user, active]);
   const [collapsed,setCollapsed]=useState(false);
   const [hovered,setHovered]=useState(null);
   const [user,setUser]=useState(null);
@@ -1328,8 +1319,7 @@ export default function Dashboard(){
 
   // Only admin roll sees all sections; others see only My Profile + Team Profile
   const ADMIN_ROLL = '23A91A61G9';
-  const currentRoll = user?.rollNumber || '';
-  const isAdmin = currentRoll.toUpperCase() === ADMIN_ROLL;
+  const isAdmin = ((user?.rollNumber) || '').toUpperCase() === ADMIN_ROLL;
   const VISIBLE_NAV_SECTIONS = isAdmin
     ? NAV_SECTIONS
     : NAV_SECTIONS.map(sec => ({
