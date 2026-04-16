@@ -73,6 +73,34 @@ export async function POST(request) {
       return Response.json({ error: error.message }, { status: 500 })
     }
 
+    // If this is a team member (not leader), insert into member_registrations
+    if (!memberRow.is_leader) {
+      const { data: teamData } = await supabase
+        .from('teams')
+        .select('leader_roll, team_number, project_title')
+        .eq('serial_number', memberRow.serial_number)
+        .single()
+
+      const { data: existingShort } = await supabase
+        .from('team_members')
+        .select('short_name')
+        .eq('roll_number', rollNumber)
+        .eq('serial_number', memberRow.serial_number)
+        .single()
+
+      await supabase
+        .from('member_registrations')
+        .upsert({
+          roll_number: rollNumber,
+          serial_number: memberRow.serial_number,
+          team_number: teamData?.team_number || null,
+          leader_roll: teamData?.leader_roll || null,
+          short_name: existingShort?.short_name || null,
+          project_title: teamData?.project_title || null,
+          registered_at: new Date().toISOString()
+        }, { onConflict: 'roll_number' })
+    }
+
     return Response.json({ success: true })
 
   } catch (err) {
