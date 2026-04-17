@@ -1366,7 +1366,7 @@ function ProjectDetails({ user }) {
 .pd-show-hdr{padding:24px 32px;background:linear-gradient(135deg,#1a1a1a 0%,#2d2d2d 50%,#0a0a0a 100%);position:relative;overflow:hidden}
 .pd-show-hdr-inner{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
 .pd-show-hdr-left{flex:1;min-width:0}
-.pd-show-mentor{display:flex;flex-direction:column;align-items:center;gap:10px;flex-shrink:0;align-self:flex-start;margin-top:0}
+.pd-show-mentor{display:flex;flex-direction:row;align-items:center;gap:14px;flex-shrink:0;align-self:flex-start;margin-top:0}
 .pd-show-mentor-photo{width:90px;height:90px;border-radius:50%;overflow:hidden;flex-shrink:0;position:relative;z-index:2;border:3px solid rgba(238,167,39,.6);background:linear-gradient(135deg,#2a2a2a,#0a0a0a);box-shadow:0 0 0 4px rgba(238,167,39,.12),0 0 30px rgba(238,167,39,.15),0 8px 24px rgba(0,0,0,.4)}
 .pd-show-mentor-photo::after{content:'';position:absolute;inset:-6px;border-radius:50%;border:2px solid rgba(238,167,39,.2);pointer-events:none;animation:mentorRing 4s ease-in-out infinite}
 @keyframes mentorRing{0%,100%{border-color:rgba(238,167,39,.15);transform:scale(1)}50%{border-color:rgba(238,167,39,.35);transform:scale(1.03)}}
