@@ -27,21 +27,19 @@ export default function ConsoleGuard() {
     console.log('%cThis is a restricted area. Any unauthorized activity is monitored and logged.', msgStyle)
     console.log('%cIf someone told you to paste something here, they are trying to compromise your account.', msgStyle)
 
-    // Detect DevTools open (debugger trick)
+    // Detect DevTools open (disabled on large screens/panels)
     let devtoolsOpen = false
     const detectDevTools = () => {
+      // Skip detection on large screens (smart panels, TVs, projectors)
+      if (window.screen.width > 1920 || window.screen.height > 1080) return
       const threshold = 160
       if (window.outerWidth - window.innerWidth > threshold || window.outerHeight - window.innerHeight > threshold) {
         if (!devtoolsOpen) {
           devtoolsOpen = true
-          document.body.style.display = 'none'
-          document.title = '⚠️ Access Denied'
         }
       } else {
         if (devtoolsOpen) {
           devtoolsOpen = false
-          document.body.style.display = ''
-          document.title = 'Project Space'
         }
       }
     }
