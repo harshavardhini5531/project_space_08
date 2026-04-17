@@ -49,7 +49,7 @@ export async function GET(request) {
     if (team?.mentor_assigned) {
       const { data: m } = await supabase
         .from('mentors')
-        .select('name, email, phone')
+        .select('name, email, image_url, emp_id')
         .eq('name', team.mentor_assigned)
         .single()
       mentor = m

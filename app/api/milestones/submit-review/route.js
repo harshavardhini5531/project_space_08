@@ -1,16 +1,11 @@
 // app/api/milestones/submit-review/route.js
 import { createClient } from '@supabase/supabase-js'
-import nodemailer from 'nodemailer'
+import { sendMail } from '@/lib/mailer'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 )
-
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_PASS }
-})
 
 export async function POST(request) {
   try {
@@ -89,7 +84,7 @@ export async function POST(request) {
     if (team.mentor_assigned) {
       const { data: mentor } = await supabase
         .from('mentors')
-        .select('email, name, phone')
+        .select('email, name, image_url, emp_id')
         .eq('name', team.mentor_assigned)
         .single()
       if (mentor) {
@@ -129,17 +124,17 @@ export async function POST(request) {
       await supabase.from('milestone_notifications').insert(notifications)
     }
 
-    // 8. Send email to mentor
+    // 8. Send email to mentor via Power Automate / Gmail fallback
     if (mentorEmail) {
       try {
-        await transporter.sendMail({
-          from: `"Project Space" <${process.env.GMAIL_USER}>`,
+        await sendMail({
+          from: `"Project Space" <${process.env.OUTLOOK_USER || process.env.GMAIL_USER}>`,
           to: mentorEmail,
-          subject: `🔔 Review Request: ${teamNumber} — Stage ${stageNumber}: ${stageName}`,
+          subject: `Review Request: ${teamNumber} — Stage ${stageNumber}: ${stageName}`,
           html: `
             <div style="font-family:'DM Sans',Helvetica,Arial,sans-serif;max-width:520px;margin:0 auto;background:#0d0a14;border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,0.08)">
               <div style="background:linear-gradient(135deg,#fd1c00,#c41600);padding:18px 24px">
-                <h2 style="margin:0;color:#fff;font-size:16px;font-weight:700">📋 Stage Review Request</h2>
+                <h2 style="margin:0;color:#fff;font-size:16px;font-weight:700">Stage Review Request</h2>
                 <p style="margin:4px 0 0;color:rgba(255,255,255,0.8);font-size:12px">Project Space · Milestone Tracking</p>
               </div>
               <div style="padding:24px;color:#e8e0f0">
@@ -154,16 +149,12 @@ export async function POST(request) {
                 </div>
                 <p style="font-size:13px;color:#8a7f96;margin:0">Please visit the team to verify completion and mark it as approved in your mentor dashboard.</p>
               </div>
-              <div style="padding:12px 24px;background:rgba(255,255,255,0.02);border-top:1px solid rgba(255,255,255,0.06);font-size:11px;color:#4a4258;text-align:center">
-                Project Space · Technical Hub · Aditya University
-              </div>
             </div>
           `
         })
         console.log(`✅ Milestone review email sent to ${mentorEmail}`)
       } catch (emailErr) {
-        console.error('Email error:', emailErr)
-        // Don't fail the request if email fails
+        console.error('Milestone email error:', emailErr.message)
       }
     }
 
