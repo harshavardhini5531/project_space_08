@@ -23,7 +23,11 @@ export async function POST(request) {
     if (action === 'subscribe') {
       const { subscription, userEmail, userType } = body
       if (!subscription || !userEmail) return Response.json({ error: 'Missing data' }, { status: 400 })
-      const { error } = await supabase.from('push_subscriptions').upsert({ user_email: userEmail, user_type: userType || 'student', subscription: JSON.stringify(subscription), updated_at: new Date().toISOString() }, { onConflict: 'user_email' })
+      const subJson = JSON.stringify(subscription)
+      // Delete any existing subscription with same endpoint (same device re-subscribing)
+      await supabase.from('push_subscriptions').delete().eq('subscription', subJson)
+      // Insert new subscription (allows multiple devices per user)
+      const { error } = await supabase.from('push_subscriptions').insert({ user_email: userEmail, user_type: userType || 'student', subscription: subJson, updated_at: new Date().toISOString() })
       if (error) throw error
       return Response.json({ success: true })
     }
