@@ -1367,9 +1367,9 @@ function ProjectDetails({ user }) {
 .pd-show-hdr-inner{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
 .pd-show-hdr-left{flex:1;min-width:0}
 .pd-show-mentor{display:flex;flex-direction:column;align-items:center;gap:8px;flex-shrink:0}
-.pd-show-mentor-photo{width:64px;height:64px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid rgba(238,167,39,.5);background:linear-gradient(135deg,#2a2a2a,#0a0a0a);box-shadow:0 4px 16px rgba(238,167,39,.2)}
+.pd-show-mentor-photo{width:64px;height:78px;border-radius:10px;overflow:hidden;flex-shrink:0;border:2px solid rgba(238,167,39,.5);background:linear-gradient(135deg,#2a2a2a,#0a0a0a);box-shadow:0 4px 16px rgba(238,167,39,.2)}
 .pd-show-mentor-photo img{width:100%;height:100%;object-fit:cover;display:block}
-.pd-show-mentor-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:1.2rem;font-weight:800;color:#EEA727}
+.pd-show-mentor-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:1.2rem;font-weight:800;color:#EEA727;border-radius:10px}
 .pd-show-mentor-info{display:flex;flex-direction:column;align-items:center;min-width:0}
 .pd-show-mentor-label{font-family:'DM Sans',sans-serif;font-size:.5rem;color:rgba(238,167,39,.8);letter-spacing:2px;font-weight:700;margin-bottom:2px;text-align:center}
 .pd-show-mentor-name{font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:700;color:#fff;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;text-align:center}
