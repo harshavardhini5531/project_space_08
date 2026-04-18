@@ -1336,16 +1336,6 @@ function ProjectDetails({ user }) {
 
   const getTechColor = (tech) => TECH_COLORS[tech] || '#fd1c00';
 
-  // Generate member card background colors based on index
-  const MEMBER_BG_COLORS = [
-    'linear-gradient(160deg, #0a1628 0%, #0d2137 100%)',
-    'linear-gradient(160deg, #0f0a20 0%, #1a0f30 100%)',
-    'linear-gradient(160deg, #0a1a14 0%, #0d2a1f 100%)',
-    'linear-gradient(160deg, #1a0f0a 0%, #2a1a0f 100%)',
-    'linear-gradient(160deg, #0a0f1a 0%, #0f1a2a 100%)',
-    'linear-gradient(160deg, #1a0a14 0%, #2a0f1f 100%)',
-  ];
-
   if (loading) {
     return (
       <div style={{display:'flex',alignItems:'center',justifyContent:'center',minHeight:'60vh',color:'rgba(255,255,255,.3)',fontSize:'.8rem'}}>
@@ -1360,7 +1350,7 @@ function ProjectDetails({ user }) {
 .pd-wrap{display:flex;flex-direction:column;gap:16px;animation:pdIn .5s ease both;}
 @keyframes pdIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 
-/* ──── Tech tabs ──── */
+/* Tech tabs */
 .pd-tech-tabs{display:flex;gap:6px;padding:6px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);overflow-x:auto;-webkit-overflow-scrolling:touch}
 .pd-tech-tabs::-webkit-scrollbar{display:none}
 .pd-tech-tab{display:flex;align-items:center;gap:6px;padding:9px 16px;border-radius:10px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);color:rgba(255,255,255,.45);font-size:.72rem;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .25s;white-space:nowrap;flex-shrink:0}
@@ -1368,142 +1358,130 @@ function ProjectDetails({ user }) {
 .pd-tech-tab.active{background:linear-gradient(135deg,rgba(253,28,0,.15),rgba(238,167,39,.08))!important;color:#fff!important;border-color:rgba(253,28,0,.3)!important;box-shadow:0 2px 12px rgba(253,28,0,.1)}
 .pd-tech-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
 
-/* ──── Main layout ──── */
+/* Main layout */
 .pd-main{display:grid;grid-template-columns:1fr 340px;gap:16px;min-height:0}
 
-/* ──── Showcase ──── */
+/* Showcase */
 .pd-showcase{background:#0c0614;border:1px solid rgba(255,255,255,.06);border-radius:18px;overflow:hidden;position:relative;min-height:560px;display:flex;flex-direction:column}
 
-/* ──── Header with gradient ──── */
-.pd-show-hdr{padding:28px 32px 24px;background:linear-gradient(145deg,#0e0e18 0%,#171728 40%,#1a1228 70%,#0e0a14 100%);position:relative;overflow:hidden}
-.pd-show-hdr::before{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 0%,transparent 40%,rgba(253,28,0,.06) 50%,rgba(238,167,39,.08) 55%,rgba(255,255,255,.04) 60%,transparent 70%,transparent 100%);background-size:200% 100%;animation:shinyWave 5s linear infinite;pointer-events:none}
-.pd-show-hdr::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 80%,rgba(253,28,0,.06),transparent 50%),radial-gradient(ellipse at 80% 20%,rgba(238,167,39,.04),transparent 50%);pointer-events:none}
-@keyframes shinyWave{0%{background-position:-100% 0}100%{background-position:200% 0}}
-.pd-show-hdr-inner{position:relative;z-index:2;display:flex;flex-direction:column;gap:20px}
-
-/* Top row: badges + mentor */
-.pd-show-top-row{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
-.pd-show-hdr-left{flex:1;min-width:0;display:flex;flex-direction:column;gap:14px}
-.pd-show-meta{display:flex;align-items:center;gap:10px;font-family:'DM Sans',sans-serif;flex-wrap:wrap}
-.pd-show-badge{padding:7px 16px;border-radius:8px;background:linear-gradient(135deg,rgba(253,28,0,.25),rgba(238,167,39,.15));backdrop-filter:blur(10px);border:1px solid rgba(253,28,0,.3);font-size:.66rem;font-weight:800;letter-spacing:2.5px;color:#fff;font-family:'DM Sans',sans-serif;text-transform:uppercase}
-.pd-show-tech{padding:7px 14px;border-radius:8px;font-size:.62rem;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;font-family:'DM Sans',sans-serif;border:1px solid rgba(255,255,255,.15)}
-.pd-show-title{font-family:'Astro','Orbitron',sans-serif;font-size:1.5rem;font-weight:800;color:#fff;line-height:1.15;letter-spacing:2px;text-transform:uppercase;word-break:break-word;text-shadow:0 2px 20px rgba(238,167,39,.2),0 0 40px rgba(253,28,0,.1)}
-.pd-show-sub{font-size:.78rem;color:rgba(255,255,255,.5);font-weight:500;font-family:'DM Sans',sans-serif;letter-spacing:.3px;display:flex;align-items:center;gap:8px}
-.pd-show-sub-dot{width:3px;height:3px;border-radius:50%;background:rgba(255,255,255,.3)}
-
-/* ──── Mentor card (professional redesign) ──── */
-.pd-show-mentor{display:flex;align-items:center;gap:16px;padding:16px 20px;border-radius:14px;background:linear-gradient(135deg,rgba(238,167,39,.05) 0%,rgba(123,47,190,.04) 50%,rgba(253,28,0,.03) 100%);border:1px solid rgba(238,167,39,.12);backdrop-filter:blur(12px);position:relative;overflow:hidden;flex-shrink:0;min-width:220px;transition:all .3s ease}
-.pd-show-mentor:hover{border-color:rgba(238,167,39,.25);transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,0,0,.3)}
-.pd-show-mentor::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(238,167,39,.04),transparent);animation:mentorShimmer 5s ease-in-out infinite;pointer-events:none}
-@keyframes mentorShimmer{0%{transform:translateX(-100%);opacity:0}50%{opacity:1}100%{transform:translateX(100%);opacity:0}}
-.pd-show-mentor-photo{width:64px;height:64px;border-radius:50%;overflow:visible;flex-shrink:0;position:relative;z-index:2}
-.pd-show-mentor-ring{position:absolute;inset:-4px;border-radius:50%;border:2px solid rgba(238,167,39,.35);z-index:1;animation:mentorRing 3s ease-in-out infinite}
-.pd-show-mentor-ring::after{content:'';position:absolute;inset:-2px;border-radius:50%;border:1px solid rgba(238,167,39,.1)}
-@keyframes mentorRing{0%,100%{border-color:rgba(238,167,39,.2);box-shadow:0 0 0 0 rgba(238,167,39,0)}50%{border-color:rgba(238,167,39,.45);box-shadow:0 0 16px 3px rgba(238,167,39,.08)}}
-.pd-show-mentor-photo img{width:64px;height:64px;object-fit:cover;display:block;border-radius:50%;position:relative;z-index:2}
-.pd-show-mentor-fallback{width:64px;height:64px;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;font-size:1.3rem;font-weight:800;color:#EEA727;background:linear-gradient(135deg,rgba(238,167,39,.15),rgba(238,167,39,.05));border-radius:50%;position:relative;z-index:2;letter-spacing:1px}
-.pd-show-mentor-info{display:flex;flex-direction:column;min-width:0;position:relative;z-index:2;gap:2px}
-.pd-show-mentor-label{font-family:'DM Sans',sans-serif;font-size:.5rem;color:#EEA727;letter-spacing:3px;font-weight:700;text-transform:uppercase;opacity:.85}
+/* Header with gradient */
+.pd-show-hdr{padding:16px 28px 20px;background:linear-gradient(135deg,#1a1a1a 0%,#2d2d2d 50%,#0a0a0a 100%);position:relative;overflow:hidden}
+.pd-show-hdr-inner{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.pd-show-hdr-left{flex:1;min-width:0}
+.pd-show-mentor{display:flex;align-items:center;gap:16px;flex-shrink:0;padding:14px 20px;border-radius:14px;background:linear-gradient(135deg,rgba(238,167,39,.06) 0%,rgba(253,28,0,.04) 100%);border:1px solid rgba(238,167,39,.12);backdrop-filter:blur(12px);position:relative;overflow:hidden}
+.pd-show-mentor::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(238,167,39,.03),transparent);animation:mentorShimmer 4s ease-in-out infinite;pointer-events:none}
+@keyframes mentorShimmer{0%,100%{opacity:0;transform:translateX(-100%)}50%{opacity:1;transform:translateX(100%)}}
+.pd-show-mentor-photo{width:72px;height:72px;border-radius:50%;overflow:hidden;flex-shrink:0;position:relative;z-index:2}
+.pd-show-mentor-ring{position:absolute;inset:-3px;border-radius:50%;border:2px solid rgba(238,167,39,.4);z-index:1;animation:mentorRing 3s ease-in-out infinite}
+@keyframes mentorRing{0%,100%{border-color:rgba(238,167,39,.25);box-shadow:0 0 0 0 rgba(238,167,39,0)}50%{border-color:rgba(238,167,39,.5);box-shadow:0 0 12px 2px rgba(238,167,39,.12)}}
+.pd-show-mentor-photo img{width:100%;height:100%;object-fit:cover;display:block;position:relative;z-index:2;border-radius:50%}
+.pd-show-mentor-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;font-size:1.4rem;font-weight:800;color:#EEA727;background:linear-gradient(135deg,rgba(238,167,39,.15),rgba(238,167,39,.05));border-radius:50%;position:relative;z-index:2}
+.pd-show-mentor-info{display:flex;flex-direction:column;min-width:0;position:relative;z-index:2}
+.pd-show-mentor-label{font-family:'DM Sans',sans-serif;font-size:.52rem;color:#EEA727;letter-spacing:2.5px;font-weight:700;margin-bottom:3px;text-transform:uppercase}
 .pd-show-mentor-name{font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:700;color:#fff;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
-.pd-show-mentor-desg{font-family:'DM Sans',sans-serif;font-size:.6rem;color:rgba(255,255,255,.4);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
+.pd-show-mentor-desg{font-family:'DM Sans',sans-serif;font-size:.62rem;color:rgba(255,255,255,.45);font-weight:500;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
+.pd-show-hdr::before{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 0%,transparent 40%,rgba(253,28,0,.08) 50%,rgba(238,167,39,.12) 55%,rgba(255,255,255,.08) 60%,transparent 70%,transparent 100%);background-size:200% 100%;animation:shinyWave 4s linear infinite;pointer-events:none}
+.pd-show-hdr::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 50%,rgba(253,28,0,.04),transparent 50%),radial-gradient(circle at 70% 50%,rgba(238,167,39,.04),transparent 50%);pointer-events:none;animation:glowShift 6s ease-in-out infinite}
+@keyframes shinyWave{0%{background-position:-100% 0}100%{background-position:200% 0}}
+@keyframes glowShift{0%,100%{opacity:.6}50%{opacity:1}}
+.pd-show-meta{display:flex;align-items:center;gap:10px;margin-bottom:22px;font-family:'DM Sans',sans-serif}
+.pd-show-badge{padding:6px 14px;border-radius:8px;background:linear-gradient(135deg,rgba(253,28,0,.2),rgba(238,167,39,.15));backdrop-filter:blur(10px);border:1px solid rgba(253,28,0,.35);font-size:.66rem;font-weight:800;letter-spacing:2px;color:#fff;font-family:'DM Sans',sans-serif}
+.pd-show-tech{padding:6px 14px;border-radius:8px;background:rgba(255,255,255,.95);color:#fd1c00;font-size:.62rem;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;font-family:'DM Sans',sans-serif}
+.pd-show-title{font-family:'Astro','Orbitron',sans-serif;font-size:1.5rem;font-weight:800;color:#fff;line-height:1.15;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;word-break:break-word;text-shadow:0 2px 20px rgba(238,167,39,.3),0 0 40px rgba(253,28,0,.15)}
+.pd-show-sub{font-size:.8rem;color:rgba(255,255,255,.75);font-weight:500;font-family:'DM Sans',sans-serif;letter-spacing:.3px}
 
-/* ──── Members strip (redesigned with hover effects) ──── */
-.pd-members-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:0;background:rgba(0,0,0,.4);position:relative}
-.pd-members-strip::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(238,167,39,.15),rgba(253,28,0,.15),transparent);z-index:1}
-.pd-member-col{position:relative;aspect-ratio:3/4;overflow:hidden;cursor:default;transition:all .4s cubic-bezier(.23,1,.32,1)}
-.pd-member-col::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.85) 100%);pointer-events:none;z-index:2}
-.pd-member-col:hover{z-index:3;transform:scale(1.03)}
-.pd-member-col:hover::after{background:linear-gradient(180deg,transparent 30%,rgba(0,0,0,.9) 100%)}
-.pd-member-col:hover .pd-member-glow{opacity:1}
-.pd-member-glow{position:absolute;bottom:0;left:0;right:0;height:60%;background:linear-gradient(180deg,transparent,rgba(238,167,39,.06));pointer-events:none;z-index:1;opacity:0;transition:opacity .4s ease}
-.pd-member-img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s cubic-bezier(.23,1,.32,1)}
-.pd-member-col:hover .pd-member-img{transform:scale(1.05)}
-.pd-member-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;font-size:2.2rem;font-weight:800;color:rgba(255,255,255,.4);position:relative;z-index:1}
-.pd-member-name{position:absolute;bottom:12px;left:0;right:0;text-align:center;z-index:3;padding:0 8px;transform:translateY(0);transition:transform .3s ease}
-.pd-member-col:hover .pd-member-name{transform:translateY(-4px)}
-.pd-member-name-big{font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:700;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.8);line-height:1.2;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pd-member-name-sub{font-family:'DM Sans',sans-serif;font-size:.56rem;color:rgba(255,255,255,.7);font-weight:600;letter-spacing:.5px;text-shadow:0 2px 8px rgba(0,0,0,.7);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-transform:uppercase}
-.pd-member-leader-badge{position:absolute;top:10px;right:10px;z-index:4;padding:4px 8px;border-radius:6px;background:linear-gradient(135deg,rgba(238,167,39,.9),rgba(253,28,0,.8));font-family:'DM Sans',sans-serif;font-size:.48rem;font-weight:800;color:#fff;letter-spacing:1.5px;text-transform:uppercase;box-shadow:0 2px 8px rgba(238,167,39,.3);backdrop-filter:blur(4px)}
+/* Members strip */
+.pd-members-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:2px;padding:0;background:#0c0614}
+.pd-member-col{position:relative;aspect-ratio:3/4;overflow:hidden;background:var(--photo-bg,#10233d);transition:all .4s ease}
+.pd-member-col::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.04) 0%,transparent 50%,rgba(255,255,255,.02) 100%);pointer-events:none;z-index:1;opacity:0;transition:opacity .4s ease}
+.pd-member-col:hover::before{opacity:1}
+.pd-member-col:hover{transform:translateY(-4px);z-index:2;box-shadow:0 12px 32px rgba(0,0,0,.4)}
+.pd-member-col::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(0,0,0,.88) 100%);pointer-events:none;z-index:2}
+.pd-member-img{width:100%;height:100%;object-fit:cover;display:block}
+.pd-member-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:2.2rem;font-weight:800;color:rgba(255,255,255,.5);background:var(--photo-bg,#10233d);position:relative;z-index:1}
+.pd-member-name{position:absolute;bottom:14px;left:0;right:0;text-align:center;z-index:3;padding:0 6px}
+.pd-member-name-big{font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:700;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.8);line-height:1.2;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pd-member-name-sub{font-family:'DM Sans',sans-serif;font-size:.58rem;color:rgba(255,255,255,.9);font-weight:600;letter-spacing:.3px;text-shadow:0 2px 8px rgba(0,0,0,.7);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pd-member-leader-star{position:absolute;top:8px;right:8px;z-index:3;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;font-size:11px;box-shadow:0 2px 8px rgba(0,0,0,.3)}
 
-/* ──── Info sections (refined cards) ──── */
-.pd-info-sections{padding:24px 32px 28px;display:flex;flex-direction:column;gap:16px;flex:1}
+/* Info sections */
+.pd-info-sections{padding:22px 32px 28px;display:flex;flex-direction:column;gap:18px;flex:1}
 .pd-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.pd-info-card{padding:20px 22px;border-radius:14px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);transition:all .3s ease;position:relative;overflow:hidden}
-.pd-info-card:hover{border-color:rgba(255,255,255,.1);background:rgba(255,255,255,.03)}
-.pd-info-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:2px;border-radius:2px 2px 0 0;opacity:0;transition:opacity .3s ease}
-.pd-info-card:hover::before{opacity:1}
-.pd-info-title{font-size:.56rem;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:2px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px;font-family:'DM Sans',sans-serif}
-.pd-info-title svg{opacity:.6}
-.pd-info-text{font-size:.82rem;color:rgba(255,255,255,.8);line-height:1.7;font-weight:400;font-family:'DM Sans',sans-serif}
-.pd-info-text-muted{color:rgba(255,255,255,.35);font-style:italic}
+.pd-info-card{padding:16px 18px;border-radius:12px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06)}
+.pd-info-title{font-size:.58rem;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.pd-info-text{font-size:.82rem;color:rgba(255,255,255,.85);line-height:1.6;font-weight:500}
+.pd-info-text-muted{color:rgba(255,255,255,.4);font-style:italic}
 
-/* Card accent colors */
-.pd-info-card[data-type="description"]::before{background:linear-gradient(90deg,#EEA727,transparent)}
-.pd-info-card[data-type="problem"]::before{background:linear-gradient(90deg,#fd1c00,transparent)}
-.pd-info-card[data-type="area"]::before{background:linear-gradient(90deg,#EEA727,transparent)}
-.pd-info-card[data-type="tech"]::before{background:linear-gradient(90deg,#10b981,transparent)}
-.pd-info-card[data-type="ai"]::before{background:linear-gradient(90deg,#f21d32,transparent)}
+/* Chips */
+.pd-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.pd-chip{padding:5px 12px;border-radius:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);font-size:.68rem;color:rgba(255,255,255,.8);font-weight:500}
+.pd-chip.tech{background:rgba(16,185,129,.08);border-color:rgba(16,185,129,.2);color:#34d399}
+.pd-chip.ai{background:rgba(242,29,50,.08);border-color:rgba(242,29,50,.25);color:#ff6b7a}
+.pd-chip.area{background:rgba(238,167,39,.08);border-color:rgba(238,167,39,.25);color:#EEA727}
 
-/* ──── Chips (polished) ──── */
-.pd-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
-.pd-chip{padding:6px 14px;border-radius:8px;font-size:.68rem;font-weight:600;font-family:'DM Sans',sans-serif;transition:all .2s ease;cursor:default}
-.pd-chip:hover{transform:translateY(-1px)}
-.pd-chip.tech{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.15);color:#34d399}
-.pd-chip.ai{background:rgba(242,29,50,.06);border:1px solid rgba(242,29,50,.15);color:#ff6b7a}
-.pd-chip.area{background:rgba(238,167,39,.06);border:1px solid rgba(238,167,39,.15);color:#EEA727}
-
-/* ──── Right sidebar — project list ──── */
+/* Right sidebar — project list */
 .pd-sidebar{background:rgba(12,6,20,.6);border:1px solid rgba(255,255,255,.06);border-radius:18px;display:flex;flex-direction:column;overflow:hidden;max-height:calc(100vh - 180px)}
-.pd-sidebar-hdr{padding:18px 20px;border-bottom:1px solid rgba(255,255,255,.05);flex-shrink:0}
-.pd-sidebar-title{font-size:.68rem;font-weight:700;color:rgba(255,255,255,.8);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:space-between}
-.pd-sidebar-count{font-size:.62rem;color:rgba(253,28,0,.7);font-weight:600;letter-spacing:0}
-.pd-search-wrap{position:relative;display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);transition:all .2s}
-.pd-search-wrap:focus-within{border-color:rgba(253,28,0,.25);background:rgba(255,255,255,.04);box-shadow:0 0 0 3px rgba(253,28,0,.05)}
+.pd-sidebar-hdr{padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.05);flex-shrink:0}
+.pd-sidebar-title{font-size:.72rem;font-weight:700;color:rgba(255,255,255,.9);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px}
+.pd-search-wrap{position:relative;display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
+.pd-search-wrap:focus-within{border-color:rgba(253,28,0,.3)}
 .pd-search-wrap input{flex:1;background:none;border:none;outline:none;color:#fff;font-family:'DM Sans',sans-serif;font-size:.74rem}
-.pd-search-wrap input::placeholder{color:rgba(255,255,255,.25)}
-.pd-search-wrap svg{color:rgba(255,255,255,.25);flex-shrink:0}
+.pd-search-wrap input::placeholder{color:rgba(255,255,255,.3)}
+.pd-search-wrap svg{color:rgba(255,255,255,.3);flex-shrink:0}
 
-.pd-list{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:4px}
-.pd-list::-webkit-scrollbar{width:3px}.pd-list::-webkit-scrollbar-thumb{background:rgba(253,28,0,.12);border-radius:4px}
-.pd-list::-webkit-scrollbar-track{background:transparent}
-.pd-list-item{padding:12px 14px;border-radius:10px;background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.04);cursor:pointer;transition:all .25s cubic-bezier(.23,1,.32,1);position:relative;overflow:hidden}
-.pd-list-item:hover{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.1);transform:translateX(3px)}
-.pd-list-item.active{background:linear-gradient(135deg,rgba(253,28,0,.08),rgba(238,167,39,.04));border-color:rgba(253,28,0,.2);box-shadow:0 2px 16px rgba(253,28,0,.06)}
-.pd-list-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:55%;border-radius:0 3px 3px 0;background:linear-gradient(180deg,#fd1c00,#EEA727)}
-.pd-list-row1{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px}
+.pd-list{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:6px}
+.pd-list::-webkit-scrollbar{width:4px}.pd-list::-webkit-scrollbar-thumb{background:rgba(253,28,0,.15);border-radius:4px}
+.pd-list-item{padding:12px 14px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);cursor:pointer;transition:all .2s;position:relative}
+.pd-list-item:hover{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12);transform:translateX(2px)}
+.pd-list-item.active{background:linear-gradient(135deg,rgba(253,28,0,.1),rgba(238,167,39,.05));border-color:rgba(253,28,0,.25);box-shadow:0 2px 12px rgba(253,28,0,.08)}
+.pd-list-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:60%;border-radius:0 3px 3px 0;background:linear-gradient(180deg,#fd1c00,#EEA727)}
+.pd-list-row1{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
 .pd-list-row2{display:flex;align-items:center;justify-content:space-between;gap:6px}
-.pd-list-title{font-family:'DM Sans',sans-serif;font-size:.76rem;font-weight:600;color:rgba(255,255,255,.9);line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
-.pd-list-team-num{font-family:'DM Sans',sans-serif;font-size:.58rem;font-weight:700;color:rgba(253,28,0,.75);letter-spacing:.5px;flex-shrink:0}
-.pd-list-mentor{font-family:'DM Sans',sans-serif;font-size:.56rem;font-weight:500;color:rgba(255,255,255,.35);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
-.pd-list-tech-pill{font-family:'DM Sans',sans-serif;padding:3px 8px;border-radius:5px;font-size:.52rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px}
+.pd-list-title{font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:600;color:#fff;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.pd-list-team-num{font-family:'DM Sans',sans-serif;font-size:.6rem;font-weight:700;color:rgba(253,28,0,.85);letter-spacing:.5px;flex-shrink:0}
+.pd-list-mentor{font-family:'DM Sans',sans-serif;font-size:.58rem;font-weight:500;color:rgba(255,255,255,.4);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.pd-list-tech-pill{font-family:'DM Sans',sans-serif;padding:3px 8px;border-radius:5px;font-size:.54rem;font-weight:600;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px}
 
-.pd-empty{padding:40px 20px;text-align:center;color:rgba(255,255,255,.25);font-size:.78rem;font-family:'DM Sans',sans-serif}
+/* Mentor Card */
+.pd-mentor-card{display:flex;align-items:center;gap:16px;padding:16px 20px;border-radius:14px;background:linear-gradient(135deg,rgba(238,167,39,.08),rgba(253,28,0,.04));border:1px solid rgba(238,167,39,.2);position:relative;overflow:hidden}
+.pd-mentor-card::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.04),transparent);animation:mentorShine 5s linear infinite}
+@keyframes mentorShine{0%{left:-100%}100%{left:100%}}
+.pd-mentor-photo{width:72px;height:72px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid rgba(238,167,39,.4);background:linear-gradient(135deg,#2a2a2a,#0a0a0a);position:relative;z-index:1;box-shadow:0 4px 16px rgba(238,167,39,.15)}
+.pd-mentor-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.pd-mentor-photo-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:1.4rem;font-weight:800;color:#EEA727}
+.pd-mentor-info{flex:1;min-width:0;position:relative;z-index:1}
+.pd-mentor-label{font-family:'DM Sans',sans-serif;font-size:.56rem;color:#EEA727;letter-spacing:2px;font-weight:700;margin-bottom:4px}
+.pd-mentor-name{font-family:'DM Sans',sans-serif;font-size:.98rem;font-weight:700;color:#fff;margin-bottom:4px;line-height:1.2}
+.pd-mentor-meta{display:flex;flex-wrap:wrap;gap:8px;font-family:'DM Sans',sans-serif;font-size:.68rem;color:rgba(255,255,255,.55);font-weight:500}
+.pd-mentor-meta span{display:inline-flex;align-items:center;gap:4px}
 
-/* ──── Mobile ──── */
+.pd-empty{padding:40px 20px;text-align:center;color:rgba(255,255,255,.3);font-size:.78rem}
+
+/* Mobile */
 @media(max-width:1100px){
   .pd-main{grid-template-columns:1fr}
   .pd-sidebar{max-height:400px;order:-1}
 }
 @media(max-width:768px){
-  .pd-show-hdr{padding:20px 18px}
-  .pd-show-top-row{flex-direction:column;gap:14px}
-  .pd-show-mentor{width:100%;min-width:unset}
+  .pd-show-hdr{padding:24px 20px}
+  .pd-show-hdr-inner{flex-direction:column;align-items:flex-start;gap:16px}
+  .pd-show-mentor{width:100%;padding:12px 16px}
   .pd-show-title{font-size:1.15rem;letter-spacing:1px}
   .pd-info-sections{padding:16px 18px 20px}
   .pd-info-grid{grid-template-columns:1fr}
   .pd-members-strip{grid-template-columns:repeat(auto-fit,minmax(90px,1fr))}
+  .pd-mentor-card{flex-direction:column;align-items:flex-start;text-align:left;padding:14px}
+  .pd-mentor-photo{width:56px;height:56px}
   .pd-member-name-big{font-size:.7rem}
-  .pd-member-name-sub{font-size:.5rem}
+  .pd-member-name-sub{font-size:.52rem}
   .pd-tech-tab{padding:8px 12px;font-size:.66rem}
   .pd-sidebar{max-height:350px}
   .pd-list-item{padding:10px}
   .pd-list-title{font-size:.72rem}
-  .pd-show-mentor-photo,.pd-show-mentor-photo img,.pd-show-mentor-fallback{width:52px;height:52px}
-  .pd-show-mentor-name{font-size:.8rem}
 }
 @media(max-width:480px){
-  .pd-show-title{font-size:1.05rem}
-  .pd-show-hdr{padding:16px 14px}
+  .pd-show-title{font-size:1.1rem}
+  .pd-show-hdr{padding:16px}
   .pd-info-sections{padding:14px}
   .pd-members-strip{grid-template-columns:repeat(3,1fr)}
 }
@@ -1541,40 +1519,36 @@ function ProjectDetails({ user }) {
               {/* Header */}
               <div className="pd-show-hdr">
                 <div className="pd-show-hdr-inner">
-                  <div className="pd-show-top-row">
-                    <div className="pd-show-hdr-left">
-                      <div className="pd-show-meta">
-                        <span className="pd-show-badge">{details.teamNumber}</span>
-                        <span className="pd-show-tech" style={{background: `${getTechColor(details.technology)}20`, color: getTechColor(details.technology), borderColor: `${getTechColor(details.technology)}40`}}>{details.technology}</span>
+                  <div className="pd-show-hdr-left">
+                    <div className="pd-show-meta">
+                      <span className="pd-show-badge">{details.teamNumber}</span>
+                      <span className="pd-show-tech" style={{background: getTechColor(details.technology), color: '#fff'}}>{details.technology}</span>
+                    </div>
+                    <div className="pd-show-title">{details.projectTitle}</div>
+                    <div className="pd-show-sub">
+                      {details.members.length} Members · {details.batch || 'Drive Ready'}
+                    </div>
+                  </div>
+                  {details.mentorDetails && (
+                    <div className="pd-show-mentor">
+                      <div className="pd-show-mentor-photo">
+                        <div className="pd-show-mentor-ring"/>
+                        {details.mentorDetails.image_url ? (
+                          <img src={details.mentorDetails.image_url} alt={details.mentorDetails.name} onError={e=>{e.target.style.display='none';e.target.nextElementSibling.style.display='flex'}}/>
+                        ) : null}
+                        <div className="pd-show-mentor-fallback" style={{display: details.mentorDetails.image_url ? 'none' : 'flex'}}>
+                          {(details.mentorDetails.name||'?').charAt(0).toUpperCase()}
+                        </div>
                       </div>
-                      <div className="pd-show-title">{details.projectTitle}</div>
-                      <div className="pd-show-sub">
-                        <span>{details.members.length} Members</span>
-                        <span className="pd-show-sub-dot"/>
-                        <span>{details.batch || 'Drive Ready'}</span>
+                      <div className="pd-show-mentor-info">
+                        <div className="pd-show-mentor-label">MENTOR</div>
+                        <div className="pd-show-mentor-name">{details.mentorDetails.name}</div>
+                        {details.mentorDetails.designation && (
+                          <div className="pd-show-mentor-desg">{details.mentorDetails.designation}</div>
+                        )}
                       </div>
                     </div>
-                    {details.mentorDetails && (
-                      <div className="pd-show-mentor">
-                        <div className="pd-show-mentor-photo">
-                          <div className="pd-show-mentor-ring"/>
-                          {details.mentorDetails.image_url ? (
-                            <img src={details.mentorDetails.image_url} alt={details.mentorDetails.name} onError={e=>{e.target.style.display='none';e.target.nextElementSibling.style.display='flex'}}/>
-                          ) : null}
-                          <div className="pd-show-mentor-fallback" style={{display: details.mentorDetails.image_url ? 'none' : 'flex'}}>
-                            {(details.mentorDetails.name||'?').charAt(0).toUpperCase()}
-                          </div>
-                        </div>
-                        <div className="pd-show-mentor-info">
-                          <div className="pd-show-mentor-label">Mentor</div>
-                          <div className="pd-show-mentor-name">{details.mentorDetails.name}</div>
-                          {details.mentorDetails.designation && (
-                            <div className="pd-show-mentor-desg">{details.mentorDetails.designation}</div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  )}
                 </div>
               </div>
 
@@ -1582,9 +1556,8 @@ function ProjectDetails({ user }) {
               {details.members.length > 0 && (
                 <div className="pd-members-strip">
                   {details.members.map((m, i) => (
-                    <div key={m.rollNumber||i} className="pd-member-col" style={{background: MEMBER_BG_COLORS[i % MEMBER_BG_COLORS.length]}}>
-                      {m.isLeader && <div className="pd-member-leader-badge">Leader</div>}
-                      <div className="pd-member-glow"/>
+                    <div key={m.rollNumber||i} className="pd-member-col">
+                      {m.isLeader && <div className="pd-member-leader-star">👑</div>}
                       {m.imageUrl ? (
                         <img className="pd-member-img" src={m.imageUrl} alt={m.name} onError={e=>{e.target.style.display='none';e.target.nextElementSibling.style.display='flex'}}/>
                       ) : null}
@@ -1603,23 +1576,23 @@ function ProjectDetails({ user }) {
               {/* Info Sections */}
               <div className="pd-info-sections">
                 {details.projectDescription && (
-                  <div className="pd-info-card" data-type="description">
-                    <div className="pd-info-title"><FileText size={12} style={{color:'#EEA727'}}/> Project Description</div>
+                  <div className="pd-info-card">
+                    <div className="pd-info-title"><FileText size={11} style={{color:'#EEA727'}}/> Project Description</div>
                     <div className="pd-info-text">{details.projectDescription}</div>
                   </div>
                 )}
 
                 {details.problemStatement && (
-                  <div className="pd-info-card" data-type="problem">
-                    <div className="pd-info-title"><Target size={12} style={{color:'#fd1c00'}}/> Problem Statement</div>
+                  <div className="pd-info-card">
+                    <div className="pd-info-title"><Target size={11} style={{color:'#fd1c00'}}/> Problem Statement</div>
                     <div className="pd-info-text">{details.problemStatement}</div>
                   </div>
                 )}
 
                 <div className="pd-info-grid">
                   {details.projectArea?.length > 0 && (
-                    <div className="pd-info-card" data-type="area">
-                      <div className="pd-info-title"><Layers size={12} style={{color:'#EEA727'}}/> Project Area</div>
+                    <div className="pd-info-card">
+                      <div className="pd-info-title"><Layers size={11} style={{color:'#EEA727'}}/> Project Area</div>
                       <div className="pd-chips">
                         {details.projectArea.map((a, i) => <span key={i} className="pd-chip area">{a}</span>)}
                       </div>
@@ -1627,8 +1600,8 @@ function ProjectDetails({ user }) {
                   )}
 
                   {details.techStack?.length > 0 && (
-                    <div className="pd-info-card" data-type="tech">
-                      <div className="pd-info-title"><Cpu size={12} style={{color:'#10b981'}}/> Tech Stack</div>
+                    <div className="pd-info-card">
+                      <div className="pd-info-title"><Cpu size={11} style={{color:'#10b981'}}/> Tech Stack</div>
                       <div className="pd-chips">
                         {details.techStack.map((t, i) => <span key={i} className="pd-chip tech">{t}</span>)}
                       </div>
@@ -1637,8 +1610,8 @@ function ProjectDetails({ user }) {
                 </div>
 
                 {details.aiUsage === 'Yes' && (
-                  <div className="pd-info-card" data-type="ai">
-                    <div className="pd-info-title"><Sparkles size={12} style={{color:'#f21d32'}}/> AI Integration</div>
+                  <div className="pd-info-card" style={{background:'rgba(242,29,50,.04)',borderColor:'rgba(242,29,50,.15)'}}>
+                    <div className="pd-info-title"><Sparkles size={11} style={{color:'#f21d32'}}/> AI Integration</div>
                     {details.aiCapabilities && <div className="pd-info-text" style={{marginBottom:10}}>{details.aiCapabilities}</div>}
                     {details.aiTools?.length > 0 && (
                       <div className="pd-chips">
@@ -1655,10 +1628,7 @@ function ProjectDetails({ user }) {
         {/* Right Sidebar — Project List */}
         <div className="pd-sidebar">
           <div className="pd-sidebar-hdr">
-            <div className="pd-sidebar-title">
-              <span>Projects</span>
-              <span className="pd-sidebar-count">{filteredProjects.length}</span>
-            </div>
+            <div className="pd-sidebar-title">Projects ({filteredProjects.length})</div>
             <div className="pd-search-wrap">
               <Search size={14}/>
               <input
@@ -1685,7 +1655,7 @@ function ProjectDetails({ user }) {
                   </div>
                   <div className="pd-list-row2">
                     <span className="pd-list-mentor">{p.mentor || '—'}</span>
-                    <span className="pd-list-tech-pill" style={{background:`${getTechColor(p.technology)}12`,color:getTechColor(p.technology),border:`1px solid ${getTechColor(p.technology)}25`}}>
+                    <span className="pd-list-tech-pill" style={{background:`${getTechColor(p.technology)}18`,color:getTechColor(p.technology),border:`1px solid ${getTechColor(p.technology)}30`}}>
                       {p.technology}
                     </span>
                   </div>
