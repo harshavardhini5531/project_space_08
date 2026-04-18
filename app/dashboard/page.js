@@ -1368,18 +1368,13 @@ function ProjectDetails({ user }) {
 .pd-show-hdr{padding:16px 28px 20px;background:linear-gradient(135deg,#1a1a1a 0%,#2d2d2d 50%,#0a0a0a 100%);position:relative;overflow:hidden}
 .pd-show-hdr-inner{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
 .pd-show-hdr-left{flex:1;min-width:0}
-.pd-show-mentor{display:flex;align-items:center;gap:16px;flex-shrink:0;padding:14px 20px;border-radius:14px;background:linear-gradient(135deg,rgba(238,167,39,.06) 0%,rgba(253,28,0,.04) 100%);border:1px solid rgba(238,167,39,.12);backdrop-filter:blur(12px);position:relative;overflow:hidden}
-.pd-show-mentor::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(238,167,39,.03),transparent);animation:mentorShimmer 4s ease-in-out infinite;pointer-events:none}
-@keyframes mentorShimmer{0%,100%{opacity:0;transform:translateX(-100%)}50%{opacity:1;transform:translateX(100%)}}
-.pd-show-mentor-photo{width:72px;height:72px;border-radius:50%;overflow:hidden;flex-shrink:0;position:relative;z-index:2}
-.pd-show-mentor-ring{position:absolute;inset:-3px;border-radius:50%;border:2px solid rgba(238,167,39,.4);z-index:1;animation:mentorRing 3s ease-in-out infinite}
-@keyframes mentorRing{0%,100%{border-color:rgba(238,167,39,.25);box-shadow:0 0 0 0 rgba(238,167,39,0)}50%{border-color:rgba(238,167,39,.5);box-shadow:0 0 12px 2px rgba(238,167,39,.12)}}
-.pd-show-mentor-photo img{width:100%;height:100%;object-fit:cover;display:block;position:relative;z-index:2;border-radius:50%}
-.pd-show-mentor-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;font-size:1.4rem;font-weight:800;color:#EEA727;background:linear-gradient(135deg,rgba(238,167,39,.15),rgba(238,167,39,.05));border-radius:50%;position:relative;z-index:2}
-.pd-show-mentor-info{display:flex;flex-direction:column;min-width:0;position:relative;z-index:2}
-.pd-show-mentor-label{font-family:'DM Sans',sans-serif;font-size:.52rem;color:#EEA727;letter-spacing:2.5px;font-weight:700;margin-bottom:3px;text-transform:uppercase}
-.pd-show-mentor-name{font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:700;color:#fff;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
-.pd-show-mentor-desg{font-family:'DM Sans',sans-serif;font-size:.62rem;color:rgba(255,255,255,.45);font-weight:500;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
+.pd-show-mentor{display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0}
+.pd-show-mentor-photo{width:52px;height:52px;border-radius:8px;overflow:hidden;flex-shrink:0;background:#1a1a1a}
+.pd-show-mentor-photo img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+.pd-show-mentor-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:700;color:#EEA727;background:rgba(238,167,39,.08)}
+.pd-show-mentor-info{display:flex;flex-direction:column;align-items:center;min-width:0}
+.pd-show-mentor-label{display:none}
+.pd-show-mentor-name{font-family:'DM Sans',sans-serif;font-size:.62rem;font-weight:600;color:rgba(255,255,255,.7);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px;text-align:center;text-transform:uppercase;letter-spacing:.3px}
 .pd-show-hdr::before{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 0%,transparent 40%,rgba(253,28,0,.08) 50%,rgba(238,167,39,.12) 55%,rgba(255,255,255,.08) 60%,transparent 70%,transparent 100%);background-size:200% 100%;animation:shinyWave 4s linear infinite;pointer-events:none}
 .pd-show-hdr::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 50%,rgba(253,28,0,.04),transparent 50%),radial-gradient(circle at 70% 50%,rgba(238,167,39,.04),transparent 50%);pointer-events:none;animation:glowShift 6s ease-in-out infinite}
 @keyframes shinyWave{0%{background-position:-100% 0}100%{background-position:200% 0}}
@@ -1532,7 +1527,6 @@ function ProjectDetails({ user }) {
                   {details.mentorDetails && (
                     <div className="pd-show-mentor">
                       <div className="pd-show-mentor-photo">
-                        <div className="pd-show-mentor-ring"/>
                         {details.mentorDetails.image_url ? (
                           <img src={details.mentorDetails.image_url} alt={details.mentorDetails.name} onError={e=>{e.target.style.display='none';e.target.nextElementSibling.style.display='flex'}}/>
                         ) : null}
@@ -1541,11 +1535,7 @@ function ProjectDetails({ user }) {
                         </div>
                       </div>
                       <div className="pd-show-mentor-info">
-                        <div className="pd-show-mentor-label">MENTOR</div>
                         <div className="pd-show-mentor-name">{details.mentorDetails.name}</div>
-                        {details.mentorDetails.designation && (
-                          <div className="pd-show-mentor-desg">{details.mentorDetails.designation}</div>
-                        )}
                       </div>
                     </div>
                   )}
