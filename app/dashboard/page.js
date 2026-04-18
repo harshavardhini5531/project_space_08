@@ -1312,12 +1312,15 @@ function ProjectDetails({ user }) {
   // Unique technologies
   const technologies = ['all', ...Array.from(new Set(projects.map(p => p.technology).filter(Boolean)))];
 
-  // Filter projects by tech + search
+  // Filter projects by tech + search (searches title, team number, mentor name, technology)
   const filteredProjects = projects.filter(p => {
     const matchesTech = activeTech === 'all' || p.technology === activeTech;
-    const matchesSearch = !searchQuery ||
-      p.projectTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.teamNumber?.toLowerCase().includes(searchQuery.toLowerCase());
+    const q = searchQuery.toLowerCase();
+    const matchesSearch = !q ||
+      p.projectTitle.toLowerCase().includes(q) ||
+      (p.teamNumber || '').toLowerCase().includes(q) ||
+      (p.mentor || '').toLowerCase().includes(q) ||
+      (p.technology || '').toLowerCase().includes(q);
     return matchesTech && matchesSearch;
   });
 
@@ -1366,14 +1369,14 @@ function ProjectDetails({ user }) {
 .pd-show-hdr{padding:24px 32px;background:linear-gradient(135deg,#1a1a1a 0%,#2d2d2d 50%,#0a0a0a 100%);position:relative;overflow:hidden}
 .pd-show-hdr-inner{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
 .pd-show-hdr-left{flex:1;min-width:0}
-.pd-show-mentor{display:flex;flex-direction:row;align-items:center;gap:14px;flex-shrink:0;align-self:center}
-.pd-show-mentor-photo{width:72px;height:88px;border-radius:10px;overflow:hidden;flex-shrink:0;position:relative;z-index:2;border:1px solid rgba(238,167,39,.3);background:linear-gradient(135deg,#1a1a1a,#0a0a0a);box-shadow:0 4px 20px rgba(0,0,0,.4)}
+.pd-show-mentor{display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0;align-self:flex-start}
+.pd-show-mentor-photo{width:70px;height:85px;overflow:hidden;flex-shrink:0;position:relative;z-index:2;background:transparent}
 @keyframes mentorRing{0%,100%{border-color:rgba(238,167,39,.15);transform:scale(1)}50%{border-color:rgba(238,167,39,.35);transform:scale(1.03)}}
-.pd-show-mentor-photo img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
-.pd-show-mentor-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:1.4rem;font-weight:800;color:#EEA727}
-.pd-show-mentor-info{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
-.pd-show-mentor-label{font-family:'DM Sans',sans-serif;font-size:.5rem;color:#EEA727;letter-spacing:2.5px;font-weight:700;margin-bottom:3px;text-shadow:0 0 10px rgba(238,167,39,.3)}
-.pd-show-mentor-name{font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;color:#fff;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;text-shadow:0 2px 8px rgba(0,0,0,.5)}
+.pd-show-mentor-photo img{width:100%;height:100%;object-fit:cover;object-position:top;display:block;filter:drop-shadow(0 4px 12px rgba(0,0,0,.5))}
+.pd-show-mentor-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;font-size:1.2rem;font-weight:700;color:#EEA727;background:rgba(238,167,39,.08);border-radius:10px}
+.pd-show-mentor-info{display:flex;flex-direction:column;align-items:center;min-width:0}
+.pd-show-mentor-label{display:none}
+.pd-show-mentor-name{font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:600;color:rgba(255,255,255,.8);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;text-align:center}
 .pd-show-hdr::before{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 0%,transparent 40%,rgba(253,28,0,.08) 50%,rgba(238,167,39,.12) 55%,rgba(255,255,255,.08) 60%,transparent 70%,transparent 100%);background-size:200% 100%;animation:shinyWave 4s linear infinite;pointer-events:none}
 .pd-show-hdr::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 50%,rgba(253,28,0,.04),transparent 50%),radial-gradient(circle at 70% 50%,rgba(238,167,39,.04),transparent 50%);pointer-events:none;animation:glowShift 6s ease-in-out infinite}
 @keyframes shinyWave{0%{background-position:-100% 0}100%{background-position:200% 0}}
@@ -1381,7 +1384,7 @@ function ProjectDetails({ user }) {
 .pd-show-meta{display:flex;align-items:center;gap:10px;margin-bottom:22px;font-family:'DM Sans',sans-serif}
 .pd-show-badge{padding:6px 14px;border-radius:8px;background:linear-gradient(135deg,rgba(253,28,0,.2),rgba(238,167,39,.15));backdrop-filter:blur(10px);border:1px solid rgba(253,28,0,.35);font-size:.66rem;font-weight:800;letter-spacing:2px;color:#fff;font-family:'DM Sans',sans-serif}
 .pd-show-tech{padding:6px 14px;border-radius:8px;background:rgba(255,255,255,.95);color:#fd1c00;font-size:.62rem;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;font-family:'DM Sans',sans-serif}
-.pd-show-title{font-family:'Astro','Orbitron',sans-serif;font-size:1.9rem;font-weight:800;color:#fff;line-height:1.1;letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;word-break:break-word;text-shadow:0 2px 20px rgba(238,167,39,.3),0 0 40px rgba(253,28,0,.15)}
+.pd-show-title{font-family:'Astro','Orbitron',sans-serif;font-size:1.65rem;font-weight:800;color:#fff;line-height:1.1;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 2px 20px rgba(238,167,39,.3),0 0 40px rgba(253,28,0,.15)}
 .pd-show-sub{font-size:.8rem;color:rgba(255,255,255,.75);font-weight:500;font-family:'DM Sans',sans-serif;letter-spacing:.3px}
 
 /* Members strip */
@@ -1429,9 +1432,11 @@ function ProjectDetails({ user }) {
 .pd-list-item:hover{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12);transform:translateX(2px)}
 .pd-list-item.active{background:linear-gradient(135deg,rgba(253,28,0,.1),rgba(238,167,39,.05));border-color:rgba(253,28,0,.25);box-shadow:0 2px 12px rgba(253,28,0,.08)}
 .pd-list-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:60%;border-radius:0 3px 3px 0;background:linear-gradient(180deg,#fd1c00,#EEA727)}
-.pd-list-title{font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:600;color:#fff;line-height:1.3;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-.pd-list-meta{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:4px}
-.pd-list-team-num{font-family:'DM Sans',sans-serif;font-size:.62rem;font-weight:700;color:rgba(253,28,0,.85);letter-spacing:1px}
+.pd-list-row1{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
+.pd-list-row2{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.pd-list-title{font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:600;color:#fff;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.pd-list-team-num{font-family:'DM Sans',sans-serif;font-size:.6rem;font-weight:700;color:rgba(253,28,0,.85);letter-spacing:.5px;flex-shrink:0}
+.pd-list-mentor{font-family:'DM Sans',sans-serif;font-size:.58rem;font-weight:500;color:rgba(255,255,255,.4);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
 .pd-list-tech-pill{font-family:'DM Sans',sans-serif;padding:3px 8px;border-radius:5px;font-size:.54rem;font-weight:600;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px}
 
 /* Mentor Card */
@@ -1553,7 +1558,7 @@ function ProjectDetails({ user }) {
                         {(m.name||'?').charAt(0).toUpperCase()}
                       </div>
                       <div className="pd-member-name">
-                        <div className="pd-member-name-big">{m.name || m.rollNumber}</div>
+                        <div className="pd-member-name-big">{(m.name || m.rollNumber).split(' ').slice(0,2).join(' ')}</div>
                         <div className="pd-member-name-sub">{m.rollNumber}</div>
                       </div>
                     </div>
@@ -1621,7 +1626,7 @@ function ProjectDetails({ user }) {
               <Search size={14}/>
               <input
                 type="text"
-                placeholder="Search title or team..."
+                placeholder="Search title, team, mentor..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
               />
@@ -1637,9 +1642,12 @@ function ProjectDetails({ user }) {
                   className={`pd-list-item ${selectedTeam === p.teamNumber ? 'active' : ''}`}
                   onClick={() => setSelectedTeam(p.teamNumber)}
                 >
-                  <div className="pd-list-title">{p.projectTitle}</div>
-                  <div className="pd-list-meta">
+                  <div className="pd-list-row1">
+                    <span className="pd-list-title">{p.projectTitle}</span>
                     <span className="pd-list-team-num">{p.teamNumber}</span>
+                  </div>
+                  <div className="pd-list-row2">
+                    <span className="pd-list-mentor">{p.mentor || '—'}</span>
                     <span className="pd-list-tech-pill" style={{background:`${getTechColor(p.technology)}18`,color:getTechColor(p.technology),border:`1px solid ${getTechColor(p.technology)}30`}}>
                       {p.technology}
                     </span>
