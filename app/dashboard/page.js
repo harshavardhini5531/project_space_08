@@ -1366,17 +1366,17 @@ function ProjectDetails({ user }) {
 .pd-showcase{background:#0c0614;border:1px solid rgba(255,255,255,.06);border-radius:18px;overflow:hidden;position:relative;min-height:560px;display:flex;flex-direction:column}
 
 /* Header with gradient */
-.pd-show-hdr{padding:24px 32px;background:linear-gradient(135deg,#1a1a1a 0%,#2d2d2d 50%,#0a0a0a 100%);position:relative;overflow:hidden}
+.pd-show-hdr{padding:16px 28px 20px;background:linear-gradient(135deg,#1a1a1a 0%,#2d2d2d 50%,#0a0a0a 100%);position:relative;overflow:hidden}
 .pd-show-hdr-inner{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
 .pd-show-hdr-left{flex:1;min-width:0}
 .pd-show-mentor{display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0;align-self:flex-start}
-.pd-show-mentor-photo{width:70px;height:85px;overflow:hidden;flex-shrink:0;position:relative;z-index:2;background:transparent}
+.pd-show-mentor-photo{width:70px;height:85px;overflow:hidden;flex-shrink:0;position:relative;z-index:2;background:transparent;border-radius:10px;border:1px solid rgba(255,255,255,.1)}
 @keyframes mentorRing{0%,100%{border-color:rgba(238,167,39,.15);transform:scale(1)}50%{border-color:rgba(238,167,39,.35);transform:scale(1.03)}}
-.pd-show-mentor-photo img{width:100%;height:100%;object-fit:cover;object-position:top;display:block;filter:drop-shadow(0 4px 12px rgba(0,0,0,.5))}
+.pd-show-mentor-photo img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
 .pd-show-mentor-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;font-size:1.2rem;font-weight:700;color:#EEA727;background:rgba(238,167,39,.08);border-radius:10px}
 .pd-show-mentor-info{display:flex;flex-direction:column;align-items:center;min-width:0}
 .pd-show-mentor-label{display:none}
-.pd-show-mentor-name{font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:600;color:rgba(255,255,255,.8);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;text-align:center}
+.pd-show-mentor-name{font-family:'DM Sans',sans-serif;font-size:.68rem;font-weight:700;color:rgba(255,255,255,.85);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;text-align:center;text-transform:uppercase;letter-spacing:.5px}
 .pd-show-hdr::before{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 0%,transparent 40%,rgba(253,28,0,.08) 50%,rgba(238,167,39,.12) 55%,rgba(255,255,255,.08) 60%,transparent 70%,transparent 100%);background-size:200% 100%;animation:shinyWave 4s linear infinite;pointer-events:none}
 .pd-show-hdr::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 50%,rgba(253,28,0,.04),transparent 50%),radial-gradient(circle at 70% 50%,rgba(238,167,39,.04),transparent 50%);pointer-events:none;animation:glowShift 6s ease-in-out infinite}
 @keyframes shinyWave{0%{background-position:-100% 0}100%{background-position:200% 0}}
@@ -1384,7 +1384,7 @@ function ProjectDetails({ user }) {
 .pd-show-meta{display:flex;align-items:center;gap:10px;margin-bottom:22px;font-family:'DM Sans',sans-serif}
 .pd-show-badge{padding:6px 14px;border-radius:8px;background:linear-gradient(135deg,rgba(253,28,0,.2),rgba(238,167,39,.15));backdrop-filter:blur(10px);border:1px solid rgba(253,28,0,.35);font-size:.66rem;font-weight:800;letter-spacing:2px;color:#fff;font-family:'DM Sans',sans-serif}
 .pd-show-tech{padding:6px 14px;border-radius:8px;background:rgba(255,255,255,.95);color:#fd1c00;font-size:.62rem;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;font-family:'DM Sans',sans-serif}
-.pd-show-title{font-family:'Astro','Orbitron',sans-serif;font-size:1.65rem;font-weight:800;color:#fff;line-height:1.1;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 2px 20px rgba(238,167,39,.3),0 0 40px rgba(253,28,0,.15)}
+.pd-show-title{font-family:'Astro','Orbitron',sans-serif;font-size:1.5rem;font-weight:800;color:#fff;line-height:1.15;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;word-break:break-word;text-shadow:0 2px 20px rgba(238,167,39,.3),0 0 40px rgba(253,28,0,.15)}
 .pd-show-sub{font-size:.8rem;color:rgba(255,255,255,.75);font-weight:500;font-family:'DM Sans',sans-serif;letter-spacing:.3px}
 
 /* Members strip */
