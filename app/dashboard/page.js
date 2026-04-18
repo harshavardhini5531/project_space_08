@@ -1396,7 +1396,7 @@ function ProjectDetails({ user }) {
 .pd-member-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:2.2rem;font-weight:800;color:rgba(255,255,255,.5);background:var(--photo-bg,#10233d);position:relative;z-index:1}
 .pd-member-name{position:absolute;left:8px;top:0;bottom:10px;z-index:3;display:flex;flex-direction:column;justify-content:flex-end;gap:0}
 .pd-member-name-big{font-family:'DM Sans',sans-serif;font-size:.68rem;font-weight:800;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.9);letter-spacing:1px;text-transform:uppercase;writing-mode:vertical-lr;transform:rotate(180deg);line-height:1}
-.pd-member-name-sub{position:absolute;bottom:0;left:0;right:0;text-align:center;font-family:'DM Sans',sans-serif;font-size:.52rem;color:rgba(255,255,255,.8);font-weight:600;text-shadow:0 2px 8px rgba(0,0,0,.8);z-index:4;padding:6px 4px;writing-mode:horizontal-tb}
+.pd-member-name-sub{position:absolute;top:8px;right:8px;font-family:'DM Sans',sans-serif;font-size:.48rem;color:rgba(255,255,255,.6);font-weight:600;text-shadow:0 2px 8px rgba(0,0,0,.8);z-index:4;writing-mode:vertical-lr;letter-spacing:1px}
 .pd-member-leader-star{position:absolute;top:8px;right:8px;z-index:3;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;font-size:11px;box-shadow:0 2px 8px rgba(0,0,0,.3)}
 
 /* Info sections */
