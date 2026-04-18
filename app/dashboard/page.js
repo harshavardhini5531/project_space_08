@@ -1370,9 +1370,9 @@ function ProjectDetails({ user }) {
 .pd-show-hdr-inner{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
 .pd-show-hdr-left{flex:1;min-width:0}
 .pd-show-mentor{display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0;align-self:flex-start}
-.pd-show-mentor-photo{width:70px;height:85px;overflow:hidden;flex-shrink:0;position:relative;z-index:2;background:transparent;border-radius:10px;border:1px solid rgba(255,255,255,.1)}
+.pd-show-mentor-photo{width:90px;height:110px;overflow:hidden;flex-shrink:0;position:relative;z-index:2;background:#1a1a1a;border-radius:10px;border:1px solid rgba(255,255,255,.1)}
 @keyframes mentorRing{0%,100%{border-color:rgba(238,167,39,.15);transform:scale(1)}50%{border-color:rgba(238,167,39,.35);transform:scale(1.03)}}
-.pd-show-mentor-photo img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+.pd-show-mentor-photo img{width:100%;height:100%;object-fit:contain;display:block}
 .pd-show-mentor-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;font-size:1.2rem;font-weight:700;color:#EEA727;background:rgba(238,167,39,.08);border-radius:10px}
 .pd-show-mentor-info{display:flex;flex-direction:column;align-items:center;min-width:0}
 .pd-show-mentor-label{display:none}
