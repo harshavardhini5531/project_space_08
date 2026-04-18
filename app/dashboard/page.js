@@ -1369,7 +1369,7 @@ function ProjectDetails({ user }) {
 .pd-show-hdr-inner{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
 .pd-show-hdr-left{flex:1;min-width:0}
 .pd-show-mentor{display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0;align-self:flex-start;margin-top:-4px}
-.pd-show-mentor-photo{width:72px;height:62px;border-radius:20px;overflow:hidden;flex-shrink:0;background:#ffffff}
+.pd-show-mentor-photo{width:70px;height:70px;border-radius:10px;overflow:hidden;flex-shrink:0;background:#1a1a1a}
 .pd-show-mentor-photo img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
 .pd-show-mentor-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:700;color:#EEA727;background:rgba(238,167,39,.08)}
 .pd-show-mentor-info{display:flex;flex-direction:column;align-items:center;min-width:0}
@@ -1382,7 +1382,7 @@ function ProjectDetails({ user }) {
 .pd-show-meta{display:flex;align-items:center;gap:10px;margin-bottom:22px;font-family:'DM Sans',sans-serif}
 .pd-show-badge{padding:6px 14px;border-radius:8px;background:linear-gradient(135deg,rgba(253,28,0,.2),rgba(238,167,39,.15));backdrop-filter:blur(10px);border:1px solid rgba(253,28,0,.35);font-size:.66rem;font-weight:800;letter-spacing:2px;color:#fff;font-family:'DM Sans',sans-serif}
 .pd-show-tech{padding:6px 14px;border-radius:8px;background:rgba(255,255,255,.95);color:#fd1c00;font-size:.62rem;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;font-family:'DM Sans',sans-serif}
-.pd-show-title{font-family:'Astro','Orbitron',sans-serif;font-size:1.5rem;font-weight:800;color:#fff;line-height:1.15;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;word-break:break-word;text-shadow:0 2px 20px rgba(238,167,39,.3),0 0 40px rgba(253,28,0,.15)}
+.pd-show-title{font-family:'Astro','Orbitron',sans-serif;font-size:1rem;font-weight:800;color:#fff;line-height:1.15;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;word-break:break-word;word-spacing:4px;text-shadow:0 2px 20px rgba(238,167,39,.3),0 0 40px rgba(253,28,0,.15)}
 .pd-show-sub{font-size:.8rem;color:rgba(255,255,255,.75);font-weight:500;font-family:'DM Sans',sans-serif;letter-spacing:.3px}
 
 /* Members strip */
@@ -1397,7 +1397,8 @@ function ProjectDetails({ user }) {
 .pd-member-name{position:absolute;left:8px;top:0;bottom:10px;z-index:3;display:flex;flex-direction:column;justify-content:flex-end;gap:0}
 .pd-member-name-big{font-family:'DM Sans',sans-serif;font-size:.68rem;font-weight:800;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.9);letter-spacing:1px;text-transform:uppercase;writing-mode:vertical-lr;transform:rotate(180deg);line-height:1}
 .pd-member-name-sub{display:none}
-.pd-member-roll-rt{position:absolute;top:8px;right:6px;z-index:4;font-family:'DM Sans',sans-serif;font-size:.46rem;color:rgba(255,255,255,.55);font-weight:600;writing-mode:vertical-lr;letter-spacing:1px;text-shadow:0 2px 8px rgba(0,0,0,.8)}z-index:3;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;font-size:11px;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.pd-member-roll-rt{position:absolute;top:8px;right:6px;z-index:4;font-family:'DM Sans',sans-serif;font-size:.5rem;color:rgba(255,255,255,.7);font-weight:700;writing-mode:vertical-lr;letter-spacing:1.5px;text-shadow:0 2px 10px rgba(0,0,0,.9)}
+.pd-member-leader-star{position:absolute;top:8px;left:8px;z-index:3;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;font-size:11px;box-shadow:0 2px 8px rgba(0,0,0,.3)}
 
 /* Info sections */
 .pd-info-sections{padding:22px 32px 28px;display:flex;flex-direction:column;gap:18px;flex:1}
@@ -1492,7 +1493,7 @@ function ProjectDetails({ user }) {
             style={activeTech === tech ? {'--tc': getTechColor(tech)} : {}}
           >
             <span className="pd-tech-dot" style={{background: tech === 'all' ? '#fd1c00' : getTechColor(tech)}}/>
-            {tech === 'all' ? `All (${projects.length})` : tech}
+            {tech === 'all' ? `All (${projects.length})` : `${tech} (${projects.filter(p=>p.technology===tech).length})`}
           </button>
         ))}
       </div>
