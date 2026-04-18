@@ -1382,7 +1382,7 @@ function ProjectDetails({ user }) {
 .pd-show-meta{display:flex;align-items:center;gap:10px;margin-bottom:22px;font-family:'DM Sans',sans-serif}
 .pd-show-badge{padding:6px 14px;border-radius:8px;background:linear-gradient(135deg,rgba(253,28,0,.2),rgba(238,167,39,.15));backdrop-filter:blur(10px);border:1px solid rgba(253,28,0,.35);font-size:.66rem;font-weight:800;letter-spacing:2px;color:#fff;font-family:'DM Sans',sans-serif}
 .pd-show-tech{padding:6px 14px;border-radius:8px;background:rgba(255,255,255,.95);color:#fd1c00;font-size:.62rem;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;font-family:'DM Sans',sans-serif}
-.pd-show-title{font-family:'Astro','Orbitron',sans-serif;font-size:1rem;font-weight:800;color:#fff;line-height:1.15;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;word-break:break-word;word-spacing:4px;text-shadow:0 2px 20px rgba(238,167,39,.3),0 0 40px rgba(253,28,0,.15)}
+.pd-show-title{font-family:'Astro','Orbitron',sans-serif;font-size:1rem;font-weight:800;color:#fff;line-height:1.15;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;word-break:break-word;{tech === 'all' ? `All (${projects.length})` : `${tech} (${projects.filter(p=>p.technology===tech).length})`} rgba(238,167,39,.3),0 0 40px rgba(253,28,0,.15)}
 .pd-show-sub{font-size:.8rem;color:rgba(255,255,255,.75);font-weight:500;font-family:'DM Sans',sans-serif;letter-spacing:.3px}
 
 /* Members strip */
@@ -1493,7 +1493,7 @@ function ProjectDetails({ user }) {
             style={activeTech === tech ? {'--tc': getTechColor(tech)} : {}}
           >
             <span className="pd-tech-dot" style={{background: tech === 'all' ? '#fd1c00' : getTechColor(tech)}}/>
-            .pd-show-title{font-family:'Astro','Orbitron',sans-serif;font-size:1.5rem;font-weight:800;color:#fff;line-height:1.15;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;word-break:break-word;word-spacing:4px;text-shadow:0 2px 20px rgba(238,167,39,.3),0 0 40px rgba(253,28,0,.15)}
+            {tech === 'all' ? `All (${projects.length})` : `${tech} (${projects.filter(p=>p.technology===tech).length})`}
           </button>
         ))}
       </div>
