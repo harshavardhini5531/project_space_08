@@ -1369,7 +1369,7 @@ function ProjectDetails({ user }) {
 .pd-show-hdr-inner{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
 .pd-show-hdr-left{flex:1;min-width:0}
 .pd-show-mentor{display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0;align-self:flex-start;margin-top:-4px}
-.pd-show-mentor-photo{width:72px;height:62px;border-radius:8px;overflow:hidden;flex-shrink:0;background:#1a1a1a}
+.pd-show-mentor-photo{width:72px;height:62px;border-radius:20px;overflow:hidden;flex-shrink:0;background:#ffffff}
 .pd-show-mentor-photo img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
 .pd-show-mentor-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:700;color:#EEA727;background:rgba(238,167,39,.08)}
 .pd-show-mentor-info{display:flex;flex-direction:column;align-items:center;min-width:0}
