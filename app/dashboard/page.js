@@ -1493,7 +1493,7 @@ function ProjectDetails({ user }) {
             style={activeTech === tech ? {'--tc': getTechColor(tech)} : {}}
           >
             <span className="pd-tech-dot" style={{background: tech === 'all' ? '#fd1c00' : getTechColor(tech)}}/>
-            {tech === 'all' ? `All (${projects.length})` : `${tech} (${projects.filter(p=>p.technology===tech).length})`}
+            .pd-show-title{font-family:'Astro','Orbitron',sans-serif;font-size:1.5rem;font-weight:800;color:#fff;line-height:1.15;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;word-break:break-word;word-spacing:4px;text-shadow:0 2px 20px rgba(238,167,39,.3),0 0 40px rgba(253,28,0,.15)}
           </button>
         ))}
       </div>
