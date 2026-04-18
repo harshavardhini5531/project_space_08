@@ -1391,12 +1391,14 @@ function ProjectDetails({ user }) {
 .pd-member-col::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.04) 0%,transparent 50%,rgba(255,255,255,.02) 100%);pointer-events:none;z-index:1;opacity:0;transition:opacity .4s ease}
 .pd-member-col:hover::before{opacity:1}
 .pd-member-col:hover{transform:translateY(-4px);z-index:2;box-shadow:0 12px 32px rgba(0,0,0,.4)}
-.pd-member-col::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(0,0,0,.88) 100%);pointer-events:none;z-index:2}
+.pd-member-col::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.7) 0%,transparent 40%,transparent 100%);pointer-events:none;z-index:2;opacity:0;transition:opacity .4s ease}
+.pd-member-col:hover::after{opacity:1}
 .pd-member-img{width:100%;height:100%;object-fit:cover;display:block}
 .pd-member-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:2.2rem;font-weight:800;color:rgba(255,255,255,.5);background:var(--photo-bg,#10233d);position:relative;z-index:1}
-.pd-member-name{position:absolute;bottom:14px;left:0;right:0;text-align:center;z-index:3;padding:0 6px}
-.pd-member-name-big{font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:700;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.8);line-height:1.2;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pd-member-name-sub{font-family:'DM Sans',sans-serif;font-size:.58rem;color:rgba(255,255,255,.9);font-weight:600;letter-spacing:.3px;text-shadow:0 2px 8px rgba(0,0,0,.7);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pd-member-name{position:absolute;left:0;top:0;bottom:0;z-index:3;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;padding:0 0 12px 8px;writing-mode:vertical-lr;transform:rotate(180deg);gap:4px;opacity:0;transition:opacity .4s ease,transform .4s ease;transform:rotate(180deg) translateX(6px)}
+.pd-member-col:hover .pd-member-name{opacity:1;transform:rotate(180deg) translateX(0)}
+.pd-member-name-big{font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:800;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.9);letter-spacing:1px;text-transform:uppercase}
+.pd-member-name-sub{font-family:'DM Sans',sans-serif;font-size:.52rem;color:rgba(255,255,255,.7);font-weight:600;letter-spacing:1px;text-shadow:0 2px 8px rgba(0,0,0,.8)}
 .pd-member-leader-star{position:absolute;top:8px;right:8px;z-index:3;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;font-size:11px;box-shadow:0 2px 8px rgba(0,0,0,.3)}
 
 /* Info sections */
