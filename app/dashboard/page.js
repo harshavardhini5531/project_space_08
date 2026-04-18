@@ -1374,7 +1374,7 @@ function ProjectDetails({ user }) {
 .pd-show-mentor-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:700;color:#EEA727;background:rgba(238,167,39,.08)}
 .pd-show-mentor-info{display:flex;flex-direction:column;align-items:center;min-width:0}
 .pd-show-mentor-label{display:none}
-.pd-show-mentor-name{font-family:'DM Sans',sans-serif;font-size:.62rem;font-weight:600;color:rgba(255,255,255,.7);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px;text-align:center;text-transform:uppercase;letter-spacing:.3px}
+.pd-show-mentor-name{font-family:'DM Sans',sans-serif;font-size:.62rem;font-weight:600;color:rgba(255,255,255,.7);line-height:1.2;text-align:center;text-transform:uppercase;letter-spacing:.3px;max-width:200px;word-wrap:break-word;white-space:normal}
 .pd-show-hdr::before{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 0%,transparent 40%,rgba(253,28,0,.08) 50%,rgba(238,167,39,.12) 55%,rgba(255,255,255,.08) 60%,transparent 70%,transparent 100%);background-size:200% 100%;animation:shinyWave 4s linear infinite;pointer-events:none}
 .pd-show-hdr::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 50%,rgba(253,28,0,.04),transparent 50%),radial-gradient(circle at 70% 50%,rgba(238,167,39,.04),transparent 50%);pointer-events:none;animation:glowShift 6s ease-in-out infinite}
 @keyframes shinyWave{0%{background-position:-100% 0}100%{background-position:200% 0}}
@@ -1391,14 +1391,12 @@ function ProjectDetails({ user }) {
 .pd-member-col::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.04) 0%,transparent 50%,rgba(255,255,255,.02) 100%);pointer-events:none;z-index:1;opacity:0;transition:opacity .4s ease}
 .pd-member-col:hover::before{opacity:1}
 .pd-member-col:hover{transform:translateY(-4px);z-index:2;box-shadow:0 12px 32px rgba(0,0,0,.4)}
-.pd-member-col::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.7) 0%,transparent 40%,transparent 100%);pointer-events:none;z-index:2;opacity:0;transition:opacity .4s ease}
-.pd-member-col:hover::after{opacity:1}
+.pd-member-col::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.5) 70%,rgba(0,0,0,.85) 100%),linear-gradient(90deg,rgba(0,0,0,.5) 0%,transparent 35%);pointer-events:none;z-index:2}
 .pd-member-img{width:100%;height:100%;object-fit:cover;display:block}
 .pd-member-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:2.2rem;font-weight:800;color:rgba(255,255,255,.5);background:var(--photo-bg,#10233d);position:relative;z-index:1}
-.pd-member-name{position:absolute;left:0;top:0;bottom:0;z-index:3;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;padding:0 0 12px 8px;writing-mode:vertical-lr;transform:rotate(180deg);gap:4px;opacity:0;transition:opacity .4s ease,transform .4s ease;transform:rotate(180deg) translateX(6px)}
-.pd-member-col:hover .pd-member-name{opacity:1;transform:rotate(180deg) translateX(0)}
-.pd-member-name-big{font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:800;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.9);letter-spacing:1px;text-transform:uppercase}
-.pd-member-name-sub{font-family:'DM Sans',sans-serif;font-size:.52rem;color:rgba(255,255,255,.7);font-weight:600;letter-spacing:1px;text-shadow:0 2px 8px rgba(0,0,0,.8)}
+.pd-member-name{position:absolute;left:8px;top:0;bottom:10px;z-index:3;display:flex;flex-direction:column;justify-content:flex-end;gap:0}
+.pd-member-name-big{font-family:'DM Sans',sans-serif;font-size:.68rem;font-weight:800;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.9);letter-spacing:1px;text-transform:uppercase;writing-mode:vertical-lr;transform:rotate(180deg);line-height:1}
+.pd-member-name-sub{position:absolute;bottom:0;left:0;right:0;text-align:center;font-family:'DM Sans',sans-serif;font-size:.52rem;color:rgba(255,255,255,.8);font-weight:600;text-shadow:0 2px 8px rgba(0,0,0,.8);z-index:4;padding:6px 4px;writing-mode:horizontal-tb}
 .pd-member-leader-star{position:absolute;top:8px;right:8px;z-index:3;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;font-size:11px;box-shadow:0 2px 8px rgba(0,0,0,.3)}
 
 /* Info sections */

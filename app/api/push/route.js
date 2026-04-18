@@ -42,7 +42,7 @@ export async function POST(request) {
       const { data: subs } = await query
       if (!subs?.length) return Response.json({ success: true, sent: 0 })
 
-      const payload = JSON.stringify({ title: title || 'Project Space', body: msgBody || 'New notification', url: url || '/', type, teamNumber, stageNumber, tag: `ps-${Date.now()}`, actions: [{ action: 'view', title: 'View' }] })
+      const payload = JSON.stringify({ title: title || 'Project Space', body: msgBody || 'New notification', url: url || '/', type: type || 'general', teamNumber: teamNumber || null, stageNumber: stageNumber || null, tag: `ps-${type || 'notif'}-${teamNumber || ''}-${Date.now()}` })
       let sent = 0
       for (const sub of subs) {
         try { await webpush.sendNotification(JSON.parse(sub.subscription), payload); sent++ }
