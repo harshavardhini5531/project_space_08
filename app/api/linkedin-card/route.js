@@ -9,11 +9,42 @@ const supabase = createClient(
 // Fetch image from URL and convert to base64 data URI
 async function fetchImageAsDataUri(url) {
   try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(5000) })
-    if (!res.ok) return null
-    const buffer = Buffer.from(await res.arrayBuffer())
-    const contentType = res.headers.get('content-type') || 'image/jpeg'
-    return `data:${contentType};base64,${buffer.toString('base64')}`
+    // For technicalhub.io URLs that have SSL issues, use node's http/https with rejectUnauthorized: false
+    const https = await import('https')
+    const http = await import('http')
+    
+    return new Promise((resolve) => {
+      try {
+        const urlObj = new URL(url)
+        const client = urlObj.protocol === 'https:' ? https : http
+        const options = {
+          hostname: urlObj.hostname,
+          port: urlObj.port || (urlObj.protocol === 'https:' ? 443 : 80),
+          path: urlObj.pathname + urlObj.search,
+          method: 'GET',
+          rejectUnauthorized: false,
+          timeout: 5000
+        }
+        const req = client.request(options, (res) => {
+          if (res.statusCode !== 200) {
+            resolve(null)
+            return
+          }
+          const chunks = []
+          res.on('data', (chunk) => chunks.push(chunk))
+          res.on('end', () => {
+            const buffer = Buffer.concat(chunks)
+            const contentType = res.headers['content-type'] || 'image/jpeg'
+            resolve(`data:${contentType};base64,${buffer.toString('base64')}`)
+          })
+        })
+        req.on('error', () => resolve(null))
+        req.on('timeout', () => { req.destroy(); resolve(null) })
+        req.end()
+      } catch {
+        resolve(null)
+      }
+    })
   } catch {
     return null
   }
