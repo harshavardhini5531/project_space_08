@@ -1,9 +1,9 @@
 // app/linkedin-posting/page.js
 'use client'
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 
-export default function LinkedInPostingPage() {
+function LinkedInPostingInner() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [status, setStatus] = useState('Preparing your post...')
@@ -20,7 +20,6 @@ export default function LinkedInPostingPage() {
       ;(async () => {
         setStatus(`Welcome ${name}! Generating team card...`)
 
-        // Generate team card image
         let imageBase64 = null
         try {
           const cardRes = await fetch(`/api/linkedin-card?team=${teamNumber}`)
@@ -81,5 +80,17 @@ export default function LinkedInPostingPage() {
       </div>
       <style jsx global>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
+  )
+}
+
+export default function LinkedInPostingPage() {
+  return (
+    <Suspense fallback={
+      <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'#050008',color:'#fff'}}>
+        <div>Loading...</div>
+      </div>
+    }>
+      <LinkedInPostingInner />
+    </Suspense>
   )
 }
