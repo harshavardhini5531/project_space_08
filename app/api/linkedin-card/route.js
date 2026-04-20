@@ -207,7 +207,7 @@ export async function GET(request) {
       return new Response(png, {
         headers: {
           'Content-Type': 'image/png',
-          'Cache-Control': 'no-cache, no-store, must-revalidate'
+          'Cache-Control': 'public, max-age=86400, s-maxage=86400, immutable'
         }
       })
     } catch (err) {
@@ -215,7 +215,7 @@ export async function GET(request) {
       return new Response(svg, {
         headers: {
           'Content-Type': 'image/svg+xml',
-          'Cache-Control': 'no-cache, no-store, must-revalidate'
+          'Cache-Control': 'public, max-age=86400, s-maxage=86400, immutable'
         }
       })
     }

@@ -1380,7 +1380,7 @@ Grateful to Aditya University & Technical Hub for this amazing learning platform
 
   function postToLinkedIn() {
     const text = encodeURIComponent(liPost);
-    const showcaseUrl = `https://projectspace.technicalhub.io/showcase/${details.teamNumber}`;
+    const showcaseUrl = `https://projectspace.technicalhub.io/showcase/${details.teamNumber}?v=3`;
     const url = encodeURIComponent(showcaseUrl);
     // Open LinkedIn share composer with URL (LinkedIn auto-scrapes OG image from showcase page)
     // User can edit text, add @mentions, and post — image appears as rich preview card
