@@ -215,7 +215,7 @@ export async function GET(request) {
       return new Response(svg, {
         headers: {
           'Content-Type': 'image/svg+xml',
-          'Cache-Control': 'public, max-age=3600'
+          'Cache-Control': 'no-cache, no-store, must-revalidate'
         }
       })
     }
