@@ -1347,7 +1347,8 @@ function ProjectDetails({ user }) {
   return (
     <div className="pd-wrap">
       <style>{`
-.pd-wrap{display:flex;flex-direction:column;gap:16px;animation:pdIn .5s ease both;}
+.pd-wrap{display:flex;flex-direction:column;gap:16px;animation:pdIn .5s ease both;position:relative}
+.pd-sticky-top{position:sticky;top:0;z-index:50;background:#050008;padding-bottom:12px;margin-bottom:-4px}
 @keyframes pdIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 
 /* Tech tabs */
@@ -1369,13 +1370,13 @@ function ProjectDetails({ user }) {
 .pd-show-hdr-inner{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
 .pd-show-hdr-left{flex:1;min-width:0}
 .pd-show-mentor{display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0;align-self:flex-start;margin-top:-4px}
-.pd-show-mentor-photo{width:80px;height:80px;border-radius:50%;overflow:hidden;flex-shrink:0;position:relative;background:#1a1a1a;padding:2.5px;background-image:linear-gradient(#1a1a1a,#1a1a1a),linear-gradient(135deg,#fd1c00,#EEA727);background-origin:border-box;background-clip:content-box,border-box;border:2.5px solid transparent}
+.pd-show-mentor-photo{width:80px;height:80px;border-radius:50%;overflow:hidden;flex-shrink:0;position:relative;background:#1a1a1a;padding:1.5px;background-image:linear-gradient(#1a1a1a,#1a1a1a),linear-gradient(135deg,#4ade80,#10b981);background-origin:border-box;background-clip:content-box,border-box;border:1.5px solid transparent}
 .pd-show-mentor-photo>img,.pd-show-mentor-photo>.pd-show-mentor-fallback{border-radius:50%;width:100%;height:100%}
 .pd-show-mentor-photo img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
 .pd-show-mentor-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:700;color:#EEA727;background:rgba(238,167,39,.08)}
 .pd-show-mentor-info{display:flex;flex-direction:column;align-items:center;min-width:0}
 .pd-show-mentor-label{display:none}
-.pd-show-mentor-name{font-family:'Astro','Orbitron',sans-serif;font-size:.6rem;font-weight:700;color:rgba(255,255,255,.85);line-height:1.25;text-align:center;text-transform:uppercase;letter-spacing:1px;max-width:160px;word-wrap:break-word;white-space:normal;text-shadow:0 2px 8px rgba(0,0,0,.5)}
+.pd-show-mentor-name{font-family:'DM Sans',sans-serif;font-size:.62rem;font-weight:600;color:rgba(255,255,255,.7);line-height:1.2;text-align:center;text-transform:uppercase;letter-spacing:.3px;max-width:200px;word-wrap:break-word;white-space:normal}
 .pd-show-hdr::before{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 0%,transparent 40%,rgba(253,28,0,.08) 50%,rgba(238,167,39,.12) 55%,rgba(255,255,255,.08) 60%,transparent 70%,transparent 100%);background-size:200% 100%;animation:shinyWave 4s linear infinite;pointer-events:none}
 .pd-show-hdr::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 50%,rgba(253,28,0,.04),transparent 50%),radial-gradient(circle at 70% 50%,rgba(238,167,39,.04),transparent 50%);pointer-events:none;animation:glowShift 6s ease-in-out infinite}
 @keyframes shinyWave{0%{background-position:-100% 0}100%{background-position:200% 0}}
@@ -1417,7 +1418,12 @@ function ProjectDetails({ user }) {
 .pd-chip.area{background:rgba(238,167,39,.08);border-color:rgba(238,167,39,.25);color:#EEA727}
 
 /* Right sidebar — project list */
-.pd-sidebar{background:rgba(12,6,20,.6);border:1px solid rgba(255,255,255,.06);border-radius:18px;display:flex;flex-direction:column;overflow:hidden;max-height:calc(100vh - 180px)}
+</button>
+        ))}
+      </div>.pd-sidebar{background:rgba(12,6,20,.6);border:1px solid rgba(255,255,255,.06);border-radius:18px;display:flex;flex-direction:column;overflow:hidden;max-height:calc(100vh - 120px);position:sticky;top:80px}
+      </div>
+
+      <div className="pd-main">
 .pd-sidebar-hdr{padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.05);flex-shrink:0}
 .pd-sidebar-title{font-size:.72rem;font-weight:700;color:rgba(255,255,255,.9);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px}
 .pd-search-wrap{position:relative;display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
@@ -1485,6 +1491,7 @@ function ProjectDetails({ user }) {
       `}</style>
 
       {/* Technology Tabs */}
+      <div className="pd-sticky-top">
       <div className="pd-tech-tabs">
         {technologies.map(tech => (
           <button
@@ -1497,6 +1504,7 @@ function ProjectDetails({ user }) {
             {tech === 'all' ? `All (${projects.length})` : `${tech} (${projects.filter(p=>p.technology===tech).length})`}
           </button>
         ))}
+      </div>
       </div>
 
       <div className="pd-main">
@@ -1558,8 +1566,8 @@ function ProjectDetails({ user }) {
                       </div>
                       <div className="pd-member-name">
                         <div className="pd-member-name-big">{(m.name || m.rollNumber).split(' ').slice(0,2).join(' ')}</div>
-                        <div className="pd-member-name-sub">{m.rollNumber}</div>
                       </div>
+                      <div className="pd-member-roll-rt">{m.rollNumber}</div>
                     </div>
                   ))}
                 </div>
