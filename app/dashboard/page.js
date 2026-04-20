@@ -1368,11 +1368,11 @@ function ProjectDetails({ user }) {
 .pd-show-hdr{padding:16px 28px 20px;background:linear-gradient(135deg,#1a1a1a 0%,#2d2d2d 50%,#0a0a0a 100%);position:relative;overflow:hidden}
 .pd-show-hdr-inner{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
 .pd-show-hdr-left{flex:1;min-width:0}
-.pd-show-mentor{display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0;align-self:flex-start;margin-top:-4px}
-.pd-show-mentor-photo{width:80px;height:80px;border-radius:50%;overflow:visible;flex-shrink:0;position:relative;background:linear-gradient(135deg,#1a1a1a 0%,#2d2d2d 50%,#0a0a0a 100%);box-shadow:0 0 16px 2px rgba(238,167,39,.3),0 0 20px 3px rgba(74,222,128,.2),0 0 24px 4px rgba(168,85,247,.2);animation:mentorGlow 3s ease-in-out infinite}
-.pd-show-mentor-photo::before{content:'';position:absolute;inset:-4px;border-radius:50%;background:conic-gradient(from 0deg,transparent 0deg,rgba(238,167,39,.8) 60deg,transparent 120deg,rgba(74,222,128,.8) 180deg,transparent 240deg,rgba(168,85,247,.8) 300deg,transparent 360deg);animation:mentorRotate 4s linear infinite;z-index:-1;filter:blur(3px);opacity:.85}
+.pd-show-mentor{display:flex;flex-direction:column;align-items:center;gap:14px;flex-shrink:0;align-self:flex-start;margin-top:-4px}
+.pd-show-mentor-photo{width:80px;height:80px;border-radius:50%;overflow:visible;flex-shrink:0;position:relative;background:linear-gradient(135deg,#1a1a1a 0%,#2d2d2d 50%,#0a0a0a 100%);box-shadow:0 0 8px rgba(238,167,39,.8),0 0 14px rgba(74,222,128,.6),0 0 20px rgba(168,85,247,.5);animation:mentorGlow 3s ease-in-out infinite}
+.pd-show-mentor-photo::before{content:'';position:absolute;inset:-3px;border-radius:50%;padding:2px;background:conic-gradient(from 0deg,#EEA727 0deg,#4ade80 120deg,#a855f7 240deg,#EEA727 360deg);animation:mentorRotate 4s linear infinite;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;z-index:-1}
 .pd-show-mentor-photo>img,.pd-show-mentor-photo>.pd-show-mentor-fallback{border-radius:50%;width:100%;height:100%;position:relative;z-index:1}
-@keyframes mentorGlow{0%,100%{box-shadow:0 0 16px 2px rgba(238,167,39,.3),0 0 20px 3px rgba(74,222,128,.2),0 0 24px 4px rgba(168,85,247,.2)}50%{box-shadow:0 0 22px 4px rgba(238,167,39,.45),0 0 28px 5px rgba(74,222,128,.3),0 0 34px 6px rgba(168,85,247,.3)}}
+@keyframes mentorGlow{0%,100%{box-shadow:0 0 8px rgba(238,167,39,.8),0 0 14px rgba(74,222,128,.6),0 0 20px rgba(168,85,247,.5)}50%{box-shadow:0 0 12px rgba(238,167,39,1),0 0 18px rgba(74,222,128,.8),0 0 26px rgba(168,85,247,.7)}}
 @keyframes mentorRotate{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 .pd-show-mentor-photo img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
 .pd-show-mentor-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:700;color:#EEA727;background:rgba(238,167,39,.08)}
@@ -1401,7 +1401,7 @@ function ProjectDetails({ user }) {
 .pd-member-name{position:absolute;left:8px;top:0;bottom:10px;z-index:3;display:flex;flex-direction:column;justify-content:flex-end;gap:0}
 .pd-member-name-big{font-family:'Astro','Orbitron',sans-serif;font-size:.56rem;font-weight:800;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.95),0 0 8px rgba(253,28,0,.3);letter-spacing:2px;text-transform:uppercase;writing-mode:vertical-lr;transform:rotate(180deg);line-height:1}
 .pd-member-name-sub{display:none}
-.pd-member-roll-rt{position:absolute;bottom:0;right:6px;z-index:5;font-family:'Astro','Orbitron',sans-serif;font-size:.5rem;color:rgba(255,255,255,.85);font-weight:700;letter-spacing:1.5px;text-shadow:0 2px 10px rgba(0,0,0,1)}
+.pd-member-roll-rt{position:absolute;bottom:20px;right:6px;z-index:5;font-family:'Astro','Orbitron',sans-serif;font-size:.5rem;color:rgba(255,255,255,.85);font-weight:700;letter-spacing:1.5px;text-shadow:0 2px 10px rgba(0,0,0,1)}
 .pd-member-leader-star{position:absolute;top:8px;left:8px;z-index:4;width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#EEA727,#fd1c00);display:flex;align-items:center;justify-content:center;font-size:12px;box-shadow:0 2px 12px rgba(238,167,39,.5),0 0 0 2px rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.2)}
 
 /* Info sections */
@@ -1552,7 +1552,7 @@ function ProjectDetails({ user }) {
                 <div className="pd-members-strip">
                   {details.members.map((m, i) => (
                     <div key={m.rollNumber||i} className="pd-member-col">
-                      {m.isLeader && <div className="pd-member-leader-star">👑</div>}
+                      {m.isLeader && <div className="pd-member-leader-star"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
                       {m.imageUrl ? (
                         <img className="pd-member-img" src={m.imageUrl} alt={m.name} onError={e=>{e.target.style.display='none';e.target.nextElementSibling.style.display='flex'}}/>
                       ) : null}
