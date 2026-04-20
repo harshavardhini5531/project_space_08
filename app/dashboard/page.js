@@ -1342,39 +1342,84 @@ function ProjectDetails({ user }) {
   // Generate LinkedIn post from project data
   function generatePost(d, extraSuggestion = '') {
     if (!d) return '';
-    const members = (d.members || []).map(m => m.name).filter(Boolean).join(', ');
-    const techStack = (d.techStack || []).join(', ');
-    const projectArea = (d.projectArea || []).join(', ');
-    const aiTools = (d.aiTools || []).join(', ');
-    const aiLine = d.aiUsage === 'Yes' && d.aiCapabilities ? `\n\n🤖 AI Integration: ${d.aiCapabilities}${aiTools ? ` (using ${aiTools})` : ''}` : '';
-    const mentorLine = d.mentorDetails?.name ? `\n\n👨‍🏫 Proudly mentored by ${d.mentorDetails.name}` : '';
-    const areaLine = projectArea ? `\n🎯 Project Area: ${projectArea}` : '';
-    const techLine = techStack ? `\n🔧 Tech Stack: ${techStack}` : '';
 
-    const post = `🚀 Excited to share our Project Space hackathon project: ${d.projectTitle}
+    // Get all members except the current user (current user is posting from their account)
+    const currentUserRoll = (typeof window !== 'undefined' ? localStorage.getItem('rollNumber') : '') || '';
+    const otherMembers = (d.members || []).filter(m => m.rollNumber !== currentUserRoll);
+    const memberNames = otherMembers.map(m => m.name).filter(Boolean);
 
-${d.projectDescription || d.problemStatement || 'Building innovative solutions as part of Project Space at Aditya University.'}
-${techLine}${areaLine}${aiLine}${mentorLine}
+    const techStack = (d.techStack || []).join(' · ');
+    const projectArea = (d.projectArea || []).join(' · ');
+    const aiIntegration = d.aiUsage === 'Yes' && d.aiCapabilities
+      ? d.aiCapabilities + (d.aiTools?.length ? ` (powered by ${d.aiTools.join(', ')})` : '')
+      : null;
 
-👥 Team (${d.teamNumber}): ${members}
+    const mentor = d.mentorDetails?.name || d.mentor || '';
 
-Grateful to Aditya University & Technical Hub for this amazing learning platform!${extraSuggestion ? '\n\n' + extraSuggestion : ''}
+    // Build member acknowledgement section (bold names for easy LinkedIn tagging)
+    let teamLine = '';
+    if (memberNames.length > 0) {
+      const names = memberNames.map(n => `𝗯𝗴:${n}`).join(', '); // placeholder — will use Unicode bold
+      teamLine = `\n\n🤝 𝗧𝗲𝗮𝗺 𝗧𝗵𝗮𝘁 𝗕𝘂𝗶𝗹𝘁 𝗧𝗵𝗶𝘀:\n` + memberNames.map(n => `• ${toBold(n)}`).join('\n');
+    }
 
-#ProjectSpace #AdityaUniversity #TechnicalHub #Hackathon #${(d.technology || '').replace(/\s+/g, '')} #StudentInnovation`;
+    const mentorLine = mentor ? `\n\n🎓 𝗠𝗲𝗻𝘁𝗼𝗿𝗲𝗱 𝗯𝘆: ${toBold(mentor)}` : '';
+    const techLine = techStack ? `\n\n💻 𝗧𝗲𝗰𝗵 𝗦𝘁𝗮𝗰𝗸: ${techStack}` : '';
+    const areaLine = projectArea ? `\n🎯 𝗗𝗼𝗺𝗮𝗶𝗻: ${projectArea}` : '';
+    const aiLine = aiIntegration ? `\n🤖 𝗔𝗜 𝗜𝗻𝘁𝗲𝗴𝗿𝗮𝘁𝗶𝗼𝗻: ${aiIntegration}` : '';
+
+    const projectDesc = d.projectDescription || d.problemStatement || '';
+
+    const post = `🚀 𝗘𝘅𝗰𝗶𝘁𝗲𝗱 𝘁𝗼 𝘀𝗵𝗮𝗿𝗲 𝗼𝘂𝗿 𝗣𝗿𝗼𝗷𝗲𝗰𝘁 𝗦𝗽𝗮𝗰𝗲 𝗵𝗮𝗰𝗸𝗮𝘁𝗵𝗼𝗻 𝗽𝗿𝗼𝗷𝗲𝗰𝘁
+
+✨ ${toBold(d.projectTitle || 'Our Project')}
+
+📖 𝗔𝗯𝗼𝘂𝘁 𝘁𝗵𝗲 𝗣𝗿𝗼𝗷𝗲𝗰𝘁:
+${projectDesc}${techLine}${areaLine}${aiLine}${teamLine}${mentorLine}
+
+🏛️ 𝗛𝗼𝘀𝘁𝗲𝗱 𝗮𝘁: ${toBold('Aditya University')}
+⚡ 𝗣𝗼𝘄𝗲𝗿𝗲𝗱 𝗯𝘆: ${toBold('Technical Hub')}
+👨‍💼 𝗖𝗘𝗢, 𝗧𝗲𝗰𝗵𝗻𝗶𝗰𝗮𝗹 𝗛𝘂𝗯: ${toBold('Babji Neelam')}
+
+💡 Grateful for this incredible opportunity to innovate, collaborate, and build something meaningful alongside a passionate team.${extraSuggestion ? '\n\n' + extraSuggestion : ''}
+
+#ProjectSpace #TechnicalHub #Hackathon #Innovation #${(d.technology || 'Tech').replace(/\s+/g, '')} #StudentDeveloper #BuildInPublic`;
 
     return post;
   }
 
-  function openLinkedInModal() {
+  async function openLinkedInModal() {
     if (!details) return;
-    setLiPost(generatePost(details));
+    setLiPost(generatePost(details, '', 'Generating unique intro...'));
     setLiSuggestion('');
     setLiModal(true);
+    
+    // Fetch AI-generated excitement intro
+    try {
+      const res = await fetch('/api/linkedin-intro', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectTitle: details.projectTitle,
+          technology: details.technology,
+          projectArea: (details.projectArea || []).join(', '),
+          studentName: typeof window !== 'undefined' ? localStorage.getItem('studentName') : ''
+        })
+      });
+      const data = await res.json();
+      if (data?.intro) {
+        setLiPost(generatePost(details, '', data.intro));
+      }
+    } catch (e) {
+      setLiPost(generatePost(details));
+    }
   }
 
   function addSuggestion() {
     if (!liSuggestion.trim()) return;
-    setLiPost(generatePost(details, liSuggestion));
+    // Extract current intro from post (first 2 lines before project title emoji)
+    const currentIntro = liPost.split('\n\n✨')[0] || '';
+    setLiPost(generatePost(details, liSuggestion, currentIntro));
     setLiSuggestion('');
   }
 
