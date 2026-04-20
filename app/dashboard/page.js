@@ -1362,7 +1362,7 @@ function ProjectDetails({ user }) {
 .pd-main{display:grid;grid-template-columns:1fr 340px;gap:16px;min-height:0}
 
 /* Showcase */
-.pd-showcase{background:#0c0614;border:1px solid rgba(255,255,255,.06);border-radius:18px;overflow:hidden;position:relative;min-height:560px;display:flex;flex-direction:column}
+.pd-showcase{background:#0c0614;border:1px solid rgba(255,255,255,.06);border-radius:18px;overflow:hidden;position:relative;height:calc(100vh - 100px);display:flex;flex-direction:column}
 
 /* Header with gradient */
 .pd-show-hdr{padding:16px 28px 20px;background:linear-gradient(135deg,#1a1a1a 0%,#2d2d2d 50%,#0a0a0a 100%);position:relative;overflow:hidden}
@@ -1398,11 +1398,13 @@ function ProjectDetails({ user }) {
 .pd-member-name{position:absolute;left:8px;top:0;bottom:10px;z-index:3;display:flex;flex-direction:column;justify-content:flex-end;gap:0}
 .pd-member-name-big{font-family:'Astro','Orbitron',sans-serif;font-size:.56rem;font-weight:800;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.95),0 0 8px rgba(253,28,0,.3);letter-spacing:2px;text-transform:uppercase;writing-mode:vertical-lr;transform:rotate(180deg);line-height:1}
 .pd-member-name-sub{display:none}
-.pd-member-roll-rt{position:absolute;bottom:13px;right:8px;z-index:5;font-family:'Astro','Orbitron',sans-serif;font-size:.5rem;color:rgba(255,255,255,.85);font-weight:700;letter-spacing:1.5px;text-shadow:0 2px 10px rgba(0,0,0,1)}
+.pd-member-roll-rt{position:absolute;bottom:3px;right:8px;z-index:5;font-family:'Astro','Orbitron',sans-serif;font-size:.5rem;color:rgba(255,255,255,.85);font-weight:700;letter-spacing:1.5px;text-shadow:0 2px 10px rgba(0,0,0,1)}
 .pd-member-leader-star{position:absolute;top:8px;left:8px;z-index:4;width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#EEA727,#fd1c00);display:flex;align-items:center;justify-content:center;font-size:12px;box-shadow:0 2px 12px rgba(238,167,39,.5),0 0 0 2px rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.2)}
 
 /* Info sections */
-.pd-info-sections{padding:22px 32px 28px;display:flex;flex-direction:column;gap:18px;flex:1}
+.pd-info-sections{padding:22px 32px 28px;display:flex;flex-direction:column;gap:18px;flex:1;overflow-y:auto}
+.pd-info-sections::-webkit-scrollbar{width:4px}
+.pd-info-sections::-webkit-scrollbar-thumb{background:rgba(253,28,0,.15);border-radius:4px}
 .pd-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .pd-info-card{padding:16px 18px;border-radius:12px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06)}
 .pd-info-title{font-size:.58rem;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px}
@@ -1419,8 +1421,7 @@ function ProjectDetails({ user }) {
 /* Right sidebar — project list */
 </button>
         ))}
-      </div>.pd-sidebar{background:rgba(12,6,20,.6);border:1px solid rgba(255,255,255,.06);border-radius:18px;display:flex;flex-direction:column;overflow:hidden;align-self:start;max-height:100%}
-.pd-main{align-items:stretch}
+      </div>.pd-sidebar{background:rgba(12,6,20,.6);border:1px solid rgba(255,255,255,.06);border-radius:18px;display:flex;flex-direction:column;overflow:hidden;position:sticky;top:20px;height:calc(100vh - 100px)}
       </div>
 
       <div className="pd-main">
@@ -1491,7 +1492,7 @@ function ProjectDetails({ user }) {
       `}</style>
 
       {/* Technology Tabs */}
-      <div className="pd-tech-tabs" style={{position:'sticky',top:0,zIndex:100,background:'#050008',padding:'8px 0'}}>
+      <div className="pd-tech-tabs">
         {technologies.map(tech => (
           <button
             key={tech}
