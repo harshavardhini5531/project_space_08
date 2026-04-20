@@ -1369,7 +1369,7 @@ function ProjectDetails({ user }) {
 .pd-show-hdr-inner{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
 .pd-show-hdr-left{flex:1;min-width:0}
 .pd-show-mentor{display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0;align-self:flex-start;margin-top:-4px}
-.pd-show-mentor-photo{width:80px;height:80px;border-radius:50%;overflow:hidden;flex-shrink:0;position:relative;background:#1a1a1a;padding:1.5px;background-image:linear-gradient(#1a1a1a,#1a1a1a),linear-gradient(135deg,#4ade80,#10b981);background-origin:border-box;background-clip:content-box,border-box;border:1.5px solid transparent}
+.pd-show-mentor-photo{width:80px;height:80px;border-radius:50%;overflow:hidden;flex-shrink:0;position:relative;background:#1a1a1a;padding:1px;background-image:linear-gradient(#1a1a1a,#1a1a1a),linear-gradient(135deg,#8a8a8a,#ffffff,#8a8a8a);background-origin:border-box;background-clip:content-box,border-box;border:1px solid transparent}
 .pd-show-mentor-photo>img,.pd-show-mentor-photo>.pd-show-mentor-fallback{border-radius:50%;width:100%;height:100%}
 .pd-show-mentor-photo img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
 .pd-show-mentor-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:700;color:#EEA727;background:rgba(238,167,39,.08)}
@@ -1398,7 +1398,7 @@ function ProjectDetails({ user }) {
 .pd-member-name{position:absolute;left:8px;top:0;bottom:10px;z-index:3;display:flex;flex-direction:column;justify-content:flex-end;gap:0}
 .pd-member-name-big{font-family:'Astro','Orbitron',sans-serif;font-size:.56rem;font-weight:800;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.95),0 0 8px rgba(253,28,0,.3);letter-spacing:2px;text-transform:uppercase;writing-mode:vertical-lr;transform:rotate(180deg);line-height:1}
 .pd-member-name-sub{display:none}
-.pd-member-roll-rt{position:absolute;bottom:8px;right:8px;z-index:5;font-family:'DM Sans',sans-serif;font-size:.5rem;color:rgba(255,255,255,.85);font-weight:700;letter-spacing:1px;text-shadow:0 2px 10px rgba(0,0,0,1)}
+.pd-member-roll-rt{position:absolute;bottom:13px;right:8px;z-index:5;font-family:'Astro','Orbitron',sans-serif;font-size:.5rem;color:rgba(255,255,255,.85);font-weight:700;letter-spacing:1.5px;text-shadow:0 2px 10px rgba(0,0,0,1)}
 .pd-member-leader-star{position:absolute;top:8px;left:8px;z-index:4;width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#EEA727,#fd1c00);display:flex;align-items:center;justify-content:center;font-size:12px;box-shadow:0 2px 12px rgba(238,167,39,.5),0 0 0 2px rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.2)}
 
 /* Info sections */
@@ -1491,7 +1491,7 @@ function ProjectDetails({ user }) {
       `}</style>
 
       {/* Technology Tabs */}
-      <div className="pd-tech-tabs">
+      <div className="pd-tech-tabs" style={{position:'sticky',top:0,zIndex:100,background:'#050008',padding:'8px 0'}}>
         {technologies.map(tech => (
           <button
             key={tech}
