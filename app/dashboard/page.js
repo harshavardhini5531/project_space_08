@@ -1400,37 +1400,75 @@ ${projectDesc}${techLine}${areaLine}${aiLine}${teamLine}${mentorLine}
 
   async function openLinkedInModal() {
     if (!details) return;
-    setLiPost(generatePost(details, '', 'Generating unique intro...'));
+    setLiPost('⏳ Generating your personalized LinkedIn post...\n\nThis takes a few seconds. Our AI is crafting something unique for your project.');
     setLiSuggestion('');
     setLiModal(true);
-    
-    // Fetch AI-generated excitement intro
+
+    const currentUserRoll = typeof window !== 'undefined' ? localStorage.getItem('rollNumber') : '';
+    const otherMembers = (details.members || []).filter(m => m.rollNumber !== currentUserRoll);
+    const memberNames = otherMembers.map(m => m.name).filter(Boolean);
+
     try {
       const res = await fetch('/api/linkedin-intro', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           projectTitle: details.projectTitle,
+          projectDescription: details.projectDescription || details.problemStatement,
           technology: details.technology,
           projectArea: (details.projectArea || []).join(', '),
+          techStack: details.techStack,
+          aiCapabilities: details.aiUsage === 'Yes' ? details.aiCapabilities : '',
+          aiTools: details.aiTools || [],
+          memberNames,
+          mentorName: details.mentorDetails?.name || details.mentor,
           studentName: typeof window !== 'undefined' ? localStorage.getItem('studentName') : ''
         })
       });
       const data = await res.json();
-      if (data?.intro) {
-        setLiPost(generatePost(details, '', data.intro));
+      if (data?.post) {
+        setLiPost(data.post);
+      } else {
+        setLiPost(generatePost(details));
       }
     } catch (e) {
+      console.error('AI post generation failed:', e);
       setLiPost(generatePost(details));
     }
   }
 
-  function addSuggestion() {
-    if (!liSuggestion.trim()) return;
-    // Extract current intro from post (first 2 lines before project title emoji)
-    const currentIntro = liPost.split('\n\n✨')[0] || '';
-    setLiPost(generatePost(details, liSuggestion, currentIntro));
+  async function addSuggestion() {
+    if (!liSuggestion.trim() || !details) return;
+    const suggestion = liSuggestion.trim();
     setLiSuggestion('');
+    setLiPost(liPost + '\n\n⏳ Applying your suggestion...');
+
+    const currentUserRoll = typeof window !== 'undefined' ? localStorage.getItem('rollNumber') : '';
+    const otherMembers = (details.members || []).filter(m => m.rollNumber !== currentUserRoll);
+    const memberNames = otherMembers.map(m => m.name).filter(Boolean);
+
+    try {
+      const res = await fetch('/api/linkedin-intro', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectTitle: details.projectTitle,
+          projectDescription: (details.projectDescription || details.problemStatement || '') + `\n\nADDITIONAL INSTRUCTIONS FROM USER: ${suggestion}`,
+          technology: details.technology,
+          projectArea: (details.projectArea || []).join(', '),
+          techStack: details.techStack,
+          aiCapabilities: details.aiUsage === 'Yes' ? details.aiCapabilities : '',
+          aiTools: details.aiTools || [],
+          memberNames,
+          mentorName: details.mentorDetails?.name || details.mentor,
+          studentName: typeof window !== 'undefined' ? localStorage.getItem('studentName') : ''
+        })
+      });
+      const data = await res.json();
+      if (data?.post) setLiPost(data.post);
+    } catch (e) {
+      console.error('Suggestion apply failed:', e);
+    }
   }
 
   function postToLinkedIn() {
@@ -1840,7 +1878,7 @@ ${projectDesc}${techLine}${areaLine}${aiLine}${teamLine}${mentorLine}
               <span>Clicking "Post" opens LinkedIn's post editor with your text and team card image pre-loaded. You can edit, add @mentions, and click Post on LinkedIn to publish.</span>
             </div>
             <div className="pd-li-ftr">
-              <button className="pd-li-regen-btn" onClick={() => setLiPost(generatePost(details))}>Regenerate</button>
+              <button className="pd-li-regen-btn" onClick={openLinkedInModal}>🔄 Regenerate with AI</button>
               <button className="pd-li-post-btn" onClick={postToLinkedIn}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
                 Post to LinkedIn
