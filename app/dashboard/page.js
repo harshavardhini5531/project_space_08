@@ -1274,6 +1274,9 @@ function ProjectDetails({ user }) {
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [activeTech, setActiveTech] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [liModal, setLiModal] = useState(false);
+  const [liPost, setLiPost] = useState('');
+  const [liSuggestion, setLiSuggestion] = useState('');
 
   const myTeamNumber = user?.teamNumber || '';
 
@@ -1336,6 +1339,50 @@ function ProjectDetails({ user }) {
 
   const getTechColor = (tech) => TECH_COLORS[tech] || '#fd1c00';
 
+  // Generate LinkedIn post from project data
+  function generatePost(d, extraSuggestion = '') {
+    if (!d) return '';
+    const members = (d.members || []).map(m => m.name).filter(Boolean).join(', ');
+    const techStack = (d.techStack || []).join(', ');
+    const projectArea = (d.projectArea || []).join(', ');
+    const aiTools = (d.aiTools || []).join(', ');
+    const aiLine = d.aiUsage === 'Yes' && d.aiCapabilities ? `\n\n🤖 AI Integration: ${d.aiCapabilities}${aiTools ? ` (using ${aiTools})` : ''}` : '';
+    const mentorLine = d.mentorDetails?.name ? `\n\n👨‍🏫 Proudly mentored by ${d.mentorDetails.name}` : '';
+    const areaLine = projectArea ? `\n🎯 Project Area: ${projectArea}` : '';
+    const techLine = techStack ? `\n🔧 Tech Stack: ${techStack}` : '';
+
+    const post = `🚀 Excited to share our Project Space hackathon project: ${d.projectTitle}
+
+${d.projectDescription || d.problemStatement || 'Building innovative solutions as part of Project Space at Aditya University.'}
+${techLine}${areaLine}${aiLine}${mentorLine}
+
+👥 Team (${d.teamNumber}): ${members}
+
+Grateful to Aditya University & Technical Hub for this amazing learning platform!${extraSuggestion ? '\n\n' + extraSuggestion : ''}
+
+#ProjectSpace #AdityaUniversity #TechnicalHub #Hackathon #${(d.technology || '').replace(/\s+/g, '')} #StudentInnovation`;
+
+    return post;
+  }
+
+  function openLinkedInModal() {
+    if (!details) return;
+    setLiPost(generatePost(details));
+    setLiSuggestion('');
+    setLiModal(true);
+  }
+
+  function addSuggestion() {
+    if (!liSuggestion.trim()) return;
+    setLiPost(generatePost(details, liSuggestion));
+    setLiSuggestion('');
+  }
+
+  function postToLinkedIn() {
+    const text = encodeURIComponent(liPost);
+    window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${text}`, '_blank');
+  }
+
   if (loading) {
     return (
       <div style={{display:'flex',alignItems:'center',justifyContent:'center',minHeight:'60vh',color:'rgba(255,255,255,.3)',fontSize:'.8rem'}}>
@@ -1385,7 +1432,38 @@ function ProjectDetails({ user }) {
 @keyframes glowShift{0%,100%{opacity:.6}50%{opacity:1}}
 .pd-show-meta{display:flex;align-items:center;gap:10px;margin-bottom:22px;font-family:'DM Sans',sans-serif}
 .pd-show-badge{padding:6px 14px;border-radius:8px;background:linear-gradient(135deg,rgba(253,28,0,.2),rgba(238,167,39,.15));backdrop-filter:blur(10px);border:1px solid rgba(253,28,0,.35);font-size:.66rem;font-weight:800;letter-spacing:2px;color:#fff;font-family:'DM Sans',sans-serif}
-.pd-show-tech{padding:6px 14px;border-radius:8px;background:rgba(255,255,255,.95);color:#fd1c00;font-size:.62rem;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;font-family:'DM Sans',sans-serif;box-shadow:0 4px 16px rgba(255,255,255,.08)}
+.pd-li-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;background:linear-gradient(135deg,#0077b5,#00a0dc);border:none;color:#fff;font-size:.62rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .25s;box-shadow:0 4px 14px rgba(0,119,181,.3)}
+.pd-li-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,119,181,.5)}
+.pd-li-btn svg{flex-shrink:0}
+
+/* LinkedIn Modal */
+.pd-li-modal-bg{position:fixed;inset:0;background:rgba(5,0,8,.85);z-index:9999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);animation:liFadeIn .3s ease}
+@keyframes liFadeIn{from{opacity:0}to{opacity:1}}
+.pd-li-modal{background:#13101a;border:1px solid rgba(0,119,181,.25);border-radius:18px;width:92%;max-width:560px;max-height:90vh;overflow-y:auto;animation:liSlideIn .4s cubic-bezier(.16,1,.3,1);box-shadow:0 20px 80px rgba(0,0,0,.6)}
+@keyframes liSlideIn{from{opacity:0;transform:translateY(28px) scale(.94)}to{opacity:1;transform:translateY(0) scale(1)}}
+.pd-li-hdr{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid rgba(255,255,255,.05)}
+.pd-li-hdr-left{display:flex;align-items:center;gap:10px}
+.pd-li-hdr-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#0077b5,#00a0dc);display:flex;align-items:center;justify-content:center;color:#fff}
+.pd-li-hdr-title{font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:700;color:#fff}
+.pd-li-hdr-sub{font-family:'DM Sans',sans-serif;font-size:.65rem;color:rgba(255,255,255,.35);margin-top:2px}
+.pd-li-close{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.5);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s}
+.pd-li-close:hover{background:rgba(255,255,255,.08);color:#fff}
+.pd-li-body{padding:20px 22px}
+.pd-li-textarea{width:100%;min-height:220px;padding:14px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);color:#fff;font-family:'DM Sans',sans-serif;font-size:.8rem;line-height:1.5;resize:vertical;outline:none;transition:border-color .2s}
+.pd-li-textarea:focus{border-color:rgba(0,119,181,.4)}
+.pd-li-sub-label{font-family:'DM Sans',sans-serif;font-size:.58rem;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin:16px 0 8px}
+.pd-li-input-row{display:flex;gap:8px}
+.pd-li-input{flex:1;padding:10px 14px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);color:#fff;font-family:'DM Sans',sans-serif;font-size:.78rem;outline:none;transition:border-color .2s}
+.pd-li-input:focus{border-color:rgba(0,119,181,.4)}
+.pd-li-input::placeholder{color:rgba(255,255,255,.25)}
+.pd-li-add-btn{padding:10px 18px;border-radius:10px;background:rgba(0,119,181,.1);border:1px solid rgba(0,119,181,.25);color:#00a0dc;font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap}
+.pd-li-add-btn:hover{background:rgba(0,119,181,.2);border-color:rgba(0,119,181,.4)}
+.pd-li-ftr{display:flex;gap:10px;justify-content:flex-end;padding:16px 22px;border-top:1px solid rgba(255,255,255,.05)}
+.pd-li-regen-btn{padding:10px 18px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.7);font-family:'DM Sans',sans-serif;font-size:.74rem;font-weight:600;cursor:pointer;transition:all .2s}
+.pd-li-regen-btn:hover{background:rgba(255,255,255,.08);color:#fff}
+.pd-li-post-btn{display:flex;align-items:center;gap:8px;padding:10px 22px;border-radius:10px;background:linear-gradient(135deg,#0077b5,#00a0dc);border:none;color:#fff;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;transition:all .25s;box-shadow:0 4px 16px rgba(0,119,181,.3)}
+.pd-li-post-btn:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(0,119,181,.5)}
+.pd-li-note{font-family:'DM Sans',sans-serif;font-size:.62rem;color:rgba(255,255,255,.3);padding:10px 22px;border-top:1px solid rgba(255,255,255,.05);display:flex;align-items:center;gap:6px;line-height:1.5}
 .pd-show-title{font-family:'Astro','Orbitron',sans-serif;font-size:1.5rem;font-weight:800;color:#fff;line-height:1.15;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;word-break:break-word;word-spacing:6px;text-shadow:0 2px 20px rgba(238,167,39,.3),0 0 40px rgba(253,28,0,.15)}
 .pd-show-sub{font-size:.8rem;color:rgba(255,255,255,.75);font-weight:500;font-family:'DM Sans',sans-serif;letter-spacing:.3px}
 
@@ -1525,6 +1603,10 @@ function ProjectDetails({ user }) {
                     <div className="pd-show-meta">
                       <span className="pd-show-badge">{details.teamNumber}</span>
                       <span className="pd-show-tech" style={{background: getTechColor(details.technology), color: '#fff'}}>{details.technology}</span>
+                      <button className="pd-li-btn" onClick={openLinkedInModal} title="Share on LinkedIn">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                        <span>Share</span>
+                      </button>
                     </div>
                     <div className="pd-show-title">{details.projectTitle}</div>
                     <div className="pd-show-sub">
@@ -1662,6 +1744,48 @@ function ProjectDetails({ user }) {
           </div>
         </div>
       </div>
+
+      {/* LinkedIn Post Modal */}
+      {liModal && details && (
+        <div className="pd-li-modal-bg" onClick={() => setLiModal(false)}>
+          <div className="pd-li-modal" onClick={e => e.stopPropagation()}>
+            <div className="pd-li-hdr">
+              <div className="pd-li-hdr-left">
+                <div className="pd-li-hdr-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                </div>
+                <div>
+                  <div className="pd-li-hdr-title">Share on LinkedIn</div>
+                  <div className="pd-li-hdr-sub">Edit your post and add suggestions before posting</div>
+                </div>
+              </div>
+              <button className="pd-li-close" onClick={() => setLiModal(false)}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+            <div className="pd-li-body">
+              <div className="pd-li-sub-label">Your Post (Editable)</div>
+              <textarea className="pd-li-textarea" value={liPost} onChange={e => setLiPost(e.target.value)} placeholder="Your LinkedIn post will appear here..."/>
+              <div className="pd-li-sub-label">Add Recommendation or Note</div>
+              <div className="pd-li-input-row">
+                <input type="text" className="pd-li-input" value={liSuggestion} onChange={e => setLiSuggestion(e.target.value)} onKeyDown={e => {if(e.key==='Enter')addSuggestion()}} placeholder="e.g. Add my role as frontend developer, more hashtags..."/>
+                <button className="pd-li-add-btn" onClick={addSuggestion}>+ Add</button>
+              </div>
+            </div>
+            <div className="pd-li-note">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0,marginTop:2}}><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              <span>Clicking "Post" opens LinkedIn with your text pre-filled. Login if needed, then click Post on LinkedIn to publish.</span>
+            </div>
+            <div className="pd-li-ftr">
+              <button className="pd-li-regen-btn" onClick={() => setLiPost(generatePost(details))}>Regenerate</button>
+              <button className="pd-li-post-btn" onClick={postToLinkedIn}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                Post to LinkedIn
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
