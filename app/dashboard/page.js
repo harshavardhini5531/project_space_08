@@ -1471,22 +1471,12 @@ ${projectDesc}${techLine}${areaLine}${aiLine}${teamLine}${mentorLine}
     }
   }
 
-  async function postToLinkedIn() {
-    // Copy full post text to clipboard so student can paste it in LinkedIn (bypasses text length limit)
-    try {
-      await navigator.clipboard.writeText(liPost);
-    } catch (e) {
-      console.error('Clipboard failed:', e);
-    }
-    
+  function postToLinkedIn() {
+    const text = encodeURIComponent(liPost);
     const showcaseUrl = `https://projectspace.technicalhub.io/showcase/${details.teamNumber}?v=3`;
     const url = encodeURIComponent(showcaseUrl);
-    
-    // Show instruction to user
-    alert('✅ Your full post has been COPIED to clipboard!\n\n📌 Next Steps:\n1. LinkedIn will open in a new tab\n2. Click inside the post box\n3. Press Ctrl+V (Cmd+V on Mac) to paste your post\n4. Your team card image will appear as preview\n5. Add @tags by typing @ followed by the name\n6. Click Post on LinkedIn\n\nClick OK to open LinkedIn.');
-    
     window.open(
-      `https://www.linkedin.com/sharing/share-offsite/?url=${url}`,
+      `https://www.linkedin.com/sharing/share-offsite/?url=${url}&text=${text}`,
       '_blank',
       'width=700,height=750'
     );
