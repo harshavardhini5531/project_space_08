@@ -207,7 +207,7 @@ export async function GET(request) {
       return new Response(png, {
         headers: {
           'Content-Type': 'image/png',
-          'Cache-Control': 'public, max-age=3600'
+          'Cache-Control': 'no-cache, no-store, must-revalidate'
         }
       })
     } catch (err) {
