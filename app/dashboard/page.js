@@ -1359,7 +1359,7 @@ function ProjectDetails({ user }) {
 .pd-tech-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
 
 /* Main layout */
-.pd-main{display:grid;grid-template-columns:1fr 340px;gap:16px;min-height:0;align-items:start}
+.pd-main{display:grid;grid-template-columns:1fr 340px;gap:16px;min-height:0;align-items:start;position:relative}
 
 /* Showcase */
 .pd-showcase{background:#0c0614;border:1px solid rgba(255,255,255,.06);border-radius:18px;overflow:hidden;position:relative;display:flex;flex-direction:column}
@@ -1417,13 +1417,7 @@ function ProjectDetails({ user }) {
 .pd-chip.area{background:rgba(238,167,39,.08);border-color:rgba(238,167,39,.25);color:#EEA727}
 
 /* Right sidebar — project list */
-</button>
-        ))}
-      </div>
-.pd-sidebar{background:rgba(12,6,20,.6);border:1px solid rgba(255,255,255,.06);border-radius:18px;display:flex;flex-direction:column;overflow:hidden;height:calc(100vh - 100px);position:sticky;top:16px}
-      </div>
-
-      <div className="pd-main">
+.pd-sidebar{background:rgba(12,6,20,.6);border:1px solid rgba(255,255,255,.06);border-radius:18px;display:flex;flex-direction:column;overflow:hidden;height:calc(100vh - 140px);position:sticky;top:0;align-self:start}
 .pd-sidebar-hdr{padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.05);flex-shrink:0}
 .pd-sidebar-title{font-size:.72rem;font-weight:700;color:rgba(255,255,255,.9);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px}
 .pd-search-wrap{position:relative;display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
