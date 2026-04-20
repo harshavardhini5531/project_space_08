@@ -1351,7 +1351,7 @@ function ProjectDetails({ user }) {
 @keyframes pdIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 
 /* Tech tabs */
-.pd-tech-tabs{display:flex;gap:6px;padding:6px;border-radius:14px;background:#050008;border:1px solid rgba(255,255,255,.06);overflow-x:auto;-webkit-overflow-scrolling:touch;position:sticky;top:0;z-index:50;box-shadow:0 4px 20px rgba(5,0,8,.8)}
+.pd-tech-tabs{display:flex;gap:6px;padding:10px;margin:-10px -4px 0;border-radius:14px;background:#050008;border:1px solid rgba(255,255,255,.06);overflow-x:auto;-webkit-overflow-scrolling:touch;position:sticky;top:-10px;z-index:50;box-shadow:0 10px 30px rgba(5,0,8,1),0 0 0 10px #050008}
 .pd-tech-tabs::-webkit-scrollbar{display:none}
 .pd-tech-tab{display:flex;align-items:center;gap:6px;padding:9px 16px;border-radius:10px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);color:rgba(255,255,255,.45);font-size:.72rem;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .25s;white-space:nowrap;flex-shrink:0}
 .pd-tech-tab:hover{color:rgba(255,255,255,.75);border-color:rgba(255,255,255,.15)}
@@ -1401,7 +1401,7 @@ function ProjectDetails({ user }) {
 .pd-member-name{position:absolute;left:8px;top:0;bottom:10px;z-index:3;display:flex;flex-direction:column;justify-content:flex-end;gap:0}
 .pd-member-name-big{font-family:'Astro','Orbitron',sans-serif;font-size:.56rem;font-weight:800;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.95),0 0 8px rgba(253,28,0,.3);letter-spacing:2px;text-transform:uppercase;writing-mode:vertical-lr;transform:rotate(180deg);line-height:1}
 .pd-member-name-sub{display:none}
-.pd-member-roll-rt{position:absolute;bottom:20px;right:6px;z-index:5;font-family:'Astro','Orbitron',sans-serif;font-size:.5rem;color:rgba(255,255,255,.85);font-weight:700;letter-spacing:1.5px;text-shadow:0 2px 10px rgba(0,0,0,1)}
+.pd-member-roll-rt{position:absolute;bottom:55px;right:6px;z-index:5;font-family:'Astro','Orbitron',sans-serif;font-size:.5rem;color:rgba(255,255,255,.85);font-weight:700;letter-spacing:1.5px;text-shadow:0 2px 10px rgba(0,0,0,1)}
 .pd-member-leader-star{position:absolute;top:8px;left:8px;z-index:4;width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#EEA727,#fd1c00);display:flex;align-items:center;justify-content:center;font-size:12px;box-shadow:0 2px 12px rgba(238,167,39,.5),0 0 0 2px rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.2)}
 
 /* Info sections */
