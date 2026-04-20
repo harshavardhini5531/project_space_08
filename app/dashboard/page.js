@@ -1380,9 +1380,15 @@ Grateful to Aditya University & Technical Hub for this amazing learning platform
 
   function postToLinkedIn() {
     const text = encodeURIComponent(liPost);
-    const team = encodeURIComponent(details.teamNumber);
-    // Redirect to LinkedIn OAuth flow — will return to /linkedin-posting to auto-post
-    window.location.href = `/api/auth/linkedin/initiate?team=${team}&text=${text}`;
+    const showcaseUrl = `https://projectspace.technicalhub.io/showcase/${details.teamNumber}`;
+    const url = encodeURIComponent(showcaseUrl);
+    // Open LinkedIn share composer with URL (LinkedIn auto-scrapes OG image from showcase page)
+    // User can edit text, add @mentions, and post — image appears as rich preview card
+    window.open(
+      `https://www.linkedin.com/sharing/share-offsite/?url=${url}&text=${text}`,
+      '_blank',
+      'width=700,height=750'
+    );
   }
 
   if (loading) {
@@ -1776,7 +1782,7 @@ Grateful to Aditya University & Technical Hub for this amazing learning platform
             </div>
             <div className="pd-li-note">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0,marginTop:2}}><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-              <span>Clicking "Post" opens LinkedIn with your text pre-filled. Login if needed, then click Post on LinkedIn to publish.</span>
+              <span>Clicking "Post" opens LinkedIn's post editor with your text and team card image pre-loaded. You can edit, add @mentions, and click Post on LinkedIn to publish.</span>
             </div>
             <div className="pd-li-ftr">
               <button className="pd-li-regen-btn" onClick={() => setLiPost(generatePost(details))}>Regenerate</button>
