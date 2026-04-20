@@ -1380,7 +1380,9 @@ Grateful to Aditya University & Technical Hub for this amazing learning platform
 
   function postToLinkedIn() {
     const text = encodeURIComponent(liPost);
-    window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${text}`, '_blank');
+    const team = encodeURIComponent(details.teamNumber);
+    // Redirect to LinkedIn OAuth flow — will return to /linkedin-posting to auto-post
+    window.location.href = `/api/auth/linkedin/initiate?team=${team}&text=${text}`;
   }
 
   if (loading) {
