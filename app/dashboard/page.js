@@ -1350,7 +1350,7 @@ function ProjectDetails({ user }) {
     return text.split('').map(c => boldMap[c] || c).join('');
   }
 
-  function generatePost(d, extraSuggestion = '') {
+  function generatePost(d, extraSuggestion = '', customIntro = '') {
     if (!d) return '';
 
     // Get all members except the current user (current user is posting from their account)
@@ -1380,16 +1380,18 @@ function ProjectDetails({ user }) {
 
     const projectDesc = d.projectDescription || d.problemStatement || '';
 
-    const post = `🚀 𝗘𝘅𝗰𝗶𝘁𝗲𝗱 𝘁𝗼 𝘀𝗵𝗮𝗿𝗲 𝗼𝘂𝗿 𝗣𝗿𝗼𝗷𝗲𝗰𝘁 𝗦𝗽𝗮𝗰𝗲 𝗵𝗮𝗰𝗸𝗮𝘁𝗵𝗼𝗻 𝗽𝗿𝗼𝗷𝗲𝗰𝘁
+    const intro = customIntro || `Thrilled to share a glimpse of what our team has been building! Every late night and breakthrough made this journey unforgettable.`;
+
+    const post = `${intro}
 
 ✨ ${toBold(d.projectTitle || 'Our Project')}
 
 📖 𝗔𝗯𝗼𝘂𝘁 𝘁𝗵𝗲 𝗣𝗿𝗼𝗷𝗲𝗰𝘁:
 ${projectDesc}${techLine}${areaLine}${aiLine}${teamLine}${mentorLine}
 
-🏛️ 𝗛𝗼𝘀𝘁𝗲𝗱 𝗮𝘁: ${toBold('Aditya University')}
 ⚡ 𝗣𝗼𝘄𝗲𝗿𝗲𝗱 𝗯𝘆: ${toBold('Technical Hub')}
 👨‍💼 𝗖𝗘𝗢, 𝗧𝗲𝗰𝗵𝗻𝗶𝗰𝗮𝗹 𝗛𝘂𝗯: ${toBold('Babji Neelam')}
+🏛️ ${toBold('Aditya University')}
 
 💡 Grateful for this incredible opportunity to innovate, collaborate, and build something meaningful alongside a passionate team.${extraSuggestion ? '\n\n' + extraSuggestion : ''}
 
@@ -1400,13 +1402,9 @@ ${projectDesc}${techLine}${areaLine}${aiLine}${teamLine}${mentorLine}
 
   async function openLinkedInModal() {
     if (!details) return;
-    setLiPost('⏳ Generating your personalized LinkedIn post...\n\nThis takes a few seconds. Our AI is crafting something unique for your project.');
+    setLiPost(generatePost(details, '', '⏳ Generating unique opening lines...'));
     setLiSuggestion('');
     setLiModal(true);
-
-    const currentUserRoll = typeof window !== 'undefined' ? localStorage.getItem('rollNumber') : '';
-    const otherMembers = (details.members || []).filter(m => m.rollNumber !== currentUserRoll);
-    const memberNames = otherMembers.map(m => m.name).filter(Boolean);
 
     try {
       const res = await fetch('/api/linkedin-intro', {
@@ -1414,61 +1412,28 @@ ${projectDesc}${techLine}${areaLine}${aiLine}${teamLine}${mentorLine}
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           projectTitle: details.projectTitle,
-          projectDescription: details.projectDescription || details.problemStatement,
           technology: details.technology,
           projectArea: (details.projectArea || []).join(', '),
-          techStack: details.techStack,
-          aiCapabilities: details.aiUsage === 'Yes' ? details.aiCapabilities : '',
-          aiTools: details.aiTools || [],
-          memberNames,
-          mentorName: details.mentorDetails?.name || details.mentor,
           studentName: typeof window !== 'undefined' ? localStorage.getItem('studentName') : ''
         })
       });
       const data = await res.json();
-      if (data?.post) {
-        setLiPost(data.post);
+      if (data?.intro) {
+        setLiPost(generatePost(details, '', data.intro));
       } else {
         setLiPost(generatePost(details));
       }
     } catch (e) {
-      console.error('AI post generation failed:', e);
+      console.error('AI intro failed:', e);
       setLiPost(generatePost(details));
     }
   }
 
-  async function addSuggestion() {
-    if (!liSuggestion.trim() || !details) return;
-    const suggestion = liSuggestion.trim();
+  function addSuggestion() {
+    if (!liSuggestion.trim()) return;
+    const currentIntro = liPost.split('\n\n✨')[0] || '';
+    setLiPost(generatePost(details, liSuggestion, currentIntro));
     setLiSuggestion('');
-    setLiPost(liPost + '\n\n⏳ Applying your suggestion...');
-
-    const currentUserRoll = typeof window !== 'undefined' ? localStorage.getItem('rollNumber') : '';
-    const otherMembers = (details.members || []).filter(m => m.rollNumber !== currentUserRoll);
-    const memberNames = otherMembers.map(m => m.name).filter(Boolean);
-
-    try {
-      const res = await fetch('/api/linkedin-intro', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          projectTitle: details.projectTitle,
-          projectDescription: (details.projectDescription || details.problemStatement || '') + `\n\nADDITIONAL INSTRUCTIONS FROM USER: ${suggestion}`,
-          technology: details.technology,
-          projectArea: (details.projectArea || []).join(', '),
-          techStack: details.techStack,
-          aiCapabilities: details.aiUsage === 'Yes' ? details.aiCapabilities : '',
-          aiTools: details.aiTools || [],
-          memberNames,
-          mentorName: details.mentorDetails?.name || details.mentor,
-          studentName: typeof window !== 'undefined' ? localStorage.getItem('studentName') : ''
-        })
-      });
-      const data = await res.json();
-      if (data?.post) setLiPost(data.post);
-    } catch (e) {
-      console.error('Suggestion apply failed:', e);
-    }
   }
 
   function postToLinkedIn() {
@@ -1876,7 +1841,7 @@ ${projectDesc}${techLine}${areaLine}${aiLine}${teamLine}${mentorLine}
               <span>Clicking "Post" opens LinkedIn's post editor with your text and team card image pre-loaded. You can edit, add @mentions, and click Post on LinkedIn to publish.</span>
             </div>
             <div className="pd-li-ftr">
-              <button className="pd-li-regen-btn" onClick={openLinkedInModal}>🔄 Regenerate with AI</button>
+              <button className="pd-li-regen-btn" onClick={openLinkedInModal}>🔄 Regenerate Intro</button>
               <button className="pd-li-post-btn" onClick={postToLinkedIn}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
                 Post to LinkedIn

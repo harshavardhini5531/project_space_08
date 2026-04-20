@@ -1,75 +1,54 @@
 // app/api/linkedin-intro/route.js
-// Generates full AI-powered LinkedIn post using Claude API
+// Generates 2-line unique excitement intro using Claude API
 
 export async function POST(request) {
   try {
     const body = await request.json()
-    const { projectTitle, projectDescription, technology, projectArea, techStack, aiCapabilities, aiTools, memberNames, mentorName, studentName } = body
+    const { projectTitle, technology, projectArea, studentName } = body
+
+    const fallbacks = [
+      `Thrilled to share a glimpse of what our team has been building! This journey has taught me more than any classroom ever could.`,
+      `Today marks a huge milestone for our team — taking an idea from a whiteboard to a working project has been nothing short of exhilarating.`,
+      `Beyond proud of what we've built together. Every late night, every debugging session, every breakthrough made this worth it.`,
+      `Hitting "Deploy" on our project felt like magic. This is what happens when curiosity meets collaboration!`,
+      `What started as a scribble in a notebook is now reality. Incredibly grateful for this learning-packed journey.`,
+      `From ideation to implementation — every step of building this taught me something new. Here's to the power of teamwork!`,
+      `Sharing this project feels surreal. We poured our hearts into it, and I couldn't be more proud of what we created.`,
+      `Building something from scratch with a team you believe in is unmatched. Excited to finally show what we've been working on!`
+    ]
 
     const apiKey = process.env.ANTHROPIC_API_KEY
-    if (!apiKey) {
-      return Response.json({ error: 'API key missing' }, { status: 500 })
+    if (apiKey) {
+      try {
+        const res = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01'
+          },
+          body: JSON.stringify({
+            model: 'claude-haiku-4-5-20251001',
+            max_tokens: 150,
+            messages: [{
+              role: 'user',
+              content: `Write exactly 2 short sentences (max 35 words total) expressing a student's authentic excitement about sharing their hackathon project "${projectTitle}" in ${technology} for domain "${projectArea}". Be personal, genuine, and emotional — like the student is talking to their LinkedIn network. Don't use hashtags or emojis. Don't mention the project title again (it appears elsewhere). Don't say "excited" as the first word. Make it unique and heartfelt. Output ONLY the 2 sentences, no preamble.`
+            }]
+          })
+        })
+        const data = await res.json()
+        const text = data?.content?.[0]?.text?.trim()
+        if (text && text.length > 20 && text.length < 400) {
+          return Response.json({ intro: text, source: 'ai' })
+        }
+      } catch (e) {
+        console.error('Claude API failed:', e)
+      }
     }
 
-    const prompt = `You are writing a COMPACT LinkedIn post for a student showcasing their hackathon project.
-
-PROJECT DETAILS:
-- Title: ${projectTitle || 'Untitled'}
-- Description: ${projectDescription || 'Not provided'}
-- Technology: ${technology || 'Tech'}
-- Domain: ${projectArea || 'Not specified'}
-- Tech Stack: ${(techStack || []).join(', ') || 'Not specified'}
-${aiCapabilities ? `- AI Integration: ${aiCapabilities}${aiTools?.length ? ` using ${aiTools.join(', ')}` : ''}` : ''}
-- Team Members: ${(memberNames || []).join(', ') || 'Solo'}
-- Mentor: ${mentorName || 'Not assigned'}
-
-STRICT CONSTRAINTS:
-- TOTAL LENGTH: Maximum 400 characters including emojis and hashtags
-- NO empty lines between sections (use single line breaks only)
-- Concise and punchy, not verbose
-- Output MUST fit in LinkedIn's share URL
-
-REQUIRED STRUCTURE (all single lines, no blank lines):
-Line 1: 🚀 One-line catchy hook mentioning project title (bold via Unicode)
-Line 2: 💡 One sentence about what it does (max 15 words)
-Line 3: 💻 Tech: [stack] · 🎯 [domain]
-Line 4: 🤝 Team: [bold names joined by ·]
-Line 5: 🎓 Mentor: [bold mentor name]
-Line 6: ⚡ 𝗧𝗲𝗰𝗵𝗻𝗶𝗰𝗮𝗹 𝗛𝘂𝗯 · 𝗕𝗮𝗯𝗷𝗶 𝗡𝗲𝗲𝗹𝗮𝗺 · 𝗔𝗱𝗶𝘁𝘆𝗮 𝗨𝗻𝗶𝘃𝗲𝗿𝘀𝗶𝘁𝘆
-Line 7: #ProjectSpace #AdityaUniversity #TechnicalHub + 2 domain hashtags
-
-IMPORTANT:
-- Use Unicode mathematical bold (𝗔𝗕𝗖 format) for ALL names and project title
-- NO double line breaks anywhere
-- Count characters — MUST be under 400 total
-- Output ONLY the post, no explanations
-
-Write the compact LinkedIn post now:`
-
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 500,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    })
-
-    const data = await res.json()
-    const text = data?.content?.[0]?.text?.trim()
-
-    if (!text) {
-      return Response.json({ error: 'No response from AI', debug: data }, { status: 500 })
-    }
-
-    return Response.json({ post: text, source: 'ai' })
+    const intro = fallbacks[Math.floor(Math.random() * fallbacks.length)]
+    return Response.json({ intro, source: 'fallback' })
   } catch (err) {
-    console.error('Claude API error:', err)
-    return Response.json({ error: err.message }, { status: 500 })
+    return Response.json({ intro: `Sharing something our team has been passionately working on. Every challenge we faced made this journey richer!`, source: 'error' })
   }
 }
