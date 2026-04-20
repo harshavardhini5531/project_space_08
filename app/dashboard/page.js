@@ -1369,10 +1369,10 @@ function ProjectDetails({ user }) {
 .pd-show-hdr-inner{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
 .pd-show-hdr-left{flex:1;min-width:0}
 .pd-show-mentor{display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0;align-self:flex-start;margin-top:-4px}
-.pd-show-mentor-photo{width:80px;height:80px;border-radius:50%;overflow:visible;flex-shrink:0;position:relative;background:#1a1a1a;box-shadow:0 0 16px 2px rgba(238,167,39,.35),0 0 28px 4px rgba(253,28,0,.15),inset 0 0 0 1.5px rgba(238,167,39,.4);animation:mentorGlow 3s ease-in-out infinite}
-.pd-show-mentor-photo::before{content:'';position:absolute;inset:-4px;border-radius:50%;background:conic-gradient(from 0deg,transparent 0deg,rgba(238,167,39,.6) 60deg,rgba(253,28,0,.4) 120deg,transparent 180deg,transparent 240deg,rgba(238,167,39,.5) 300deg,transparent 360deg);animation:mentorRotate 4s linear infinite;z-index:-1;filter:blur(3px);opacity:.7}
+.pd-show-mentor-photo{width:80px;height:80px;border-radius:50%;overflow:visible;flex-shrink:0;position:relative;background:linear-gradient(135deg,#1a1a1a 0%,#2d2d2d 50%,#0a0a0a 100%);box-shadow:0 0 16px 2px rgba(238,167,39,.3),0 0 20px 3px rgba(74,222,128,.2),0 0 24px 4px rgba(168,85,247,.2);animation:mentorGlow 3s ease-in-out infinite}
+.pd-show-mentor-photo::before{content:'';position:absolute;inset:-4px;border-radius:50%;background:conic-gradient(from 0deg,transparent 0deg,rgba(238,167,39,.8) 60deg,transparent 120deg,rgba(74,222,128,.8) 180deg,transparent 240deg,rgba(168,85,247,.8) 300deg,transparent 360deg);animation:mentorRotate 4s linear infinite;z-index:-1;filter:blur(3px);opacity:.85}
 .pd-show-mentor-photo>img,.pd-show-mentor-photo>.pd-show-mentor-fallback{border-radius:50%;width:100%;height:100%;position:relative;z-index:1}
-@keyframes mentorGlow{0%,100%{box-shadow:0 0 16px 2px rgba(238,167,39,.35),0 0 28px 4px rgba(253,28,0,.15),inset 0 0 0 1.5px rgba(238,167,39,.4)}50%{box-shadow:0 0 24px 4px rgba(238,167,39,.5),0 0 40px 8px rgba(253,28,0,.25),inset 0 0 0 1.5px rgba(238,167,39,.6)}}
+@keyframes mentorGlow{0%,100%{box-shadow:0 0 16px 2px rgba(238,167,39,.3),0 0 20px 3px rgba(74,222,128,.2),0 0 24px 4px rgba(168,85,247,.2)}50%{box-shadow:0 0 22px 4px rgba(238,167,39,.45),0 0 28px 5px rgba(74,222,128,.3),0 0 34px 6px rgba(168,85,247,.3)}}
 @keyframes mentorRotate{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 .pd-show-mentor-photo img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
 .pd-show-mentor-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:700;color:#EEA727;background:rgba(238,167,39,.08)}
