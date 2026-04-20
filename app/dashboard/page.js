@@ -1419,7 +1419,8 @@ function ProjectDetails({ user }) {
 /* Right sidebar — project list */
 </button>
         ))}
-      </div>.pd-sidebar{background:rgba(12,6,20,.6);border:1px solid rgba(255,255,255,.06);border-radius:18px;display:flex;flex-direction:column;overflow:hidden;height:calc(100vh - 100px)}
+      </div>
+.pd-sidebar{background:rgba(12,6,20,.6);border:1px solid rgba(255,255,255,.06);border-radius:18px;display:flex;flex-direction:column;overflow:hidden;height:calc(100vh - 100px);position:sticky;top:16px}
       </div>
 
       <div className="pd-main">
