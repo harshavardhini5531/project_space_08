@@ -1359,7 +1359,7 @@ function ProjectDetails({ user }) {
 .pd-tech-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
 
 /* Main layout */
-.pd-main{display:grid;grid-template-columns:1fr 340px;gap:16px;min-height:0}
+.pd-main{display:grid;grid-template-columns:1fr 340px;gap:16px;min-height:0;align-items:start}
 
 /* Showcase */
 .pd-showcase{background:#0c0614;border:1px solid rgba(255,255,255,.06);border-radius:18px;overflow:hidden;position:relative;height:calc(100vh - 100px);display:flex;flex-direction:column}
@@ -1421,7 +1421,7 @@ function ProjectDetails({ user }) {
 /* Right sidebar — project list */
 </button>
         ))}
-      </div>.pd-sidebar{background:rgba(12,6,20,.6);border:1px solid rgba(255,255,255,.06);border-radius:18px;display:flex;flex-direction:column;overflow:hidden;position:sticky;top:20px;height:calc(100vh - 100px)}
+      </div>.pd-sidebar{background:rgba(12,6,20,.6);border:1px solid rgba(255,255,255,.06);border-radius:18px;display:flex;flex-direction:column;overflow:hidden;height:calc(100vh - 100px)}
       </div>
 
       <div className="pd-main">
