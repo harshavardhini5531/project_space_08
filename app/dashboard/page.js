@@ -1499,6 +1499,7 @@ Powered by ${toBold('Technical Hub')}, led by CEO ${toBold('Babji Neelam')}, and
   }
 
   return (
+    <>
     <div className="pd-wrap">
       <style>{`
 .pd-wrap{display:flex;flex-direction:column;gap:16px;animation:pdIn .5s ease both;position:relative}
@@ -1851,52 +1852,53 @@ Powered by ${toBold('Technical Hub')}, led by CEO ${toBold('Babji Neelam')}, and
           </div>
         </div>
       </div>
+      </div>
 
-      {/* LinkedIn Post Modal */}
-      {liModal && details && (
-        <div className="pd-li-modal-bg" onClick={() => setLiModal(false)}>
-          <div className="pd-li-modal" onClick={e => e.stopPropagation()}>
-            <div className="pd-li-hdr">
-              <div className="pd-li-hdr-left">
-                <div className="pd-li-hdr-icon">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
-                </div>
-                <div>
-                  <div className="pd-li-hdr-title">Share on LinkedIn</div>
-                  <div className="pd-li-hdr-sub">Edit your post and add suggestions before posting</div>
-                </div>
+    {liModal && details && (
+      <div style={{position:'fixed',top:0,left:0,width:'100vw',height:'100vh',background:'rgba(5,0,8,.94)',zIndex:999999,display:'flex',alignItems:'center',justifyContent:'center',padding:20,boxSizing:'border-box'}} onClick={() => setLiModal(false)}>
+        <div className="pd-li-modal" onClick={e => e.stopPropagation()}>
+          <div className="pd-li-hdr">
+            <div className="pd-li-hdr-left">
+              <div className="pd-li-hdr-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
               </div>
-              <button className="pd-li-close" onClick={() => setLiModal(false)}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-              </button>
-            </div>
-            <div className="pd-li-body">
-              <div className="pd-li-sub-label">Your Post (Editable)</div>
-              <textarea className="pd-li-textarea" value={liPost} onChange={e => setLiPost(e.target.value)} placeholder="Your LinkedIn post will appear here..."/>
-              <div className="pd-li-sub-label">Add Recommendation or Note</div>
-              <div className="pd-li-input-row">
-                <input type="text" className="pd-li-input" value={liSuggestion} onChange={e => setLiSuggestion(e.target.value)} onKeyDown={e => {if(e.key==='Enter')addSuggestion()}} placeholder="e.g. Add my role as frontend developer, more hashtags..."/>
-                <button className="pd-li-add-btn" onClick={addSuggestion}>+ Add</button>
+              <div>
+                <div className="pd-li-hdr-title">Share on LinkedIn</div>
+                <div className="pd-li-hdr-sub">Edit your post and add suggestions before posting</div>
               </div>
             </div>
-            <div className="pd-li-note">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0,marginTop:2}}><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-              <span>Clicking "Post" opens LinkedIn's post editor with your text and team card image pre-loaded. You can edit, add @mentions, and click Post on LinkedIn to publish.</span>
-            </div>
-            <div className="pd-li-ftr">
-              <button className="pd-li-regen-btn" onClick={openLinkedInModal}>🔄 Regenerate Intro</button>
-              <button className="pd-li-post-btn" onClick={postToLinkedIn}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
-                Post to LinkedIn
-              </button>
+            <button className="pd-li-close" onClick={() => setLiModal(false)}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <div className="pd-li-body">
+            <div className="pd-li-sub-label">Your Post (Editable)</div>
+            <textarea className="pd-li-textarea" value={liPost} onChange={e => setLiPost(e.target.value)} placeholder="Your LinkedIn post will appear here..."/>
+            <div className="pd-li-sub-label">Add Recommendation or Note</div>
+            <div className="pd-li-input-row">
+              <input type="text" className="pd-li-input" value={liSuggestion} onChange={e => setLiSuggestion(e.target.value)} onKeyDown={e => {if(e.key==='Enter')addSuggestion()}} placeholder="e.g. Add my role as frontend developer, more hashtags..."/>
+              <button className="pd-li-add-btn" onClick={addSuggestion}>+ Add</button>
             </div>
           </div>
+          <div className="pd-li-note">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0,marginTop:2}}><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            <span>Clicking "Post" opens LinkedIn's post editor with your text and team card image pre-loaded. You can edit, add @mentions, and click Post on LinkedIn to publish.</span>
+          </div>
+          <div className="pd-li-ftr">
+            <button className="pd-li-regen-btn" onClick={openLinkedInModal}>🔄 Regenerate Intro</button>
+            <button className="pd-li-post-btn" onClick={postToLinkedIn}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+              Post to LinkedIn
+            </button>
+          </div>
         </div>
-      )}
-    </div>
+      </div>
+    )}
+    </>
   );
 }
 /* ═══ MAIN DASHBOARD ═══ */
+
 export default function Dashboard(){
   const router = useRouter();
   const [active,setActive]=useState("my-profile");
