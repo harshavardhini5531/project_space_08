@@ -1350,12 +1350,21 @@ function ProjectDetails({ user }) {
     return text.split('').map(c => boldMap[c] || c).join('');
   }
 
-  function generatePost(d, extraSuggestion = '', customIntro = '') {
+  function generatePost(d, extraSuggestion = '', customIntro = '', customTitle = '', customHighlights = '') {
     if (!d) return '';
 
     // Get all members except the current user (current user is posting from their account)
-    const currentUserRoll = (typeof window !== 'undefined' ? localStorage.getItem('rollNumber') : '') || '';
-    const otherMembers = (d.members || []).filter(m => m.rollNumber !== currentUserRoll);
+    let currentUserRoll = '';
+    if (typeof window !== 'undefined') {
+      try {
+        const raw = localStorage.getItem('ps_user');
+        if (raw) {
+          const u = JSON.parse(raw);
+          currentUserRoll = u.rollNumber || u.roll_number || '';
+        }
+      } catch {}
+    }
+    const otherMembers = (d.members || []).filter(m => (m.rollNumber || m.roll_number) !== currentUserRoll);
     const memberNames = otherMembers.map(m => m.name).filter(Boolean);
 
     const techStack = (d.techStack || []).join(' · ');
@@ -1397,7 +1406,14 @@ function ProjectDetails({ user }) {
     const aiInfo = aiIntegration ? ` Our plan: ${aiIntegration}.` : '';
     const techAreaLine = [techInfo, areaInfo].filter(Boolean).join(' ');
 
-    const post = `${intro}
+    const title = customTitle || `🚀 One Week Away From Building Something That Matters`;
+
+    const defaultHighlights = `${toBold('Project Space')} is set to bring together 900+ students across 160 teams, exploring 7 cutting-edge technology stacks with an AI-first theme. For 7 days straight, teams will be working 24/7 on real-world projects — fueled by dedicated mentor support, hands-on learning, and the vibrant energy of Project Street. Excited to be part of something this big and can't wait for the journey to begin!`;
+    const highlights = customHighlights || defaultHighlights;
+
+    const post = `${toBold(title)}
+
+${intro}
 
 ${toBold(d.projectTitle || 'Our Project')}
 
@@ -1410,7 +1426,7 @@ ${teamParagraph}
 ${mentorParagraph}
 
 ${toBold('𝗘𝘃𝗲𝗻𝘁 𝗛𝗶𝗴𝗵𝗹𝗶𝗴𝗵𝘁𝘀 — 𝗠𝗮𝘆 𝟲 𝘁𝗼 𝟭𝟮, 𝟮𝟬𝟮𝟲')}
-${toBold('Project Space')} is set to bring together 900+ students across 160 teams, exploring 7 cutting-edge technology stacks with an AI-first theme. For 7 days straight, teams will be working 24/7 on real-world projects — fueled by dedicated mentor support, hands-on learning, and the vibrant energy of Project Street. Excited to be part of something this big and can't wait for the journey to begin!
+${highlights}
 
 Powered by ${toBold('Technical Hub')}, led by CEO ${toBold('Babji Neelam')}, and proudly hosted at ${toBold('Aditya University')}.${extraSuggestion ? '\n\n' + extraSuggestion : ''}
 
@@ -1421,9 +1437,17 @@ Powered by ${toBold('Technical Hub')}, led by CEO ${toBold('Babji Neelam')}, and
 
   async function openLinkedInModal() {
     if (!details) return;
-    setLiPost(generatePost(details, '', '⏳ Generating unique opening lines...'));
+    setLiPost(generatePost(details, '', '⏳ Generating unique content...'));
     setLiSuggestion('');
     setLiModal(true);
+
+    let studentName = '';
+    try {
+      if (typeof window !== 'undefined') {
+        const raw = localStorage.getItem('ps_user');
+        if (raw) studentName = JSON.parse(raw).name || '';
+      }
+    } catch {}
 
     try {
       const res = await fetch('/api/linkedin-intro', {
@@ -1433,25 +1457,24 @@ Powered by ${toBold('Technical Hub')}, led by CEO ${toBold('Babji Neelam')}, and
           projectTitle: details.projectTitle,
           technology: details.technology,
           projectArea: (details.projectArea || []).join(', '),
-          studentName: typeof window !== 'undefined' ? localStorage.getItem('studentName') : ''
+          studentName
         })
       });
       const data = await res.json();
       if (data?.intro) {
-        setLiPost(generatePost(details, '', data.intro));
+        setLiPost(generatePost(details, '', data.intro, data.title || '', data.highlights || ''));
       } else {
         setLiPost(generatePost(details));
       }
     } catch (e) {
-      console.error('AI intro failed:', e);
+      console.error('AI generation failed:', e);
       setLiPost(generatePost(details));
     }
   }
 
   function addSuggestion() {
     if (!liSuggestion.trim()) return;
-    const currentIntro = liPost.split('\n\n✨')[0] || '';
-    setLiPost(generatePost(details, liSuggestion, currentIntro));
+    setLiPost(liPost + '\n\n' + liSuggestion);
     setLiSuggestion('');
   }
 
