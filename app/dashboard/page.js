@@ -1380,22 +1380,41 @@ function ProjectDetails({ user }) {
 
     const projectDesc = d.projectDescription || d.problemStatement || '';
 
-    const intro = customIntro || `Thrilled to share a glimpse of what our team has been building! Every late night and breakthrough made this journey unforgettable.`;
+    const intro = customIntro || `Gearing up for an incredible week ahead — where ideas transform into real projects, and teamwork meets innovation. Can't wait to dive in!`;
+
+    let teamParagraph = '';
+    if (memberNames.length > 0) {
+      const boldNames = memberNames.map(n => toBold(n));
+      let namesStr = '';
+      if (boldNames.length === 1) namesStr = boldNames[0];
+      else if (boldNames.length === 2) namesStr = `${boldNames[0]} and ${boldNames[1]}`;
+      else namesStr = boldNames.slice(0, -1).join(', ') + ', and ' + boldNames[boldNames.length - 1];
+      teamParagraph = `Teaming up with ${namesStr} to bring this vision to life. Can't wait to see what we create together over these next few days!`;
+    }
+    const mentorParagraph = mentor ? `Grateful to have ${toBold(mentor)} as our mentor — guiding us with expertise and insight as we navigate this journey.` : '';
+    const techInfo = techStack ? `We'll be building with ${techStack}` : '';
+    const areaInfo = projectArea ? `in the ${projectArea} domain` : '';
+    const aiInfo = aiIntegration ? ` Our plan: ${aiIntegration}.` : '';
+    const techAreaLine = [techInfo, areaInfo].filter(Boolean).join(' ');
 
     const post = `${intro}
 
-✨ ${toBold(d.projectTitle || 'Our Project')}
+${toBold(d.projectTitle || 'Our Project')}
 
-📖 𝗔𝗯𝗼𝘂𝘁 𝘁𝗵𝗲 𝗣𝗿𝗼𝗷𝗲𝗰𝘁:
-${projectDesc}${techLine}${areaLine}${aiLine}${teamLine}${mentorLine}
+${projectDesc}
 
-⚡ 𝗣𝗼𝘄𝗲𝗿𝗲𝗱 𝗯𝘆: ${toBold('Technical Hub')}
-👨‍💼 𝗖𝗘𝗢, 𝗧𝗲𝗰𝗵𝗻𝗶𝗰𝗮𝗹 𝗛𝘂𝗯: ${toBold('Babji Neelam')}
-🏛️ ${toBold('Aditya University')}
+${techAreaLine ? techAreaLine + '.' : ''}${aiInfo}
 
-💡 Grateful for this incredible opportunity to innovate, collaborate, and build something meaningful alongside a passionate team.${extraSuggestion ? '\n\n' + extraSuggestion : ''}
+${teamParagraph}
 
-#ProjectSpace #TechnicalHub #Hackathon #Innovation #${(d.technology || 'Tech').replace(/\s+/g, '')} #StudentDeveloper #BuildInPublic`;
+${mentorParagraph}
+
+${toBold('𝗘𝘃𝗲𝗻𝘁 𝗛𝗶𝗴𝗵𝗹𝗶𝗴𝗵𝘁𝘀 — 𝗠𝗮𝘆 𝟲 𝘁𝗼 𝟭𝟮, 𝟮𝟬𝟮𝟲')}
+${toBold('Project Space')} is set to bring together 900+ students across 160 teams, exploring 7 cutting-edge technology stacks with an AI-first theme. For 7 days straight, teams will be working 24/7 on real-world projects — fueled by dedicated mentor support, hands-on learning, and the vibrant energy of Project Street. Excited to be part of something this big and can't wait for the journey to begin!
+
+Powered by ${toBold('Technical Hub')}, led by CEO ${toBold('Babji Neelam')}, and proudly hosted at ${toBold('Aditya University')}.${extraSuggestion ? '\n\n' + extraSuggestion : ''}
+
+#${(d.technology || 'Technology').replace(/\s+/g, '')} #ProjectSpace #TechnicalHub #ArtificialIntelligence #Projects #Teamwork`;
 
     return post;
   }
