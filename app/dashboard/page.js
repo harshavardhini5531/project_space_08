@@ -1485,8 +1485,9 @@ Powered by ${toBold('Technical Hub')}, led by CEO ${toBold('Babji Neelam')}, and
     window.open(
       `https://www.linkedin.com/sharing/share-offsite/?url=${url}&text=${text}`,
       '_blank',
-      'width=700,height=750'
+      'noopener,noreferrer'
     );
+    setLiModal(false);
   }
 
   if (loading) {
@@ -1543,9 +1544,9 @@ Powered by ${toBold('Technical Hub')}, led by CEO ${toBold('Babji Neelam')}, and
 .pd-li-btn svg{flex-shrink:0}
 
 /* LinkedIn Modal */
-.pd-li-modal-bg{position:fixed;inset:0;background:rgba(5,0,8,.85);z-index:9999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);animation:liFadeIn .3s ease}
+.pd-li-modal-bg{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(5,0,8,.94);z-index:999999;display:flex;align-items:center;justify-content:center;animation:liFadeIn .3s ease;padding:20px;box-sizing:border-box}
 @keyframes liFadeIn{from{opacity:0}to{opacity:1}}
-.pd-li-modal{background:#13101a;border:1px solid rgba(0,119,181,.25);border-radius:18px;width:92%;max-width:560px;max-height:90vh;overflow-y:auto;animation:liSlideIn .4s cubic-bezier(.16,1,.3,1);box-shadow:0 20px 80px rgba(0,0,0,.6)}
+.pd-li-modal{background:#13101a;border:1px solid rgba(0,119,181,.25);border-radius:18px;width:100%;max-width:720px;max-height:88vh;overflow-y:auto;animation:liSlideIn .4s cubic-bezier(.16,1,.3,1);box-shadow:0 30px 100px rgba(0,0,0,.7);position:relative}
 @keyframes liSlideIn{from{opacity:0;transform:translateY(28px) scale(.94)}to{opacity:1;transform:translateY(0) scale(1)}}
 .pd-li-hdr{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid rgba(255,255,255,.05)}
 .pd-li-hdr-left{display:flex;align-items:center;gap:10px}
@@ -1555,7 +1556,7 @@ Powered by ${toBold('Technical Hub')}, led by CEO ${toBold('Babji Neelam')}, and
 .pd-li-close{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.5);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s}
 .pd-li-close:hover{background:rgba(255,255,255,.08);color:#fff}
 .pd-li-body{padding:20px 22px}
-.pd-li-textarea{width:100%;min-height:220px;padding:14px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);color:#fff;font-family:'DM Sans',sans-serif;font-size:.8rem;line-height:1.5;resize:vertical;outline:none;transition:border-color .2s}
+.pd-li-textarea{width:100%;min-height:340px;padding:14px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);color:#fff;font-family:'DM Sans',sans-serif;font-size:.8rem;line-height:1.5;resize:vertical;outline:none;transition:border-color .2s}
 .pd-li-textarea:focus{border-color:rgba(0,119,181,.4)}
 .pd-li-sub-label{font-family:'DM Sans',sans-serif;font-size:.58rem;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin:16px 0 8px}
 .pd-li-input-row{display:flex;gap:8px}
