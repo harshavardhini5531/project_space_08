@@ -449,7 +449,8 @@ body.sb-open{overflow:hidden}
 .mpd-list::-webkit-scrollbar{width:4px}.mpd-list::-webkit-scrollbar-thumb{background:rgba(253,28,0,.15);border-radius:4px}
 .mpd-item{padding:12px 14px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);cursor:pointer;transition:all .2s;position:relative}
 .mpd-item:hover{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12);transform:translateX(2px)}
-.mpd-item.on{background:linear-gradient(135deg,rgba(253,28,0,.1),rgba(238,167,39,.05));border-color:rgba(253,28,0,.25);box-shadow:0 2px 12px rgba(253,28,0,.08)}
+.mpd-item.on{background:linear-gradient(135deg,rgba(253,28,0,.1),rgba(238,167,39,.05));border-color:rgba(253,28,0,.25);box-shadow:0 2px 16px rgba(253,28,0,.15),0 0 24px rgba(253,28,0,.08),inset 0 0 12px rgba(253,28,0,.04);animation:mpdGlow 2s ease-in-out infinite}
+@keyframes mpdGlow{0%,100%{box-shadow:0 2px 16px rgba(253,28,0,.15),0 0 24px rgba(253,28,0,.08),inset 0 0 12px rgba(253,28,0,.04)}50%{box-shadow:0 4px 22px rgba(253,28,0,.25),0 0 32px rgba(238,167,39,.12),inset 0 0 16px rgba(253,28,0,.06)}}
 .mpd-item.on::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:60%;border-radius:0 3px 3px 0;background:linear-gradient(180deg,#fd1c00,#EEA727)}
 .mpd-item-r1{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
 .mpd-item-r2{display:flex;align-items:center;justify-content:space-between;gap:6px}
