@@ -1406,7 +1406,7 @@ function ProjectDetails({ user }) {
     const aiInfo = aiIntegration ? ` Our plan: ${aiIntegration}.` : '';
     const techAreaLine = [techInfo, areaInfo].filter(Boolean).join(' ');
 
-    const title = customTitle || `🚀 One Week Away From Building Something That Matters`;
+    const title = customTitle || `One Week Away From Building Something That Matters`;
 
     const defaultHighlights = `${toBold('Project Space')} is set to bring together 900+ students across 160 teams, exploring 7 cutting-edge technology stacks with an AI-first theme. For 7 days straight, teams will be working 24/7 on real-world projects — fueled by dedicated mentor support, hands-on learning, and the vibrant energy of Project Street. Excited to be part of something this big and can't wait for the journey to begin!`;
     const highlights = customHighlights || defaultHighlights;
