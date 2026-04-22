@@ -594,12 +594,7 @@ body.sb-open{overflow:hidden}
             </>)}
 
             {/* TECH PROJECTS */}
-            {activePage==='techprojects' && (<>
-              <div className="md-page-title">TECH TEAMS</div>
-              <div className="md-page-sub">{techProjects.total} total · {techProjects.registered} registered · {techProjects.pending} pending</div>
-              <div className="md-prog" style={{marginBottom:'20px'}}><div className="md-prog-hdr"><span className="md-prog-title">{techProjects.technology} Registration</span><span className="md-prog-pct">{techProjects.total>0?Math.round(techProjects.registered/techProjects.total*100):0}%</span></div><div className="md-prog-bar"><div className="md-prog-fill" style={{width:`${techProjects.total>0?Math.round(techProjects.registered/techProjects.total*100):0}%`}}/></div></div>
-              {(techProjects.teams||[]).map(t=><TeamCard key={t.serialNumber} t={t}/>)}
-            </>)}
+          
 
            {/* MY TEAMS — Project Details Style */}
             {activePage==='allteams' && (()=>{
