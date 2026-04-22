@@ -912,8 +912,15 @@ function ProjectStatus({ user }) {
   const [showPsNotif, setShowPsNotif] = useState(false);
   const [psUnread, setPsUnread] = useState(0);
   const psToastTimer = useRef(null);
+  const [hasLiShare, setHasLiShare] = useState(false);
 
-  const teamNumber = user?.teamNumber || user?.team_number || user?.team_number;
+  const [hasLiShare, setHasLiShare] = useState(false);
+  useEffect(() => {
+    const roll = user?.rollNumber || user?.roll_number || '';
+    if (!roll) return;
+    fetch('/api/linkedin-share', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'check-student', rollNumber: roll }) })
+      .then(r => r.json()).then(d => { if (d.shared) setHasLiShare(true) }).catch(() => {});
+  }, [user]);
   const rollNumber = user?.rollNumber || user?.roll_number || user?.roll_number;
 
   const fetchStatus = useCallback(async () => {
@@ -930,7 +937,11 @@ function ProjectStatus({ user }) {
     finally { setPsLoading(false); }
   }, [teamNumber]);
 
-  useEffect(() => { fetchStatus(); }, [fetchStatus]);
+  useEffect(() => {
+    if (!rollNumber) return;
+    fetch('/api/linkedin-share', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'check-student', rollNumber }) })
+      .then(r => r.json()).then(d => { if (d.shared) setHasLiShare(true) }).catch(() => {});
+  }, [rollNumber]);
 
   // Notifications polling
   useEffect(() => {
@@ -1226,8 +1237,7 @@ function ProjectStatus({ user }) {
                 </div>
 
                 <div className="ps-actions">
-                  {isRdy && <button className="ps-btn ps-btn-review" onClick={() => setModalStage({stage_number:idx+1,stage_name:st.name,...st,...s})}><svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg><span>Mark for Review</span></button>}
-                  {isAct && <button className="ps-btn ps-btn-review pending" style={{color:st.color,background:`${st.color}0F`,borderColor:`${st.color}30`}}><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>Awaiting Mentor</span></button>}
+                  {isRdy && (hasLiShare ? <button className="ps-btn ps-btn-review" onClick={() => setModalStage({stage_number:idx+1,stage_name:st.name,...st,...s})}><svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg><span>Mark for Review</span></button> : <button className="ps-btn ps-btn-review" disabled style={{opacity:.4,cursor:'not-allowed'}} title="Post on LinkedIn first"><svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg><span>Post on LinkedIn to unlock</span></button>)}                  {isAct && <button className="ps-btn ps-btn-review pending" style={{color:st.color,background:`${st.color}0F`,borderColor:`${st.color}30`}}><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>Awaiting Mentor</span></button>}
                   {isDis && <button className="ps-btn ps-btn-review" disabled><svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg><span>Mark for Review</span></button>}
                   {isCom ? <button className="ps-btn ps-btn-done completed" style={{color:st.color,background:`${st.color}12`,borderColor:`${st.color}30`}}><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span>Completed</span></button> : <button className="ps-btn ps-btn-done" disabled><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span>Completed</span></button>}
                 </div>
@@ -1908,11 +1918,17 @@ Powered by ${toBold('Technical Hub')}, led by CEO ${toBold('Babji Neelam')} Sir,
             <span>Clicking "Post" opens LinkedIn's post editor with your text and team card image pre-loaded. You can edit, add @mentions, and click Post on LinkedIn to publish.</span>
           </div>
           <div className="pd-li-ftr">
+            {!liConfirm ? <>
             <button className="pd-li-regen-btn" onClick={openLinkedInModal}>🔄 Regenerate Intro</button>
             <button className="pd-li-post-btn" onClick={postToLinkedIn}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
               Post to LinkedIn
             </button>
+            </> : <>
+            <div style={{flex:1,fontSize:'.78rem',color:'#4ade80',fontWeight:600}}>Did you post it on LinkedIn?</div>
+            <button onClick={()=>{setLiModal(false);setLiConfirm(false);setLiPosted(false)}} style={{padding:'10px 18px',borderRadius:10,background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.1)',color:'rgba(255,255,255,.5)',fontFamily:'DM Sans,sans-serif',fontSize:'.74rem',fontWeight:600,cursor:'pointer'}}>Not Yet</button>
+            <button onClick={confirmLinkedInPost} style={{display:'flex',alignItems:'center',gap:8,padding:'10px 22px',borderRadius:10,background:'linear-gradient(135deg,#4ade80,#22c55e)',border:'none',color:'#fff',fontFamily:'DM Sans,sans-serif',fontSize:'.78rem',fontWeight:700,cursor:'pointer',boxShadow:'0 4px 16px rgba(74,222,128,.3)'}}>✓ Yes, I Posted!</button>
+            </>}
           </div>
         </div>
       </div>
