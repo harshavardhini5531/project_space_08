@@ -5,9 +5,29 @@ export async function POST(request) {
     const body = await request.json()
     const { action } = body
 
+    // Save a LinkedIn share (with upsert to prevent duplicates)
     if (action === 'save') {
       const { rollNumber, teamNumber, technology, mentorName, postedByName, postedByRole } = body
       if (!rollNumber || !teamNumber) return Response.json({ error: 'Missing fields' }, { status: 400 })
+
+      // Check if record exists (to handle re-posts after mentor approval)
+      const { data: existing } = await supabase.from('linkedin_shares')
+        .select('id').eq('roll_number', rollNumber).eq('team_number', teamNumber).maybeSingle()
+
+      if (existing) {
+        // Update existing record (happens when mentor re-enables and user re-posts)
+        const { data, error } = await supabase.from('linkedin_shares')
+          .update({
+            technology: technology || '', mentor_name: mentorName || '',
+            posted_by_name: postedByName || '', posted_by_role: postedByRole || 'student',
+            created_at: new Date().toISOString()
+          })
+          .eq('id', existing.id).select().single()
+        if (error) return Response.json({ error: error.message }, { status: 500 })
+        return Response.json({ success: true, share: data })
+      }
+
+      // Insert new record
       const { data, error } = await supabase.from('linkedin_shares').insert({
         roll_number: rollNumber, team_number: teamNumber, technology: technology || '',
         mentor_name: mentorName || '', posted_by_name: postedByName || '', posted_by_role: postedByRole || 'student'
@@ -16,13 +36,59 @@ export async function POST(request) {
       return Response.json({ success: true, share: data })
     }
 
+    // Check a single student's share status
     if (action === 'check-student') {
       const { rollNumber } = body
       if (!rollNumber) return Response.json({ error: 'rollNumber required' }, { status: 400 })
-      const { data } = await supabase.from('linkedin_shares').select('id, team_number, created_at').eq('roll_number', rollNumber).limit(1)
-      return Response.json({ shared: (data || []).length > 0 })
+      const { data } = await supabase.from('linkedin_shares')
+        .select('id, team_number, created_at').eq('roll_number', rollNumber).maybeSingle()
+      return Response.json({ shared: !!data, share: data || null })
     }
 
+    // Check team-wide LinkedIn posting status (returns posted/pending members)
+    if (action === 'check-team') {
+      const { teamNumber } = body
+      if (!teamNumber) return Response.json({ error: 'teamNumber required' }, { status: 400 })
+
+      // Get all team members
+      const { data: teamMembers } = await supabase.from('member_registrations')
+        .select('roll_number, short_name')
+        .eq('team_number', teamNumber)
+
+      const members = teamMembers || []
+      const memberRolls = members.map(m => m.roll_number)
+
+      // Get shares for these members
+      const { data: shares } = await supabase.from('linkedin_shares')
+        .select('roll_number, created_at')
+        .eq('team_number', teamNumber)
+        .in('roll_number', memberRolls.length > 0 ? memberRolls : [''])
+
+      // Get student names for pretty display
+      const { data: students } = await supabase.from('students')
+        .select('roll_number, name')
+        .in('roll_number', memberRolls.length > 0 ? memberRolls : [''])
+
+      const nameMap = {}
+      ;(students || []).forEach(s => { nameMap[s.roll_number] = s.name })
+
+      const sharedRolls = new Set((shares || []).map(s => s.roll_number))
+      const postedMembers = members.filter(m => sharedRolls.has(m.roll_number))
+        .map(m => ({ rollNumber: m.roll_number, name: nameMap[m.roll_number] || m.roll_number }))
+      const pendingMembers = members.filter(m => !sharedRolls.has(m.roll_number))
+        .map(m => ({ rollNumber: m.roll_number, name: nameMap[m.roll_number] || m.roll_number }))
+
+      return Response.json({
+        totalMembers: members.length,
+        postedCount: postedMembers.length,
+        pendingCount: pendingMembers.length,
+        allPosted: members.length > 0 && pendingMembers.length === 0,
+        postedMembers,
+        pendingMembers
+      })
+    }
+
+    // Admin stats
     if (action === 'stats') {
       const { data: all } = await supabase.from('linkedin_shares').select('*').order('created_at', { ascending: false })
       const shares = all || []

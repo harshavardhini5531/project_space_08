@@ -912,14 +912,10 @@ function ProjectStatus({ user }) {
   const [showPsNotif, setShowPsNotif] = useState(false);
   const [psUnread, setPsUnread] = useState(0);
   const psToastTimer = useRef(null);
-  const [hasLiShare, setHasLiShare] = useState(false);
-  useEffect(() => {
-    const roll = user?.rollNumber || user?.roll_number || '';
-    if (!roll) return;
-    fetch('/api/linkedin-share', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'check-student', rollNumber: roll }) })
-      .then(r => r.json()).then(d => { if (d.shared) setHasLiShare(true) }).catch(() => {});
-  }, [user]);
-  const rollNumber = user?.rollNumber || user?.roll_number || user?.roll_number;
+  const [teamShareData, setTeamShareData] = useState(null);
+  const [isTeamLeader, setIsTeamLeader] = useState(false);
+  const teamNumber = user?.teamNumber || user?.team_number || '';
+  const rollNumber = user?.rollNumber || user?.roll_number || '';
 
   const fetchStatus = useCallback(async () => {
     if (!teamNumber) return;
@@ -935,11 +931,29 @@ function ProjectStatus({ user }) {
     finally { setPsLoading(false); }
   }, [teamNumber]);
 
+  useEffect(() => { fetchStatus(); }, [fetchStatus]);
+
+  // Fetch team-wide LinkedIn share status
+  const fetchTeamShares = useCallback(async () => {
+    if (!teamNumber) return;
+    try {
+      const r = await fetch('/api/linkedin-share', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'check-team', teamNumber }) });
+      const d = await r.json();
+      setTeamShareData(d);
+    } catch {}
+  }, [teamNumber]);
+
+  useEffect(() => { fetchTeamShares(); const iv = setInterval(fetchTeamShares, 15000); return () => clearInterval(iv); }, [fetchTeamShares]);
+
+  // Check if current user is team leader
   useEffect(() => {
-    if (!rollNumber) return;
-    fetch('/api/linkedin-share', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'check-student', rollNumber }) })
-      .then(r => r.json()).then(d => { if (d.shared) setHasLiShare(true) }).catch(() => {});
-  }, [rollNumber]);
+    if (!rollNumber || !teamNumber) return;
+    fetch('/api/auth/team-data', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rollNumber }) })
+      .then(r => r.json()).then(d => {
+        const me = (d.members || []).find(m => m.roll_number === rollNumber);
+        if (me?.is_leader) setIsTeamLeader(true);
+      }).catch(() => {});
+  }, [rollNumber, teamNumber]);
 
   // Notifications polling
   useEffect(() => {
@@ -1011,6 +1025,8 @@ function ProjectStatus({ user }) {
   if (psLoading && !stages.length) return <div style={{display:'flex',alignItems:'center',justifyContent:'center',minHeight:'60vh',color:'rgba(255,255,255,.3)',fontSize:'.8rem'}}><div className="mp-loading-spinner" style={{marginRight:10}}/> Loading milestones...</div>;
 
   const pct = progress.percent;
+  const allPosted = teamShareData?.allPosted || false;
+  const allComplete = progress.completed === 7;
 
   return (
     <div className="ps-wrap-inner">
@@ -1199,6 +1215,54 @@ function ProjectStatus({ user }) {
         </div>
       </div>
 
+      {/* Completion Banner */}
+      {allComplete && (
+        <div style={{marginBottom:20,padding:'20px 24px',borderRadius:16,background:'linear-gradient(135deg,rgba(74,222,128,.12),rgba(16,185,129,.08),rgba(238,167,39,.06))',border:'1px solid rgba(74,222,128,.3)',position:'relative',overflow:'hidden',animation:'psIn .6s ease both'}}>
+          <div style={{position:'absolute',top:-40,right:-40,width:180,height:180,borderRadius:'50%',background:'radial-gradient(circle,rgba(74,222,128,.18),transparent 60%)',pointerEvents:'none'}}/>
+          <div style={{display:'flex',alignItems:'center',gap:16,position:'relative',flexWrap:'wrap'}}>
+            <div style={{width:52,height:52,borderRadius:14,background:'linear-gradient(135deg,#4ade80,#22c55e)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,boxShadow:'0 6px 24px rgba(74,222,128,.35)',fontSize:'1.8rem'}}>🎉</div>
+            <div style={{flex:1,minWidth:200}}>
+              <div style={{fontFamily:'Orbitron,DM Sans,sans-serif',fontSize:'1.15rem',fontWeight:800,color:'#4ade80',letterSpacing:1.5,textTransform:'uppercase',lineHeight:1.2,marginBottom:4,textShadow:'0 2px 16px rgba(74,222,128,.3)'}}>Project Complete · Event Purpose Served</div>
+              <div style={{fontFamily:'DM Sans,sans-serif',fontSize:'.82rem',color:'rgba(255,255,255,.7)',lineHeight:1.5}}>All 7 stages approved. Your team successfully journeyed through Ideation → Documentation. Time to celebrate!</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Team LinkedIn Progress */}
+      {!allComplete && teamShareData && teamShareData.totalMembers > 0 && (
+        <div style={{marginBottom:18,padding:'14px 18px',borderRadius:14,background:allPosted?'linear-gradient(135deg,rgba(74,222,128,.06),rgba(16,185,129,.03))':'linear-gradient(135deg,rgba(238,167,39,.06),rgba(253,28,0,.03))',border:`1px solid ${allPosted?'rgba(74,222,128,.2)':'rgba(238,167,39,.18)'}`}}>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}>
+            <div style={{display:'flex',alignItems:'center',gap:12,flex:1,minWidth:180}}>
+              <div style={{width:34,height:34,borderRadius:10,background:allPosted?'rgba(74,222,128,.1)':'rgba(238,167,39,.1)',border:`1px solid ${allPosted?'rgba(74,222,128,.25)':'rgba(238,167,39,.25)'}`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                {allPosted ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg> : <svg width="16" height="16" viewBox="0 0 24 24" fill="#0077b5"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>}
+              </div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontFamily:'DM Sans,sans-serif',fontSize:'.8rem',fontWeight:700,color:allPosted?'#4ade80':'#EEA727',lineHeight:1.2,marginBottom:3}}>
+                  {allPosted ? '✓ All team members posted on LinkedIn' : `${teamShareData.postedCount} of ${teamShareData.totalMembers} members posted on LinkedIn`}
+                </div>
+                <div style={{fontFamily:'DM Sans,sans-serif',fontSize:'.68rem',color:'rgba(255,255,255,.45)',lineHeight:1.4}}>
+                  {allPosted ? 'Stage 1 Mark for Review is now unlocked' : `Waiting on: ${teamShareData.pendingMembers.map(m => m.name).join(', ')}`}
+                </div>
+              </div>
+            </div>
+            <div style={{display:'flex',alignItems:'center',gap:6,flexShrink:0}}>
+              {Array.from({length:teamShareData.totalMembers}).map((_,i) => (
+                <div key={i} style={{width:10,height:10,borderRadius:'50%',background:i<teamShareData.postedCount?'#4ade80':'rgba(255,255,255,.12)',boxShadow:i<teamShareData.postedCount?'0 0 8px rgba(74,222,128,.5)':'none',transition:'all .3s'}}/>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Team Leader Notice for non-leaders */}
+      {!allComplete && !isTeamLeader && (
+        <div style={{marginBottom:18,padding:'10px 16px',borderRadius:10,background:'rgba(139,92,246,.05)',border:'1px solid rgba(139,92,246,.15)',display:'flex',alignItems:'center',gap:10}}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          <div style={{fontSize:'.72rem',color:'rgba(255,255,255,.55)',lineHeight:1.4}}>Only your <strong style={{color:'#a78bfa'}}>team leader</strong> can mark stages for review. You can view progress here.</div>
+        </div>
+      )}
+
       {/* Progress bar */}
       <div className="ps-prog-wrap">
         <div className="ps-prog-top"><span className="ps-prog-lb">Overall Progress</span><span className="ps-prog-pct">{pct}%</span></div>
@@ -1235,7 +1299,12 @@ function ProjectStatus({ user }) {
                 </div>
 
                 <div className="ps-actions">
-                  {isRdy && (hasLiShare ? <button className="ps-btn ps-btn-review" onClick={() => setModalStage({stage_number:idx+1,stage_name:st.name,...st,...s})}><svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg><span>Mark for Review</span></button> : <button className="ps-btn ps-btn-review" disabled style={{opacity:.4,cursor:'not-allowed'}} title="Post on LinkedIn first"><svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg><span>Post on LinkedIn to unlock</span></button>)}                  {isAct && <button className="ps-btn ps-btn-review pending" style={{color:st.color,background:`${st.color}0F`,borderColor:`${st.color}30`}}><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>Awaiting Mentor</span></button>}
+                  {isRdy && (() => {
+                    const linkedInGate = idx === 0 ? allPosted : true;
+                    if (!isTeamLeader) return <button className="ps-btn ps-btn-review" disabled style={{opacity:.4,cursor:'not-allowed'}} title="Only team leader can mark for review"><svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg><span>Leader Only</span></button>;
+                    if (!linkedInGate) return <button className="ps-btn ps-btn-review" disabled style={{opacity:.4,cursor:'not-allowed'}} title="All team members must post on LinkedIn first"><svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg><span>Team must post on LinkedIn</span></button>;
+                    return <button className="ps-btn ps-btn-review" onClick={() => setModalStage({stage_number:idx+1,stage_name:st.name,...st,...s})}><svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg><span>Mark for Review</span></button>;
+                  })()}                  {isAct && <button className="ps-btn ps-btn-review pending" style={{color:st.color,background:`${st.color}0F`,borderColor:`${st.color}30`}}><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>Awaiting Mentor</span></button>}
                   {isDis && <button className="ps-btn ps-btn-review" disabled><svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg><span>Mark for Review</span></button>}
                   {isCom ? <button className="ps-btn ps-btn-done completed" style={{color:st.color,background:`${st.color}12`,borderColor:`${st.color}30`}}><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span>Completed</span></button> : <button className="ps-btn ps-btn-done" disabled><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span>Completed</span></button>}
                 </div>
@@ -1288,16 +1357,53 @@ function ProjectDetails({ user }) {
   const [liPosted, setLiPosted] = useState(false);
   const [liConfirm, setLiConfirm] = useState(false);
   const [hasLinkedInShare, setHasLinkedInShare] = useState(false);
+  const [reenableRequest, setReenableRequest] = useState(null); // null | {status: 'pending'|'approved'|'denied'}
+  const [showReenableModal, setShowReenableModal] = useState(false);
+  const [reenableReason, setReenableReason] = useState('');
+  const [reenableSubmitting, setReenableSubmitting] = useState(false);
+  const [reenableMsg, setReenableMsg] = useState(null);
 
   const myTeamNumber = user?.teamNumber || '';
 
-  // Check if student has shared on LinkedIn
+  // Check if student has shared on LinkedIn + any pending re-enable request
   useEffect(() => {
     const roll = user?.rollNumber || '';
+    const tn = user?.teamNumber || '';
     if (!roll) return;
     fetch('/api/linkedin-share', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'check-student', rollNumber: roll }) })
       .then(r => r.json()).then(d => { if (d.shared) setHasLinkedInShare(true) }).catch(() => {});
+
+    if (tn) {
+      fetch('/api/linkedin-reenable', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'check', rollNumber: roll, teamNumber: tn }) })
+        .then(r => r.json()).then(d => { if (d.request) setReenableRequest(d.request) }).catch(() => {});
+    }
   }, [user]);
+
+  async function submitReenableRequest() {
+    if (!reenableReason.trim()) { setReenableMsg({ type: 'error', text: 'Please tell your mentor why you need to re-post' }); return }
+    setReenableSubmitting(true);
+    setReenableMsg(null);
+    try {
+      const res = await fetch('/api/linkedin-reenable', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'create',
+          rollNumber: user?.rollNumber || '',
+          teamNumber: details?.teamNumber || '',
+          requesterName: user?.name || '',
+          mentorName: details?.mentorDetails?.name || details?.mentor || '',
+          mentorEmail: details?.mentorDetails?.email || '',
+          reason: reenableReason
+        })
+      });
+      const d = await res.json();
+      if (!res.ok) { setReenableMsg({ type: 'error', text: d.error || 'Failed to send request' }); return }
+      setReenableRequest({ status: 'pending' });
+      setReenableMsg({ type: 'success', text: 'Request sent to your mentor. You will be able to re-post once approved.' });
+      setTimeout(() => { setShowReenableModal(false); setReenableReason(''); setReenableMsg(null) }, 2200);
+    } catch { setReenableMsg({ type: 'error', text: 'Network error' }) }
+    finally { setReenableSubmitting(false) }
+  }
 
   // Fetch all projects once
   useEffect(() => {
@@ -1742,10 +1848,26 @@ Powered by ${toBold('Technical Hub')}, led by CEO ${toBold('Babji Neelam')} Sir,
                     <div className="pd-show-meta">
                       <span className="pd-show-badge">{details.teamNumber}</span>
                       <span className="pd-show-badge" style={{borderColor: getTechColor(details.technology) + '60', background: `linear-gradient(135deg,${getTechColor(details.technology)}25,${getTechColor(details.technology)}10)`}}>{details.technology}</span>
-                      {details.teamNumber === myTeamNumber && <button className="pd-li-btn" onClick={openLinkedInModal} title="Share on LinkedIn">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
-                        <span>Share</span>
-                      </button>}
+                      {details.teamNumber === myTeamNumber && (
+                        hasLinkedInShare && reenableRequest?.status !== 'approved' ? (
+                          <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
+                            <button className="pd-li-btn" disabled style={{background:'linear-gradient(135deg,#4ade80,#22c55e)',opacity:.95,cursor:'default',boxShadow:'0 4px 14px rgba(74,222,128,.3)'}} title="Already posted on LinkedIn">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                              <span>Posted</span>
+                            </button>
+                            {reenableRequest?.status === 'pending' ? (
+                              <span style={{padding:'6px 10px',borderRadius:8,background:'rgba(238,167,39,.08)',border:'1px solid rgba(238,167,39,.2)',color:'#EEA727',fontSize:'.6rem',fontWeight:600,letterSpacing:'.5px',textTransform:'uppercase'}}>Re-enable Pending</span>
+                            ) : (
+                              <button onClick={()=>setShowReenableModal(true)} style={{padding:'6px 10px',borderRadius:8,background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.1)',color:'rgba(255,255,255,.55)',fontSize:'.6rem',fontWeight:600,letterSpacing:'.5px',textTransform:'uppercase',cursor:'pointer',fontFamily:'DM Sans,sans-serif'}} title="Need to re-post? Request mentor to re-enable">Request Re-enable</button>
+                            )}
+                          </div>
+                        ) : (
+                          <button className="pd-li-btn" onClick={openLinkedInModal} title="Share on LinkedIn">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                            <span>Share</span>
+                          </button>
+                        )
+                      )}
                     </div>
                     <div className="pd-show-title">{details.projectTitle}</div>
                     <div className="pd-show-sub">
@@ -1931,6 +2053,45 @@ Powered by ${toBold('Technical Hub')}, led by CEO ${toBold('Babji Neelam')} Sir,
         </div>
       </div>
     )}
+
+    {showReenableModal && (
+      <div style={{position:'fixed',top:0,left:0,width:'100vw',height:'100vh',background:'rgba(5,0,8,.94)',zIndex:999999,display:'flex',alignItems:'center',justifyContent:'center',padding:20,boxSizing:'border-box'}} onClick={()=>{if(!reenableSubmitting){setShowReenableModal(false);setReenableMsg(null)}}}>
+        <div style={{background:'#13101a',border:'1px solid rgba(238,167,39,.25)',borderRadius:18,width:'100%',maxWidth:480,overflow:'hidden',boxShadow:'0 30px 100px rgba(0,0,0,.7)'}} onClick={e=>e.stopPropagation()}>
+          <div style={{padding:'18px 22px',borderBottom:'1px solid rgba(255,255,255,.05)',display:'flex',alignItems:'center',gap:12}}>
+            <div style={{width:36,height:36,borderRadius:10,background:'linear-gradient(135deg,#EEA727,#fd1c00)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            </div>
+            <div style={{flex:1}}>
+              <div style={{fontFamily:'DM Sans,sans-serif',fontSize:'.92rem',fontWeight:700,color:'#fff'}}>Request LinkedIn Re-enable</div>
+              <div style={{fontFamily:'DM Sans,sans-serif',fontSize:'.65rem',color:'rgba(255,255,255,.35)',marginTop:2}}>Your mentor will review and approve</div>
+            </div>
+          </div>
+          <div style={{padding:'18px 22px'}}>
+            <div style={{fontSize:'.78rem',color:'rgba(255,255,255,.75)',lineHeight:1.5,marginBottom:12}}>Tell your mentor why you need to re-post on LinkedIn. For example: <em style={{color:'rgba(255,255,255,.45)'}}>"Clicked 'Yes' by mistake without actually posting"</em></div>
+            <textarea
+              value={reenableReason}
+              onChange={e=>setReenableReason(e.target.value)}
+              placeholder="Reason for re-posting..."
+              maxLength={300}
+              style={{width:'100%',minHeight:90,padding:'10px 14px',borderRadius:10,background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.08)',color:'#fff',fontFamily:'DM Sans,sans-serif',fontSize:'.8rem',outline:'none',resize:'vertical'}}
+              autoFocus
+            />
+            <div style={{fontSize:'.58rem',color:'rgba(255,255,255,.3)',textAlign:'right',marginTop:4}}>{reenableReason.length}/300</div>
+            {reenableMsg && (
+              <div style={{marginTop:10,padding:'10px 14px',borderRadius:10,background:reenableMsg.type==='success'?'rgba(74,222,128,.08)':'rgba(253,28,0,.08)',border:`1px solid ${reenableMsg.type==='success'?'rgba(74,222,128,.2)':'rgba(253,28,0,.2)'}`,color:reenableMsg.type==='success'?'#4ade80':'#ff6040',fontSize:'.75rem',fontWeight:500}}>
+                {reenableMsg.text}
+              </div>
+            )}
+          </div>
+          <div style={{display:'flex',gap:10,justifyContent:'flex-end',padding:'14px 22px',borderTop:'1px solid rgba(255,255,255,.05)'}}>
+            <button onClick={()=>{setShowReenableModal(false);setReenableReason('');setReenableMsg(null)}} disabled={reenableSubmitting} style={{padding:'10px 18px',borderRadius:10,background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.1)',color:'rgba(255,255,255,.5)',fontFamily:'DM Sans,sans-serif',fontSize:'.74rem',fontWeight:600,cursor:'pointer'}}>Cancel</button>
+            <button onClick={submitReenableRequest} disabled={reenableSubmitting} style={{padding:'10px 20px',borderRadius:10,background:'linear-gradient(135deg,#EEA727,#fd1c00)',border:'none',color:'#fff',fontFamily:'DM Sans,sans-serif',fontSize:'.74rem',fontWeight:700,cursor:reenableSubmitting?'wait':'pointer',opacity:reenableSubmitting?.6:1,boxShadow:'0 4px 14px rgba(238,167,39,.25)'}}>
+              {reenableSubmitting?'Sending...':'Send Request'}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
     </>
   );
 }
@@ -2007,7 +2168,7 @@ export default function Dashboard(){
     ? NAV_SECTIONS
     : NAV_SECTIONS.map(sec => ({
         ...sec,
-        items: sec.items.filter(i => i.id === 'my-profile' || i.id === 'team-profile' || i.id === 'project-details')
+        items: sec.items.filter(i => i.id === 'my-profile' || i.id === 'team-profile' || i.id === 'project-details' || i.id === 'project-status')
       })).filter(sec => sec.items.length > 0);
   const activeItem=VISIBLE_NAV_SECTIONS.flatMap(s=>s.items).find(i=>i.id===active);
   const displayName = profile?.name || user?.name || 'Student';
