@@ -48,7 +48,7 @@ export async function POST(request) {
             max_tokens: 800,
             messages: [{
               role: 'user',
-              content: `You are writing content for a student's LinkedIn post about an UPCOMING hackathon called "Project Space" (May 6-12, 2026) at Aditya University, powered by Technical Hub.
+              content: `You are writing content for a student's LinkedIn post about an UPCOMING event called "Project Space" (May 6-12, 2026) at Aditya University, powered by Technical Hub.
 
 PROJECT CONTEXT:
 - Project Title: ${projectTitle || 'Their Project'}
