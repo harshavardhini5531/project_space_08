@@ -1277,8 +1277,19 @@ function ProjectDetails({ user }) {
   const [liModal, setLiModal] = useState(false);
   const [liPost, setLiPost] = useState('');
   const [liSuggestion, setLiSuggestion] = useState('');
+  const [liPosted, setLiPosted] = useState(false);
+  const [liConfirm, setLiConfirm] = useState(false);
+  const [hasLinkedInShare, setHasLinkedInShare] = useState(false);
 
   const myTeamNumber = user?.teamNumber || '';
+
+  // Check if student has shared on LinkedIn
+  useEffect(() => {
+    const roll = user?.rollNumber || '';
+    if (!roll) return;
+    fetch('/api/linkedin-share', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'check-student', rollNumber: roll }) })
+      .then(r => r.json()).then(d => { if (d.shared) setHasLinkedInShare(true) }).catch(() => {});
+  }, [user]);
 
   // Fetch all projects once
   useEffect(() => {
@@ -1481,7 +1492,25 @@ Powered by ${toBold('Technical Hub')}, led by CEO ${toBold('Babji Neelam')} Sir,
       '_blank',
       'noopener,noreferrer'
     );
+    setLiPosted(true);
+    setLiConfirm(true);
+  }
+
+  async function confirmLinkedInPost() {
+    try {
+      await fetch('/api/linkedin-share', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'save', rollNumber: user?.rollNumber || '', teamNumber: details?.teamNumber || '',
+          technology: details?.technology || '', mentorName: details?.mentorDetails?.name || details?.mentor || '',
+          postedByName: user?.name || '', postedByRole: 'student'
+        })
+      });
+      setHasLinkedInShare(true);
+    } catch {}
     setLiModal(false);
+    setLiConfirm(false);
+    setLiPosted(false);
   }
 
   if (loading) {

@@ -207,12 +207,29 @@ Powered by ${toBoldM('Technical Hub')}, led by CEO ${toBoldM('Babji Neelam')} Si
     }
   }
 
+  const [liConfirm, setLiConfirm] = useState(false)
+
   function postMentorLinkedIn() {
     const text = encodeURIComponent(liPost);
     const showcaseUrl = `https://projectspace.technicalhub.io/showcase/${liTeam?.teamNumber}?v=3`;
     const url = encodeURIComponent(showcaseUrl);
     window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}&text=${text}`, '_blank', 'noopener,noreferrer');
+    setLiConfirm(true);
+  }
+
+  async function confirmMentorLinkedInPost() {
+    try {
+      await fetch('/api/linkedin-share', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'save', rollNumber: mentor?.email || '', teamNumber: liTeam?.teamNumber || '',
+          technology: liTeam?.technology || '', mentorName: mentor?.name || '',
+          postedByName: mentor?.name || '', postedByRole: 'mentor'
+        })
+      });
+    } catch {}
     setLiModal(false);
+    setLiConfirm(false);
   }
 
   // ── TEAM CARD with glow ──
@@ -801,12 +818,18 @@ body.sb-open{overflow:hidden}
                 <button onClick={() => {if(liSuggestion.trim()){setLiPost(liPost+'\n\n'+liSuggestion);setLiSuggestion('')}}} style={{padding:'10px 18px',borderRadius:10,background:'rgba(0,119,181,.1)',border:'1px solid rgba(0,119,181,.25)',color:'#00a0dc',fontFamily:'DM Sans,sans-serif',fontSize:'.72rem',fontWeight:600,cursor:'pointer',whiteSpace:'nowrap'}}>+ Add</button>
               </div>
             </div>
-            <div style={{display:'flex',gap:10,justifyContent:'flex-end',padding:'16px 22px',borderTop:'1px solid rgba(255,255,255,.05)'}}>
+            <div style={{display:'flex',gap:10,justifyContent:'flex-end',padding:'16px 22px',borderTop:'1px solid rgba(255,255,255,.05)',alignItems:'center'}}>
+              {!liConfirm ? <>
               <button onClick={() => openMentorLinkedIn(liTeam)} style={{padding:'10px 18px',borderRadius:10,background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.1)',color:'rgba(255,255,255,.7)',fontFamily:'DM Sans,sans-serif',fontSize:'.74rem',fontWeight:600,cursor:'pointer'}}>🔄 Regenerate</button>
               <button onClick={postMentorLinkedIn} style={{display:'flex',alignItems:'center',gap:8,padding:'10px 22px',borderRadius:10,background:'linear-gradient(135deg,#0077b5,#00a0dc)',border:'none',color:'#fff',fontFamily:'DM Sans,sans-serif',fontSize:'.78rem',fontWeight:700,cursor:'pointer',boxShadow:'0 4px 16px rgba(0,119,181,.3)'}}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
                 Post to LinkedIn
               </button>
+              </> : <>
+              <div style={{flex:1,fontSize:'.78rem',color:'#4ade80',fontWeight:600}}>Did you post it on LinkedIn?</div>
+              <button onClick={()=>{setLiModal(false);setLiConfirm(false)}} style={{padding:'10px 18px',borderRadius:10,background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.1)',color:'rgba(255,255,255,.5)',fontFamily:'DM Sans,sans-serif',fontSize:'.74rem',fontWeight:600,cursor:'pointer'}}>Not Yet</button>
+              <button onClick={confirmMentorLinkedInPost} style={{display:'flex',alignItems:'center',gap:8,padding:'10px 22px',borderRadius:10,background:'linear-gradient(135deg,#4ade80,#22c55e)',border:'none',color:'#fff',fontFamily:'DM Sans,sans-serif',fontSize:'.78rem',fontWeight:700,cursor:'pointer',boxShadow:'0 4px 16px rgba(74,222,128,.3)'}}>✓ Yes, I Posted!</button>
+              </>}
             </div>
           </div>
         </div>
