@@ -111,8 +111,17 @@ export async function POST(request) {
     const techTotal = techTeamList.length
     const techRegistered = techTeamList.filter(t => t.registered).length
 
+    // Get all mentor images for tech teams
+    const mentorNames = [...new Set(techTeamList.map(t => t.mentorAssigned).filter(Boolean))]
+    let allMentors = {}
+    if (mentorNames.length > 0) {
+      const { data: mentorsList } = await supabase.from('mentors').select('name, image_url').in('name', mentorNames)
+      if (mentorsList) mentorsList.forEach(m => { allMentors[m.name] = m.image_url || '' })
+    }
+
     return Response.json({
       mentor: { name: mentor.name, email: mentor.email, technology: mentor.technology, image_url: mentor.image_url || '', emp_id: mentor.emp_id || '' },
+      allMentors,
       stats: {
         totalTeams, registeredCount, pendingCount, totalMembers,
         progressPercent: totalTeams > 0 ? Math.round(registeredCount / totalTeams * 100) : 0

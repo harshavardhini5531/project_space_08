@@ -669,7 +669,7 @@ body.sb-open{overflow:hidden}
                             <div className="mpd-sub">{sel.memberCount} Members · {sel.mentorAssigned||'No mentor'}</div>
                           </div>
                           {sel.mentorAssigned && <div className="mpd-mentor-wrap">
-                            <div className="mpd-mentor-photo"><div className="mpd-mentor-fb" style={{display:'flex'}}>{(sel.mentorAssigned||'?').charAt(0)}</div></div>
+                            <div className="mpd-mentor-photo">{sel.mentorAssigned===mentor?.name && data?.mentor?.image_url ? <img src={data.mentor.image_url} alt={sel.mentorAssigned} onError={e=>{e.target.style.display='none';e.target.nextElementSibling.style.display='flex'}}/> : null}<div className="mpd-mentor-fb" style={{display:(sel.mentorAssigned===mentor?.name && data?.mentor?.image_url)?'none':'flex'}}>{(sel.mentorAssigned||'?').charAt(0)}</div></div>
                             <div className="mpd-mentor-name">{sel.mentorAssigned}</div>
                           </div>}
                         </div>
