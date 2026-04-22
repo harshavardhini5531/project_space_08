@@ -1970,7 +1970,7 @@ export default function Dashboard(){
     ? NAV_SECTIONS
     : NAV_SECTIONS.map(sec => ({
         ...sec,
-        items: sec.items.filter(i => i.id === 'my-profile' || i.id === 'team-profile')
+        items: sec.items.filter(i => i.id === 'my-profile' || i.id === 'team-profile' || i.id === 'project-details')
       })).filter(sec => sec.items.length > 0);
   const activeItem=VISIBLE_NAV_SECTIONS.flatMap(s=>s.items).find(i=>i.id===active);
   const displayName = profile?.name || user?.name || 'Student';
@@ -1985,9 +1985,9 @@ export default function Dashboard(){
 @import url('https://fonts.cdnfonts.com/css/astro');
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',sans-serif;}
-.dash{display:flex;height:100vh;color:#fff;}
+.dash{display:flex;height:100vh;height:100dvh;color:#fff;}
 
-.sidebar{height:100vh;background:linear-gradient(180deg,#0c0616,#080310,#0a0614);border-right:1px solid rgba(253,28,0,.06);display:flex;flex-direction:column;overflow:hidden;transition:width .3s cubic-bezier(.22,1,.36,1),min-width .3s cubic-bezier(.22,1,.36,1);position:relative;z-index:10;}
+.sidebar{height:100vh;height:100dvh;background:linear-gradient(180deg,#0c0616,#080310,#0a0614);border-right:1px solid rgba(253,28,0,.06);display:flex;flex-direction:column;overflow:hidden;transition:width .3s cubic-bezier(.22,1,.36,1),min-width .3s cubic-bezier(.22,1,.36,1);position:relative;z-index:10;}
 .sidebar::after{content:'';position:absolute;right:0;top:0;bottom:0;width:1px;background:linear-gradient(180deg,rgba(253,28,0,.12),rgba(250,160,0,.06),transparent);}
 .sb-toggle{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;color:rgba(255,255,255,.5);flex-shrink:0;}
 .sb-toggle:hover{background:rgba(253,28,0,.1);border-color:rgba(253,28,0,.2);color:#fd1c00;}
