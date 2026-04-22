@@ -1441,7 +1441,7 @@ ${mentorParagraph}
 ${toBold('𝗘𝘃𝗲𝗻𝘁 𝗛𝗶𝗴𝗵𝗹𝗶𝗴𝗵𝘁𝘀 — 𝗠𝗮𝘆 𝟲 𝘁𝗼 𝟭𝟮, 𝟮𝟬𝟮𝟲')}
 ${highlights}
 
-Powered by ${toBold('Technical Hub')}, led by CEO ${toBold('Babji Neelam')} Sir, and proudly hosted at ${toBold('Aditya University')}.${extraSuggestion ? '\n\n' + extraSuggestion : ''}
+Powered by ${toBold('Technical Hub')}, led by CEO ${toBold('Babji Neelam')} Sir, and  hosted at ${toBold('Aditya University')}.${extraSuggestion ? '\n\n' + extraSuggestion : ''}
 
 #${(d.technology || 'Technology').replace(/\s+/g, '')} #ProjectSpace #TechnicalHub #ArtificialIntelligence #Projects #Teamwork`;
 

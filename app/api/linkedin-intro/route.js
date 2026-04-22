@@ -49,7 +49,7 @@ export async function POST(request) {
             messages: [{
               role: 'user',
              content: isMentor
-                ? `You are writing content for a MENTOR's LinkedIn post about an UPCOMING event called "Project Space" (May 6-12, 2026) at Aditya University, powered by Technical Hub. The mentor is proudly introducing one of the teams they have guided for the past year. Write from a proud, experienced mentor perspective. Do NOT use the word "hackathon" anywhere.
+                ? `You are writing content for a MENTOR's LinkedIn post about an UPCOMING event called "Project Space" (May 6-12, 2026) at Aditya University, powered by Technical Hub. The mentor is proudly introducing one of the teams they have guided throughout this course journey. Write from a proud, experienced mentor perspective. Do NOT mention any specific time duration like "year" or "months" — instead use phrases like "throughout this course", "during their learning journey", or "across this program". Do NOT use the word "hackathon" anywhere.
 PROJECT CONTEXT:
 - Project Title: ${projectTitle || 'Their Project'}
 - Technology Track: ${technology || 'Tech'}
