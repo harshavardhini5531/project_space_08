@@ -913,8 +913,6 @@ function ProjectStatus({ user }) {
   const [psUnread, setPsUnread] = useState(0);
   const psToastTimer = useRef(null);
   const [hasLiShare, setHasLiShare] = useState(false);
-
-  const [hasLiShare, setHasLiShare] = useState(false);
   useEffect(() => {
     const roll = user?.rollNumber || user?.roll_number || '';
     if (!roll) return;
