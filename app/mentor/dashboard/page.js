@@ -43,6 +43,9 @@ export default function MentorDashboard() {
   const [reviewUnread, setReviewUnread] = useState(0)
   const [showReviewNotif, setShowReviewNotif] = useState(false)
   const [selectedMyTeam, setSelectedMyTeam] = useState(null)
+  const [reenableByTeam, setReenableByTeam] = useState({}) // {teamNumber: [{id, roll_number, requester_name, reason, created_at}, ...]}
+  const [reenableModal, setReenableModal] = useState(null) // {team} — shows modal for that team's requests
+  const [reenableProcessing, setReenableProcessing] = useState(null) // request id being processed
   const [selectedTechTeam, setSelectedTechTeam] = useState(null)
 
   useEffect(() => { const c=()=>setIsMobile(window.innerWidth<900); c(); window.addEventListener('resize',c); return ()=>window.removeEventListener('resize',c) }, [])
@@ -111,6 +114,13 @@ export default function MentorDashboard() {
   // Auto-select first team when data loads
   useEffect(() => {
     if (myTeams.length > 0 && !selectedMyTeam) setSelectedMyTeam(myTeams[0].serialNumber)
+
+    // Fetch re-enable requests for all mentor's teams
+    const teamNums = myTeams.map(t => t.teamNumber).filter(Boolean)
+    if (teamNums.length > 0) {
+      fetch('/api/linkedin-reenable', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'list-by-team', teamNumbers: teamNums }) })
+        .then(r => r.json()).then(d => { if (d.byTeam) setReenableByTeam(d.byTeam) }).catch(() => {})
+    }
     if ((techProjects.teams||[]).length > 0 && !selectedTechTeam) setSelectedTechTeam((techProjects.teams||[])[0]?.serialNumber)
   }, [data])
 
@@ -181,6 +191,36 @@ Powered by ${toBoldM('Technical Hub')} (@technicalhub), led by CEO ${toBoldM('Ba
 - Aditya University: linkedin.com/school/adityauniversity
 
 #${(t.technology || 'Technology').replace(/\s+/g, '')} #ProjectSpace #TechnicalHub #ArtificialIntelligence #Mentorship #Projects #Teamwork`;
+  }
+
+  async function refreshReenableRequests() {
+    const teamNums = myTeams.map(t => t.teamNumber).filter(Boolean)
+    if (teamNums.length === 0) return
+    try {
+      const r = await fetch('/api/linkedin-reenable', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'list-by-team', teamNumbers: teamNums }) })
+      const d = await r.json()
+      if (d.byTeam) setReenableByTeam(d.byTeam)
+    } catch {}
+  }
+
+  async function handleReenableApprove(reqId) {
+    setReenableProcessing(reqId)
+    try {
+      const r = await fetch('/api/linkedin-reenable', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'approve', requestId: reqId, mentorName: mentor?.name || 'Mentor' }) })
+      const d = await r.json()
+      if (r.ok) await refreshReenableRequests()
+    } catch {}
+    setReenableProcessing(null)
+  }
+
+  async function handleReenableDeny(reqId) {
+    setReenableProcessing(reqId)
+    try {
+      const r = await fetch('/api/linkedin-reenable', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'deny', requestId: reqId, mentorName: mentor?.name || 'Mentor' }) })
+      const d = await r.json()
+      if (r.ok) await refreshReenableRequests()
+    } catch {}
+    setReenableProcessing(null)
   }
 
   async function openMentorLinkedIn(t) {
@@ -469,6 +509,7 @@ body.sb-open{overflow:hidden}
 .mpd-sb-title{font-size:.72rem;font-weight:700;color:rgba(255,255,255,.9);letter-spacing:1.5px;text-transform:uppercase}
 .mpd-list{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:6px}
 .mpd-list::-webkit-scrollbar{width:4px}.mpd-list::-webkit-scrollbar-thumb{background:rgba(253,28,0,.15);border-radius:4px}
+@keyframes mpdReenablePulse{0%,100%{box-shadow:0 0 0 rgba(238,167,39,.0)}50%{box-shadow:0 0 12px rgba(238,167,39,.3)}}
 .mpd-item{padding:12px 14px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);cursor:pointer;transition:all .2s;position:relative}
 .mpd-item:hover{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12);transform:translateX(2px)}
 .mpd-item.on{background:linear-gradient(135deg,rgba(253,28,0,.1),rgba(238,167,39,.05));border-color:rgba(253,28,0,.25);box-shadow:0 2px 16px rgba(253,28,0,.15),0 0 24px rgba(253,28,0,.08),inset 0 0 12px rgba(253,28,0,.04);animation:mpdGlow 2s ease-in-out infinite}
@@ -664,7 +705,17 @@ body.sb-open{overflow:hidden}
                         {pendingTeams.length>0&&<span style={{fontSize:'.6rem',color:'#EEA727',padding:'3px 8px',borderRadius:6,background:'rgba(238,167,39,.08)',border:'1px solid rgba(238,167,39,.15)'}}>{pendingTeams.length} Pen</span>}
                       </div>
                     </div>
-                    <div className="mpd-list">{myTeams.map(p=><div key={p.serialNumber} className={`mpd-item ${selectedMyTeam===p.serialNumber?'on':''}`} onClick={()=>setSelectedMyTeam(p.serialNumber)}><div className="mpd-item-r1"><span className="mpd-item-title">{p.projectTitle||'Untitled'}</span><span className="mpd-item-num">{p.teamNumber||`#${p.serialNumber}`}</span></div><div className="mpd-item-r2"><span className="mpd-item-mentor">{p.memberCount} members</span><span className={`mpd-item-st ${p.registered?'reg':'pen'}`}>{p.registered?'Registered':'Pending'}</span></div></div>)}</div>
+                    <div className="mpd-list">{myTeams.map(p=>{
+                      const reqs = reenableByTeam[p.teamNumber] || []
+                      return <div key={p.serialNumber} className={`mpd-item ${selectedMyTeam===p.serialNumber?'on':''}`} onClick={()=>setSelectedMyTeam(p.serialNumber)} style={{position:'relative'}}>
+                        <div className="mpd-item-r1"><span className="mpd-item-title">{p.projectTitle||'Untitled'}</span><span className="mpd-item-num">{p.teamNumber||`#${p.serialNumber}`}</span></div>
+                        <div className="mpd-item-r2"><span className="mpd-item-mentor">{p.memberCount} members</span><span className={`mpd-item-st ${p.registered?'reg':'pen'}`}>{p.registered?'Registered':'Pending'}</span></div>
+                        {reqs.length > 0 && <button onClick={e=>{e.stopPropagation();setReenableModal({team:p,reqs})}} style={{marginTop:8,width:'100%',padding:'6px 10px',borderRadius:8,background:'linear-gradient(135deg,rgba(238,167,39,.15),rgba(253,28,0,.08))',border:'1px solid rgba(238,167,39,.3)',color:'#EEA727',fontSize:'.62rem',fontWeight:700,letterSpacing:'.5px',textTransform:'uppercase',cursor:'pointer',fontFamily:'DM Sans,sans-serif',display:'flex',alignItems:'center',justifyContent:'center',gap:6,animation:'mpdReenablePulse 2s ease-in-out infinite'}}>
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                          {reqs.length} Re-enable {reqs.length===1?'Request':'Requests'}
+                        </button>}
+                      </div>
+                    })}</div>
                   </div>
                 </div>
               </div>
@@ -792,6 +843,54 @@ body.sb-open{overflow:hidden}
             <div className="rv-modal-actions">
               <button className="rv-modal-btn cancel" onClick={()=>{setRejectModal(null);setRejectComment('')}}>Cancel</button>
               <button className="rv-modal-btn reject" disabled={actionLoading} onClick={()=>handleMilestoneAction(rejectModal.team_number,rejectModal.stage_number,'reject',rejectComment)}>{actionLoading?'Rejecting...':'Reject Stage'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {reenableModal && (
+        <div style={{position:'fixed',top:0,left:0,width:'100vw',height:'100vh',background:'rgba(5,0,8,.94)',zIndex:999999,display:'flex',alignItems:'center',justifyContent:'center',padding:20,boxSizing:'border-box'}} onClick={()=>{if(!reenableProcessing) setReenableModal(null)}}>
+          <div style={{background:'#13101a',border:'1px solid rgba(238,167,39,.25)',borderRadius:18,width:'100%',maxWidth:600,maxHeight:'85vh',overflow:'hidden',display:'flex',flexDirection:'column',boxShadow:'0 30px 100px rgba(0,0,0,.7)'}} onClick={e=>e.stopPropagation()}>
+            <div style={{padding:'18px 22px',borderBottom:'1px solid rgba(255,255,255,.05)',display:'flex',alignItems:'center',gap:12}}>
+              <div style={{width:36,height:36,borderRadius:10,background:'linear-gradient(135deg,#EEA727,#fd1c00)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+              </div>
+              <div style={{flex:1}}>
+                <div style={{fontFamily:'DM Sans,sans-serif',fontSize:'.92rem',fontWeight:700,color:'#fff'}}>LinkedIn Re-enable Requests</div>
+                <div style={{fontFamily:'DM Sans,sans-serif',fontSize:'.65rem',color:'rgba(255,255,255,.35)',marginTop:2}}>{reenableModal.team.projectTitle} · {reenableModal.team.teamNumber}</div>
+              </div>
+              <button onClick={()=>setReenableModal(null)} disabled={!!reenableProcessing} style={{width:30,height:30,borderRadius:8,background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.08)',color:'rgba(255,255,255,.5)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+            <div style={{padding:'16px 22px',overflowY:'auto',flex:1}}>
+              {(reenableByTeam[reenableModal.team.teamNumber] || []).length === 0 ? (
+                <div style={{textAlign:'center',padding:'40px 20px',color:'rgba(255,255,255,.3)',fontSize:'.82rem'}}>✓ All requests processed</div>
+              ) : (
+                <div style={{display:'flex',flexDirection:'column',gap:10}}>
+                  {(reenableByTeam[reenableModal.team.teamNumber] || []).map(req => (
+                    <div key={req.id} style={{padding:'14px 16px',borderRadius:12,background:'rgba(238,167,39,.04)',border:'1px solid rgba(238,167,39,.15)'}}>
+                      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8,gap:8,flexWrap:'wrap'}}>
+                        <div style={{display:'flex',alignItems:'center',gap:10,flex:1,minWidth:0}}>
+                          <div style={{width:32,height:32,borderRadius:10,background:'rgba(238,167,39,.12)',border:'1px solid rgba(238,167,39,.3)',display:'flex',alignItems:'center',justifyContent:'center',color:'#EEA727',fontWeight:700,fontSize:'.85rem',flexShrink:0}}>{(req.requester_name || '?').charAt(0).toUpperCase()}</div>
+                          <div style={{flex:1,minWidth:0}}>
+                            <div style={{fontFamily:'DM Sans,sans-serif',fontSize:'.82rem',fontWeight:700,color:'#fff',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{req.requester_name || req.roll_number}</div>
+                            <div style={{fontFamily:'DM Sans,sans-serif',fontSize:'.62rem',color:'rgba(255,255,255,.35)',marginTop:1}}>{req.roll_number} · {new Date(req.created_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div>
+                          </div>
+                        </div>
+                      </div>
+                      {req.reason && <div style={{padding:'8px 12px',borderRadius:8,background:'rgba(0,0,0,.25)',border:'1px solid rgba(255,255,255,.04)',fontSize:'.74rem',color:'rgba(255,255,255,.75)',lineHeight:1.5,marginBottom:10,fontStyle:'italic'}}>"{req.reason}"</div>}
+                      <div style={{display:'flex',gap:8,justifyContent:'flex-end'}}>
+                        <button onClick={()=>handleReenableDeny(req.id)} disabled={!!reenableProcessing} style={{padding:'8px 14px',borderRadius:8,background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.1)',color:'rgba(255,255,255,.55)',fontFamily:'DM Sans,sans-serif',fontSize:'.68rem',fontWeight:600,cursor:reenableProcessing?'wait':'pointer',opacity:reenableProcessing===req.id?.5:1}}>Deny</button>
+                        <button onClick={()=>handleReenableApprove(req.id)} disabled={!!reenableProcessing} style={{padding:'8px 18px',borderRadius:8,background:'linear-gradient(135deg,#4ade80,#22c55e)',border:'none',color:'#fff',fontFamily:'DM Sans,sans-serif',fontSize:'.68rem',fontWeight:700,cursor:reenableProcessing?'wait':'pointer',opacity:reenableProcessing===req.id?.6:1,boxShadow:'0 4px 14px rgba(74,222,128,.25)',display:'flex',alignItems:'center',gap:6}}>
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                          Approve & Re-enable
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
