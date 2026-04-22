@@ -4,7 +4,7 @@
 export async function POST(request) {
   try {
     const body = await request.json()
-    const { projectTitle, technology, projectArea, studentName } = body
+    const { projectTitle, technology, projectArea, studentName, isMentor } = body
 
     const fallbackIntros = [
       `Gearing up for an incredible week ahead — where ideas transform into real projects, and teamwork meets innovation. Can't wait to dive in!`,
@@ -48,21 +48,30 @@ export async function POST(request) {
             max_tokens: 800,
             messages: [{
               role: 'user',
-              content: `You are writing content for a student's LinkedIn post about an UPCOMING event called "Project Space" (May 6-12, 2026) at Aditya University, powered by Technical Hub.
-
+             content: isMentor
+                ? `You are writing content for a MENTOR's LinkedIn post about an UPCOMING event called "Project Space" (May 6-12, 2026) at Aditya University, powered by Technical Hub. The mentor is proudly introducing one of the teams they have guided for the past year. Write from a proud, experienced mentor perspective. Do NOT use the word "hackathon" anywhere.
 PROJECT CONTEXT:
 - Project Title: ${projectTitle || 'Their Project'}
 - Technology Track: ${technology || 'Tech'}
 - Domain: ${projectArea || 'General'}
-
 Generate THREE things in this EXACT JSON format (no markdown, no code blocks, just raw JSON):
-
+{
+  "title": "A catchy 1-line post title from mentor perspective (max 10 words, can use 1 emoji, NO bold formatting)",
+  "intro": "2 short sentences (max 35 words) from a MENTOR perspective — proud of guiding students, watching them grow into builders. Forward-looking. No hashtags or emojis.",
+  "highlights": "A single paragraph (60-80 words) about Project Space from mentor perspective: 900+ students, 160 teams, 7 technology tracks, AI-first theme, 24/7 work, 7 days, proud to be a mentor, Project Street energy. Express pride in this initiative."
+}
+Make all 3 unique. Do NOT repeat words across fields. Output ONLY the JSON.`
+                : `You are writing content for a student's LinkedIn post about an UPCOMING event called "Project Space" (May 6-12, 2026) at Aditya University, powered by Technical Hub.
+PROJECT CONTEXT:
+- Project Title: ${projectTitle || 'Their Project'}
+- Technology Track: ${technology || 'Tech'}
+- Domain: ${projectArea || 'General'}
+Generate THREE things in this EXACT JSON format (no markdown, no code blocks, just raw JSON):
 {
   "title": "A catchy 1-line post title (max 10 words, can use 1 emoji, NO bold formatting)",
   "intro": "2 short sentences (max 35 words total) expressing excitement for the UPCOMING event. Forward-looking tone. No hashtags or emojis.",
-  "highlights": "A single paragraph (60-80 words) about Project Space event highlights: mentions 900+ students, 160 teams, 7 technology tracks, AI-first theme, 24/7 work, 7 days, mentor support, Project Street energy. Make it fresh and different from generic descriptions. Express student's excitement to be part of it."
+  "highlights": "A single paragraph (60-80 words) about Project Space event highlights: mentions 900+ students, 160 teams, 7 technology tracks, AI-first theme, 24/7 work, 7 days, mentor support, Project Street energy. Make it fresh and different from generic descriptions. Express excitement to be part of it."
 }
-
 Make all 3 unique and personal to this project. Do NOT repeat words across the three fields. Output ONLY the JSON.`
             }]
           })

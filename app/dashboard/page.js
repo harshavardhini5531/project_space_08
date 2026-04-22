@@ -1354,17 +1354,11 @@ function ProjectDetails({ user }) {
     if (!d) return '';
 
     // Get all members except the current user (current user is posting from their account)
-    let currentUserRoll = '';
-    if (typeof window !== 'undefined') {
-      try {
-        const raw = localStorage.getItem('ps_user');
-        if (raw) {
-          const u = JSON.parse(raw);
-          currentUserRoll = u.rollNumber || u.roll_number || '';
-        }
-      } catch {}
-    }
-    const otherMembers = (d.members || []).filter(m => (m.rollNumber || m.roll_number) !== currentUserRoll);
+    const currentUserRoll = user?.rollNumber || user?.roll_number || '';
+    const otherMembers = (d.members || []).filter(m => {
+      const mRoll = (m.rollNumber || m.roll_number || '').toUpperCase();
+      return mRoll !== currentUserRoll.toUpperCase();
+    });
     const memberNames = otherMembers.map(m => m.name).filter(Boolean);
 
     const techStack = (d.techStack || []).join(' · ');

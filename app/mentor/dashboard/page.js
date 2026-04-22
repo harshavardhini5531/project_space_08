@@ -33,6 +33,10 @@ export default function MentorDashboard() {
   const [leaderboard, setLeaderboard] = useState({ leaderboard: [], stats: {} })
   const [lbLoading, setLbLoading] = useState(false)
   const [actionLoading, setActionLoading] = useState(null)
+  const [liModal, setLiModal] = useState(false)
+  const [liPost, setLiPost] = useState('')
+  const [liTeam, setLiTeam] = useState(null)
+  const [liSuggestion, setLiSuggestion] = useState('')
   const [rejectModal, setRejectModal] = useState(null)
   const [rejectComment, setRejectComment] = useState('')
   const [reviewNotifs, setReviewNotifs] = useState([])
@@ -123,6 +127,88 @@ export default function MentorDashboard() {
   const techProjects = data?.techProjects || {}
   const stats = data?.stats || {}
 
+  // ── LinkedIn Share for Mentors ──
+  function toBoldM(text) {
+    if (!text) return '';
+    const bm = {'A':'𝗔','B':'𝗕','C':'𝗖','D':'𝗗','E':'𝗘','F':'𝗙','G':'𝗚','H':'𝗛','I':'𝗜','J':'𝗝','K':'𝗞','L':'𝗟','M':'𝗠','N':'𝗡','O':'𝗢','P':'𝗣','Q':'𝗤','R':'𝗥','S':'𝗦','T':'𝗧','U':'𝗨','V':'𝗩','W':'𝗪','X':'𝗫','Y':'𝗬','Z':'𝗭','a':'𝗮','b':'𝗯','c':'𝗰','d':'𝗱','e':'𝗲','f':'𝗳','g':'𝗴','h':'𝗵','i':'𝗶','j':'𝗷','k':'𝗸','l':'𝗹','m':'𝗺','n':'𝗻','o':'𝗼','p':'𝗽','q':'𝗾','r':'𝗿','s':'𝘀','t':'𝘁','u':'𝘂','v':'𝘃','w':'𝘄','x':'𝘅','y':'𝘆','z':'𝘇','0':'𝟬','1':'𝟭','2':'𝟮','3':'𝟯','4':'𝟰','5':'𝟱','6':'𝟲','7':'𝟳','8':'𝟴','9':'𝟵'};
+    return text.split('').map(c => bm[c] || c).join('');
+  }
+
+  function generateMentorPost(t, customIntro = '') {
+    if (!t) return '';
+    const memberNames = (t.members || []).map(m => m.name).filter(Boolean);
+    const boldNames = memberNames.map(n => toBoldM(n));
+    let namesStr = '';
+    if (boldNames.length === 1) namesStr = boldNames[0];
+    else if (boldNames.length === 2) namesStr = `${boldNames[0]} and ${boldNames[1]}`;
+    else if (boldNames.length > 2) namesStr = boldNames.slice(0, -1).join(', ') + ', and ' + boldNames[boldNames.length - 1];
+
+    const techStack = (t.techStack || []).join(' · ');
+    const projectArea = (t.projectArea || []).join(' · ');
+    const aiInfo = t.aiUsage === 'Yes' && t.aiCapabilities ? ` Their approach: ${t.aiCapabilities}.` : '';
+    const techLine = techStack ? `The team will be building with ${techStack}` : '';
+    const areaLine = projectArea ? ` in the ${projectArea} domain` : '';
+    const techAreaLine = [techLine, areaLine].filter(Boolean).join('');
+    const projectDesc = t.projectDescription || t.problemStatement || '';
+    const intro = customIntro || `There's something deeply fulfilling about watching students grow from curious learners into confident builders. As we gear up for Project Space, I'm proud to introduce one of the teams I've had the privilege of mentoring.`;
+
+    return `${toBoldM('Proud Mentor Moment — Introducing Team ' + (t.teamNumber || ''))}
+
+${intro}
+
+${toBoldM(t.projectTitle || 'Our Project')}
+
+${projectDesc}
+
+${techAreaLine ? techAreaLine + '.' : ''}${aiInfo}
+
+Over the past year, I've had the privilege of guiding this talented group of students — ${namesStr}. Watching them evolve from learners to innovators, tackling real-world challenges with creativity and determination, has been one of the most rewarding experiences. Their dedication, teamwork, and hunger to learn inspire me every single day.
+
+${toBoldM('𝗘𝘃𝗲𝗻𝘁 𝗛𝗶𝗴𝗵𝗹𝗶𝗴𝗵𝘁𝘀 — 𝗠𝗮𝘆 𝟲 𝘁𝗼 𝟭𝟮, 𝟮𝟬𝟮𝟲')}
+${toBoldM('Project Space')} brings together 900+ students across 160 teams, exploring 7 cutting-edge technology stacks with an AI-first theme. For 7 days straight, teams will be working 24/7 on real-world projects — supported by dedicated mentors, hands-on learning, and the vibrant energy of Project Street. Proud to be part of this incredible initiative!
+
+Powered by ${toBoldM('Technical Hub')}, led by CEO ${toBoldM('Babji Neelam')} Sir, and proudly hosted at ${toBoldM('Aditya University')}.
+
+#${(t.technology || 'Technology').replace(/\s+/g, '')} #ProjectSpace #TechnicalHub #ArtificialIntelligence #Mentorship #Projects #Teamwork`;
+  }
+
+  async function openMentorLinkedIn(t) {
+    setLiTeam(t);
+    setLiPost('⏳ Generating your personalized post...');
+    setLiSuggestion('');
+    setLiModal(true);
+
+    try {
+      const res = await fetch('/api/linkedin-intro', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectTitle: t.projectTitle,
+          technology: t.technology,
+          projectArea: (t.projectArea || []).join(', '),
+          studentName: mentor?.name || '',
+          isMentor: true
+        })
+      });
+      const data = await res.json();
+      if (data?.intro) {
+        setLiPost(generateMentorPost(t, data.intro));
+      } else {
+        setLiPost(generateMentorPost(t));
+      }
+    } catch {
+      setLiPost(generateMentorPost(t));
+    }
+  }
+
+  function postMentorLinkedIn() {
+    const text = encodeURIComponent(liPost);
+    const showcaseUrl = `https://projectspace.technicalhub.io/showcase/${liTeam?.teamNumber}?v=3`;
+    const url = encodeURIComponent(showcaseUrl);
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}&text=${text}`, '_blank', 'noopener,noreferrer');
+    setLiModal(false);
+  }
+
   // ── TEAM CARD with glow ──
   const TeamCard = ({t}) => {
     const glow = glowColors[t.technology] || '255,255,255'
@@ -163,6 +249,12 @@ export default function MentorDashboard() {
               {t.techStack?.length>0 && <div className="tc-box"><div className="tc-box-l">Tech Stack</div><div className="tc-tags">{t.techStack.map(s=><span key={s} className="tc-tag" style={{color:'#10b981',borderColor:'rgba(16,185,129,.2)',background:'rgba(16,185,129,.06)'}}>{s}</span>)}</div></div>}
               {t.aiUsage==='Yes' && <div className="tc-box"><div className="tc-box-l">AI Usage</div><div className="tc-box-v">{t.aiCapabilities||'Yes'}</div>{t.aiTools?.length>0 && <div className="tc-tags" style={{marginTop:'6px'}}>{t.aiTools.map(a=><span key={a} className="tc-tag" style={{color:'#f21d32',borderColor:'rgba(242,29,50,.15)',background:'rgba(242,29,50,.06)'}}>{a}</span>)}</div>}</div>}
               {t.registeredAt && <div className="tc-box"><div className="tc-box-l">Registered</div><div className="tc-box-v">{new Date(t.registeredAt).toLocaleString('en-IN')}</div></div>}
+            </div>
+            <div style={{display:'flex',gap:8,marginTop:10}}>
+              <button onClick={e => {e.stopPropagation(); openMentorLinkedIn(t)}} style={{display:'flex',alignItems:'center',gap:6,padding:'8px 16px',borderRadius:10,background:'linear-gradient(135deg,#0077b5,#00a0dc)',border:'none',color:'#fff',fontSize:'.72rem',fontWeight:700,letterSpacing:'.5px',cursor:'pointer',fontFamily:'DM Sans,sans-serif',boxShadow:'0 4px 14px rgba(0,119,181,.3)',transition:'all .25s'}}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                Share on LinkedIn
+              </button>
             </div>
             <div className="tc-box" style={{marginTop:'10px'}}><div className="tc-box-l">Members ({t.memberCount})</div>
               <div className="tc-members">{t.members?.map(m=>(
@@ -518,6 +610,43 @@ body.sb-open{overflow:hidden}
             <div className="rv-modal-actions">
               <button className="rv-modal-btn cancel" onClick={()=>{setRejectModal(null);setRejectComment('')}}>Cancel</button>
               <button className="rv-modal-btn reject" disabled={actionLoading} onClick={()=>handleMilestoneAction(rejectModal.team_number,rejectModal.stage_number,'reject',rejectComment)}>{actionLoading?'Rejecting...':'Reject Stage'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {liModal && liTeam && (
+        <div style={{position:'fixed',top:0,left:0,width:'100vw',height:'100vh',background:'rgba(5,0,8,.94)',zIndex:999999,display:'flex',alignItems:'center',justifyContent:'center',padding:20,boxSizing:'border-box'}} onClick={() => setLiModal(false)}>
+          <div style={{background:'#13101a',border:'1px solid rgba(0,119,181,.25)',borderRadius:18,width:'100%',maxWidth:720,maxHeight:'88vh',overflowY:'auto',boxShadow:'0 30px 100px rgba(0,0,0,.7)',position:'relative'}} onClick={e => e.stopPropagation()}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'18px 22px',borderBottom:'1px solid rgba(255,255,255,.05)'}}>
+              <div style={{display:'flex',alignItems:'center',gap:10}}>
+                <div style={{width:36,height:36,borderRadius:10,background:'linear-gradient(135deg,#0077b5,#00a0dc)',display:'flex',alignItems:'center',justifyContent:'center',color:'#fff'}}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                </div>
+                <div>
+                  <div style={{fontFamily:'DM Sans,sans-serif',fontSize:'.92rem',fontWeight:700,color:'#fff'}}>Share on LinkedIn</div>
+                  <div style={{fontFamily:'DM Sans,sans-serif',fontSize:'.65rem',color:'rgba(255,255,255,.35)',marginTop:2}}>Introduce your team to your professional network</div>
+                </div>
+              </div>
+              <button onClick={() => setLiModal(false)} style={{width:30,height:30,borderRadius:8,background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.08)',color:'rgba(255,255,255,.5)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+            <div style={{padding:'20px 22px'}}>
+              <div style={{fontFamily:'DM Sans,sans-serif',fontSize:'.58rem',color:'rgba(255,255,255,.35)',textTransform:'uppercase',letterSpacing:'1.5px',fontWeight:700,marginBottom:8}}>Your Post (Editable)</div>
+              <textarea value={liPost} onChange={e => setLiPost(e.target.value)} style={{width:'100%',minHeight:340,padding:14,borderRadius:10,background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.08)',color:'#fff',fontFamily:'DM Sans,sans-serif',fontSize:'.8rem',lineHeight:1.5,resize:'vertical',outline:'none',boxSizing:'border-box'}} placeholder="Your LinkedIn post will appear here..."/>
+              <div style={{fontFamily:'DM Sans,sans-serif',fontSize:'.58rem',color:'rgba(255,255,255,.35)',textTransform:'uppercase',letterSpacing:'1.5px',fontWeight:700,margin:'16px 0 8px'}}>Add Note</div>
+              <div style={{display:'flex',gap:8}}>
+                <input type="text" value={liSuggestion} onChange={e => setLiSuggestion(e.target.value)} onKeyDown={e => {if(e.key==='Enter'&&liSuggestion.trim()){setLiPost(liPost+'\n\n'+liSuggestion);setLiSuggestion('')}}} placeholder="e.g. Mention a specific achievement..." style={{flex:1,padding:'10px 14px',borderRadius:10,background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.08)',color:'#fff',fontFamily:'DM Sans,sans-serif',fontSize:'.78rem',outline:'none',boxSizing:'border-box'}}/>
+                <button onClick={() => {if(liSuggestion.trim()){setLiPost(liPost+'\n\n'+liSuggestion);setLiSuggestion('')}}} style={{padding:'10px 18px',borderRadius:10,background:'rgba(0,119,181,.1)',border:'1px solid rgba(0,119,181,.25)',color:'#00a0dc',fontFamily:'DM Sans,sans-serif',fontSize:'.72rem',fontWeight:600,cursor:'pointer',whiteSpace:'nowrap'}}>+ Add</button>
+              </div>
+            </div>
+            <div style={{display:'flex',gap:10,justifyContent:'flex-end',padding:'16px 22px',borderTop:'1px solid rgba(255,255,255,.05)'}}>
+              <button onClick={() => openMentorLinkedIn(liTeam)} style={{padding:'10px 18px',borderRadius:10,background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.1)',color:'rgba(255,255,255,.7)',fontFamily:'DM Sans,sans-serif',fontSize:'.74rem',fontWeight:600,cursor:'pointer'}}>🔄 Regenerate</button>
+              <button onClick={postMentorLinkedIn} style={{display:'flex',alignItems:'center',gap:8,padding:'10px 22px',borderRadius:10,background:'linear-gradient(135deg,#0077b5,#00a0dc)',border:'none',color:'#fff',fontFamily:'DM Sans,sans-serif',fontSize:'.78rem',fontWeight:700,cursor:'pointer',boxShadow:'0 4px 16px rgba(0,119,181,.3)'}}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                Post to LinkedIn
+              </button>
             </div>
           </div>
         </div>
