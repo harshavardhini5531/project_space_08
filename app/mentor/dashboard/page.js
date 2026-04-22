@@ -42,6 +42,8 @@ export default function MentorDashboard() {
   const [reviewNotifs, setReviewNotifs] = useState([])
   const [reviewUnread, setReviewUnread] = useState(0)
   const [showReviewNotif, setShowReviewNotif] = useState(false)
+  const [selectedMyTeam, setSelectedMyTeam] = useState(null)
+  const [selectedTechTeam, setSelectedTechTeam] = useState(null)
 
   useEffect(() => { const c=()=>setIsMobile(window.innerWidth<900); c(); window.addEventListener('resize',c); return ()=>window.removeEventListener('resize',c) }, [])
 
@@ -106,6 +108,11 @@ export default function MentorDashboard() {
     const fetchN = async () => { try { const r = await fetch(`/api/milestones/notifications?type=mentor&email=${encodeURIComponent(mentor.email)}&limit=15`); const d = await r.json(); setReviewNotifs(d.notifications||[]); setReviewUnread(d.unread_count||0); } catch {} };
     fetchN(); const iv = setInterval(fetchN, 30000); return () => clearInterval(iv);
   }, [mentor]);
+  // Auto-select first team when data loads
+  useEffect(() => {
+    if (myTeams.length > 0 && !selectedMyTeam) setSelectedMyTeam(myTeams[0].serialNumber)
+    if ((techProjects.teams||[]).length > 0 && !selectedTechTeam) setSelectedTechTeam((techProjects.teams||[])[0]?.serialNumber)
+  }, [data])
 
   const glowColors = { 'Data Specialist':'59,130,246', 'AWS Development':'245,158,11', 'Full Stack':'16,185,129', 'Google Flutter':'6,182,212', 'ServiceNow':'139,92,246', 'VLSI':'239,68,68' }
   const solidColors = { 'Data Specialist':'#3b82f6', 'AWS Development':'#f59e0b', 'Full Stack':'#10b981', 'Google Flutter':'#06b6d4', 'ServiceNow':'#8b5cf6', 'VLSI':'#ef4444' }
@@ -124,7 +131,8 @@ export default function MentorDashboard() {
   const pendingTeams = myTeams.filter(t => !t.registered)
   const techProjects = data?.techProjects || {}
   const stats = data?.stats || {}
-
+// Helper to get selected team object
+  const getTeam = (teams, serial) => (teams || []).find(t => t.serialNumber === serial) || null
   // ── LinkedIn Share for Mentors ──
   function toBoldM(text) {
     if (!text) return '';
@@ -392,6 +400,68 @@ body.sb-open{overflow:hidden}
 }
 @media(max-width:480px){.md-stats{grid-template-columns:repeat(2,1fr)}}
 
+/* ═══ Mentor Project Details ═══ */
+.mpd-wrap{animation:fadeUp .5s ease both}
+.mpd-main{display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:start}
+.mpd-showcase{background:#0c0614;border:1px solid rgba(255,255,255,.06);border-radius:18px;overflow:hidden}
+.mpd-hdr{padding:20px 28px;background:linear-gradient(135deg,#1a1a1a 0%,#2d2d2d 50%,#0a0a0a 100%);position:relative;overflow:hidden}
+.mpd-hdr::before{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 40%,rgba(253,28,0,.08) 50%,rgba(238,167,39,.12) 55%,transparent 70%);background-size:200% 100%;animation:mpdShine 4s linear infinite;pointer-events:none}
+@keyframes mpdShine{0%{background-position:-100% 0}100%{background-position:200% 0}}
+.mpd-hdr-inner{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.mpd-hdr-left{flex:1;min-width:0}
+.mpd-meta{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.mpd-badge{padding:6px 14px;border-radius:8px;background:linear-gradient(135deg,rgba(253,28,0,.2),rgba(238,167,39,.15));border:1px solid rgba(253,28,0,.35);font-size:.66rem;font-weight:800;letter-spacing:2px;color:#fff;font-family:'DM Sans',sans-serif}
+.mpd-li-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;background:linear-gradient(135deg,#0077b5,#00a0dc);border:none;color:#fff;font-size:.62rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;font-family:'DM Sans',sans-serif;cursor:pointer;box-shadow:0 4px 14px rgba(0,119,181,.3);transition:all .25s}
+.mpd-li-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,119,181,.5)}
+.mpd-title{font-family:'Orbitron',sans-serif;font-size:1.3rem;font-weight:800;color:#fff;line-height:1.15;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;text-shadow:0 2px 20px rgba(238,167,39,.3)}
+.mpd-sub{font-size:.8rem;color:rgba(255,255,255,.65);font-family:'DM Sans',sans-serif}
+.mpd-mentor-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;flex-shrink:0}
+.mpd-mentor-photo{width:72px;height:72px;border-radius:50%;overflow:hidden;box-shadow:0 0 8px rgba(238,167,39,.8),0 0 14px rgba(74,222,128,.6);position:relative}
+.mpd-mentor-photo img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.mpd-mentor-fb{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:700;color:#EEA727;background:rgba(238,167,39,.08);border-radius:50%}
+.mpd-mentor-name{font-family:'Orbitron',sans-serif;font-size:.58rem;font-weight:700;color:rgba(255,255,255,.85);text-align:center;text-transform:uppercase;letter-spacing:1px}
+.mpd-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:2px;background:#0c0614}
+.mpd-mcol{position:relative;aspect-ratio:3/4;overflow:hidden;background:#10233d;transition:all .4s}
+.mpd-mcol:hover{transform:translateY(-4px);z-index:2;box-shadow:0 12px 32px rgba(0,0,0,.4)}
+.mpd-mcol::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.5) 70%,rgba(0,0,0,.85) 100%);pointer-events:none;z-index:2}
+.mpd-mimg{width:100%;height:100%;object-fit:cover;display:block}
+.mpd-mfb{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:800;color:rgba(255,255,255,.5);background:#10233d}
+.mpd-mname{position:absolute;left:8px;bottom:10px;z-index:3}
+.mpd-mname-big{font-family:'Orbitron',sans-serif;font-size:.5rem;font-weight:800;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.95);letter-spacing:1.5px;text-transform:uppercase;writing-mode:vertical-lr;transform:rotate(180deg);line-height:1}
+.mpd-mroll{position:absolute;bottom:0;right:6px;z-index:5;font-family:'Orbitron',sans-serif;font-size:.45rem;color:rgba(255,255,255,.85);font-weight:700;letter-spacing:1.5px;text-shadow:0 2px 10px rgba(0,0,0,1)}
+.mpd-star{position:absolute;top:8px;left:8px;z-index:4;width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#EEA727,#fd1c00);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(238,167,39,.5)}
+.mpd-info{padding:22px 28px;display:flex;flex-direction:column;gap:14px}
+.mpd-card{padding:16px 18px;border-radius:12px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06)}
+.mpd-card.ai{background:rgba(242,29,50,.04);border-color:rgba(242,29,50,.15)}
+.mpd-card-t{font-size:.58rem;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:8px}
+.mpd-card-v{font-size:.82rem;color:rgba(255,255,255,.85);line-height:1.6;font-weight:500}
+.mpd-grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.mpd-chips{display:flex;flex-wrap:wrap;gap:6px}
+.mpd-chip{padding:5px 12px;border-radius:8px;font-size:.68rem;font-weight:500}
+.mpd-chip.area{background:rgba(238,167,39,.08);border:1px solid rgba(238,167,39,.25);color:#EEA727}
+.mpd-chip.tech{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);color:#34d399}
+.mpd-chip.ait{background:rgba(242,29,50,.08);border:1px solid rgba(242,29,50,.25);color:#ff6b7a}
+.mpd-empty{padding:60px 20px;text-align:center;color:rgba(255,255,255,.2);font-size:.78rem}
+.mpd-sidebar{background:rgba(12,6,20,.6);border:1px solid rgba(255,255,255,.06);border-radius:18px;display:flex;flex-direction:column;overflow:hidden;max-height:calc(100vh - 80px);position:sticky;top:0;align-self:start}
+.mpd-sb-hdr{padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.05)}
+.mpd-sb-title{font-size:.72rem;font-weight:700;color:rgba(255,255,255,.9);letter-spacing:1.5px;text-transform:uppercase}
+.mpd-list{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:6px}
+.mpd-list::-webkit-scrollbar{width:4px}.mpd-list::-webkit-scrollbar-thumb{background:rgba(253,28,0,.15);border-radius:4px}
+.mpd-item{padding:12px 14px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);cursor:pointer;transition:all .2s;position:relative}
+.mpd-item:hover{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12);transform:translateX(2px)}
+.mpd-item.on{background:linear-gradient(135deg,rgba(253,28,0,.1),rgba(238,167,39,.05));border-color:rgba(253,28,0,.25);box-shadow:0 2px 12px rgba(253,28,0,.08)}
+.mpd-item.on::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:60%;border-radius:0 3px 3px 0;background:linear-gradient(180deg,#fd1c00,#EEA727)}
+.mpd-item-r1{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
+.mpd-item-r2{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.mpd-item-title{font-size:.76rem;font-weight:600;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.mpd-item-num{font-size:.6rem;font-weight:700;color:rgba(253,28,0,.85);letter-spacing:.5px;flex-shrink:0}
+.mpd-item-mentor{font-size:.58rem;color:rgba(255,255,255,.4);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.mpd-item-st{font-size:.52rem;font-weight:600;padding:2px 8px;border-radius:5px}
+.mpd-item-st.reg{background:rgba(74,222,128,.08);color:#4ade80;border:1px solid rgba(74,222,128,.12)}
+.mpd-item-st.pen{background:rgba(238,167,39,.08);color:#EEA727;border:1px solid rgba(238,167,39,.12)}
+@media(max-width:1100px){.mpd-main{grid-template-columns:1fr}.mpd-sidebar{max-height:400px;order:-1}}
+@media(max-width:768px){.mpd-hdr{padding:20px 16px}.mpd-hdr-inner{flex-direction:column;align-items:flex-start;gap:16px}.mpd-title{font-size:1rem}.mpd-info{padding:16px}.mpd-grid2{grid-template-columns:1fr}.mpd-strip{grid-template-columns:repeat(3,1fr)}.mpd-sidebar{max-height:350px}}
+
 .rv-section{animation:fadeUp .4s ease both}
 .rv-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
 .rv-stat{padding:18px 16px;border-radius:14px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);text-align:center}
@@ -530,16 +600,106 @@ body.sb-open{overflow:hidden}
               {(techProjects.teams||[]).map(t=><TeamCard key={t.serialNumber} t={t}/>)}
             </>)}
 
-            {/* ALL TEAMS */}
-            {activePage==='allteams' && (<>
-              <div className="md-page-title">MY TEAMS</div>
-              <div className="md-page-sub">{myTeams.length} teams · {registeredTeams.length} registered · {pendingTeams.length} pending</div>
-              <div style={{display:'flex',gap:8,marginBottom:16}}>
-                <span style={{padding:'6px 14px',borderRadius:8,background:'rgba(74,222,128,.08)',border:'1px solid rgba(74,222,128,.15)',color:'#4ade80',fontSize:'.72rem',fontWeight:600}}>{registeredTeams.length} Registered</span>
-                {pendingTeams.length > 0 && <span style={{padding:'6px 14px',borderRadius:8,background:'rgba(238,167,39,.08)',border:'1px solid rgba(238,167,39,.15)',color:'#EEA727',fontSize:'.72rem',fontWeight:600}}>{pendingTeams.length} Pending</span>}
+           {/* MY TEAMS — Project Details Style */}
+            {activePage==='allteams' && (()=>{
+              const sel = getTeam(myTeams, selectedMyTeam)
+              const isOwn = true
+              return <div className="mpd-wrap">
+                <div className="mpd-main">
+                  <div className="mpd-showcase">
+                    {!sel ? <div className="mpd-empty">Select a team from the sidebar</div> : <>
+                      <div className="mpd-hdr">
+                        <div className="mpd-hdr-inner">
+                          <div className="mpd-hdr-left">
+                            <div className="mpd-meta">
+                              <span className="mpd-badge">{sel.teamNumber||`#${sel.serialNumber}`}</span>
+                              <span className="mpd-badge" style={{borderColor:(solidColors[sel.technology]||'#fd1c00')+'60',background:`${solidColors[sel.technology]||'#fd1c00'}25`}}>{sel.technology}</span>
+                              <span className={`tc-badge ${sel.registered?'reg':'pen'}`}>{sel.registered?'Registered':'Pending'}</span>
+                              {isOwn && sel.teamNumber && <button onClick={e=>{e.stopPropagation();openMentorLinkedIn(sel)}} className="mpd-li-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>Share</button>}
+                            </div>
+                            <div className="mpd-title">{sel.projectTitle||'Untitled Project'}</div>
+                            <div className="mpd-sub">{sel.memberCount} Members · {sel.mentorAssigned||'No mentor'}</div>
+                          </div>
+                          {data?.mentor && <div className="mpd-mentor-wrap">
+                            <div className="mpd-mentor-photo">{data.mentor.image_url?<img src={data.mentor.image_url} alt={data.mentor.name} onError={e=>{e.target.style.display='none';e.target.nextElementSibling.style.display='flex'}}/>:null}<div className="mpd-mentor-fb" style={{display:data.mentor.image_url?'none':'flex'}}>{(data.mentor.name||'?').charAt(0)}</div></div>
+                            <div className="mpd-mentor-name">{data.mentor.name}</div>
+                          </div>}
+                        </div>
+                      </div>
+                      {sel.members?.length>0&&<div className="mpd-strip">{sel.members.map((m,i)=><div key={m.rollNumber||i} className="mpd-mcol">{m.isLeader&&<div className="mpd-star"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>}{m.imageUrl?<img className="mpd-mimg" src={m.imageUrl} alt={m.name} onError={e=>{e.target.style.display='none';e.target.nextElementSibling.style.display='flex'}}/>:null}<div className="mpd-mfb" style={{display:m.imageUrl?'none':'flex'}}>{(m.name||'?').charAt(0)}</div><div className="mpd-mname"><div className="mpd-mname-big">{(m.name||m.rollNumber).split(' ').slice(0,2).join(' ')}</div></div><div className="mpd-mroll">{m.rollNumber}</div></div>)}</div>}
+                      <div className="mpd-info">
+                        {sel.projectDescription&&<div className="mpd-card"><div className="mpd-card-t">Project Description</div><div className="mpd-card-v">{sel.projectDescription}</div></div>}
+                        {sel.problemStatement&&<div className="mpd-card"><div className="mpd-card-t">Problem Statement</div><div className="mpd-card-v">{sel.problemStatement}</div></div>}
+                        <div className="mpd-grid2">
+                          {sel.projectArea?.length>0&&<div className="mpd-card"><div className="mpd-card-t">Project Area</div><div className="mpd-chips">{sel.projectArea.map((a,i)=><span key={i} className="mpd-chip area">{a}</span>)}</div></div>}
+                          {sel.techStack?.length>0&&<div className="mpd-card"><div className="mpd-card-t">Tech Stack</div><div className="mpd-chips">{sel.techStack.map((t,i)=><span key={i} className="mpd-chip tech">{t}</span>)}</div></div>}
+                        </div>
+                        {sel.aiUsage==='Yes'&&<div className="mpd-card ai"><div className="mpd-card-t">AI Integration</div>{sel.aiCapabilities&&<div className="mpd-card-v" style={{marginBottom:10}}>{sel.aiCapabilities}</div>}{sel.aiTools?.length>0&&<div className="mpd-chips">{sel.aiTools.map((t,i)=><span key={i} className="mpd-chip ait">{t}</span>)}</div>}</div>}
+                      </div>
+                    </>}
+                  </div>
+                  <div className="mpd-sidebar">
+                    <div className="mpd-sb-hdr">
+                      <div className="mpd-sb-title">My Teams ({myTeams.length})</div>
+                      <div style={{display:'flex',gap:6,marginTop:8}}>
+                        <span style={{fontSize:'.6rem',color:'#4ade80',padding:'3px 8px',borderRadius:6,background:'rgba(74,222,128,.08)',border:'1px solid rgba(74,222,128,.15)'}}>{registeredTeams.length} Reg</span>
+                        {pendingTeams.length>0&&<span style={{fontSize:'.6rem',color:'#EEA727',padding:'3px 8px',borderRadius:6,background:'rgba(238,167,39,.08)',border:'1px solid rgba(238,167,39,.15)'}}>{pendingTeams.length} Pen</span>}
+                      </div>
+                    </div>
+                    <div className="mpd-list">{myTeams.map(p=><div key={p.serialNumber} className={`mpd-item ${selectedMyTeam===p.serialNumber?'on':''}`} onClick={()=>setSelectedMyTeam(p.serialNumber)}><div className="mpd-item-r1"><span className="mpd-item-title">{p.projectTitle||'Untitled'}</span><span className="mpd-item-num">{p.teamNumber||`#${p.serialNumber}`}</span></div><div className="mpd-item-r2"><span className="mpd-item-mentor">{p.memberCount} members</span><span className={`mpd-item-st ${p.registered?'reg':'pen'}`}>{p.registered?'Registered':'Pending'}</span></div></div>)}</div>
+                  </div>
+                </div>
               </div>
-              {myTeams.map(t=><TeamCard key={t.serialNumber} t={t}/>)}
-            </>)}
+            })()}
+
+            {/* TECH TEAMS — Project Details Style */}
+            {activePage==='techprojects' && (()=>{
+              const techTeamsList = techProjects.teams || []
+              const sel = getTeam(techTeamsList, selectedTechTeam)
+              return <div className="mpd-wrap">
+                <div className="mpd-main">
+                  <div className="mpd-showcase">
+                    {!sel ? <div className="mpd-empty">Select a team from the sidebar</div> : <>
+                      <div className="mpd-hdr">
+                        <div className="mpd-hdr-inner">
+                          <div className="mpd-hdr-left">
+                            <div className="mpd-meta">
+                              <span className="mpd-badge">{sel.teamNumber||`#${sel.serialNumber}`}</span>
+                              <span className="mpd-badge" style={{borderColor:(solidColors[sel.technology]||'#fd1c00')+'60',background:`${solidColors[sel.technology]||'#fd1c00'}25`}}>{sel.technology}</span>
+                              <span className={`tc-badge ${sel.registered?'reg':'pen'}`}>{sel.registered?'Registered':'Pending'}</span>
+                              {sel.mentorAssigned===mentor?.name && sel.teamNumber && <button onClick={e=>{e.stopPropagation();openMentorLinkedIn(sel)}} className="mpd-li-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>Share</button>}
+                            </div>
+                            <div className="mpd-title">{sel.projectTitle||'Untitled Project'}</div>
+                            <div className="mpd-sub">{sel.memberCount} Members · {sel.mentorAssigned||'No mentor'}</div>
+                          </div>
+                          {sel.mentorAssigned && <div className="mpd-mentor-wrap">
+                            <div className="mpd-mentor-photo"><div className="mpd-mentor-fb" style={{display:'flex'}}>{(sel.mentorAssigned||'?').charAt(0)}</div></div>
+                            <div className="mpd-mentor-name">{sel.mentorAssigned}</div>
+                          </div>}
+                        </div>
+                      </div>
+                      {sel.members?.length>0&&<div className="mpd-strip">{sel.members.map((m,i)=><div key={m.rollNumber||i} className="mpd-mcol">{m.isLeader&&<div className="mpd-star"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>}{m.imageUrl?<img className="mpd-mimg" src={m.imageUrl} alt={m.name} onError={e=>{e.target.style.display='none';e.target.nextElementSibling.style.display='flex'}}/>:null}<div className="mpd-mfb" style={{display:m.imageUrl?'none':'flex'}}>{(m.name||'?').charAt(0)}</div><div className="mpd-mname"><div className="mpd-mname-big">{(m.name||m.rollNumber).split(' ').slice(0,2).join(' ')}</div></div><div className="mpd-mroll">{m.rollNumber}</div></div>)}</div>}
+                      <div className="mpd-info">
+                        {sel.projectDescription&&<div className="mpd-card"><div className="mpd-card-t">Project Description</div><div className="mpd-card-v">{sel.projectDescription}</div></div>}
+                        {sel.problemStatement&&<div className="mpd-card"><div className="mpd-card-t">Problem Statement</div><div className="mpd-card-v">{sel.problemStatement}</div></div>}
+                        <div className="mpd-grid2">
+                          {sel.projectArea?.length>0&&<div className="mpd-card"><div className="mpd-card-t">Project Area</div><div className="mpd-chips">{sel.projectArea.map((a,i)=><span key={i} className="mpd-chip area">{a}</span>)}</div></div>}
+                          {sel.techStack?.length>0&&<div className="mpd-card"><div className="mpd-card-t">Tech Stack</div><div className="mpd-chips">{sel.techStack.map((t,i)=><span key={i} className="mpd-chip tech">{t}</span>)}</div></div>}
+                        </div>
+                        {sel.aiUsage==='Yes'&&<div className="mpd-card ai"><div className="mpd-card-t">AI Integration</div>{sel.aiCapabilities&&<div className="mpd-card-v" style={{marginBottom:10}}>{sel.aiCapabilities}</div>}{sel.aiTools?.length>0&&<div className="mpd-chips">{sel.aiTools.map((t,i)=><span key={i} className="mpd-chip ait">{t}</span>)}</div>}</div>}
+                      </div>
+                    </>}
+                  </div>
+                  <div className="mpd-sidebar">
+                    <div className="mpd-sb-hdr">
+                      <div className="mpd-sb-title">Tech Teams ({techTeamsList.length})</div>
+                    </div>
+                    <div className="mpd-list">{techTeamsList.map(p=><div key={p.serialNumber} className={`mpd-item ${selectedTechTeam===p.serialNumber?'on':''}`} onClick={()=>setSelectedTechTeam(p.serialNumber)}><div className="mpd-item-r1"><span className="mpd-item-title">{p.projectTitle||'Untitled'}</span><span className="mpd-item-num">{p.teamNumber||`#${p.serialNumber}`}</span></div><div className="mpd-item-r2"><span className="mpd-item-mentor">{p.mentorAssigned||'—'}</span><span className={`mpd-item-st ${p.registered?'reg':'pen'}`}>{p.registered?'Reg':'Pen'}</span></div></div>)}</div>
+                  </div>
+                </div>
+              </div>
+            })()}
+
             {/* PROJECT STATUS */}
             {activePage==='reviews' && (<div className="rv-section">
               <div className="md-page-title">PROJECT STATUS</div>
