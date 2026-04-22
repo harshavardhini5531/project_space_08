@@ -49,7 +49,7 @@ export async function POST(request) {
     if (rollNumbers.length > 0) {
       for (let i = 0; i < rollNumbers.length; i += 100) {
         const batch = rollNumbers.slice(i, i + 100)
-        const { data: students } = await supabase.from('students').select('roll_number, name, email, phone').in('roll_number', batch)
+        const { data: students } = await supabase.from('students').select('roll_number, name, email, phone, image_url').in('roll_number', batch)
         if (students) students.forEach(s => { studentMap[s.roll_number] = s })
       }
     }
@@ -65,6 +65,7 @@ export async function POST(request) {
             name: studentMap[m.roll_number]?.name || m.roll_number,
             email: studentMap[m.roll_number]?.email || '',
             phone: studentMap[m.roll_number]?.phone || '',
+            imageUrl: studentMap[m.roll_number]?.image_url || '',
             isLeader: m.is_leader,
             shortName: m.short_name || ''
           }))
@@ -111,7 +112,7 @@ export async function POST(request) {
     const techRegistered = techTeamList.filter(t => t.registered).length
 
     return Response.json({
-      mentor: { name: mentor.name, email: mentor.email, technology: mentor.technology },
+      mentor: { name: mentor.name, email: mentor.email, technology: mentor.technology, image_url: mentor.image_url || '', emp_id: mentor.emp_id || '' },
       stats: {
         totalTeams, registeredCount, pendingCount, totalMembers,
         progressPercent: totalTeams > 0 ? Math.round(registeredCount / totalTeams * 100) : 0

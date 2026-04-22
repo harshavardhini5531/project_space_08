@@ -112,10 +112,8 @@ export default function MentorDashboard() {
 
   const navItems = [
     {id:'overview', label:'Overview', icon:I.grid},
-    {id:'registered', label:'Registered', icon:I.check},
-    {id:'pending', label:'Pending', icon:I.clock},
-    {id:'techprojects', label:`${mentor?.technology || 'Tech'} Projects`, icon:I.code},
-    {id:'allteams', label:'All My Teams', icon:I.users},
+    {id:'allteams', label:'My Teams', icon:I.users},
+    {id:'techprojects', label:'Tech Teams', icon:I.code},
     {id:'reviews', label:'Project Status', icon:I.star},
     {id:'leaderboard', label:'Leaderboard', icon:I.star},
     {id:'settings', label:'Settings', icon:I.settings},
@@ -234,7 +232,6 @@ Powered by ${toBoldM('Technical Hub')}, led by CEO ${toBoldM('Babji Neelam')} Si
             <span className="tc-leader-roll">{t.leaderRoll}</span>
           </div>
           <div className="tc-contact">
-            {t.leaderPhone && t.leaderPhone.length >= 10 && <a href={`tel:${t.leaderPhone}`} className="tc-phone" title={t.leaderPhone}>{I.phone}<span style={{marginLeft:'4px'}}>{t.leaderPhone}</span></a>}
             {t.leaderEmail && <a href={`mailto:${t.leaderEmail}`} className="tc-email">{I.mail}</a>}
           </div>
         </div>
@@ -250,18 +247,19 @@ Powered by ${toBoldM('Technical Hub')}, led by CEO ${toBoldM('Babji Neelam')} Si
               {t.aiUsage==='Yes' && <div className="tc-box"><div className="tc-box-l">AI Usage</div><div className="tc-box-v">{t.aiCapabilities||'Yes'}</div>{t.aiTools?.length>0 && <div className="tc-tags" style={{marginTop:'6px'}}>{t.aiTools.map(a=><span key={a} className="tc-tag" style={{color:'#f21d32',borderColor:'rgba(242,29,50,.15)',background:'rgba(242,29,50,.06)'}}>{a}</span>)}</div>}</div>}
               {t.registeredAt && <div className="tc-box"><div className="tc-box-l">Registered</div><div className="tc-box-v">{new Date(t.registeredAt).toLocaleString('en-IN')}</div></div>}
             </div>
+            {t.mentorAssigned === mentor?.name && (
             <div style={{display:'flex',gap:8,marginTop:10}}>
               <button onClick={e => {e.stopPropagation(); openMentorLinkedIn(t)}} style={{display:'flex',alignItems:'center',gap:6,padding:'8px 16px',borderRadius:10,background:'linear-gradient(135deg,#0077b5,#00a0dc)',border:'none',color:'#fff',fontSize:'.72rem',fontWeight:700,letterSpacing:'.5px',cursor:'pointer',fontFamily:'DM Sans,sans-serif',boxShadow:'0 4px 14px rgba(0,119,181,.3)',transition:'all .25s'}}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
                 Share on LinkedIn
               </button>
             </div>
+            )}
             <div className="tc-box" style={{marginTop:'10px'}}><div className="tc-box-l">Members ({t.memberCount})</div>
               <div className="tc-members">{t.members?.map(m=>(
                 <div key={m.rollNumber} className="tc-member">
                   <div className="tc-m-avatar" style={{background:m.isLeader?`linear-gradient(135deg,rgba(${glow},.4),rgba(${glow},.15))`:'rgba(255,255,255,.04)'}}>{m.name?.charAt(0)||'?'}</div>
                   <div className="tc-m-info"><div className="tc-m-name">{m.name} {m.isLeader && '★'}</div><div className="tc-m-roll">{m.rollNumber}</div></div>
-                  {m.phone && m.phone.length >= 10 && <a href={`tel:${m.phone}`} className="tc-m-phone" title={m.phone}>{I.phone}</a>}
                 </div>
               ))}</div>
             </div>
@@ -503,7 +501,9 @@ body.sb-open{overflow:hidden}
               </div>
               <div className="md-prog"><div className="md-prog-hdr"><span className="md-prog-title">Registration Progress</span><span className="md-prog-pct">{stats.progressPercent}%</span></div><div className="md-prog-bar"><div className="md-prog-fill" style={{width:`${stats.progressPercent}%`}}/></div></div>
               <div style={{fontSize:'.82rem',fontWeight:600,color:'rgba(255,255,255,.6)',marginBottom:'12px'}}>Your Teams</div>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(320px,1fr))',gap:14}}>
               {myTeams.map(t=><TeamCard key={t.serialNumber} t={t}/>)}
+              </div>
             </>)}
 
             {/* REGISTERED */}
@@ -524,7 +524,7 @@ body.sb-open{overflow:hidden}
 
             {/* TECH PROJECTS */}
             {activePage==='techprojects' && (<>
-              <div className="md-page-title">{techProjects.technology?.toUpperCase()} PROJECTS</div>
+              <div className="md-page-title">TECH TEAMS</div>
               <div className="md-page-sub">{techProjects.total} total · {techProjects.registered} registered · {techProjects.pending} pending</div>
               <div className="md-prog" style={{marginBottom:'20px'}}><div className="md-prog-hdr"><span className="md-prog-title">{techProjects.technology} Registration</span><span className="md-prog-pct">{techProjects.total>0?Math.round(techProjects.registered/techProjects.total*100):0}%</span></div><div className="md-prog-bar"><div className="md-prog-fill" style={{width:`${techProjects.total>0?Math.round(techProjects.registered/techProjects.total*100):0}%`}}/></div></div>
               {(techProjects.teams||[]).map(t=><TeamCard key={t.serialNumber} t={t}/>)}
@@ -532,8 +532,12 @@ body.sb-open{overflow:hidden}
 
             {/* ALL TEAMS */}
             {activePage==='allteams' && (<>
-              <div className="md-page-title">ALL MY TEAMS</div>
-              <div className="md-page-sub">{myTeams.length} teams assigned</div>
+              <div className="md-page-title">MY TEAMS</div>
+              <div className="md-page-sub">{myTeams.length} teams · {registeredTeams.length} registered · {pendingTeams.length} pending</div>
+              <div style={{display:'flex',gap:8,marginBottom:16}}>
+                <span style={{padding:'6px 14px',borderRadius:8,background:'rgba(74,222,128,.08)',border:'1px solid rgba(74,222,128,.15)',color:'#4ade80',fontSize:'.72rem',fontWeight:600}}>{registeredTeams.length} Registered</span>
+                {pendingTeams.length > 0 && <span style={{padding:'6px 14px',borderRadius:8,background:'rgba(238,167,39,.08)',border:'1px solid rgba(238,167,39,.15)',color:'#EEA727',fontSize:'.72rem',fontWeight:600}}>{pendingTeams.length} Pending</span>}
+              </div>
               {myTeams.map(t=><TeamCard key={t.serialNumber} t={t}/>)}
             </>)}
             {/* PROJECT STATUS */}
