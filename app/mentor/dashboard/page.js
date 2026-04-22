@@ -27,6 +27,8 @@ export default function MentorDashboard() {
   const [isMobile, setIsMobile] = useState(false)
   const [newPass, setNewPass] = useState('')
   const [passMsg, setPassMsg] = useState('')
+  const [pushEnabled, setPushEnabled] = useState(true) // default true to avoid flash of banner
+  const [pushEnabling, setPushEnabling] = useState(false)
   const [passLoading, setPassLoading] = useState(false)
   const [reviews, setReviews] = useState({ pending: [], teams: [], stats: {} })
   const [reviewsLoading, setReviewsLoading] = useState(false)
@@ -57,8 +59,31 @@ export default function MentorDashboard() {
     const m = JSON.parse(saved)
     setMentor(m)
     fetchDashboard(m.email, token)
-    import('@/lib/pushNotifications').then(mod => mod.registerPushNotifications(m.email, 'mentor')).catch(() => {})
+    import('@/lib/pushNotifications').then(mod => mod.registerPushNotifications(m.email, 'mentor').then(ok => setPushEnabled(!!ok))).catch(() => {})
   }, [])
+
+  // Check push permission status every 5s (in case user changes it in browser settings)
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('Notification' in window)) return
+    const check = () => setPushEnabled(Notification.permission === 'granted')
+    check()
+    const iv = setInterval(check, 5000)
+    return () => clearInterval(iv)
+  }, [])
+
+  async function handleEnablePush() {
+    if (!mentor?.email) return
+    setPushEnabling(true)
+    try {
+      const mod = await import('@/lib/pushNotifications')
+      const ok = await mod.registerPushNotifications(mentor.email, 'mentor')
+      setPushEnabled(!!ok)
+      if (!ok && Notification.permission === 'denied') {
+        alert('Push notifications are blocked in your browser. Please enable them in site settings (click the lock icon in the address bar) and refresh the page.')
+      }
+    } catch (e) { console.error('Enable push failed:', e) }
+    finally { setPushEnabling(false) }
+  }
 
   async function fetchDashboard(email, token) {
     setLoading(true)
@@ -377,6 +402,7 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
 .md-main::-webkit-scrollbar{width:6px}
 .md-main::-webkit-scrollbar-thumb{background:rgba(255,255,255,.06);border-radius:3px}
 .md-page-title{font-family:'Orbitron',sans-serif;font-size:1.1rem;font-weight:700;letter-spacing:2px;color:#fff;margin-bottom:4px}
+@keyframes pushBannerPulse{0%,100%{box-shadow:0 0 0 rgba(253,28,0,.0)}50%{box-shadow:0 0 20px rgba(253,28,0,.15)}}
 .md-page-sub{font-size:.78rem;color:rgba(255,255,255,.35);margin-bottom:24px}
 
 /* Stat cards with glow */
@@ -620,6 +646,20 @@ body.sb-open{overflow:hidden}
         </div>
 
         <div className="md-main">
+          {!pushEnabled && (
+            <div style={{marginBottom:16,padding:'14px 18px',borderRadius:14,background:'linear-gradient(135deg,rgba(253,28,0,.08),rgba(238,167,39,.05))',border:'1px solid rgba(253,28,0,.25)',display:'flex',alignItems:'center',gap:14,flexWrap:'wrap',animation:'pushBannerPulse 2.5s ease-in-out infinite'}}>
+              <div style={{width:40,height:40,borderRadius:10,background:'rgba(253,28,0,.12)',border:'1px solid rgba(253,28,0,.3)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fd1c00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              </div>
+              <div style={{flex:1,minWidth:240}}>
+                <div style={{fontFamily:'DM Sans,sans-serif',fontSize:'.88rem',fontWeight:700,color:'#fd1c00',lineHeight:1.2,marginBottom:4}}>Enable Push Notifications — Required</div>
+                <div style={{fontFamily:'DM Sans,sans-serif',fontSize:'.72rem',color:'rgba(255,255,255,.6)',lineHeight:1.45}}>Get instant alerts when your teams submit stage reviews or LinkedIn re-enable requests.</div>
+              </div>
+              <button onClick={handleEnablePush} disabled={pushEnabling} style={{padding:'10px 20px',borderRadius:10,background:'linear-gradient(135deg,#fd1c00,#c41600)',border:'none',color:'#fff',fontFamily:'DM Sans,sans-serif',fontSize:'.74rem',fontWeight:700,cursor:pushEnabling?'wait':'pointer',opacity:pushEnabling?.7:1,boxShadow:'0 4px 14px rgba(253,28,0,.3)',flexShrink:0}}>
+                {pushEnabling ? 'Enabling...' : '🔔 Enable Now'}
+              </button>
+            </div>
+          )}
           {loading && <div style={{textAlign:'center',padding:'60px',color:'rgba(255,255,255,.3)'}}>Loading...</div>}
 
           {!loading && data && (<>

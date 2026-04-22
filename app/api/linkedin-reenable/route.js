@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { notifyMentor } from '@/lib/mentorNotify'
 
 export async function POST(request) {
   try {
@@ -33,6 +34,23 @@ export async function POST(request) {
       }).select().single()
 
       if (error) return Response.json({ error: error.message }, { status: 500 })
+
+      // Notify mentor via email + push
+      if (mentorEmail) {
+        const origin = request.headers.get('origin') || request.headers.get('host') ? `https://${request.headers.get('host')}` : ''
+        notifyMentor({
+          type: 'linkedin-reenable',
+          mentorEmail,
+          origin,
+          context: {
+            requesterName: requesterName || rollNumber,
+            rollNumber,
+            teamNumber,
+            reason
+          }
+        }).catch(e => console.error('notifyMentor failed:', e))
+      }
+
       return Response.json({ success: true, request: data })
     }
 
