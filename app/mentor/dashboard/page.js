@@ -280,8 +280,9 @@ Powered by ${toBoldM('Technical Hub')} (@technicalhub), led by CEO ${toBoldM('Ba
   const [liConfirm, setLiConfirm] = useState(false)
 
   function postMentorLinkedIn() {
+    if (!liTeam?.teamNumber) { alert('This team does not have a team number yet. Cannot share until registration is complete.'); return; }
     const text = encodeURIComponent(liPost);
-    const showcaseUrl = `https://projectspace.technicalhub.io/showcase/${liTeam?.teamNumber}?v=3`;
+    const showcaseUrl = `https://projectspace.technicalhub.io/showcase/${liTeam.teamNumber}?v=${Date.now()}`;
     const url = encodeURIComponent(showcaseUrl);
     window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}&text=${text}`, '_blank', 'noopener,noreferrer');
     setLiConfirm(true);

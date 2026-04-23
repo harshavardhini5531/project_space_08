@@ -1599,7 +1599,7 @@ Powered by ${toBold('Technical Hub')}, led by CEO ${toBold('Babji Neelam')} Sir,
 
   function postToLinkedIn() {
     const text = encodeURIComponent(liPost);
-    const showcaseUrl = `https://projectspace.technicalhub.io/showcase/${details.teamNumber}?v=3`;
+    const showcaseUrl = `https://projectspace.technicalhub.io/showcase/${details.teamNumber}?v=${Date.now()}`;
     const url = encodeURIComponent(showcaseUrl);
     window.open(
       `https://www.linkedin.com/sharing/share-offsite/?url=${url}&text=${text}`,
