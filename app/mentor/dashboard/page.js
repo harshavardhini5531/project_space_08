@@ -203,30 +203,12 @@ ${projectDesc}
 
 ${techAreaLine ? techAreaLine + '.' : ''}${aiInfo}
 
-Over the past year, I've had the privilege of guiding this talented group of students — ${namesStr}. Watching them evolve from learners to innovators, tackling real-world challenges with creativity and determination, has been one of the most rewarding experiences. Their dedication, teamwork, and hunger to learn inspire me every single day.
-
-${toBoldM('𝗘𝘃𝗲𝗻𝘁 𝗛𝗶𝗴𝗵𝗹𝗶𝗴𝗵𝘁𝘀 — 𝗠𝗮𝘆 𝟲 𝘁𝗼 𝟭𝟮, 𝟮𝟬𝟮𝟲')}
-${toBoldM('Project Space')} brings together 900+ students across 160 teams, exploring 7 cutting-edge technology stacks with an AI-first theme. For 7 days straight, teams will be working 24/7 on real-world projects — supported by dedicated mentors, hands-on learning, and the vibrant energy of Project Street. Proud to be part of this incredible initiative!
-
 Powered by ${toBoldM('Technical Hub')} (@technicalhub), led by CEO ${toBoldM('Babji Neelam')} Sir (@babjineelam), and hosted at ${toBoldM('Aditya University')} (@adityauniversity).
 
 🔗 Connect with us:
 - Technical Hub: linkedin.com/company/technicalhub
 - Babji Neelam: linkedin.com/in/babjineelam
 - Aditya University: linkedin.com/school/adityauniversity
-
-#${(t.technology || 'Technology').replace(/\s+/g, '')} #ProjectSpace #TechnicalHub #ArtificialIntelligence #Mentorship #Projects #Teamwork`;
-  }
-
-  async function refreshReenableRequests() {
-    const teamNums = myTeams.map(t => t.teamNumber).filter(Boolean)
-    if (teamNums.length === 0) return
-    try {
-      const r = await fetch('/api/linkedin-reenable', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'list-by-team', teamNumbers: teamNums }) })
-      const d = await r.json()
-      if (d.byTeam) setReenableByTeam(d.byTeam)
-    } catch {}
-  }
 
   async function handleReenableApprove(reqId) {
     setReenableProcessing(reqId)
