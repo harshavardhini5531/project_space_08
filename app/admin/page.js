@@ -40,6 +40,7 @@ export default function AdminDashboard() {
   const [liLoading, setLiLoading] = useState(false)
   const [liSearch, setLiSearch] = useState('')
   const [liSubTab, setLiSubTab] = useState('members')
+  const [liRecentTab, setLiRecentTab] = useState('trainees')
 
   const pwRules = [
     { label: 'At least 8 characters', test: v => v.length >= 8 },
@@ -853,62 +854,100 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
                 <style>{`
 .li-stats-wrap{animation:fadeUp .5s ease both}
 .li-title{font-family:'Orbitron',sans-serif;font-size:1.1rem;font-weight:700;letter-spacing:2px;color:#fff;margin-bottom:6px}
-.li-sub{font-size:.72rem;color:rgba(255,255,255,.35);margin-bottom:18px}
-.li-tabs{display:flex;gap:6px;padding:6px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);margin-bottom:20px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.li-sub{font-size:.72rem;color:rgba(255,255,255,.35);margin-bottom:22px}
+.li-tabs{display:flex;gap:6px;padding:6px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);margin-bottom:22px;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .li-tabs::-webkit-scrollbar{display:none}
-.li-tab{padding:9px 16px;border-radius:10px;background:transparent;border:1px solid transparent;color:rgba(255,255,255,.45);font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .2s;display:flex;align-items:center;gap:6px}
-.li-tab:hover{color:rgba(255,255,255,.8)}
+.li-tab{padding:10px 18px;border-radius:10px;background:transparent;border:1px solid transparent;color:rgba(255,255,255,.45);font-family:'DM Sans',sans-serif;font-size:.74rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .2s;display:flex;align-items:center;gap:7px}
+.li-tab:hover{color:rgba(255,255,255,.85);background:rgba(255,255,255,.03)}
 .li-tab.on{background:linear-gradient(135deg,rgba(253,28,0,.15),rgba(238,167,39,.08));border-color:rgba(253,28,0,.3);color:#fff;box-shadow:0 2px 12px rgba(253,28,0,.1)}
-.li-tab svg{width:14px;height:14px;stroke-width:1.8}
-.li-subtabs{display:flex;gap:4px;padding:4px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);margin-bottom:16px;width:fit-content}
-.li-subtab{padding:7px 14px;border-radius:7px;background:transparent;border:none;color:rgba(255,255,255,.45);font-family:'DM Sans',sans-serif;font-size:.68rem;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap}
-.li-subtab.on{background:rgba(253,28,0,.12);color:#fd1c00}
-.li-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px}
-.li-stat{padding:18px 20px;border-radius:14px;background:rgba(12,8,20,.5);border:1px solid rgba(255,255,255,.06);position:relative;overflow:hidden;transition:border-color .2s}
-.li-stat:hover{border-color:rgba(255,255,255,.12)}
-.li-stat-ic{position:absolute;top:14px;right:14px;opacity:.3;color:#fd1c00}
-.li-stat-ic svg{width:22px;height:22px}
-.li-stat-lb{font-size:.58rem;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:10px}
-.li-stat-val{font-family:'Orbitron',sans-serif;font-size:1.9rem;font-weight:800;color:#fd1c00;line-height:1;margin-bottom:6px}
+.li-tab svg{width:15px;height:15px;stroke-width:1.8}
+.li-subtabs{display:flex;gap:4px;padding:4px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);margin-bottom:18px;width:fit-content}
+.li-subtab{padding:8px 16px;border-radius:7px;background:transparent;border:none;color:rgba(255,255,255,.45);font-family:'DM Sans',sans-serif;font-size:.7rem;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap}
+.li-subtab:hover{color:rgba(255,255,255,.85)}
+.li-subtab.on{background:rgba(253,28,0,.14);color:#fd1c00}
+.li-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:26px}
+.li-stat{padding:20px 22px;border-radius:14px;background:linear-gradient(135deg,rgba(12,8,20,.8),rgba(18,12,28,.6));border:1px solid rgba(255,255,255,.06);position:relative;overflow:hidden;transition:all .25s}
+.li-stat:hover{border-color:rgba(255,255,255,.14);transform:translateY(-2px)}
+.li-stat::after{content:'';position:absolute;top:0;right:0;width:80px;height:80px;border-radius:50%;filter:blur(30px);opacity:.15;background:var(--ac,#fd1c00);pointer-events:none}
+.li-stat-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+.li-stat-ic{width:34px;height:34px;border-radius:10px;background:rgba(var(--ac-rgb,253,28,0),.1);border:1px solid rgba(var(--ac-rgb,253,28,0),.22);display:flex;align-items:center;justify-content:center;color:var(--ac,#fd1c00)}
+.li-stat-ic svg{width:18px;height:18px}
+.li-stat-lb{font-size:.58rem;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:8px;line-height:1.3}
+.li-stat-val{font-family:'Orbitron',sans-serif;font-size:2rem;font-weight:800;color:var(--ac,#fd1c00);line-height:1;margin-bottom:8px}
 .li-stat-sub{font-size:.66rem;color:rgba(255,255,255,.4)}
-.li-bar{margin-top:8px;height:4px;border-radius:3px;background:rgba(255,255,255,.05);overflow:hidden}
-.li-bar-f{height:100%;border-radius:3px;background:linear-gradient(90deg,#fd1c00,#EEA727);transition:width .6s}
-.li-table{width:100%;border-collapse:collapse;background:rgba(12,8,20,.3);border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.06)}
-.li-table th{padding:12px 14px;text-align:left;font-size:.6rem;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.35);font-weight:700;border-bottom:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02)}
-.li-table td{padding:11px 14px;font-size:.74rem;color:rgba(255,255,255,.75);border-bottom:1px solid rgba(255,255,255,.03);vertical-align:middle}
+.li-bar{margin-top:10px;height:5px;border-radius:3px;background:rgba(255,255,255,.06);overflow:hidden}
+.li-bar-f{height:100%;border-radius:3px;background:var(--ac,#fd1c00);transition:width .8s cubic-bezier(.22,1,.36,1)}
+.li-table-wrap{background:rgba(12,8,20,.3);border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.06);margin-bottom:16px}
+.li-table{width:100%;border-collapse:collapse}
+.li-table th{padding:12px 16px;text-align:left;font-size:.58rem;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.35);font-weight:700;border-bottom:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02)}
+.li-table td{padding:12px 16px;font-size:.76rem;color:rgba(255,255,255,.78);border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle}
+.li-table tr:last-child td{border-bottom:none}
 .li-table tr:hover td{background:rgba(255,255,255,.02)}
 .li-pill{padding:3px 10px;border-radius:6px;font-size:.58rem;font-weight:700;letter-spacing:.5px;display:inline-flex;align-items:center;gap:4px}
-.li-pill.done{background:rgba(74,222,128,.08);color:#4ade80;border:1px solid rgba(74,222,128,.2)}
-.li-pill.partial{background:rgba(238,167,39,.08);color:#EEA727;border:1px solid rgba(238,167,39,.2)}
-.li-pill.none{background:rgba(255,255,255,.04);color:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.08)}
+.li-pill svg{width:10px;height:10px;stroke-width:2.5}
+.li-pill.done{background:rgba(74,222,128,.08);color:#4ade80;border:1px solid rgba(74,222,128,.22)}
+.li-pill.partial{background:rgba(238,167,39,.08);color:#EEA727;border:1px solid rgba(238,167,39,.22)}
+.li-pill.none{background:rgba(255,255,255,.03);color:rgba(255,255,255,.35);border:1px solid rgba(255,255,255,.08)}
 .li-pill.leader{background:rgba(238,167,39,.08);color:#EEA727;border:1px solid rgba(238,167,39,.2)}
 .li-pill.member{background:rgba(59,130,246,.08);color:#60a5fa;border:1px solid rgba(59,130,246,.2)}
-.li-pill.mentor{background:rgba(167,139,250,.08);color:#a78bfa;border:1px solid rgba(167,139,250,.2)}
-.li-search{padding:10px 14px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);color:#fff;font-family:'DM Sans',sans-serif;font-size:.76rem;outline:none;width:100%;max-width:360px;margin-bottom:14px}
-.li-search:focus{border-color:rgba(253,28,0,.3)}
+.li-pill.mentor{background:rgba(167,139,250,.08);color:#a78bfa;border:1px solid rgba(167,139,250,.22)}
+.li-pill.trainee{background:rgba(96,165,250,.08);color:#60a5fa;border:1px solid rgba(96,165,250,.22)}
+.li-search{padding:11px 14px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);color:#fff;font-family:'DM Sans',sans-serif;font-size:.76rem;outline:none;width:100%;max-width:380px;margin-bottom:14px}
+.li-search:focus{border-color:rgba(253,28,0,.3);background:rgba(255,255,255,.05)}
 .li-empty{padding:40px;text-align:center;color:rgba(255,255,255,.25);font-size:.78rem}
-.li-tech-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);margin-bottom:8px;transition:all .2s}
-.li-tech-row:hover{border-color:rgba(255,255,255,.12);background:rgba(255,255,255,.04)}
-.li-tech-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-.li-tech-name{flex:1;font-size:.82rem;font-weight:600;color:#fff}
-.li-tech-bar-wrap{flex:1;max-width:180px;height:6px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden}
-.li-tech-bar{height:100%;border-radius:3px}
-.li-tech-count{font-family:'Orbitron',sans-serif;font-size:1rem;font-weight:800;min-width:50px;text-align:right}
-.li-overview-section{margin-top:24px}
-.li-overview-title{font-size:.82rem;font-weight:700;color:rgba(255,255,255,.85);margin-bottom:12px;display:flex;align-items:center;gap:8px}
-@media(max-width:768px){.li-table{font-size:.68rem}.li-table th,.li-table td{padding:8px 10px}.li-tab{padding:7px 12px;font-size:.64rem}.li-stat-val{font-size:1.4rem}.li-grid{grid-template-columns:1fr 1fr}}
-@media(max-width:480px){.li-grid{grid-template-columns:1fr}}
+.li-section{margin-top:28px}
+.li-section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:12px;flex-wrap:wrap}
+.li-section-title{font-family:'Orbitron',sans-serif;font-size:.88rem;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,.9);display:flex;align-items:center;gap:10px}
+.li-section-title svg{width:16px;height:16px;color:#fd1c00}
+.li-section-meta{font-size:.66rem;color:rgba(255,255,255,.35)}
+.li-mini-tabs{display:inline-flex;gap:4px;padding:3px;border-radius:8px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06)}
+.li-mini-tab{padding:6px 12px;border-radius:6px;background:transparent;border:none;color:rgba(255,255,255,.4);font-family:'DM Sans',sans-serif;font-size:.66rem;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap}
+.li-mini-tab.on{background:rgba(253,28,0,.15);color:#fd1c00}
+.li-tech-card{display:flex;align-items:center;gap:14px;padding:14px 18px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);margin-bottom:8px;transition:all .25s}
+.li-tech-card:hover{border-color:rgba(255,255,255,.14);transform:translateX(3px)}
+.li-tech-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;box-shadow:0 0 8px currentColor}
+.li-tech-info{flex:1;min-width:0}
+.li-tech-name{font-size:.84rem;font-weight:700;color:#fff;margin-bottom:4px}
+.li-tech-desc{font-size:.64rem;color:rgba(255,255,255,.4)}
+.li-tech-bar-wrap{flex:1;max-width:200px;height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}
+.li-tech-bar{height:100%;border-radius:3px;transition:width .6s}
+.li-tech-count{font-family:'Orbitron',sans-serif;font-size:1.1rem;font-weight:800;min-width:70px;text-align:right;line-height:1}
+.li-tech-pct{font-size:.62rem;color:rgba(255,255,255,.4);margin-top:2px;text-align:right}
+.li-member-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);margin-bottom:4px}
+.li-member-row:hover{background:rgba(255,255,255,.04)}
+.li-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#fd1c00,#EEA727);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:.7rem;flex-shrink:0}
+.li-member-name{font-size:.78rem;font-weight:600;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.li-member-roll{font-size:.58rem;color:rgba(255,255,255,.35);margin-top:1px}
+.li-team-expand-btn{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.5);padding:5px 10px;border-radius:6px;font-size:.6rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
+.li-team-expand-btn:hover{background:rgba(255,255,255,.08);color:#fff}
+.li-team-details{padding:12px 16px;background:rgba(255,255,255,.02);border-radius:10px;margin-top:4px}
+.li-team-members-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:6px;margin-top:8px}
+.li-team-member-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);font-size:.68rem}
+.li-team-member-item.posted{background:rgba(74,222,128,.06);border-color:rgba(74,222,128,.2)}
+.li-team-member-item.pending{background:rgba(238,167,39,.04);border-color:rgba(238,167,39,.14)}
+@media(max-width:768px){
+  .li-table{font-size:.66rem}
+  .li-table th,.li-table td{padding:8px 10px}
+  .li-tab{padding:8px 12px;font-size:.66rem}
+  .li-stat-val{font-size:1.5rem}
+  .li-grid{grid-template-columns:repeat(2,1fr)}
+  .li-section-hdr{flex-direction:column;align-items:flex-start}
+}
+@media(max-width:480px){
+  .li-grid{grid-template-columns:1fr}
+  .li-tech-bar-wrap{display:none}
+}
                 `}</style>
 
                 <div className="li-title">LINKEDIN STATS</div>
-                <div className="li-sub">Track LinkedIn posts across the event</div>
+                <div className="li-sub">Track LinkedIn engagement across the entire event</div>
 
                 <div className="li-tabs">
-                  <button className={`li-tab ${liTab==='overview'?'on':''}`} onClick={()=>{setLiTab('overview');setLiSearch('')}}>{IC.grid} Overview</button>
-                  <button className={`li-tab ${liTab==='mentors'?'on':''}`} onClick={()=>{setLiTab('mentors');setLiSearch('')}}>{IC.users} Mentor Posts</button>
-                  <button className={`li-tab ${liTab==='trainees'?'on':''}`} onClick={()=>{setLiTab('trainees');setLiSearch('')}}>{IC.user} Trainee Posts</button>
-                  <button className={`li-tab ${liTab==='teams'?'on':''}`} onClick={()=>{setLiTab('teams');setLiSearch('')}}>{IC.group} Team Posts</button>
-                  <button className={`li-tab ${liTab==='total'?'on':''}`} onClick={()=>{setLiTab('total');setLiSearch('')}}>{IC.bolt} Total Posts</button>
+                  <button className={`li-tab ${liTab==='overview'?'on':''}`} onClick={()=>{setLiTab('overview');setLiSearch('')}}>{IC.grid}Overview</button>
+                  <button className={`li-tab ${liTab==='mentors'?'on':''}`} onClick={()=>{setLiTab('mentors');setLiSearch('')}}>{IC.users}Mentor Posts</button>
+                  <button className={`li-tab ${liTab==='trainees'?'on':''}`} onClick={()=>{setLiTab('trainees');setLiSearch('')}}>{IC.user}Trainee Posts</button>
+                  <button className={`li-tab ${liTab==='teams'?'on':''}`} onClick={()=>{setLiTab('teams');setLiSearch('')}}>{IC.group}Team Posts</button>
+                  <button className={`li-tab ${liTab==='total'?'on':''}`} onClick={()=>{setLiTab('total');setLiSearch('')}}>{IC.bolt}Total Posts</button>
                 </div>
 
                 {liLoading && <div className="li-empty">Loading stats...</div>}
@@ -917,15 +956,17 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
                 {!liLoading && liStats && liTab==='overview' && (() => {
                   const s = liStats.stats || {}
                   const allTeams = liStats.allTeams || []
-                  const totalTeams = allTeams.length
-                  const totalExpectedPosts = allTeams.reduce((sum,t) => sum + (t.memberCount || 0), 0)
-                  const teamsFullyPosted = Object.values(liStats.teamBreakdown || {}).filter(t => t.team && t.shares.length >= (t.team.memberCount || 999)).length
+                  const totalStudents = allTeams.reduce((sum,t) => sum + (t.memberCount || 0), 0)
+                  const totalMentors = Object.keys(data?.mentorBreakdown || {}).length
+                  const totalExpected = totalStudents + totalMentors
+                  const teamsFullyPosted = (liStats.allTeams || []).filter(t => {
+                    const shares = liStats.teamBreakdown[t.teamNumber]?.shares || []
+                    return shares.length >= (t.memberCount || 0) && t.memberCount > 0
+                  }).length
                   const byTech = s.byTech || {}
                   const TC = { 'AWS Development':'#ff9900','Google Flutter':'#42a5f5','Full Stack':'#4ade80','Data Specialist':'#a78bfa','ServiceNow':'#22c55e','VLSI':'#ef4444','SkillUp Coder':'#f59e0b' }
-                  const techSorted = Object.entries(byTech).sort((a,b)=>b[1]-a[1])
-                  const maxTech = Math.max(...Object.values(byTech), 1)
 
-                  // Tech-wise team posts (count teams per tech where all posted)
+                  // Tech-wise team coverage
                   const techTeamCoverage = {}
                   allTeams.forEach(t => {
                     const tech = t.technology
@@ -936,27 +977,115 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
                     if (shares.length >= (t.memberCount || 0) && t.memberCount > 0) techTeamCoverage[tech].full++
                   })
 
+                  // Recent posts split by role
+                  const recentTab = liRecentTab || 'trainees'
+                  const recentFiltered = (liStats.recent || []).filter(r => recentTab === 'mentors' ? r.posted_by_role === 'mentor' : r.posted_by_role === 'student').slice(0, 10)
+
                   return <>
                     <div className="li-grid">
-                      <div className="li-stat"><div className="li-stat-ic">{IC.target}</div><div className="li-stat-lb">Total Posts Expected</div><div className="li-stat-val">{totalExpectedPosts}</div><div className="li-stat-sub">Across {totalTeams} teams</div></div>
-                      <div className="li-stat"><div className="li-stat-ic" style={{color:'#4ade80'}}>{IC.check}</div><div className="li-stat-lb">Total Posts Done</div><div className="li-stat-val" style={{color:'#4ade80'}}>{s.total || 0}</div><div className="li-bar"><div className="li-bar-f" style={{width:`${totalExpectedPosts>0?Math.round((s.total||0)/totalExpectedPosts*100):0}%`,background:'linear-gradient(90deg,#4ade80,#22c55e)'}}/></div></div>
-                      <div className="li-stat"><div className="li-stat-ic" style={{color:'#a78bfa'}}>{IC.users}</div><div className="li-stat-lb">Mentor Posts</div><div className="li-stat-val" style={{color:'#a78bfa'}}>{s.mentors || 0}</div><div className="li-stat-sub">Mentors sharing</div></div>
-                      <div className="li-stat"><div className="li-stat-ic" style={{color:'#60a5fa'}}>{IC.user}</div><div className="li-stat-lb">Trainee Posts</div><div className="li-stat-val" style={{color:'#60a5fa'}}>{s.students || 0}</div><div className="li-stat-sub">Students sharing</div></div>
-                      <div className="li-stat"><div className="li-stat-ic" style={{color:'#EEA727'}}>{IC.group}</div><div className="li-stat-lb">Teams Fully Posted</div><div className="li-stat-val" style={{color:'#EEA727'}}>{teamsFullyPosted}<span style={{fontSize:'.8rem',color:'rgba(255,255,255,.3)',marginLeft:6}}>/ {totalTeams}</span></div><div className="li-bar"><div className="li-bar-f" style={{width:`${totalTeams>0?Math.round(teamsFullyPosted/totalTeams*100):0}%`,background:'linear-gradient(90deg,#EEA727,#fd1c00)'}}/></div></div>
-                      <div className="li-stat"><div className="li-stat-ic" style={{color:'#22d3ee'}}>{IC.cpu}</div><div className="li-stat-lb">Technologies</div><div className="li-stat-val" style={{color:'#22d3ee'}}>{techSorted.length}</div><div className="li-stat-sub">Active tech tracks</div></div>
+                      <div className="li-stat" style={{'--ac':'#fd1c00','--ac-rgb':'253,28,0'}}>
+                        <div className="li-stat-top"><div className="li-stat-ic">{IC.target}</div></div>
+                        <div className="li-stat-lb">Total Posts Expected</div>
+                        <div className="li-stat-val">{totalExpected}</div>
+                        <div className="li-stat-sub">{totalStudents} students + {totalMentors} mentors</div>
+                      </div>
+                      <div className="li-stat" style={{'--ac':'#4ade80','--ac-rgb':'74,222,128'}}>
+                        <div className="li-stat-top"><div className="li-stat-ic">{IC.check}</div></div>
+                        <div className="li-stat-lb">Total Posts Done</div>
+                        <div className="li-stat-val">{s.total || 0}</div>
+                        <div className="li-bar"><div className="li-bar-f" style={{width:`${totalExpected>0?Math.round((s.total||0)/totalExpected*100):0}%`}}/></div>
+                      </div>
+                      <div className="li-stat" style={{'--ac':'#a78bfa','--ac-rgb':'167,139,250'}}>
+                        <div className="li-stat-top"><div className="li-stat-ic">{IC.users}</div></div>
+                        <div className="li-stat-lb">Mentor Posts</div>
+                        <div className="li-stat-val">{s.mentors || 0}<span style={{fontSize:'.8rem',color:'rgba(255,255,255,.3)',marginLeft:6}}>/ {totalMentors}</span></div>
+                        <div className="li-bar"><div className="li-bar-f" style={{width:`${totalMentors>0?Math.round((s.mentors||0)/totalMentors*100):0}%`}}/></div>
+                      </div>
+                      <div className="li-stat" style={{'--ac':'#60a5fa','--ac-rgb':'96,165,250'}}>
+                        <div className="li-stat-top"><div className="li-stat-ic">{IC.user}</div></div>
+                        <div className="li-stat-lb">Trainee Posts</div>
+                        <div className="li-stat-val">{s.students || 0}<span style={{fontSize:'.8rem',color:'rgba(255,255,255,.3)',marginLeft:6}}>/ {totalStudents}</span></div>
+                        <div className="li-bar"><div className="li-bar-f" style={{width:`${totalStudents>0?Math.round((s.students||0)/totalStudents*100):0}%`}}/></div>
+                      </div>
+                      <div className="li-stat" style={{'--ac':'#EEA727','--ac-rgb':'238,167,39'}}>
+                        <div className="li-stat-top"><div className="li-stat-ic">{IC.group}</div></div>
+                        <div className="li-stat-lb">Teams Fully Posted</div>
+                        <div className="li-stat-val">{teamsFullyPosted}<span style={{fontSize:'.8rem',color:'rgba(255,255,255,.3)',marginLeft:6}}>/ {allTeams.length}</span></div>
+                        <div className="li-bar"><div className="li-bar-f" style={{width:`${allTeams.length>0?Math.round(teamsFullyPosted/allTeams.length*100):0}%`}}/></div>
+                      </div>
+                      <div className="li-stat" style={{'--ac':'#22d3ee','--ac-rgb':'34,211,238'}}>
+                        <div className="li-stat-top"><div className="li-stat-ic">{IC.cpu}</div></div>
+                        <div className="li-stat-lb">Technologies Active</div>
+                        <div className="li-stat-val">{Object.keys(byTech).length}</div>
+                        <div className="li-stat-sub">Tech tracks posting</div>
+                      </div>
                     </div>
 
-                    <div className="li-overview-section">
-                      <div className="li-overview-title">{IC.cpu} Technology-wise Team Posts</div>
-                      {Object.entries(techTeamCoverage).sort(([,a],[,b])=>b.full-a.full).map(([tech, d]) => (
-                        <div key={tech} className="li-tech-row">
-                          <div className="li-tech-dot" style={{background:TC[tech]||'#888'}}/>
-                          <div className="li-tech-name">{tech}</div>
-                          <div className="li-tech-bar-wrap"><div className="li-tech-bar" style={{width:`${d.total>0?Math.round(d.full/d.total*100):0}%`,background:TC[tech]||'#888'}}/></div>
-                          <div className="li-tech-count" style={{color:TC[tech]||'#fff'}}>{d.full}/{d.total}</div>
+                    {/* Tech-wise team coverage */}
+                    <div className="li-section">
+                      <div className="li-section-hdr">
+                        <div className="li-section-title">{IC.cpu}Technology-wise Team Coverage</div>
+                        <div className="li-section-meta">Teams where all members posted</div>
+                      </div>
+                      {Object.entries(techTeamCoverage).sort(([,a],[,b])=>(b.full/b.total||0)-(a.full/a.total||0)).map(([tech, d]) => {
+                        const pct = d.total > 0 ? Math.round(d.full/d.total*100) : 0
+                        return <div key={tech} className="li-tech-card">
+                          <div className="li-tech-dot" style={{background:TC[tech]||'#888',color:TC[tech]||'#888'}}/>
+                          <div className="li-tech-info">
+                            <div className="li-tech-name">{tech}</div>
+                            <div className="li-tech-desc">{d.full} of {d.total} teams completed</div>
+                          </div>
+                          <div className="li-tech-bar-wrap"><div className="li-tech-bar" style={{width:`${pct}%`,background:TC[tech]||'#888'}}/></div>
+                          <div>
+                            <div className="li-tech-count" style={{color:TC[tech]||'#fff'}}>{d.full}/{d.total}</div>
+                            <div className="li-tech-pct">{pct}%</div>
+                          </div>
                         </div>
-                      ))}
+                      })}
                       {Object.keys(techTeamCoverage).length === 0 && <div className="li-empty">No tech data</div>}
+                    </div>
+
+                    {/* Recent Posts */}
+                    <div className="li-section">
+                      <div className="li-section-hdr">
+                        <div className="li-section-title">{IC.clk}Recent Posts (Last 10)</div>
+                        <div className="li-mini-tabs">
+                          <button className={`li-mini-tab ${recentTab==='trainees'?'on':''}`} onClick={()=>setLiRecentTab('trainees')}>Trainees</button>
+                          <button className={`li-mini-tab ${recentTab==='mentors'?'on':''}`} onClick={()=>setLiRecentTab('mentors')}>Mentors</button>
+                        </div>
+                      </div>
+                      {recentFiltered.length === 0 ? <div className="li-empty">No recent {recentTab === 'mentors' ? 'mentor' : 'trainee'} posts</div> : (
+                        <div className="li-table-wrap">
+                          <table className="li-table">
+                            <thead>
+                              <tr>
+                                <th>Name</th>
+                                {recentTab === 'trainees' && <th>Role</th>}
+                                <th>Team</th>
+                                <th>Technology</th>
+                                <th>Posted At</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {recentFiltered.map(r => {
+                                // Check if student is leader
+                                let isLeader = false
+                                if (recentTab === 'trainees') {
+                                  const team = liStats.teamMap[r.team_number]
+                                  if (team) isLeader = (team.members || []).some(m => (m.rollNumber || '').toUpperCase() === (r.roll_number || '').toUpperCase() && m.isLeader)
+                                }
+                                return <tr key={r.id}>
+                                  <td style={{color:'#fff',fontWeight:600}}>{r.posted_by_name || r.roll_number}</td>
+                                  {recentTab === 'trainees' && <td><span className={`li-pill ${isLeader?'leader':'member'}`}>{isLeader?'Leader':'Member'}</span></td>}
+                                  <td style={{color:'#fd1c00',fontWeight:600}}>{r.team_number}</td>
+                                  <td style={{fontSize:'.68rem',color:'rgba(255,255,255,.55)'}}>{r.technology || '—'}</td>
+                                  <td style={{color:'rgba(255,255,255,.35)',fontSize:'.66rem'}}>{new Date(r.created_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</td>
+                                </tr>
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
                     </div>
                   </>
                 })()}
@@ -964,21 +1093,23 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
                 {!liLoading && liStats && liTab==='mentors' && (() => {
                   const recent = liStats.recent || []
                   const q = liSearch.toLowerCase()
-                  const mentorPosts = recent.filter(r => r.posted_by_role === 'mentor' && (!q || (r.posted_by_name||'').toLowerCase().includes(q) || (r.mentor_name||'').toLowerCase().includes(q) || (r.team_number||'').toLowerCase().includes(q)))
+                  const mentorPosts = recent.filter(r => r.posted_by_role === 'mentor' && (!q || (r.posted_by_name||'').toLowerCase().includes(q) || (r.team_number||'').toLowerCase().includes(q)))
                   return <>
-                    <input className="li-search" placeholder="Search mentor name, team..." value={liSearch} onChange={e=>setLiSearch(e.target.value)} />
+                    <input className="li-search" placeholder="Search mentor, team..." value={liSearch} onChange={e=>setLiSearch(e.target.value)} />
                     <div style={{fontSize:'.68rem',color:'rgba(255,255,255,.35)',marginBottom:10}}>{mentorPosts.length} mentor posts</div>
                     {mentorPosts.length === 0 ? <div className="li-empty">No mentor posts yet</div> : (
-                      <table className="li-table"><thead><tr><th>Mentor</th><th>Team</th><th>Technology</th><th>Posted At</th></tr></thead><tbody>
-                        {mentorPosts.map(r => (
-                          <tr key={r.id}>
-                            <td style={{color:'#fff',fontWeight:600}}>{r.posted_by_name}</td>
-                            <td style={{color:'#fd1c00',fontWeight:600}}>{r.team_number}</td>
-                            <td style={{fontSize:'.66rem'}}>{r.technology || '—'}</td>
-                            <td style={{color:'rgba(255,255,255,.35)',fontSize:'.66rem'}}>{new Date(r.created_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</td>
-                          </tr>
-                        ))}
-                      </tbody></table>
+                      <div className="li-table-wrap">
+                        <table className="li-table"><thead><tr><th>Mentor</th><th>Team</th><th>Technology</th><th>Posted At</th></tr></thead><tbody>
+                          {mentorPosts.map(r => (
+                            <tr key={r.id}>
+                              <td style={{color:'#fff',fontWeight:600}}>{r.posted_by_name}</td>
+                              <td style={{color:'#fd1c00',fontWeight:600}}>{r.team_number}</td>
+                              <td style={{fontSize:'.68rem'}}>{r.technology || '—'}</td>
+                              <td style={{color:'rgba(255,255,255,.35)',fontSize:'.66rem'}}>{new Date(r.created_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</td>
+                            </tr>
+                          ))}
+                        </tbody></table>
+                      </div>
                     )}
                   </>
                 })()}
@@ -986,40 +1117,36 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
                 {!liLoading && liStats && liTab==='trainees' && (() => {
                   const recent = liStats.recent || []
                   const q = liSearch.toLowerCase()
-
-                  // Build roll → isLeader map from admin data
                   const leaderMap = {}
                   ;(liStats.allTeams || []).forEach(t => {
-                    ;(t.members || []).forEach(m => {
-                      if (m.isLeader) leaderMap[(m.rollNumber || '').toUpperCase()] = true
-                    })
+                    ;(t.members || []).forEach(m => { if (m.isLeader) leaderMap[(m.rollNumber || '').toUpperCase()] = true })
                   })
-
                   const traineePosts = recent.filter(r => r.posted_by_role === 'student' && (!q || (r.posted_by_name||'').toLowerCase().includes(q) || (r.roll_number||'').toLowerCase().includes(q) || (r.team_number||'').toLowerCase().includes(q)))
                   return <>
-                    <input className="li-search" placeholder="Search name, roll number, team..." value={liSearch} onChange={e=>setLiSearch(e.target.value)} />
+                    <input className="li-search" placeholder="Search name, roll, team..." value={liSearch} onChange={e=>setLiSearch(e.target.value)} />
                     <div style={{fontSize:'.68rem',color:'rgba(255,255,255,.35)',marginBottom:10}}>{traineePosts.length} trainee posts</div>
                     {traineePosts.length === 0 ? <div className="li-empty">No trainee posts yet</div> : (
-                      <table className="li-table"><thead><tr><th>Name</th><th>Roll Number</th><th>Role</th><th>Team</th><th>Technology</th><th>Posted At</th></tr></thead><tbody>
-                        {traineePosts.map(r => {
-                          const isLeader = leaderMap[(r.roll_number || '').toUpperCase()]
-                          return <tr key={r.id}>
-                            <td style={{color:'#fff',fontWeight:600}}>{r.posted_by_name || '—'}</td>
-                            <td style={{color:'rgba(255,255,255,.55)',fontSize:'.66rem'}}>{r.roll_number}</td>
-                            <td><span className={`li-pill ${isLeader?'leader':'member'}`}>{isLeader?'Leader':'Member'}</span></td>
-                            <td style={{color:'#fd1c00',fontWeight:600}}>{r.team_number}</td>
-                            <td style={{fontSize:'.66rem'}}>{r.technology || '—'}</td>
-                            <td style={{color:'rgba(255,255,255,.35)',fontSize:'.66rem'}}>{new Date(r.created_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</td>
-                          </tr>
-                        })}
-                      </tbody></table>
+                      <div className="li-table-wrap">
+                        <table className="li-table"><thead><tr><th>Name</th><th>Roll Number</th><th>Role</th><th>Team</th><th>Technology</th><th>Posted At</th></tr></thead><tbody>
+                          {traineePosts.map(r => {
+                            const isLeader = leaderMap[(r.roll_number || '').toUpperCase()]
+                            return <tr key={r.id}>
+                              <td style={{color:'#fff',fontWeight:600}}>{r.posted_by_name || '—'}</td>
+                              <td style={{color:'rgba(255,255,255,.55)',fontSize:'.66rem'}}>{r.roll_number}</td>
+                              <td><span className={`li-pill ${isLeader?'leader':'member'}`}>{isLeader?'Leader':'Member'}</span></td>
+                              <td style={{color:'#fd1c00',fontWeight:600}}>{r.team_number}</td>
+                              <td style={{fontSize:'.68rem'}}>{r.technology || '—'}</td>
+                              <td style={{color:'rgba(255,255,255,.35)',fontSize:'.66rem'}}>{new Date(r.created_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</td>
+                            </tr>
+                          })}
+                        </tbody></table>
+                      </div>
                     )}
                   </>
                 })()}
 
                 {!liLoading && liStats && liTab==='teams' && (() => {
                   const q = liSearch.toLowerCase()
-                  // Only teams where ALL members posted
                   const fullyPostedTeams = (liStats.allTeams || []).filter(t => {
                     const shares = liStats.teamBreakdown[t.teamNumber]?.shares || []
                     return shares.length > 0 && shares.length >= (t.memberCount || 0) && t.memberCount > 0
@@ -1027,45 +1154,55 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
 
                   return <>
                     <input className="li-search" placeholder="Search team, project, mentor..." value={liSearch} onChange={e=>setLiSearch(e.target.value)} />
-                    <div style={{fontSize:'.68rem',color:'rgba(255,255,255,.35)',marginBottom:10}}>{fullyPostedTeams.length} teams fully completed</div>
+                    <div style={{fontSize:'.68rem',color:'rgba(255,255,255,.35)',marginBottom:10}}>{fullyPostedTeams.length} teams completed (all members posted)</div>
                     {fullyPostedTeams.length === 0 ? <div className="li-empty">No teams have fully posted yet</div> : (
-                      <table className="li-table"><thead><tr><th>Team</th><th>Project</th><th>Technology</th><th>Mentor</th><th>Members</th><th>Status</th></tr></thead><tbody>
-                        {fullyPostedTeams.map(t => (
-                          <tr key={t.serialNumber}>
-                            <td style={{color:'#fd1c00',fontWeight:700}}>{t.teamNumber}</td>
-                            <td style={{maxWidth:220,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{t.projectTitle || '—'}</td>
-                            <td style={{fontSize:'.66rem'}}>{t.technology}</td>
-                            <td style={{color:'rgba(255,255,255,.55)',fontSize:'.7rem'}}>{t.mentorAssigned || '—'}</td>
-                            <td style={{fontWeight:600,color:'#4ade80'}}>{t.memberCount}/{t.memberCount}</td>
-                            <td><span className="li-pill done">{IC.check} All Posted</span></td>
-                          </tr>
-                        ))}
-                      </tbody></table>
+                      <div className="li-table-wrap">
+                        <table className="li-table"><thead><tr><th>Team</th><th>Project</th><th>Technology</th><th>Mentor</th><th>Members</th><th>Status</th></tr></thead><tbody>
+                          {fullyPostedTeams.map(t => (
+                            <tr key={t.serialNumber}>
+                              <td style={{color:'#fd1c00',fontWeight:700}}>{t.teamNumber}</td>
+                              <td style={{maxWidth:220,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{t.projectTitle || '—'}</td>
+                              <td style={{fontSize:'.68rem'}}>{t.technology}</td>
+                              <td style={{color:'rgba(255,255,255,.55)',fontSize:'.7rem'}}>{t.mentorAssigned || '—'}</td>
+                              <td style={{fontWeight:600,color:'#4ade80'}}>{t.memberCount}/{t.memberCount}</td>
+                              <td><span className="li-pill done">{IC.check}All Posted</span></td>
+                            </tr>
+                          ))}
+                        </tbody></table>
+                      </div>
                     )}
                   </>
                 })()}
 
                 {!liLoading && liStats && liTab==='total' && (() => {
                   const subTab = liSubTab || 'members'
-                  const byTech = liStats.stats?.byTech || {}
+                  const q = liSearch.toLowerCase()
+                  const recent = liStats.recent || []
                   const allTeams = liStats.allTeams || []
                   const TC = { 'AWS Development':'#ff9900','Google Flutter':'#42a5f5','Full Stack':'#4ade80','Data Specialist':'#a78bfa','ServiceNow':'#22c55e','VLSI':'#ef4444','SkillUp Coder':'#f59e0b' }
 
-                  // Members per tech
-                  const techMembers = Object.entries(byTech).sort(([,a],[,b])=>b-a)
-                  const maxMembers = Math.max(...Object.values(byTech), 1)
-
-                  // Teams per tech (where all posted)
-                  const techTeams = {}
-                  allTeams.forEach(t => {
-                    const tech = t.technology
-                    if (!tech) return
-                    if (!techTeams[tech]) techTeams[tech] = { total: 0, full: 0 }
-                    techTeams[tech].total++
-                    const shares = liStats.teamBreakdown[t.teamNumber]?.shares || []
-                    if (shares.length >= (t.memberCount || 0) && t.memberCount > 0) techTeams[tech].full++
+                  // Group member posts by tech
+                  const postsByTech = {}
+                  recent.forEach(r => {
+                    const tech = r.technology || 'Unknown'
+                    if (!postsByTech[tech]) postsByTech[tech] = []
+                    postsByTech[tech].push(r)
                   })
-                  const techTeamsSorted = Object.entries(techTeams).sort(([,a],[,b])=>b.full-a.full)
+                  const techKeys = Object.keys(postsByTech).sort((a,b) => postsByTech[b].length - postsByTech[a].length)
+
+                  // Leader map
+                  const leaderMap = {}
+                  allTeams.forEach(t => { (t.members || []).forEach(m => { if (m.isLeader) leaderMap[(m.rollNumber || '').toUpperCase()] = true }) })
+
+                  // Teams per tech with detail
+                  const teamsByTech = {}
+                  allTeams.forEach(t => {
+                    const tech = t.technology || 'Unknown'
+                    if (!teamsByTech[tech]) teamsByTech[tech] = []
+                    const shares = liStats.teamBreakdown[t.teamNumber]?.shares || []
+                    const postedRolls = new Set(shares.map(s => (s.roll_number||'').toUpperCase()))
+                    teamsByTech[tech].push({ ...t, postedCount: shares.length, postedRolls })
+                  })
 
                   return <>
                     <div className="li-subtabs">
@@ -1073,34 +1210,69 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
                       <button className={`li-subtab ${subTab==='teams'?'on':''}`} onClick={()=>setLiSubTab('teams')}>Tech-wise Team Posts</button>
                     </div>
 
+                    <input className="li-search" placeholder="Search..." value={liSearch} onChange={e=>setLiSearch(e.target.value)} />
+
                     {subTab === 'members' && (<>
-                      <div style={{fontSize:'.68rem',color:'rgba(255,255,255,.35)',marginBottom:12}}>Individual member posts by technology</div>
-                      {techMembers.length === 0 ? <div className="li-empty">No posts yet</div> : techMembers.map(([tech, count]) => (
-                        <div key={tech} className="li-tech-row">
-                          <div className="li-tech-dot" style={{background:TC[tech]||'#888'}}/>
-                          <div className="li-tech-name">{tech}</div>
-                          <div className="li-tech-bar-wrap"><div className="li-tech-bar" style={{width:`${Math.round(count/maxMembers*100)}%`,background:TC[tech]||'#888'}}/></div>
-                          <div className="li-tech-count" style={{color:TC[tech]||'#fff'}}>{count}</div>
+                      {techKeys.length === 0 ? <div className="li-empty">No posts yet</div> : techKeys.map(tech => {
+                        const posts = postsByTech[tech].filter(p => !q || (p.posted_by_name||'').toLowerCase().includes(q) || (p.roll_number||'').toLowerCase().includes(q) || (p.team_number||'').toLowerCase().includes(q))
+                        if (posts.length === 0) return null
+                        return <div key={tech} className="li-section" style={{marginTop:20}}>
+                          <div className="li-section-hdr">
+                            <div className="li-section-title"><span style={{width:10,height:10,borderRadius:'50%',background:TC[tech]||'#888',display:'inline-block'}}/>{tech}</div>
+                            <div className="li-section-meta">{posts.length} posts</div>
+                          </div>
+                          <div className="li-table-wrap">
+                            <table className="li-table"><thead><tr><th>Name</th><th>Roll</th><th>Role</th><th>Team</th><th>Posted At</th></tr></thead><tbody>
+                              {posts.map(p => {
+                                const isLeader = leaderMap[(p.roll_number||'').toUpperCase()]
+                                const isMentor = p.posted_by_role === 'mentor'
+                                return <tr key={p.id}>
+                                  <td style={{color:'#fff',fontWeight:600}}>{p.posted_by_name || '—'}</td>
+                                  <td style={{color:'rgba(255,255,255,.55)',fontSize:'.64rem'}}>{p.roll_number}</td>
+                                  <td><span className={`li-pill ${isMentor?'mentor':isLeader?'leader':'member'}`}>{isMentor?'Mentor':isLeader?'Leader':'Member'}</span></td>
+                                  <td style={{color:'#fd1c00',fontWeight:600}}>{p.team_number}</td>
+                                  <td style={{color:'rgba(255,255,255,.35)',fontSize:'.64rem'}}>{new Date(p.created_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</td>
+                                </tr>
+                              })}
+                            </tbody></table>
+                          </div>
                         </div>
-                      ))}
+                      })}
                     </>)}
 
                     {subTab === 'teams' && (<>
-                      <div style={{fontSize:'.68rem',color:'rgba(255,255,255,.35)',marginBottom:12}}>Teams (all members posted) by technology</div>
-                      {techTeamsSorted.length === 0 ? <div className="li-empty">No teams data</div> : techTeamsSorted.map(([tech, d]) => (
-                        <div key={tech} className="li-tech-row">
-                          <div className="li-tech-dot" style={{background:TC[tech]||'#888'}}/>
-                          <div className="li-tech-name">{tech}</div>
-                          <div className="li-tech-bar-wrap"><div className="li-tech-bar" style={{width:`${d.total>0?Math.round(d.full/d.total*100):0}%`,background:TC[tech]||'#888'}}/></div>
-                          <div className="li-tech-count" style={{color:TC[tech]||'#fff'}}>{d.full}/{d.total}</div>
+                      {Object.keys(teamsByTech).length === 0 ? <div className="li-empty">No teams data</div> : Object.entries(teamsByTech).sort(([a],[b]) => a.localeCompare(b)).map(([tech, teams]) => {
+                        const filteredTeams = teams.filter(t => !q || (t.teamNumber||'').toLowerCase().includes(q) || (t.projectTitle||'').toLowerCase().includes(q))
+                        if (filteredTeams.length === 0) return null
+                        return <div key={tech} className="li-section" style={{marginTop:20}}>
+                          <div className="li-section-hdr">
+                            <div className="li-section-title"><span style={{width:10,height:10,borderRadius:'50%',background:TC[tech]||'#888',display:'inline-block'}}/>{tech}</div>
+                            <div className="li-section-meta">{filteredTeams.length} teams</div>
+                          </div>
+                          <div className="li-table-wrap">
+                            <table className="li-table"><thead><tr><th>Team</th><th>Project</th><th>Mentor</th><th>Posted</th><th>Total</th><th>Progress</th><th>Status</th></tr></thead><tbody>
+                              {filteredTeams.map(t => {
+                                const pct = t.memberCount > 0 ? Math.round(t.postedCount/t.memberCount*100) : 0
+                                const status = t.postedCount === 0 ? 'none' : t.postedCount >= t.memberCount ? 'done' : 'partial'
+                                return <tr key={t.serialNumber}>
+                                  <td style={{color:'#fd1c00',fontWeight:700}}>{t.teamNumber}</td>
+                                  <td style={{maxWidth:180,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{t.projectTitle || '—'}</td>
+                                  <td style={{color:'rgba(255,255,255,.5)',fontSize:'.68rem'}}>{t.mentorAssigned || '—'}</td>
+                                  <td style={{color:status==='done'?'#4ade80':status==='partial'?'#EEA727':'rgba(255,255,255,.3)',fontWeight:700}}>{t.postedCount}</td>
+                                  <td>{t.memberCount}</td>
+                                  <td><div style={{display:'flex',alignItems:'center',gap:8}}><div style={{width:80,height:5,background:'rgba(255,255,255,.05)',borderRadius:3,overflow:'hidden'}}><div style={{width:`${pct}%`,height:'100%',background:status==='done'?'#4ade80':status==='partial'?'#EEA727':'#555',borderRadius:3,transition:'width .4s'}}/></div><span style={{fontSize:'.62rem',color:'rgba(255,255,255,.5)',minWidth:30}}>{pct}%</span></div></td>
+                                  <td><span className={`li-pill ${status}`}>{status==='done'?<>{IC.check}Complete</>:status==='partial'?'In Progress':'Not Started'}</span></td>
+                                </tr>
+                              })}
+                            </tbody></table>
+                          </div>
                         </div>
-                      ))}
+                      })}
                     </>)}
                   </>
                 })()}
               </div>
             )}
-
             {/* REPORT CARD */}
             {activeTab === 'report-card' && <ReportCard />}
           </div>
