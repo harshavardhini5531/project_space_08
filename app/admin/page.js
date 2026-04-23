@@ -100,7 +100,7 @@ export default function AdminDashboard() {
       .then(r => r.json())
       .then(d => {
         // Enrich with team/mentor breakdown using existing admin data
-        const allTeams = data.teams || []
+        const allTeams = data.teamList || data.teams || []
         const teamMap = {}
         allTeams.forEach(t => { if (t.teamNumber) teamMap[t.teamNumber] = t })
 
@@ -959,18 +959,13 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
                 {liLoading && <div className="li-empty">Loading stats...</div>}
                 {!liLoading && !liStats && <div className="li-empty">No data yet</div>}
 
-                {!liLoading && liStats && (() => {
+                {!liLoading && liStats && liTab !== 'overview' && (() => {
                   const TC = { 'AWS Development':'#ff9900','Google Flutter':'#42a5f5','Full Stack':'#4ade80','Data Specialist':'#a78bfa','ServiceNow':'#22c55e','VLSI':'#ef4444','SkillUp Coder':'#f59e0b' }
                   const allTeams = liStats.allTeams || []
                   const recent = liStats.recent || []
-                  // Count per tech based on current tab's scope
                   let counts = {}
                   let allCount = 0
-                  if (liTab === 'overview') {
-                    counts = { ...(liStats.stats?.byTech || {}) }
-                    allCount = Object.values(counts).reduce((a,b)=>a+b, 0) + ((liStats.stats?.byTech?.Unknown)||0)
-                    allCount = recent.length
-                  } else if (liTab === 'mentors') {
+                  if (liTab === 'mentors') {
                     recent.filter(r=>r.posted_by_role==='mentor').forEach(r=>{const t=r.technology||'Unknown';counts[t]=(counts[t]||0)+1})
                     allCount = recent.filter(r=>r.posted_by_role==='mentor').length
                   } else if (liTab === 'trainees') {
@@ -1067,30 +1062,6 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
                       </div>
                     </div>
 
-                    {/* Tech-wise team coverage */}
-                    <div className="li-section">
-                      <div className="li-section-hdr">
-                        <div className="li-section-title">{IC.cpu}Technology-wise Team Coverage</div>
-                        <div className="li-section-meta">Teams where all members posted</div>
-                      </div>
-                      {Object.entries(techTeamCoverage).sort(([,a],[,b])=>(b.full/b.total||0)-(a.full/a.total||0)).map(([tech, d]) => {
-                        const pct = d.total > 0 ? Math.round(d.full/d.total*100) : 0
-                        return <div key={tech} className="li-tech-card">
-                          <div className="li-tech-dot" style={{background:TC[tech]||'#888',color:TC[tech]||'#888'}}/>
-                          <div className="li-tech-info">
-                            <div className="li-tech-name">{tech}</div>
-                            <div className="li-tech-desc">{d.full} of {d.total} teams completed</div>
-                          </div>
-                          <div className="li-tech-bar-wrap"><div className="li-tech-bar" style={{width:`${pct}%`,background:TC[tech]||'#888'}}/></div>
-                          <div>
-                            <div className="li-tech-count" style={{color:TC[tech]||'#fff'}}>{d.full}/{d.total}</div>
-                            <div className="li-tech-pct">{pct}%</div>
-                          </div>
-                        </div>
-                      })}
-                      {Object.keys(techTeamCoverage).length === 0 && <div className="li-empty">No tech data</div>}
-                    </div>
-
                     {/* Recent Posts */}
                     <div className="li-section">
                       <div className="li-section-hdr">
@@ -1114,7 +1085,6 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
                             </thead>
                             <tbody>
                               {recentFiltered.map(r => {
-                                // Check if student is leader
                                 let isLeader = false
                                 if (recentTab === 'trainees') {
                                   const team = liStats.teamMap[r.team_number]
@@ -1132,6 +1102,30 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
                           </table>
                         </div>
                       )}
+                    </div>
+
+                    {/* Tech-wise team coverage */}
+                    <div className="li-section">
+                      <div className="li-section-hdr">
+                        <div className="li-section-title">{IC.cpu}Technology-wise Team Coverage</div>
+                        <div className="li-section-meta">Teams where all members posted</div>
+                      </div>
+                      {Object.entries(techTeamCoverage).sort(([,a],[,b])=>(b.full/b.total||0)-(a.full/a.total||0)).map(([tech, d]) => {
+                        const pct = d.total > 0 ? Math.round(d.full/d.total*100) : 0
+                        return <div key={tech} className="li-tech-card">
+                          <div className="li-tech-dot" style={{background:TC[tech]||'#888',color:TC[tech]||'#888'}}/>
+                          <div className="li-tech-info">
+                            <div className="li-tech-name">{tech}</div>
+                            <div className="li-tech-desc">{d.full} of {d.total} teams completed</div>
+                          </div>
+                          <div className="li-tech-bar-wrap"><div className="li-tech-bar" style={{width:`${pct}%`,background:TC[tech]||'#888'}}/></div>
+                          <div>
+                            <div className="li-tech-count" style={{color:TC[tech]||'#fff'}}>{d.full}/{d.total}</div>
+                            <div className="li-tech-pct">{pct}%</div>
+                          </div>
+                        </div>
+                      })}
+                      {Object.keys(techTeamCoverage).length === 0 && <div className="li-empty">No tech data</div>}
                     </div>
                   </>
                 })()}
