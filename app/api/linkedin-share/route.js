@@ -50,28 +50,42 @@ export async function POST(request) {
       const { teamNumber } = body
       if (!teamNumber) return Response.json({ error: 'teamNumber required' }, { status: 400 })
 
-      // Get all team members — try team_registrations first (JSONB), fallback to member_registrations, then team_members
-      const { data: teamReg } = await supabase.from('team_registrations')
-        .select('members')
+      // Get all team members — team_members table is the source of truth (includes leader)
+      // Look up team by team_number to get serial_number
+      const { data: team } = await supabase.from('teams')
+        .select('serial_number, leader_roll')
         .eq('team_number', teamNumber)
         .maybeSingle()
-      const regMembers = Array.isArray(teamReg?.members) ? teamReg.members : []
-      let teamMembers = regMembers.map(m => ({
-        roll_number: (m.rollNumber || m.roll_number || '').toUpperCase()
-      })).filter(m => m.roll_number)
-      // Fallback 1: member_registrations table
+      let teamMembers = []
+      if (team?.serial_number) {
+        const { data: rows } = await supabase.from('team_members')
+          .select('roll_number')
+          .eq('serial_number', team.serial_number)
+        teamMembers = (rows || []).map(m => ({ roll_number: (m.roll_number || '').toUpperCase() }))
+      }
+      // Fallback 1: team_registrations.members JSONB (for teams not yet in team_members)
+      if (teamMembers.length === 0) {
+        const { data: teamReg } = await supabase.from('team_registrations')
+          .select('members')
+          .eq('team_number', teamNumber)
+          .maybeSingle()
+        const regMembers = Array.isArray(teamReg?.members) ? teamReg.members : []
+        teamMembers = regMembers.map(m => ({
+          roll_number: (m.rollNumber || m.roll_number || '').toUpperCase()
+        })).filter(m => m.roll_number)
+      }
+      // Fallback 2: member_registrations
       if (teamMembers.length === 0) {
         const { data: memberRows } = await supabase.from('member_registrations')
           .select('roll_number')
           .eq('team_number', teamNumber)
         teamMembers = (memberRows || []).map(m => ({ roll_number: (m.roll_number || '').toUpperCase() }))
       }
-      // Fallback 2: team_members table by serial_number
-      if (teamMembers.length === 0) {
-        const { data: team } = await supabase.from('teams').select('serial_number').eq('team_number', teamNumber).maybeSingle()
-        if (team?.serial_number) {
-          const { data: rows } = await supabase.from('team_members').select('roll_number').eq('serial_number', team.serial_number)
-          teamMembers = (rows || []).map(m => ({ roll_number: (m.roll_number || '').toUpperCase() }))
+      // Ensure leader is always included if team.leader_roll exists
+      if (team?.leader_roll) {
+        const leaderRoll = team.leader_roll.toUpperCase()
+        if (!teamMembers.some(m => m.roll_number === leaderRoll)) {
+          teamMembers.push({ roll_number: leaderRoll })
         }
       }
 
