@@ -51,9 +51,14 @@ export async function POST(request) {
       if (!teamNumber) return Response.json({ error: 'teamNumber required' }, { status: 400 })
 
       // Get all team members
-      const { data: teamMembers } = await supabase.from('member_registrations')
-        .select('roll_number, short_name')
+      const { data: teamReg } = await supabase.from('team_registrations')
+        .select('members')
         .eq('team_number', teamNumber)
+        .single()
+      const regMembers = Array.isArray(teamReg?.members) ? teamReg.members : []
+      const teamMembers = regMembers.map(m => ({
+        roll_number: (m.rollNumber || m.roll_number || '').toUpperCase()
+      })).filter(m => m.roll_number)
 
       const members = teamMembers || []
       const memberRolls = members.map(m => m.roll_number)
