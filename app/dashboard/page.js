@@ -1370,13 +1370,21 @@ function ProjectDetails({ user }) {
     const roll = user?.rollNumber || '';
     const tn = user?.teamNumber || '';
     if (!roll) return;
-    fetch('/api/linkedin-share', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'check-student', rollNumber: roll }) })
-      .then(r => r.json()).then(d => { if (d.shared) setHasLinkedInShare(true) }).catch(() => {});
-
-    if (tn) {
-      fetch('/api/linkedin-reenable', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'check', rollNumber: roll, teamNumber: tn }) })
-        .then(r => r.json()).then(d => { if (d.request) setReenableRequest(d.request) }).catch(() => {});
-    }
+    const refreshStatus = async () => {
+      try {
+        const r1 = await fetch('/api/linkedin-share', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'check-student', rollNumber: roll }) });
+        const d1 = await r1.json();
+        setHasLinkedInShare(!!d1.shared);
+        if (tn) {
+          const r2 = await fetch('/api/linkedin-reenable', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'check', rollNumber: roll, teamNumber: tn }) });
+          const d2 = await r2.json();
+          setReenableRequest(d2.request || null);
+        }
+      } catch {}
+    };
+    refreshStatus();
+    const iv = setInterval(refreshStatus, 15000);
+    return () => clearInterval(iv);
   }, [user]);
 
   async function submitReenableRequest() {
@@ -1848,26 +1856,43 @@ Powered by ${toBold('Technical Hub')}, led by CEO ${toBold('Babji Neelam')} Sir,
                     <div className="pd-show-meta">
                       <span className="pd-show-badge">{details.teamNumber}</span>
                       <span className="pd-show-badge" style={{borderColor: getTechColor(details.technology) + '60', background: `linear-gradient(135deg,${getTechColor(details.technology)}25,${getTechColor(details.technology)}10)`}}>{details.technology}</span>
-                      {details.teamNumber === myTeamNumber && (
-                        hasLinkedInShare && reenableRequest?.status !== 'approved' ? (
-                          <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
-                            <button className="pd-li-btn" disabled style={{background:'linear-gradient(135deg,#4ade80,#22c55e)',opacity:.95,cursor:'default',boxShadow:'0 4px 14px rgba(74,222,128,.3)'}} title="Already posted on LinkedIn">
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                              <span>Posted</span>
-                            </button>
-                            {reenableRequest?.status === 'pending' ? (
-                              <span style={{padding:'6px 10px',borderRadius:8,background:'rgba(238,167,39,.08)',border:'1px solid rgba(238,167,39,.2)',color:'#EEA727',fontSize:'.6rem',fontWeight:600,letterSpacing:'.5px',textTransform:'uppercase'}}>Re-enable Pending</span>
-                            ) : (
+                      {details.teamNumber === myTeamNumber && (() => {
+                        // State logic:
+                        // 1. Pending re-enable request → show "Posted" (disabled) + "Re-enable Pending" pill (hide request button)
+                        // 2. Posted (no pending request) → show "Posted" button + "Request Re-enable" link
+                        // 3. Not posted (fresh, or approved re-enable) → show active "Share" button
+                        const hasPendingReenable = reenableRequest?.status === 'pending';
+                        const showPosted = hasLinkedInShare && !hasPendingReenable;
+                        const showShare = !hasLinkedInShare;
+                        if (hasPendingReenable) {
+                          return (
+                            <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
+                              <button className="pd-li-btn" disabled style={{background:'rgba(238,167,39,.12)',border:'1px solid rgba(238,167,39,.3)',color:'#EEA727',opacity:.9,cursor:'not-allowed'}} title="Waiting for mentor approval">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                <span>Re-enable Pending</span>
+                              </button>
+                            </div>
+                          );
+                        }
+                        if (showPosted) {
+                          return (
+                            <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
+                              <button className="pd-li-btn" disabled style={{background:'linear-gradient(135deg,#4ade80,#22c55e)',opacity:.95,cursor:'default',boxShadow:'0 4px 14px rgba(74,222,128,.3)'}} title="Already posted on LinkedIn">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                <span>Posted</span>
+                              </button>
                               <button onClick={()=>setShowReenableModal(true)} style={{padding:'6px 10px',borderRadius:8,background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.1)',color:'rgba(255,255,255,.55)',fontSize:'.6rem',fontWeight:600,letterSpacing:'.5px',textTransform:'uppercase',cursor:'pointer',fontFamily:'DM Sans,sans-serif'}} title="Need to re-post? Request mentor to re-enable">Request Re-enable</button>
-                            )}
-                          </div>
-                        ) : (
+                            </div>
+                          );
+                        }
+                        // Fresh state or approved re-enable → show active Share button
+                        return (
                           <button className="pd-li-btn" onClick={openLinkedInModal} title="Share on LinkedIn">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
                             <span>Share</span>
                           </button>
-                        )
-                      )}
+                        );
+                      })()}
                     </div>
                     <div className="pd-show-title">{details.projectTitle}</div>
                     <div className="pd-show-sub">
