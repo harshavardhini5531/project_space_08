@@ -103,9 +103,7 @@ export async function POST(request) {
       const byTech = {}; shares.forEach(s => { const t = s.technology || 'Unknown'; byTech[t] = (byTech[t] || 0) + 1 })
       const byMentor = {}; shares.forEach(s => { if (s.mentor_name) byMentor[s.mentor_name] = (byMentor[s.mentor_name] || 0) + 1 })
       const uniqueTeams = [...new Set(shares.map(s => s.team_number))].length
-      const recent = shares.slice(0, 30)
-      return Response.json({ stats: { total, students, mentors: mentorsCount, uniqueTeams, byTech, byMentor }, recent })
-    }
+      return Response.json({ stats: { total, students, mentors: mentorsCount, uniqueTeams, byTech, byMentor }, recent: shares })    }
 
     return Response.json({ error: 'Invalid action' }, { status: 400 })
   } catch (err) {
