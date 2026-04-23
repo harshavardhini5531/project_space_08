@@ -203,12 +203,7 @@ ${projectDesc}
 
 ${techAreaLine ? techAreaLine + '.' : ''}${aiInfo}
 
-Powered by ${toBoldM('Technical Hub')} (@technicalhub), led by CEO ${toBoldM('Babji Neelam')} Sir (@babjineelam), and hosted at ${toBoldM('Aditya University')} (@adityauniversity).
-
-🔗 Connect with us:
-- Technical Hub: linkedin.com/company/technicalhub
-- Babji Neelam: linkedin.com/in/babjineelam
-- Aditya University: linkedin.com/school/adityauniversity
+Powered by ${toBoldM('Technical Hub')}, led by CEO ${toBoldM('Babji Neelam')} Sir, and proudly hosted at ${toBoldM('Aditya University')}.
 
   async function handleReenableApprove(reqId) {
     setReenableProcessing(reqId)
