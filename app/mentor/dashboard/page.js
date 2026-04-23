@@ -203,7 +203,15 @@ ${projectDesc}
 
 ${techAreaLine ? techAreaLine + '.' : ''}${aiInfo}
 
+${namesStr ? `Throughout their course journey, I've had the privilege of guiding this talented group — ${namesStr}. Watching them evolve from learners to innovators has been one of the most rewarding experiences.
+
+` : ''}${toBoldM('𝗘𝘃𝗲𝗻𝘁 𝗛𝗶𝗴𝗵𝗹𝗶𝗴𝗵𝘁𝘀 — 𝗠𝗮𝘆 𝟲 𝘁𝗼 𝟭𝟮, 𝟮𝟬𝟮𝟲')}
+${toBoldM('Project Space')} brings together 900+ students across 160 teams, exploring 7 cutting-edge technology stacks with an AI-first theme. For 7 days straight, teams will be working 24/7 on real-world projects — supported by dedicated mentors, hands-on learning, and the vibrant energy of Project Street. Proud to be part of this incredible initiative!
+
 Powered by ${toBoldM('Technical Hub')}, led by CEO ${toBoldM('Babji Neelam')} Sir, and proudly hosted at ${toBoldM('Aditya University')}.
+
+#${(t.technology || 'Technology').replace(/\s+/g, '')} #ProjectSpace #TechnicalHub #ArtificialIntelligence #Mentorship #Projects #Teamwork`;
+  }
 
   async function handleReenableApprove(reqId) {
     setReenableProcessing(reqId)
