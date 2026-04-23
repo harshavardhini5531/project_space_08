@@ -41,6 +41,7 @@ export default function AdminDashboard() {
   const [liSearch, setLiSearch] = useState('')
   const [liSubTab, setLiSubTab] = useState('members')
   const [liRecentTab, setLiRecentTab] = useState('trainees')
+  const [liTechFilter, setLiTechFilter] = useState('all')
 
   const pwRules = [
     { label: 'At least 8 characters', test: v => v.length >= 8 },
@@ -862,6 +863,12 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
 .li-tab.on{background:linear-gradient(135deg,rgba(253,28,0,.15),rgba(238,167,39,.08));border-color:rgba(253,28,0,.3);color:#fff;box-shadow:0 2px 12px rgba(253,28,0,.1)}
 .li-tab svg{width:15px;height:15px;stroke-width:1.8}
 .li-subtabs{display:flex;gap:4px;padding:4px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);margin-bottom:18px;width:fit-content}
+.li-tech-pills{display:flex;gap:6px;padding:4px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);margin-bottom:18px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.li-tech-pills::-webkit-scrollbar{display:none}
+.li-tech-pill{padding:8px 14px;border-radius:8px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);color:rgba(255,255,255,.55);font-family:'DM Sans',sans-serif;font-size:.7rem;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;display:flex;align-items:center;gap:7px;flex-shrink:0}
+.li-tech-pill:hover{background:rgba(255,255,255,.05);color:#fff}
+.li-tech-pill.on{background:linear-gradient(135deg,rgba(253,28,0,.15),rgba(253,28,0,.06));border-color:rgba(253,28,0,.4);color:#fff;box-shadow:0 2px 10px rgba(253,28,0,.15)}
+.li-tech-pill .li-pill-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .li-subtab{padding:8px 16px;border-radius:7px;background:transparent;border:none;color:rgba(255,255,255,.45);font-family:'DM Sans',sans-serif;font-size:.7rem;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap}
 .li-subtab:hover{color:rgba(255,255,255,.85)}
 .li-subtab.on{background:rgba(253,28,0,.14);color:#fd1c00}
@@ -943,15 +950,50 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
                 <div className="li-sub">Track LinkedIn engagement across the entire event</div>
 
                 <div className="li-tabs">
-                  <button className={`li-tab ${liTab==='overview'?'on':''}`} onClick={()=>{setLiTab('overview');setLiSearch('')}}>{IC.grid}Overview</button>
-                  <button className={`li-tab ${liTab==='mentors'?'on':''}`} onClick={()=>{setLiTab('mentors');setLiSearch('')}}>{IC.users}Mentor Posts</button>
-                  <button className={`li-tab ${liTab==='trainees'?'on':''}`} onClick={()=>{setLiTab('trainees');setLiSearch('')}}>{IC.user}Trainee Posts</button>
-                  <button className={`li-tab ${liTab==='teams'?'on':''}`} onClick={()=>{setLiTab('teams');setLiSearch('')}}>{IC.group}Team Posts</button>
-                  <button className={`li-tab ${liTab==='total'?'on':''}`} onClick={()=>{setLiTab('total');setLiSearch('')}}>{IC.bolt}Total Posts</button>
+                  <button className={`li-tab ${liTab==='overview'?'on':''}`} onClick={()=>{setLiTab('overview');setLiSearch('');setLiTechFilter('all')}}>{IC.grid}Overview</button>
+                  <button className={`li-tab ${liTab==='mentors'?'on':''}`} onClick={()=>{setLiTab('mentors');setLiSearch('');setLiTechFilter('all')}}>{IC.users}Mentor Posts</button>
+                  <button className={`li-tab ${liTab==='trainees'?'on':''}`} onClick={()=>{setLiTab('trainees');setLiSearch('');setLiTechFilter('all')}}>{IC.user}Trainee Posts</button>
+                  <button className={`li-tab ${liTab==='teams'?'on':''}`} onClick={()=>{setLiTab('teams');setLiSearch('');setLiTechFilter('all')}}>{IC.group}Team Posts</button>
                 </div>
 
                 {liLoading && <div className="li-empty">Loading stats...</div>}
                 {!liLoading && !liStats && <div className="li-empty">No data yet</div>}
+
+                {!liLoading && liStats && (() => {
+                  const TC = { 'AWS Development':'#ff9900','Google Flutter':'#42a5f5','Full Stack':'#4ade80','Data Specialist':'#a78bfa','ServiceNow':'#22c55e','VLSI':'#ef4444','SkillUp Coder':'#f59e0b' }
+                  const allTeams = liStats.allTeams || []
+                  const recent = liStats.recent || []
+                  // Count per tech based on current tab's scope
+                  let counts = {}
+                  let allCount = 0
+                  if (liTab === 'overview') {
+                    counts = { ...(liStats.stats?.byTech || {}) }
+                    allCount = Object.values(counts).reduce((a,b)=>a+b, 0) + ((liStats.stats?.byTech?.Unknown)||0)
+                    allCount = recent.length
+                  } else if (liTab === 'mentors') {
+                    recent.filter(r=>r.posted_by_role==='mentor').forEach(r=>{const t=r.technology||'Unknown';counts[t]=(counts[t]||0)+1})
+                    allCount = recent.filter(r=>r.posted_by_role==='mentor').length
+                  } else if (liTab === 'trainees') {
+                    recent.filter(r=>r.posted_by_role==='student').forEach(r=>{const t=r.technology||'Unknown';counts[t]=(counts[t]||0)+1})
+                    allCount = recent.filter(r=>r.posted_by_role==='student').length
+                  } else if (liTab === 'teams') {
+                    allTeams.filter(t=>{const s=liStats.teamBreakdown[t.teamNumber]?.shares||[];return s.length>=(t.memberCount||0)&&t.memberCount>0}).forEach(t=>{const tech=t.technology||'Unknown';counts[tech]=(counts[tech]||0)+1})
+                    allCount = Object.values(counts).reduce((a,b)=>a+b,0)
+                  }
+                  const techKeys = Object.keys(counts).sort((a,b) => counts[b] - counts[a])
+                  return (
+                    <div className="li-tech-pills">
+                      <button className={`li-tech-pill ${liTechFilter==='all'?'on':''}`} onClick={()=>setLiTechFilter('all')}>
+                        <span className="li-pill-dot" style={{background:'#fd1c00'}}/> All ({allCount})
+                      </button>
+                      {techKeys.map(tech => (
+                        <button key={tech} className={`li-tech-pill ${liTechFilter===tech?'on':''}`} onClick={()=>setLiTechFilter(tech)} style={liTechFilter===tech?{borderColor:`${TC[tech]||'#888'}60`,background:`${TC[tech]||'#888'}15`}:{}}>
+                          <span className="li-pill-dot" style={{background:TC[tech]||'#888'}}/> {tech} ({counts[tech]})
+                        </button>
+                      ))}
+                    </div>
+                  )
+                })()}
 
                 {!liLoading && liStats && liTab==='overview' && (() => {
                   const s = liStats.stats || {}
@@ -977,9 +1019,13 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
                     if (shares.length >= (t.memberCount || 0) && t.memberCount > 0) techTeamCoverage[tech].full++
                   })
 
-                  // Recent posts split by role
+                  // Recent posts split by role + tech filter
                   const recentTab = liRecentTab || 'trainees'
-                  const recentFiltered = (liStats.recent || []).filter(r => recentTab === 'mentors' ? r.posted_by_role === 'mentor' : r.posted_by_role === 'student').slice(0, 10)
+                  const recentFiltered = (liStats.recent || []).filter(r => {
+                    if (recentTab === 'mentors' ? r.posted_by_role !== 'mentor' : r.posted_by_role !== 'student') return false
+                    if (liTechFilter !== 'all' && r.technology !== liTechFilter) return false
+                    return true
+                  }).slice(0, 10)
 
                   return <>
                     <div className="li-grid">
@@ -1093,7 +1139,7 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
                 {!liLoading && liStats && liTab==='mentors' && (() => {
                   const recent = liStats.recent || []
                   const q = liSearch.toLowerCase()
-                  const mentorPosts = recent.filter(r => r.posted_by_role === 'mentor' && (!q || (r.posted_by_name||'').toLowerCase().includes(q) || (r.team_number||'').toLowerCase().includes(q)))
+                  const mentorPosts = recent.filter(r => r.posted_by_role === 'mentor' && (liTechFilter==='all' || r.technology === liTechFilter) && (!q || (r.posted_by_name||'').toLowerCase().includes(q) || (r.team_number||'').toLowerCase().includes(q)))
                   return <>
                     <input className="li-search" placeholder="Search mentor, team..." value={liSearch} onChange={e=>setLiSearch(e.target.value)} />
                     <div style={{fontSize:'.68rem',color:'rgba(255,255,255,.35)',marginBottom:10}}>{mentorPosts.length} mentor posts</div>
@@ -1121,7 +1167,7 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
                   ;(liStats.allTeams || []).forEach(t => {
                     ;(t.members || []).forEach(m => { if (m.isLeader) leaderMap[(m.rollNumber || '').toUpperCase()] = true })
                   })
-                  const traineePosts = recent.filter(r => r.posted_by_role === 'student' && (!q || (r.posted_by_name||'').toLowerCase().includes(q) || (r.roll_number||'').toLowerCase().includes(q) || (r.team_number||'').toLowerCase().includes(q)))
+                  const traineePosts = recent.filter(r => r.posted_by_role === 'student' && (liTechFilter==='all' || r.technology === liTechFilter) && (!q || (r.posted_by_name||'').toLowerCase().includes(q) || (r.roll_number||'').toLowerCase().includes(q) || (r.team_number||'').toLowerCase().includes(q)))
                   return <>
                     <input className="li-search" placeholder="Search name, roll, team..." value={liSearch} onChange={e=>setLiSearch(e.target.value)} />
                     <div style={{fontSize:'.68rem',color:'rgba(255,255,255,.35)',marginBottom:10}}>{traineePosts.length} trainee posts</div>
@@ -1150,7 +1196,7 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
                   const fullyPostedTeams = (liStats.allTeams || []).filter(t => {
                     const shares = liStats.teamBreakdown[t.teamNumber]?.shares || []
                     return shares.length > 0 && shares.length >= (t.memberCount || 0) && t.memberCount > 0
-                  }).filter(t => !q || (t.teamNumber||'').toLowerCase().includes(q) || (t.projectTitle||'').toLowerCase().includes(q) || (t.mentorAssigned||'').toLowerCase().includes(q))
+                  }).filter(t => (liTechFilter==='all' || t.technology === liTechFilter) && (!q || (t.teamNumber||'').toLowerCase().includes(q) || (t.projectTitle||'').toLowerCase().includes(q) || (t.mentorAssigned||'').toLowerCase().includes(q)))
 
                   return <>
                     <input className="li-search" placeholder="Search team, project, mentor..." value={liSearch} onChange={e=>setLiSearch(e.target.value)} />
@@ -1174,103 +1220,6 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
                   </>
                 })()}
 
-                {!liLoading && liStats && liTab==='total' && (() => {
-                  const subTab = liSubTab || 'members'
-                  const q = liSearch.toLowerCase()
-                  const recent = liStats.recent || []
-                  const allTeams = liStats.allTeams || []
-                  const TC = { 'AWS Development':'#ff9900','Google Flutter':'#42a5f5','Full Stack':'#4ade80','Data Specialist':'#a78bfa','ServiceNow':'#22c55e','VLSI':'#ef4444','SkillUp Coder':'#f59e0b' }
-
-                  // Group member posts by tech
-                  const postsByTech = {}
-                  recent.forEach(r => {
-                    const tech = r.technology || 'Unknown'
-                    if (!postsByTech[tech]) postsByTech[tech] = []
-                    postsByTech[tech].push(r)
-                  })
-                  const techKeys = Object.keys(postsByTech).sort((a,b) => postsByTech[b].length - postsByTech[a].length)
-
-                  // Leader map
-                  const leaderMap = {}
-                  allTeams.forEach(t => { (t.members || []).forEach(m => { if (m.isLeader) leaderMap[(m.rollNumber || '').toUpperCase()] = true }) })
-
-                  // Teams per tech with detail
-                  const teamsByTech = {}
-                  allTeams.forEach(t => {
-                    const tech = t.technology || 'Unknown'
-                    if (!teamsByTech[tech]) teamsByTech[tech] = []
-                    const shares = liStats.teamBreakdown[t.teamNumber]?.shares || []
-                    const postedRolls = new Set(shares.map(s => (s.roll_number||'').toUpperCase()))
-                    teamsByTech[tech].push({ ...t, postedCount: shares.length, postedRolls })
-                  })
-
-                  return <>
-                    <div className="li-subtabs">
-                      <button className={`li-subtab ${subTab==='members'?'on':''}`} onClick={()=>setLiSubTab('members')}>Tech-wise Member Posts</button>
-                      <button className={`li-subtab ${subTab==='teams'?'on':''}`} onClick={()=>setLiSubTab('teams')}>Tech-wise Team Posts</button>
-                    </div>
-
-                    <input className="li-search" placeholder="Search..." value={liSearch} onChange={e=>setLiSearch(e.target.value)} />
-
-                    {subTab === 'members' && (<>
-                      {techKeys.length === 0 ? <div className="li-empty">No posts yet</div> : techKeys.map(tech => {
-                        const posts = postsByTech[tech].filter(p => !q || (p.posted_by_name||'').toLowerCase().includes(q) || (p.roll_number||'').toLowerCase().includes(q) || (p.team_number||'').toLowerCase().includes(q))
-                        if (posts.length === 0) return null
-                        return <div key={tech} className="li-section" style={{marginTop:20}}>
-                          <div className="li-section-hdr">
-                            <div className="li-section-title"><span style={{width:10,height:10,borderRadius:'50%',background:TC[tech]||'#888',display:'inline-block'}}/>{tech}</div>
-                            <div className="li-section-meta">{posts.length} posts</div>
-                          </div>
-                          <div className="li-table-wrap">
-                            <table className="li-table"><thead><tr><th>Name</th><th>Roll</th><th>Role</th><th>Team</th><th>Posted At</th></tr></thead><tbody>
-                              {posts.map(p => {
-                                const isLeader = leaderMap[(p.roll_number||'').toUpperCase()]
-                                const isMentor = p.posted_by_role === 'mentor'
-                                return <tr key={p.id}>
-                                  <td style={{color:'#fff',fontWeight:600}}>{p.posted_by_name || '—'}</td>
-                                  <td style={{color:'rgba(255,255,255,.55)',fontSize:'.64rem'}}>{p.roll_number}</td>
-                                  <td><span className={`li-pill ${isMentor?'mentor':isLeader?'leader':'member'}`}>{isMentor?'Mentor':isLeader?'Leader':'Member'}</span></td>
-                                  <td style={{color:'#fd1c00',fontWeight:600}}>{p.team_number}</td>
-                                  <td style={{color:'rgba(255,255,255,.35)',fontSize:'.64rem'}}>{new Date(p.created_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</td>
-                                </tr>
-                              })}
-                            </tbody></table>
-                          </div>
-                        </div>
-                      })}
-                    </>)}
-
-                    {subTab === 'teams' && (<>
-                      {Object.keys(teamsByTech).length === 0 ? <div className="li-empty">No teams data</div> : Object.entries(teamsByTech).sort(([a],[b]) => a.localeCompare(b)).map(([tech, teams]) => {
-                        const filteredTeams = teams.filter(t => !q || (t.teamNumber||'').toLowerCase().includes(q) || (t.projectTitle||'').toLowerCase().includes(q))
-                        if (filteredTeams.length === 0) return null
-                        return <div key={tech} className="li-section" style={{marginTop:20}}>
-                          <div className="li-section-hdr">
-                            <div className="li-section-title"><span style={{width:10,height:10,borderRadius:'50%',background:TC[tech]||'#888',display:'inline-block'}}/>{tech}</div>
-                            <div className="li-section-meta">{filteredTeams.length} teams</div>
-                          </div>
-                          <div className="li-table-wrap">
-                            <table className="li-table"><thead><tr><th>Team</th><th>Project</th><th>Mentor</th><th>Posted</th><th>Total</th><th>Progress</th><th>Status</th></tr></thead><tbody>
-                              {filteredTeams.map(t => {
-                                const pct = t.memberCount > 0 ? Math.round(t.postedCount/t.memberCount*100) : 0
-                                const status = t.postedCount === 0 ? 'none' : t.postedCount >= t.memberCount ? 'done' : 'partial'
-                                return <tr key={t.serialNumber}>
-                                  <td style={{color:'#fd1c00',fontWeight:700}}>{t.teamNumber}</td>
-                                  <td style={{maxWidth:180,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{t.projectTitle || '—'}</td>
-                                  <td style={{color:'rgba(255,255,255,.5)',fontSize:'.68rem'}}>{t.mentorAssigned || '—'}</td>
-                                  <td style={{color:status==='done'?'#4ade80':status==='partial'?'#EEA727':'rgba(255,255,255,.3)',fontWeight:700}}>{t.postedCount}</td>
-                                  <td>{t.memberCount}</td>
-                                  <td><div style={{display:'flex',alignItems:'center',gap:8}}><div style={{width:80,height:5,background:'rgba(255,255,255,.05)',borderRadius:3,overflow:'hidden'}}><div style={{width:`${pct}%`,height:'100%',background:status==='done'?'#4ade80':status==='partial'?'#EEA727':'#555',borderRadius:3,transition:'width .4s'}}/></div><span style={{fontSize:'.62rem',color:'rgba(255,255,255,.5)',minWidth:30}}>{pct}%</span></div></td>
-                                  <td><span className={`li-pill ${status}`}>{status==='done'?<>{IC.check}Complete</>:status==='partial'?'In Progress':'Not Started'}</span></td>
-                                </tr>
-                              })}
-                            </tbody></table>
-                          </div>
-                        </div>
-                      })}
-                    </>)}
-                  </>
-                })()}
               </div>
             )}
             {/* REPORT CARD */}
