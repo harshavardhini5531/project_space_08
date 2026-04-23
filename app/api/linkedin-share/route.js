@@ -50,15 +50,30 @@ export async function POST(request) {
       const { teamNumber } = body
       if (!teamNumber) return Response.json({ error: 'teamNumber required' }, { status: 400 })
 
-      // Get all team members
+      // Get all team members — try team_registrations first (JSONB), fallback to member_registrations, then team_members
       const { data: teamReg } = await supabase.from('team_registrations')
         .select('members')
         .eq('team_number', teamNumber)
-        .single()
+        .maybeSingle()
       const regMembers = Array.isArray(teamReg?.members) ? teamReg.members : []
-      const teamMembers = regMembers.map(m => ({
+      let teamMembers = regMembers.map(m => ({
         roll_number: (m.rollNumber || m.roll_number || '').toUpperCase()
       })).filter(m => m.roll_number)
+      // Fallback 1: member_registrations table
+      if (teamMembers.length === 0) {
+        const { data: memberRows } = await supabase.from('member_registrations')
+          .select('roll_number')
+          .eq('team_number', teamNumber)
+        teamMembers = (memberRows || []).map(m => ({ roll_number: (m.roll_number || '').toUpperCase() }))
+      }
+      // Fallback 2: team_members table by serial_number
+      if (teamMembers.length === 0) {
+        const { data: team } = await supabase.from('teams').select('serial_number').eq('team_number', teamNumber).maybeSingle()
+        if (team?.serial_number) {
+          const { data: rows } = await supabase.from('team_members').select('roll_number').eq('serial_number', team.serial_number)
+          teamMembers = (rows || []).map(m => ({ roll_number: (m.roll_number || '').toUpperCase() }))
+        }
+      }
 
       const members = teamMembers || []
       const memberRolls = members.map(m => m.roll_number)
