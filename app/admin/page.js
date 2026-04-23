@@ -35,6 +35,10 @@ export default function AdminDashboard() {
   const [mobNav, setMobNav] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [liStats, setLiStats] = useState(null)
+  const [liTab, setLiTab] = useState('overview') // 'overview' | 'teams' | 'members' | 'tech' | 'mentors'
+  const [liLoading, setLiLoading] = useState(false)
+  const [liSearch, setLiSearch] = useState('')
 
   const pwRules = [
     { label: 'At least 8 characters', test: v => v.length >= 8 },
@@ -84,6 +88,31 @@ export default function AdminDashboard() {
   function handleLogout() { sessionStorage.removeItem('admin_token'); setToken(''); setPhase('auth'); setData(null) }
 
   useEffect(() => { if (phase==='dashboard') { fetchAdLeaderboard(); fetchAdNotifs(); const iv=setInterval(()=>{fetchAdLeaderboard();fetchAdNotifs()},30000); return ()=>clearInterval(iv) } }, [phase])
+
+  // Fetch LinkedIn stats when tab is active
+  useEffect(() => {
+    if (activeTab !== 'linkedin-stats' || !data) return
+    setLiLoading(true)
+    fetch('/api/linkedin-share', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'stats' }) })
+      .then(r => r.json())
+      .then(d => {
+        // Enrich with team/mentor breakdown using existing admin data
+        const allTeams = data.teams || []
+        const teamMap = {}
+        allTeams.forEach(t => { if (t.teamNumber) teamMap[t.teamNumber] = t })
+
+        // Build team-wise breakdown
+        const teamBreakdown = {}
+        ;(d.recent || []).forEach(s => {
+          if (!teamBreakdown[s.team_number]) teamBreakdown[s.team_number] = { shares: [], team: teamMap[s.team_number] || null }
+          teamBreakdown[s.team_number].shares.push(s)
+        })
+
+        setLiStats({ ...d, teamMap, teamBreakdown, allTeams })
+      })
+      .catch(e => console.error('LinkedIn stats error:', e))
+      .finally(() => setLiLoading(false))
+  }, [activeTab, data])
   async function fetchAdLeaderboard() { setAdLbLoading(true); try { const r=await fetch('/api/milestones/leaderboard?limit=50'); const d=await r.json(); setAdLeaderboard(d); } catch(e){console.error(e)} finally{setAdLbLoading(false)} }
   async function fetchAdNotifs() { try { const r=await fetch('/api/milestones/notifications?type=admin&email=admin&limit=20'); const d=await r.json(); setAdNotifs(d.notifications||[]); setAdUnread(d.unread_count||0); } catch{} }
   async function markAdNotifsRead() { await fetch('/api/milestones/notifications',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'mark-all-read',type:'admin'})}); setAdUnread(0); setAdNotifs(p=>p.map(n=>({...n,read:true}))); }
@@ -122,6 +151,7 @@ export default function AdminDashboard() {
     {id:'mentors',label:'Mentors',icon:IC.users},
     {id:'teams',label:'Teams',icon:IC.layers},
     {id:'milestones',label:'Project Status',icon:IC.layers},
+    {id:'linkedin-stats',label:'LinkedIn Stats',icon:IC.bolt},
     {id:'leaderboard',label:'Leaderboard',icon:IC.bolt},
     {id:'report-card',label:'Report Card',icon:IC.file},
   ]
@@ -805,6 +835,181 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
               {adLbLoading&&<div style={{textAlign:'center',padding:30,color:'rgba(255,255,255,.2)'}}>Loading...</div>}
               {!adLbLoading&&<table className="adm-lb-tbl"><thead><tr><th>Rank</th><th>Team</th><th>Project</th><th>Technology</th><th>Mentor</th><th>Progress</th><th>Credits</th></tr></thead><tbody>{(adLeaderboard.leaderboard||[]).map(t=><tr key={t.team_number}><td><span className={`adm-lb-rank ${t.rank===1?'gold':t.rank===2?'silver':t.rank===3?'bronze':''}`}>#{t.rank}</span></td><td style={{fontWeight:700,color:'#fd1c00'}}>{t.team_number}</td><td style={{maxWidth:160,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{t.project_title||'—'}</td><td><span style={{fontSize:'.6rem',padding:'2px 8px',borderRadius:5,background:'rgba(255,255,255,.04)',color:'rgba(255,255,255,.45)'}}>{t.technology}</span></td><td style={{fontSize:'.7rem',color:'rgba(255,255,255,.35)'}}>{t.mentor||'—'}</td><td><div className="adm-lb-bar"><div className="adm-lb-bar-fill" style={{width:`${t.percent}%`}}/></div><span style={{fontSize:'.72rem',fontWeight:700,color:t.percent>=70?'#4ade80':t.percent>=40?'#EEA727':'rgba(255,255,255,.3)'}}>{t.completed_stages}/7</span></td><td style={{fontWeight:700,color:'#EEA727'}}>{t.total_credits}</td></tr>)}</tbody></table>}
             </div>}
+
+            {/* LINKEDIN STATS */}
+            {activeTab === 'linkedin-stats' && (
+              <div className="li-stats-wrap">
+                <style>{`
+.li-stats-wrap{animation:fadeUp .5s ease both}
+.li-title{font-family:'Orbitron',sans-serif;font-size:1.1rem;font-weight:700;letter-spacing:2px;color:#fff;margin-bottom:6px}
+.li-sub{font-size:.72rem;color:rgba(255,255,255,.35);margin-bottom:18px}
+.li-tabs{display:flex;gap:6px;padding:6px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);margin-bottom:20px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.li-tabs::-webkit-scrollbar{display:none}
+.li-tab{padding:9px 16px;border-radius:10px;background:transparent;border:1px solid transparent;color:rgba(255,255,255,.45);font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .2s}
+.li-tab:hover{color:rgba(255,255,255,.8)}
+.li-tab.on{background:linear-gradient(135deg,rgba(253,28,0,.15),rgba(238,167,39,.08));border-color:rgba(253,28,0,.3);color:#fff;box-shadow:0 2px 12px rgba(253,28,0,.1)}
+.li-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px}
+.li-stat{padding:16px 18px;border-radius:14px;background:rgba(12,8,20,.5);border:1px solid rgba(255,255,255,.06)}
+.li-stat-lb{font-size:.58rem;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:8px}
+.li-stat-val{font-family:'Orbitron',sans-serif;font-size:1.7rem;font-weight:800;color:#fd1c00;line-height:1;margin-bottom:6px}
+.li-stat-sub{font-size:.66rem;color:rgba(255,255,255,.4)}
+.li-bar{margin-top:8px;height:4px;border-radius:3px;background:rgba(255,255,255,.05);overflow:hidden}
+.li-bar-f{height:100%;border-radius:3px;background:linear-gradient(90deg,#fd1c00,#EEA727);transition:width .6s}
+.li-table{width:100%;border-collapse:collapse;background:rgba(12,8,20,.3);border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.06)}
+.li-table th{padding:12px 14px;text-align:left;font-size:.6rem;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.35);font-weight:700;border-bottom:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02)}
+.li-table td{padding:11px 14px;font-size:.74rem;color:rgba(255,255,255,.75);border-bottom:1px solid rgba(255,255,255,.03)}
+.li-table tr:hover td{background:rgba(255,255,255,.02)}
+.li-pill{padding:3px 10px;border-radius:6px;font-size:.58rem;font-weight:700;letter-spacing:.5px;display:inline-flex;align-items:center;gap:4px}
+.li-pill.done{background:rgba(74,222,128,.08);color:#4ade80;border:1px solid rgba(74,222,128,.2)}
+.li-pill.partial{background:rgba(238,167,39,.08);color:#EEA727;border:1px solid rgba(238,167,39,.2)}
+.li-pill.none{background:rgba(255,255,255,.04);color:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.08)}
+.li-search{padding:10px 14px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);color:#fff;font-family:'DM Sans',sans-serif;font-size:.76rem;outline:none;width:100%;max-width:320px;margin-bottom:14px}
+.li-search:focus{border-color:rgba(253,28,0,.3)}
+.li-empty{padding:40px;text-align:center;color:rgba(255,255,255,.25);font-size:.78rem}
+.li-tech-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);margin-bottom:6px}
+.li-tech-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.li-tech-name{flex:1;font-size:.8rem;font-weight:600;color:#fff}
+.li-tech-count{font-family:'Orbitron',sans-serif;font-size:1rem;font-weight:800;color:#fd1c00}
+@media(max-width:768px){.li-table{font-size:.68rem}.li-table th,.li-table td{padding:8px 10px}.li-tab{padding:7px 12px;font-size:.64rem}.li-stat-val{font-size:1.3rem}}
+                `}</style>
+
+                <div className="li-title">LINKEDIN STATS</div>
+                <div className="li-sub">Track LinkedIn posts across teams, members, technologies, and mentors</div>
+
+                <div className="li-tabs">
+                  <button className={`li-tab ${liTab==='overview'?'on':''}`} onClick={()=>setLiTab('overview')}>📊 Overview</button>
+                  <button className={`li-tab ${liTab==='teams'?'on':''}`} onClick={()=>setLiTab('teams')}>👥 Team-wise</button>
+                  <button className={`li-tab ${liTab==='members'?'on':''}`} onClick={()=>setLiTab('members')}>🧑 Member-wise</button>
+                  <button className={`li-tab ${liTab==='tech'?'on':''}`} onClick={()=>setLiTab('tech')}>⚙️ Tech-wise</button>
+                  <button className={`li-tab ${liTab==='mentors'?'on':''}`} onClick={()=>setLiTab('mentors')}>🎓 Mentor-wise</button>
+                </div>
+
+                {liLoading && <div className="li-empty">Loading stats...</div>}
+                {!liLoading && !liStats && <div className="li-empty">No data yet</div>}
+
+                {!liLoading && liStats && liTab==='overview' && (() => {
+                  const s = liStats.stats || {}
+                  const totalTeams = (liStats.allTeams || []).length
+                  const teamsWithAllPosted = Object.values(liStats.teamBreakdown || {}).filter(t => t.team && t.shares.length >= (t.team.memberCount || 999)).length
+                  return <>
+                    <div className="li-grid">
+                      <div className="li-stat"><div className="li-stat-lb">Total Posts</div><div className="li-stat-val">{s.total || 0}</div><div className="li-stat-sub">{s.students || 0} students · {s.mentors || 0} mentors</div></div>
+                      <div className="li-stat"><div className="li-stat-lb">Teams Engaged</div><div className="li-stat-val" style={{color:'#EEA727'}}>{s.uniqueTeams || 0}<span style={{fontSize:'.8rem',color:'rgba(255,255,255,.3)',marginLeft:6}}>/ {totalTeams}</span></div><div className="li-bar"><div className="li-bar-f" style={{width:`${totalTeams>0?Math.round((s.uniqueTeams||0)/totalTeams*100):0}%`}}/></div></div>
+                      <div className="li-stat"><div className="li-stat-lb">Fully Posted Teams</div><div className="li-stat-val" style={{color:'#4ade80'}}>{teamsWithAllPosted}</div><div className="li-stat-sub">All members posted</div></div>
+                      <div className="li-stat"><div className="li-stat-lb">Technologies</div><div className="li-stat-val" style={{color:'#a78bfa'}}>{Object.keys(s.byTech || {}).length}</div><div className="li-stat-sub">Active tech tracks</div></div>
+                    </div>
+                    <div className="li-title" style={{fontSize:'.86rem',marginTop:10,marginBottom:12}}>Recent Activity</div>
+                    <table className="li-table"><thead><tr><th>Posted By</th><th>Role</th><th>Team</th><th>Technology</th><th>Mentor</th><th>When</th></tr></thead><tbody>
+                      {(liStats.recent || []).slice(0, 15).map(r => (
+                        <tr key={r.id}><td style={{color:'#fff',fontWeight:600}}>{r.posted_by_name||r.roll_number}</td><td><span className={`li-pill ${r.posted_by_role==='mentor'?'partial':'done'}`}>{r.posted_by_role}</span></td><td style={{color:'#fd1c00',fontWeight:600}}>{r.team_number}</td><td>{r.technology||'—'}</td><td style={{color:'rgba(255,255,255,.55)'}}>{r.mentor_name||'—'}</td><td style={{color:'rgba(255,255,255,.35)',fontSize:'.66rem'}}>{new Date(r.created_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</td></tr>
+                      ))}
+                    </tbody></table>
+                  </>
+                })()}
+
+                {!liLoading && liStats && liTab==='teams' && (() => {
+                  const q = liSearch.toLowerCase()
+                  const teams = (liStats.allTeams || []).filter(t => {
+                    if (!q) return true
+                    return (t.teamNumber||'').toLowerCase().includes(q) || (t.projectTitle||'').toLowerCase().includes(q) || (t.leaderName||'').toLowerCase().includes(q)
+                  })
+                  return <>
+                    <input className="li-search" placeholder="🔍 Search team, project, leader..." value={liSearch} onChange={e=>setLiSearch(e.target.value)} />
+                    <table className="li-table"><thead><tr><th>Team</th><th>Project</th><th>Technology</th><th>Members</th><th>Posted</th><th>Status</th></tr></thead><tbody>
+                      {teams.map(t => {
+                        const shares = (liStats.teamBreakdown[t.teamNumber]?.shares || [])
+                        const postedCount = shares.length
+                        const total = t.memberCount || 0
+                        const pct = total > 0 ? Math.round(postedCount / total * 100) : 0
+                        const status = postedCount === 0 ? 'none' : postedCount >= total ? 'done' : 'partial'
+                        return <tr key={t.serialNumber}>
+                          <td style={{color:'#fd1c00',fontWeight:700}}>{t.teamNumber || `#${t.serialNumber}`}</td>
+                          <td style={{maxWidth:200,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{t.projectTitle || '—'}</td>
+                          <td style={{fontSize:'.66rem'}}>{t.technology}</td>
+                          <td>{total}</td>
+                          <td style={{fontWeight:700,color:status==='done'?'#4ade80':status==='partial'?'#EEA727':'rgba(255,255,255,.3)'}}>{postedCount}/{total} ({pct}%)</td>
+                          <td><span className={`li-pill ${status}`}>{status==='done'?'✓ All Posted':status==='partial'?'Partial':'Not Started'}</span></td>
+                        </tr>
+                      })}
+                    </tbody></table>
+                  </>
+                })()}
+
+                {!liLoading && liStats && liTab==='members' && (() => {
+                  const q = liSearch.toLowerCase()
+                  const recent = (liStats.recent || []).filter(r => !q || (r.posted_by_name||'').toLowerCase().includes(q) || (r.roll_number||'').toLowerCase().includes(q) || (r.team_number||'').toLowerCase().includes(q))
+                  return <>
+                    <input className="li-search" placeholder="🔍 Search by name, roll, team..." value={liSearch} onChange={e=>setLiSearch(e.target.value)} />
+                    <div style={{fontSize:'.68rem',color:'rgba(255,255,255,.35)',marginBottom:10}}>{recent.length} members posted</div>
+                    <table className="li-table"><thead><tr><th>Name</th><th>Roll / Email</th><th>Role</th><th>Team</th><th>Technology</th><th>Posted At</th></tr></thead><tbody>
+                      {recent.map(r => (
+                        <tr key={r.id}>
+                          <td style={{color:'#fff',fontWeight:600}}>{r.posted_by_name || '—'}</td>
+                          <td style={{color:'rgba(255,255,255,.55)',fontSize:'.66rem'}}>{r.roll_number}</td>
+                          <td><span className={`li-pill ${r.posted_by_role==='mentor'?'partial':'done'}`}>{r.posted_by_role}</span></td>
+                          <td style={{color:'#fd1c00',fontWeight:600}}>{r.team_number}</td>
+                          <td style={{fontSize:'.66rem'}}>{r.technology || '—'}</td>
+                          <td style={{color:'rgba(255,255,255,.35)',fontSize:'.66rem'}}>{new Date(r.created_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</td>
+                        </tr>
+                      ))}
+                    </tbody></table>
+                  </>
+                })()}
+
+                {!liLoading && liStats && liTab==='tech' && (() => {
+                  const byTech = liStats.stats?.byTech || {}
+                  const sorted = Object.entries(byTech).sort((a,b) => b[1] - a[1])
+                  const TC = { 'AWS Development':'#ff9900','Google Flutter':'#42a5f5','Full Stack':'#4ade80','Data Specialist':'#a78bfa','ServiceNow':'#22c55e','VLSI':'#ef4444','SkillUp Coder':'#f59e0b' }
+                  return <>
+                    <div style={{fontSize:'.68rem',color:'rgba(255,255,255,.35)',marginBottom:12}}>{sorted.length} technologies · {sorted.reduce((s,[,v])=>s+v,0)} total posts</div>
+                    {sorted.map(([tech, count]) => (
+                      <div key={tech} className="li-tech-row">
+                        <div className="li-tech-dot" style={{background:TC[tech]||'#888'}}/>
+                        <div className="li-tech-name">{tech}</div>
+                        <div className="li-tech-count">{count}</div>
+                      </div>
+                    ))}
+                    {sorted.length === 0 && <div className="li-empty">No posts yet</div>}
+                  </>
+                })()}
+
+                {!liLoading && liStats && liTab==='mentors' && (() => {
+                  const q = liSearch.toLowerCase()
+                  const byMentor = liStats.stats?.byMentor || {}
+
+                  // Build mentor coverage: which mentors posted + their teams' student coverage
+                  const mentorData = Object.entries(byMentor).map(([name, count]) => {
+                    const mentorTeams = (liStats.allTeams || []).filter(t => t.mentorAssigned === name)
+                    let totalStudents = 0, postedStudents = 0
+                    mentorTeams.forEach(t => {
+                      const shares = (liStats.teamBreakdown[t.teamNumber]?.shares || [])
+                      totalStudents += (t.memberCount || 0)
+                      postedStudents += shares.length
+                    })
+                    const mentorPosted = (liStats.recent || []).some(r => r.mentor_name === name && r.posted_by_role === 'mentor')
+                    return { name, totalShares: count, mentorPosted, teamCount: mentorTeams.length, totalStudents, postedStudents }
+                  }).filter(m => !q || m.name.toLowerCase().includes(q)).sort((a,b) => b.totalShares - a.totalShares)
+
+                  return <>
+                    <input className="li-search" placeholder="🔍 Search mentor name..." value={liSearch} onChange={e=>setLiSearch(e.target.value)} />
+                    <div style={{fontSize:'.68rem',color:'rgba(255,255,255,.35)',marginBottom:10}}>{mentorData.length} mentors with LinkedIn activity</div>
+                    <table className="li-table"><thead><tr><th>Mentor</th><th>Mentor Posted?</th><th>Teams</th><th>Student Coverage</th><th>Status</th></tr></thead><tbody>
+                      {mentorData.map(m => {
+                        const pct = m.totalStudents > 0 ? Math.round(m.postedStudents / m.totalStudents * 100) : 0
+                        const status = m.mentorPosted && pct === 100 ? 'done' : (m.mentorPosted || pct > 0) ? 'partial' : 'none'
+                        return <tr key={m.name}>
+                          <td style={{color:'#fff',fontWeight:600}}>{m.name}</td>
+                          <td><span className={`li-pill ${m.mentorPosted?'done':'none'}`}>{m.mentorPosted?'✓ Yes':'Not Yet'}</span></td>
+                          <td>{m.teamCount}</td>
+                          <td style={{fontWeight:700,color:pct===100?'#4ade80':pct>0?'#EEA727':'rgba(255,255,255,.3)'}}>{m.postedStudents}/{m.totalStudents} ({pct}%)</td>
+                          <td><span className={`li-pill ${status}`}>{status==='done'?'✓ Complete':status==='partial'?'In Progress':'No Activity'}</span></td>
+                        </tr>
+                      })}
+                    </tbody></table>
+                  </>
+                })()}
+              </div>
+            )}
 
             {/* REPORT CARD */}
             {activeTab === 'report-card' && <ReportCard />}
