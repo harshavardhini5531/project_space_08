@@ -48,6 +48,9 @@ export default function MentorDashboard() {
   const [reenableByTeam, setReenableByTeam] = useState({}) // {teamNumber: [{id, roll_number, requester_name, reason, created_at}, ...]}
   const [reenableModal, setReenableModal] = useState(null) // {team} — shows modal for that team's requests
   const [reenableProcessing, setReenableProcessing] = useState(null) // request id being processed
+  const [reenableFlash, setReenableFlash] = useState(null) // {type,text} for success/error feedback
+  const [liAnalytics, setLiAnalytics] = useState({ byTeam: {} })
+  const [liExpandedTeam, setLiExpandedTeam] = useState(null)
   const [selectedTechTeam, setSelectedTechTeam] = useState(null)
 
   useEffect(() => { const c=()=>setIsMobile(window.innerWidth<900); c(); window.addEventListener('resize',c); return ()=>window.removeEventListener('resize',c) }, [])
@@ -145,6 +148,22 @@ export default function MentorDashboard() {
     if (teamNums.length > 0) {
       fetch('/api/linkedin-reenable', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'list-by-team', teamNumbers: teamNums }) })
         .then(r => r.json()).then(d => { if (d.byTeam) setReenableByTeam(d.byTeam) }).catch(() => {})
+      // Fetch LinkedIn post analytics for each team
+      Promise.all(teamNums.map(tn =>
+        fetch('/api/linkedin-share', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'check-team', teamNumber: tn }) })
+          .then(r => r.json()).then(d => ({ tn, d })).catch(() => ({ tn, d: null }))
+      )).then(results => {
+        const byTeam = {}
+        results.forEach(({ tn, d }) => {
+          if (!d) return
+          byTeam[tn] = {
+            members: [...(d.postedMembers||[]), ...(d.pendingMembers||[])],
+            posted: (d.postedMembers||[]).map(m => m.rollNumber),
+            pending: (d.pendingMembers||[]).map(m => m.rollNumber)
+          }
+        })
+        setLiAnalytics({ byTeam })
+      }).catch(() => {})
     }
     if ((techProjects.teams||[]).length > 0 && !selectedTechTeam) setSelectedTechTeam((techProjects.teams||[])[0]?.serialNumber)
   }, [data])
@@ -157,6 +176,7 @@ export default function MentorDashboard() {
     {id:'allteams', label:'My Teams', icon:I.users},
     {id:'techprojects', label:'Tech Teams', icon:I.code},
     {id:'reviews', label:'Project Status', icon:I.star},
+    {id:'linkedin', label:'LinkedIn Stats', icon:I.star},
     {id:'leaderboard', label:'Leaderboard', icon:I.star},
     {id:'settings', label:'Settings', icon:I.settings},
   ]
@@ -215,21 +235,37 @@ Powered by ${toBoldM('Technical Hub')}, led by CEO ${toBoldM('Babji Neelam')} Si
 
   async function handleReenableApprove(reqId) {
     setReenableProcessing(reqId)
+    setReenableFlash(null)
     try {
       const r = await fetch('/api/linkedin-reenable', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'approve', requestId: reqId, mentorName: mentor?.name || 'Mentor' }) })
-      const d = await r.json()
-      if (r.ok) await refreshReenableRequests()
-    } catch {}
+      if (r.ok) {
+        await refreshReenableRequests()
+        setReenableFlash({ type: 'success', text: '✓ Approved! Student can now re-post on LinkedIn.' })
+        setTimeout(() => { setReenableModal(null); setReenableFlash(null) }, 1500)
+      } else {
+        setReenableFlash({ type: 'error', text: 'Failed to approve. Try again.' })
+      }
+    } catch {
+      setReenableFlash({ type: 'error', text: 'Network error. Try again.' })
+    }
     setReenableProcessing(null)
   }
 
   async function handleReenableDeny(reqId) {
     setReenableProcessing(reqId)
+    setReenableFlash(null)
     try {
       const r = await fetch('/api/linkedin-reenable', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'deny', requestId: reqId, mentorName: mentor?.name || 'Mentor' }) })
-      const d = await r.json()
-      if (r.ok) await refreshReenableRequests()
-    } catch {}
+      if (r.ok) {
+        await refreshReenableRequests()
+        setReenableFlash({ type: 'success', text: 'Request denied.' })
+        setTimeout(() => { setReenableModal(null); setReenableFlash(null) }, 1500)
+      } else {
+        setReenableFlash({ type: 'error', text: 'Failed to deny. Try again.' })
+      }
+    } catch {
+      setReenableFlash({ type: 'error', text: 'Network error. Try again.' })
+    }
     setReenableProcessing(null)
   }
 
@@ -827,12 +863,106 @@ body.sb-open{overflow:hidden}
               {reviews.teams?.length>0&&<><div style={{fontSize:'.82rem',fontWeight:700,color:'rgba(255,255,255,.5)',marginTop:28,marginBottom:12}}>Team Progress</div><div className="rv-progress">{reviews.teams.map(t=><div key={t.team_number} className="rv-team-prog"><div style={{fontWeight:700,color:'#fd1c00',fontSize:'.8rem',minWidth:60}}>{t.team_number}</div><div className="rv-team-prog-info"><div className="rv-team-prog-name">{t.project_title||'Untitled'}</div><div className="rv-team-prog-sub">{t.completed}/7 done · {t.in_review} reviewing</div></div><div className="rv-team-prog-bar"><div className="rv-team-prog-fill" style={{width:`${t.percent}%`}}/></div><div className="rv-team-prog-pct" style={{color:t.percent>=70?'#4ade80':t.percent>=40?'#EEA727':'rgba(255,255,255,.3)'}}>{t.percent}%</div></div>)}</div></>}
             </div>)}
 
+            {/* LINKEDIN STATS */}
+            {activePage==='linkedin' && (<div className="li-mentor-section">
+              <style>{`
+.li-mentor-section{animation:fadeUp .4s ease both}
+.li-m-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:22px}
+.li-m-stat{padding:18px 20px;border-radius:14px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);position:relative}
+.li-m-stat-lb{font-size:.58rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:8px}
+.li-m-stat-v{font-family:'Orbitron',sans-serif;font-size:1.8rem;font-weight:800;line-height:1}
+.li-m-stat-sub{font-size:.62rem;color:rgba(255,255,255,.35);margin-top:4px}
+.li-m-bar{margin-top:10px;height:5px;border-radius:3px;background:rgba(255,255,255,.05);overflow:hidden}
+.li-m-bar-f{height:100%;border-radius:3px;transition:width .6s}
+.li-m-title{font-size:.82rem;font-weight:700;color:#fff;margin-top:24px;margin-bottom:12px;font-family:'Orbitron',sans-serif;letter-spacing:1.5px}
+.li-m-team{padding:14px 18px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);margin-bottom:8px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.li-m-team-hdr{flex:1;min-width:180px}
+.li-m-team-num{font-family:'Orbitron',sans-serif;font-size:.9rem;font-weight:800;color:#fd1c00}
+.li-m-team-title{font-size:.74rem;color:rgba(255,255,255,.55);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:260px}
+.li-m-team-pbar{flex:1;max-width:220px;height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;min-width:100px}
+.li-m-team-pfill{height:100%;border-radius:3px;transition:width .5s}
+.li-m-team-count{font-family:'Orbitron',sans-serif;font-size:.95rem;font-weight:800;min-width:50px;text-align:right}
+.li-m-pill{padding:3px 10px;border-radius:6px;font-size:.58rem;font-weight:700;letter-spacing:.5px}
+.li-m-pill.done{background:rgba(74,222,128,.08);color:#4ade80;border:1px solid rgba(74,222,128,.2)}
+.li-m-pill.partial{background:rgba(238,167,39,.08);color:#EEA727;border:1px solid rgba(238,167,39,.2)}
+.li-m-pill.none{background:rgba(255,255,255,.03);color:rgba(255,255,255,.3);border:1px solid rgba(255,255,255,.08)}
+.li-m-sub{margin-top:10px;padding:10px 14px;border-radius:10px;background:rgba(0,0,0,.2)}
+.li-m-member{display:flex;align-items:center;gap:10px;padding:6px 0;font-size:.72rem;border-bottom:1px solid rgba(255,255,255,.03)}
+.li-m-member:last-child{border-bottom:none}
+.li-m-member-name{flex:1;color:rgba(255,255,255,.7)}
+.li-m-member-roll{color:rgba(255,255,255,.3);font-size:.62rem;margin-right:10px}
+.li-m-expand-btn{background:none;border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.5);padding:4px 10px;border-radius:6px;font-size:.6rem;font-weight:600;cursor:pointer;font-family:'DM Sans,sans-serif'}
+.li-m-expand-btn:hover{color:#fff;border-color:rgba(255,255,255,.2)}
+              `}</style>
+              <div className="md-page-title">LINKEDIN STATS</div>
+              <div className="md-page-sub">Your teams&apos; LinkedIn posting progress</div>
+
+              {(() => {
+                const teams = myTeams || []
+                // Compute overall stats
+                let totalMembers = 0, postedMembers = 0, fullyPostedTeams = 0
+                const teamData = []
+                teams.forEach(t => {
+                  const shares = (liAnalytics?.byTeam?.[t.teamNumber]) || { members: [], posted: [], pending: [] }
+                  const total = shares.members.length
+                  const posted = shares.posted.length
+                  totalMembers += total
+                  postedMembers += posted
+                  if (total > 0 && posted >= total) fullyPostedTeams++
+                  teamData.push({ ...t, total, posted, members: shares.members, postedSet: new Set(shares.posted), pending: shares.pending })
+                })
+                const pct = totalMembers > 0 ? Math.round(postedMembers/totalMembers*100) : 0
+                const teamPct = teams.length > 0 ? Math.round(fullyPostedTeams/teams.length*100) : 0
+                return <>
+                  <div className="li-m-grid">
+                    <div className="li-m-stat"><div className="li-m-stat-lb">Total Members</div><div className="li-m-stat-v" style={{color:'#fd1c00'}}>{totalMembers}</div><div className="li-m-stat-sub">Across {teams.length} teams</div></div>
+                    <div className="li-m-stat"><div className="li-m-stat-lb">Members Posted</div><div className="li-m-stat-v" style={{color:'#4ade80'}}>{postedMembers}</div><div className="li-m-bar"><div className="li-m-bar-f" style={{width:`${pct}%`,background:'#4ade80'}}/></div></div>
+                    <div className="li-m-stat"><div className="li-m-stat-lb">Members Pending</div><div className="li-m-stat-v" style={{color:'#EEA727'}}>{totalMembers - postedMembers}</div><div className="li-m-stat-sub">Not yet posted</div></div>
+                    <div className="li-m-stat"><div className="li-m-stat-lb">Teams Fully Posted</div><div className="li-m-stat-v" style={{color:'#a78bfa'}}>{fullyPostedTeams}<span style={{fontSize:'.75rem',color:'rgba(255,255,255,.3)',marginLeft:4}}>/ {teams.length}</span></div><div className="li-m-bar"><div className="li-m-bar-f" style={{width:`${teamPct}%`,background:'#a78bfa'}}/></div></div>
+                  </div>
+                  <div className="li-m-title">TEAM-WISE BREAKDOWN</div>
+                  {teamData.length === 0 && <div style={{padding:40,textAlign:'center',color:'rgba(255,255,255,.2)'}}>No teams assigned</div>}
+                  {teamData.map(t => {
+                    const tpct = t.total > 0 ? Math.round(t.posted/t.total*100) : 0
+                    const status = t.total === 0 ? 'none' : t.posted === 0 ? 'none' : t.posted >= t.total ? 'done' : 'partial'
+                    const isExpanded = liExpandedTeam === t.teamNumber
+                    return <div key={t.serialNumber}>
+                      <div className="li-m-team">
+                        <div className="li-m-team-hdr">
+                          <div className="li-m-team-num">{t.teamNumber || `#${t.serialNumber}`}</div>
+                          <div className="li-m-team-title">{t.projectTitle || t.leaderName || '—'}</div>
+                        </div>
+                        <div className="li-m-team-pbar"><div className="li-m-team-pfill" style={{width:`${tpct}%`,background:status==='done'?'#4ade80':status==='partial'?'#EEA727':'#444'}}/></div>
+                        <div className="li-m-team-count" style={{color:status==='done'?'#4ade80':status==='partial'?'#EEA727':'rgba(255,255,255,.3)'}}>{t.posted}/{t.total}</div>
+                        <span className={`li-m-pill ${status}`}>{status==='done'?'✓ All Posted':status==='partial'?`${tpct}%`:'Not Started'}</span>
+                        <button className="li-m-expand-btn" onClick={()=>setLiExpandedTeam(isExpanded ? null : t.teamNumber)}>{isExpanded ? 'Hide' : 'Details'}</button>
+                      </div>
+                      {isExpanded && t.members.length > 0 && (
+                        <div className="li-m-sub">
+                          <div style={{fontSize:'.6rem',color:'rgba(255,255,255,.35)',textTransform:'uppercase',letterSpacing:'1px',fontWeight:700,marginBottom:6}}>Members ({t.total})</div>
+                          {t.members.map(m => {
+                            const posted = t.postedSet.has(m.rollNumber)
+                            return <div key={m.rollNumber} className="li-m-member">
+                              <span style={{width:8,height:8,borderRadius:'50%',background:posted?'#4ade80':'rgba(255,255,255,.15)',flexShrink:0}}/>
+                              <span className="li-m-member-name">{m.name || m.rollNumber}</span>
+                              <span className="li-m-member-roll">{m.rollNumber}</span>
+                              <span className={`li-m-pill ${posted?'done':'none'}`} style={{minWidth:70,textAlign:'center'}}>{posted?'Posted':'Pending'}</span>
+                            </div>
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  })}
+                </>
+              })()}
+            </div>)}
+
             {/* LEADERBOARD */}
             {activePage==='leaderboard' && (<div className="lb-section">
               <div className="md-page-title">LEADERBOARD</div>
               <div className="md-page-sub">All teams ranked by project completion</div>
               <div className="lb-stats"><div className="lb-stat"><div className="lb-stat-val" style={{color:'#fd1c00'}}>{leaderboard.stats?.total_teams||0}</div><div className="lb-stat-lb">Teams</div></div><div className="lb-stat"><div className="lb-stat-val" style={{color:'#4ade80'}}>{leaderboard.stats?.teams_all_done||0}</div><div className="lb-stat-lb">All Done</div></div><div className="lb-stat"><div className="lb-stat-val" style={{color:'#EEA727'}}>{leaderboard.stats?.avg_progress||0}%</div><div className="lb-stat-lb">Avg Progress</div></div><div className="lb-stat"><div className="lb-stat-val" style={{color:'#3b82f6'}}>{leaderboard.stats?.total_completed_stages||0}</div><div className="lb-stat-lb">Stages Done</div></div></div>
-              {lbLoading&&<div style={{textAlign:'center',padding:30,color:'rgba(255,255,255,.2)'}}>Loading...</div>}
+              {lbLoading&&<div style={{textAlign:'center',padding:30,color:'hsla(0, 0%, 100%, 0.20)'}}>Loading...</div>}
               {!lbLoading&&<table className="lb-table"><thead><tr><th>Rank</th><th>Team</th><th>Project</th><th>Tech</th><th>Progress</th><th>Credits</th></tr></thead><tbody>{(leaderboard.leaderboard||[]).map(t=><tr key={t.team_number}><td><span className={`lb-rank ${t.rank===1?'gold':t.rank===2?'silver':t.rank===3?'bronze':''}`}>#{t.rank}</span></td><td style={{fontWeight:700,color:'#fd1c00'}}>{t.team_number}</td><td style={{maxWidth:180,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{t.project_title||'—'}</td><td><span style={{fontSize:'.62rem',padding:'2px 8px',borderRadius:5,background:'rgba(255,255,255,.04)',color:'rgba(255,255,255,.5)'}}>{t.technology}</span></td><td><div className="lb-bar"><div className="lb-bar-fill" style={{width:`${t.percent}%`}}/></div><span style={{fontSize:'.72rem',fontWeight:700,color:t.percent>=70?'#4ade80':t.percent>=40?'#EEA727':'rgba(255,255,255,.3)'}}>{t.completed_stages}/7</span></td><td style={{fontWeight:700,color:'#EEA727'}}>{t.total_credits}</td></tr>)}</tbody></table>}
             </div>)}
             {/* SETTINGS */}
@@ -890,6 +1020,11 @@ body.sb-open{overflow:hidden}
               </button>
             </div>
             <div style={{padding:'16px 22px',overflowY:'auto',flex:1}}>
+              {reenableFlash && (
+                <div style={{marginBottom:14,padding:'11px 14px',borderRadius:10,background:reenableFlash.type==='success'?'rgba(74,222,128,.08)':'rgba(253,28,0,.08)',border:`1px solid ${reenableFlash.type==='success'?'rgba(74,222,128,.3)':'rgba(253,28,0,.3)'}`,color:reenableFlash.type==='success'?'#4ade80':'#ff6040',fontSize:'.78rem',fontWeight:600,fontFamily:'DM Sans,sans-serif',animation:'fadeUp .3s ease'}}>
+                  {reenableFlash.text}
+                </div>
+              )}
               {(reenableByTeam[reenableModal.team.teamNumber] || []).length === 0 ? (
                 <div style={{textAlign:'center',padding:'40px 20px',color:'rgba(255,255,255,.3)',fontSize:'.82rem'}}>✓ All requests processed</div>
               ) : (
