@@ -248,7 +248,15 @@ Powered by ${toBoldM('Technical Hub')}, led by CEO ${toBoldM('Babji Neelam')} Si
       setReenableFlash({ type: 'error', text: 'Network error. Try again.' })
     }
     if (approveSucceeded) {
-      // Try to refresh, but don't show error if refresh fails
+      // Optimistic update: immediately remove this request from local state
+      setReenableByTeam(prev => {
+        const next = { ...prev }
+        Object.keys(next).forEach(tn => {
+          next[tn] = (next[tn] || []).filter(req => req.id !== reqId)
+        })
+        return next
+      })
+      // Try to refresh in background (refresh might fail on network glitch, but that's OK)
       try { await refreshReenableRequests() } catch {}
       setReenableFlash({ type: 'success', text: '✓ Approved! Student can now re-post on LinkedIn.' })
       setTimeout(() => { setReenableModal(null); setReenableFlash(null) }, 1500)
@@ -271,6 +279,14 @@ Powered by ${toBoldM('Technical Hub')}, led by CEO ${toBoldM('Babji Neelam')} Si
       setReenableFlash({ type: 'error', text: 'Network error. Try again.' })
     }
     if (denySucceeded) {
+      // Optimistic update: immediately remove this request from local state
+      setReenableByTeam(prev => {
+        const next = { ...prev }
+        Object.keys(next).forEach(tn => {
+          next[tn] = (next[tn] || []).filter(req => req.id !== reqId)
+        })
+        return next
+      })
       try { await refreshReenableRequests() } catch {}
       setReenableFlash({ type: 'success', text: 'Request denied.' })
       setTimeout(() => { setReenableModal(null); setReenableFlash(null) }, 1500)
