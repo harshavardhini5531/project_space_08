@@ -236,17 +236,22 @@ Powered by ${toBoldM('Technical Hub')}, led by CEO ${toBoldM('Babji Neelam')} Si
   async function handleReenableApprove(reqId) {
     setReenableProcessing(reqId)
     setReenableFlash(null)
+    let approveSucceeded = false
     try {
       const r = await fetch('/api/linkedin-reenable', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'approve', requestId: reqId, mentorName: mentor?.name || 'Mentor' }) })
       if (r.ok) {
-        await refreshReenableRequests()
-        setReenableFlash({ type: 'success', text: '✓ Approved! Student can now re-post on LinkedIn.' })
-        setTimeout(() => { setReenableModal(null); setReenableFlash(null) }, 1500)
+        approveSucceeded = true
       } else {
         setReenableFlash({ type: 'error', text: 'Failed to approve. Try again.' })
       }
     } catch {
       setReenableFlash({ type: 'error', text: 'Network error. Try again.' })
+    }
+    if (approveSucceeded) {
+      // Try to refresh, but don't show error if refresh fails
+      try { await refreshReenableRequests() } catch {}
+      setReenableFlash({ type: 'success', text: '✓ Approved! Student can now re-post on LinkedIn.' })
+      setTimeout(() => { setReenableModal(null); setReenableFlash(null) }, 1500)
     }
     setReenableProcessing(null)
   }
@@ -254,17 +259,21 @@ Powered by ${toBoldM('Technical Hub')}, led by CEO ${toBoldM('Babji Neelam')} Si
   async function handleReenableDeny(reqId) {
     setReenableProcessing(reqId)
     setReenableFlash(null)
+    let denySucceeded = false
     try {
       const r = await fetch('/api/linkedin-reenable', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'deny', requestId: reqId, mentorName: mentor?.name || 'Mentor' }) })
       if (r.ok) {
-        await refreshReenableRequests()
-        setReenableFlash({ type: 'success', text: 'Request denied.' })
-        setTimeout(() => { setReenableModal(null); setReenableFlash(null) }, 1500)
+        denySucceeded = true
       } else {
         setReenableFlash({ type: 'error', text: 'Failed to deny. Try again.' })
       }
     } catch {
       setReenableFlash({ type: 'error', text: 'Network error. Try again.' })
+    }
+    if (denySucceeded) {
+      try { await refreshReenableRequests() } catch {}
+      setReenableFlash({ type: 'success', text: 'Request denied.' })
+      setTimeout(() => { setReenableModal(null); setReenableFlash(null) }, 1500)
     }
     setReenableProcessing(null)
   }
