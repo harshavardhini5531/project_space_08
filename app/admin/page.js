@@ -42,6 +42,11 @@ export default function AdminDashboard() {
   const [liSubTab, setLiSubTab] = useState('members')
   const [liRecentTab, setLiRecentTab] = useState('trainees')
   const [liTechFilter, setLiTechFilter] = useState('all')
+  const [insights, setInsights] = useState(null)
+  const [insightsLoading, setInsightsLoading] = useState(false)
+  const [psSearch, setPsSearch] = useState('')
+  const [psStatusFilter, setPsStatusFilter] = useState('all')
+  const [mentorTab, setMentorTab] = useState('registration') // registration | linkedin | stages | reenable
 
   const pwRules = [
     { label: 'At least 8 characters', test: v => v.length >= 8 },
@@ -91,6 +96,17 @@ export default function AdminDashboard() {
   function handleLogout() { sessionStorage.removeItem('admin_token'); setToken(''); setPhase('auth'); setData(null) }
 
   useEffect(() => { if (phase==='dashboard') { fetchAdLeaderboard(); fetchAdNotifs(); const iv=setInterval(()=>{fetchAdLeaderboard();fetchAdNotifs()},30000); return ()=>clearInterval(iv) } }, [phase])
+
+  // Fetch admin insights (cross-functional data)
+  useEffect(() => {
+    if (phase !== 'dashboard' || !token) return
+    setInsightsLoading(true)
+    fetch('/api/admin/insights', { headers: { 'x-admin-token': token } })
+      .then(r => r.json())
+      .then(d => { if (d && !d.error) setInsights(d) })
+      .catch(e => console.error('Insights error:', e))
+      .finally(() => setInsightsLoading(false))
+  }, [phase, token])
 
   // Fetch LinkedIn stats when tab is active
   useEffect(() => {
@@ -162,7 +178,7 @@ export default function AdminDashboard() {
     {id:'overview',label:'Overview',icon:IC.grid},
     {id:'mentors',label:'Mentors',icon:IC.users},
     {id:'teams',label:'Teams',icon:IC.group},
-    {id:'milestones',label:'Project Status',icon:IC.target},
+    grep -n "activeTab === 'milestones'" /var/www/project_space_08/app/admin/page.js
     {id:'linkedin-stats',label:'LinkedIn Stats',icon:IC.share},
     {id:'leaderboard',label:'Leaderboard',icon:IC.award},
     {id:'report-card',label:'Report Card',icon:IC.file},
@@ -803,41 +819,91 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
 
             {/* PROJECT STATUS */}
             {activeTab === 'milestones' && <div className="adm-lb">
-              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20}}>
-                <div><div style={{fontSize:'1.1rem',fontWeight:700,color:'#fff'}}>Project Status</div><div style={{fontSize:'.72rem',color:'rgba(255,255,255,.3)',marginTop:2}}>All milestone submissions across teams</div></div>
+              <style>{`
+.ps-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+.ps-stat{padding:16px 18px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05)}
+.ps-stat-lb{font-size:.58rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:8px}
+.ps-stat-v{font-family:'Orbitron',sans-serif;font-size:1.6rem;font-weight:800;line-height:1}
+.ps-filters{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.ps-filter-pill{padding:7px 14px;border-radius:8px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);color:rgba(255,255,255,.55);font-family:'DM Sans,sans-serif';font-size:.7rem;font-weight:600;cursor:pointer;transition:all .2s}
+.ps-filter-pill.on{background:rgba(253,28,0,.12);border-color:rgba(253,28,0,.3);color:#fd1c00}
+.ps-search{flex:1;min-width:200px;padding:9px 14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:10px;color:#fff;font-size:.78rem;outline:none;font-family:'DM Sans,sans-serif'}
+.ps-search:focus{border-color:rgba(253,28,0,.2)}
+.ps-pill{padding:3px 10px;border-radius:6px;font-size:.58rem;font-weight:700;letter-spacing:.5px;display:inline-flex;align-items:center;gap:4px}
+.ps-pill.completed{background:rgba(74,222,128,.08);color:#4ade80;border:1px solid rgba(74,222,128,.2)}
+.ps-pill.in-review{background:rgba(238,167,39,.08);color:#EEA727;border:1px solid rgba(238,167,39,.2)}
+.ps-pill.rejected{background:rgba(255,96,64,.08);color:#ff6040;border:1px solid rgba(255,96,64,.2)}
+              `}</style>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20,flexWrap:'wrap',gap:12}}>
+                <div>
+                  <div style={{fontSize:'1.1rem',fontWeight:700,color:'#fff'}}>Project Status</div>
+                  <div style={{fontSize:'.72rem',color:'rgba(255,255,255,.3)',marginTop:2}}>Detailed stage review history across all teams</div>
+                </div>
                 <div className="adm-notif-wrap">
                   <div className="adm-notif-btn" onClick={()=>setShowAdNotif(!showAdNotif)}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>{adUnread>0&&<div className="adm-notif-badge">{adUnread}</div>}</div>
                   {showAdNotif&&<div className="adm-notif-dd" onClick={e=>e.stopPropagation()}><div className="adm-notif-dd-hdr"><span>Activity</span>{adUnread>0&&<button className="adm-notif-dd-mark" onClick={markAdNotifsRead}>Mark all read</button>}</div>{adNotifs.length===0?<div style={{padding:20,textAlign:'center',fontSize:11,color:'rgba(255,255,255,.15)'}}>No activity</div>:adNotifs.map(n=><div key={n.id} className={`adm-notif-item ${!n.read?'unread':''}`}><div className="adm-notif-item-t">{n.title}</div><div className="adm-notif-item-m">{n.message}</div><div className="adm-notif-item-time">{new Date(n.created_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div></div>)}</div>}
                 </div>
               </div>
 
-              <div style={{overflowX:'auto'}}>
-                <table className="adm-lb-tbl" style={{minWidth:900}}>
-                  <thead><tr><th>Team</th><th>Project</th><th>Leader</th><th>Stage</th><th>Review Sent</th><th>Mentor</th><th>Status</th><th>Action</th><th>Comments</th><th>Approved/Rejected</th><th>Time Taken</th></tr></thead>
-                  <tbody>
-                    {adNotifs.length===0&&<tr><td colSpan={11} style={{textAlign:'center',padding:30,color:'rgba(255,255,255,.15)'}}>No milestone activity yet</td></tr>}
-                    {adNotifs.map((n,i)=>{
-                      const reviewTime = n.created_at ? new Date(n.created_at) : null;
-                      const isApproved = n.type==='approved';
-                      const isRejected = n.type==='rejected';
-                      const isReview = n.type==='review-request';
-                      return <tr key={n.id}>
-                        <td style={{fontWeight:700,color:'#fd1c00'}}>{n.team_number||'—'}</td>
-                        <td style={{maxWidth:140,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',color:'rgba(255,255,255,.5)'}}>{n.message?.split('marked')[0]?.trim()||'—'}</td>
-                        <td style={{fontSize:'.7rem',color:'rgba(255,255,255,.4)'}}>{n.message?.match(/Submitted by (.+?)[\.\,]/)?.[1]||'—'}</td>
-                        <td><span style={{fontSize:'.62rem',padding:'2px 8px',borderRadius:5,background:'rgba(255,255,255,.04)',color:'rgba(255,255,255,.5)'}}>S-{n.stage_number}</span></td>
-                        <td style={{fontSize:'.65rem',color:'rgba(255,255,255,.3)'}}>{reviewTime?reviewTime.toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):''}</td>
-                        <td style={{fontSize:'.7rem',color:'rgba(255,255,255,.4)'}}>{n.message?.match(/Mentor: (.+?)$/)?.[1]||n.title?.match(/by (.+?)$/)?.[1]||'—'}</td>
-                        <td><span className={`adm-ms-badge ${isReview?'review':isApproved?'approved':'rejected'}`}>{isReview?'In Review':isApproved?'Approved':'Rejected'}</span></td>
-                        <td style={{fontSize:'.68rem',color:'rgba(255,255,255,.4)'}}>{isApproved?'Approved':isRejected?'Rejected':isReview?'Pending':'—'}</td>
-                        <td style={{fontSize:'.65rem',color:'rgba(255,255,255,.3)',maxWidth:120,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{isRejected?(n.message||'—'):'—'}</td>
-                        <td style={{fontSize:'.65rem',color:'rgba(255,255,255,.3)'}}>{(isApproved||isRejected)?reviewTime?.toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):''}</td>
-                        <td style={{fontSize:'.65rem',color:'rgba(255,255,255,.3)'}}>{(isApproved||isRejected)&&reviewTime?'—':'—'}</td>
-                      </tr>
-                    })}
-                  </tbody>
-                </table>
-              </div>
+              {!insights && insightsLoading && <div style={{textAlign:'center',padding:40,color:'rgba(255,255,255,.2)'}}>Loading project status data...</div>}
+              {insights && (() => {
+                const reviews = insights.stageReviews || []
+                const summary = insights.summary?.stages || {}
+                const q = psSearch.toLowerCase()
+                const filtered = reviews.filter(r => {
+                  if (psStatusFilter !== 'all' && r.status !== psStatusFilter) return false
+                  if (q) return (r.teamNumber||'').toLowerCase().includes(q) || (r.submittedBy||'').toLowerCase().includes(q) || (r.reviewedBy||'').toLowerCase().includes(q)
+                  return true
+                })
+                const calcDuration = (subAt, revAt) => {
+                  if (!subAt || !revAt) return '—'
+                  const ms = new Date(revAt) - new Date(subAt)
+                  if (ms < 0) return '—'
+                  const mins = Math.floor(ms / 60000)
+                  if (mins < 60) return `${mins}m`
+                  const hrs = Math.floor(mins / 60)
+                  if (hrs < 24) return `${hrs}h ${mins % 60}m`
+                  return `${Math.floor(hrs / 24)}d ${hrs % 24}h`
+                }
+                const fmt = d => d ? new Date(d).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '—'
+                return <>
+                  <div className="ps-stats">
+                    <div className="ps-stat"><div className="ps-stat-lb">Total Submissions</div><div className="ps-stat-v" style={{color:'#fd1c00'}}>{summary.totalSubmitted || 0}</div></div>
+                    <div className="ps-stat"><div className="ps-stat-lb">Approved</div><div className="ps-stat-v" style={{color:'#4ade80'}}>{summary.approved || 0}</div></div>
+                    <div className="ps-stat"><div className="ps-stat-lb">In Review</div><div className="ps-stat-v" style={{color:'#EEA727'}}>{summary.inReview || 0}</div></div>
+                    <div className="ps-stat"><div className="ps-stat-lb">Rejected</div><div className="ps-stat-v" style={{color:'#ff6040'}}>{summary.rejected || 0}</div></div>
+                  </div>
+                  <div className="ps-filters">
+                    <input className="ps-search" placeholder="Search team, leader, mentor..." value={psSearch} onChange={e=>setPsSearch(e.target.value)} />
+                    <button className={`ps-filter-pill ${psStatusFilter==='all'?'on':''}`} onClick={()=>setPsStatusFilter('all')}>All ({reviews.length})</button>
+                    <button className={`ps-filter-pill ${psStatusFilter==='in-review'?'on':''}`} onClick={()=>setPsStatusFilter('in-review')}>In Review ({summary.inReview || 0})</button>
+                    <button className={`ps-filter-pill ${psStatusFilter==='completed'?'on':''}`} onClick={()=>setPsStatusFilter('completed')}>Approved ({summary.approved || 0})</button>
+                    <button className={`ps-filter-pill ${psStatusFilter==='rejected'?'on':''}`} onClick={()=>setPsStatusFilter('rejected')}>Rejected ({summary.rejected || 0})</button>
+                  </div>
+                  <div style={{overflowX:'auto'}}>
+                    <table className="adm-lb-tbl" style={{minWidth:1100}}>
+                      <thead><tr><th>Team</th><th>Stage</th><th>Submitted By</th><th>Submitted At</th><th>Mentor</th><th>Reviewed At</th><th>Time Taken</th><th>Status</th><th>Comment</th><th>Credits</th></tr></thead>
+                      <tbody>
+                        {filtered.length === 0 && <tr><td colSpan={10} style={{textAlign:'center',padding:30,color:'rgba(255,255,255,.15)'}}>No reviews match your filter</td></tr>}
+                        {filtered.map((r, i) => (
+                          <tr key={`${r.teamNumber}-${r.stageNumber}-${i}`}>
+                            <td style={{fontWeight:700,color:'#fd1c00'}}>{r.teamNumber}</td>
+                            <td><span style={{fontSize:'.62rem',padding:'2px 8px',borderRadius:5,background:'rgba(255,255,255,.04)',color:'rgba(255,255,255,.5)'}}>S-{r.stageNumber}</span></td>
+                            <td style={{fontSize:'.7rem',color:'rgba(255,255,255,.55)'}}>{r.submittedBy || '—'}</td>
+                            <td style={{fontSize:'.65rem',color:'rgba(255,255,255,.35)'}}>{fmt(r.submittedAt)}</td>
+                            <td style={{fontSize:'.7rem',color:'rgba(255,255,255,.55)'}}>{r.reviewedBy || '—'}</td>
+                            <td style={{fontSize:'.65rem',color:'rgba(255,255,255,.35)'}}>{fmt(r.reviewedAt)}</td>
+                            <td style={{fontSize:'.65rem',color:'rgba(255,255,255,.4)'}}>{calcDuration(r.submittedAt, r.reviewedAt)}</td>
+                            <td><span className={`ps-pill ${r.status}`}>{r.status === 'completed' ? '✓ Approved' : r.status === 'rejected' ? 'Rejected' : 'In Review'}</span></td>
+                            <td style={{fontSize:'.65rem',color:'rgba(255,255,255,.35)',maxWidth:180,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}} title={r.comment || ''}>{r.comment || '—'}</td>
+                            <td style={{fontWeight:700,color:r.credits>0?'#EEA727':'rgba(255,255,255,.2)'}}>{r.credits || 0}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              })()}
             </div>}
 
             {/* LEADERBOARD */}
