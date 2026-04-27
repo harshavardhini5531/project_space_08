@@ -178,7 +178,6 @@ export default function AdminDashboard() {
     {id:'overview',label:'Overview',icon:IC.grid},
     {id:'mentors',label:'Mentors',icon:IC.users},
     {id:'teams',label:'Teams',icon:IC.group},
-    grep -n "activeTab === 'milestones'" /var/www/project_space_08/app/admin/page.js
     {id:'linkedin-stats',label:'LinkedIn Stats',icon:IC.share},
     {id:'leaderboard',label:'Leaderboard',icon:IC.award},
     {id:'report-card',label:'Report Card',icon:IC.file},
