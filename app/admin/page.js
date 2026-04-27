@@ -175,11 +175,10 @@ export default function AdminDashboard() {
     target:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>,
   }
   const NAV=[
-    {id:'overview',label:'Overview',icon:IC.grid},
     {id:'mentors',label:'Mentors',icon:IC.users},
     {id:'teams',label:'Teams',icon:IC.group},
+    {id:'milestones',label:'Project Status',icon:IC.target},
     {id:'linkedin-stats',label:'LinkedIn Stats',icon:IC.share},
-    {id:'leaderboard',label:'Leaderboard',icon:IC.award},
     {id:'report-card',label:'Report Card',icon:IC.file},
   ]
 
