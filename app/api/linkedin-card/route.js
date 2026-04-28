@@ -55,9 +55,14 @@ export async function GET(request) {
   const teamNumber = searchParams.get('team')
   if (!teamNumber) return new Response('Missing team', { status: 400 })
 
+  // Normalize team number: accept "158", "PS-158", or "PS-022" — DB stores as "PS-XXX" zero-padded
+  const normalizedTeamNumber = String(teamNumber).toUpperCase().startsWith('PS-')
+    ? String(teamNumber).toUpperCase().replace(/^PS-(\d+)$/, (_, n) => 'PS-' + n.padStart(3, '0'))
+    : 'PS-' + String(teamNumber).padStart(3, '0')
+
   try {
     // Fetch team data
-    const { data: team } = await supabase.from('teams').select('*').eq('team_number', teamNumber).single()
+    const { data: team } = await supabase.from('teams').select('*').eq('team_number', normalizedTeamNumber).single()
     if (!team) return new Response('Team not found', { status: 404 })
 
     const { data: reg } = await supabase.from('team_registrations').select('*').eq('serial_number', team.serial_number).single()

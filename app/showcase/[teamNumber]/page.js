@@ -9,8 +9,13 @@ const supabase = createClient(
 // Dynamic metadata for LinkedIn / social media previews
 export async function generateMetadata({ params }) {
   const { teamNumber } = await params
-  
-  const { data: team } = await supabase.from('teams').select('*').eq('team_number', teamNumber).single()
+
+  // Normalize team number: accept "158", "PS-158", or "PS-022" — DB stores as "PS-XXX" zero-padded
+  const normalizedTeamNumber = String(teamNumber).toUpperCase().startsWith('PS-')
+    ? String(teamNumber).toUpperCase().replace(/^PS-(\d+)$/, (_, n) => 'PS-' + n.padStart(3, '0'))
+    : 'PS-' + String(teamNumber).padStart(3, '0')
+
+  const { data: team } = await supabase.from('teams').select('*').eq('team_number', normalizedTeamNumber).single()
   const { data: reg } = team ? await supabase.from('team_registrations').select('*').eq('serial_number', team.serial_number).single() : { data: null }
   
   const title = reg?.project_title || team?.project_title || 'Project Space'
@@ -62,8 +67,13 @@ export async function generateMetadata({ params }) {
 
 export default async function ShowcasePage({ params }) {
   const { teamNumber } = await params
-  
-  const { data: team } = await supabase.from('teams').select('*').eq('team_number', teamNumber).single()
+
+  // Normalize team number: accept "158", "PS-158", or "PS-022" — DB stores as "PS-XXX" zero-padded
+  const normalizedTeamNumber = String(teamNumber).toUpperCase().startsWith('PS-')
+    ? String(teamNumber).toUpperCase().replace(/^PS-(\d+)$/, (_, n) => 'PS-' + n.padStart(3, '0'))
+    : 'PS-' + String(teamNumber).padStart(3, '0')
+
+  const { data: team } = await supabase.from('teams').select('*').eq('team_number', normalizedTeamNumber).single()
   if (!team) {
     return <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'#050008',color:'#fff',fontFamily:'DM Sans, sans-serif'}}>Team not found</div>
   }
