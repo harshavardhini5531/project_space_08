@@ -327,10 +327,12 @@ Powered by ${toBoldM('Technical Hub')}, led by CEO ${toBoldM('Babji Neelam')} Si
 
   function postMentorLinkedIn() {
     if (!liTeam?.teamNumber) { alert('This team does not have a team number yet. Cannot share until registration is complete.'); return; }
-    const text = encodeURIComponent(liPost);
-    const showcaseUrl = `https://projectspace.technicalhub.io/showcase/${liTeam.teamNumber}?v=${Date.now()}`;
+    const showcaseUrl = `https://projectspace.technicalhub.io/showcase/${liTeam.teamNumber}`;
     const url = encodeURIComponent(showcaseUrl);
-    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}&text=${text}`, '_blank', 'noopener,noreferrer');
+    if (liPost && navigator.clipboard) {
+      navigator.clipboard.writeText(liPost).catch(() => {});
+    }
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank', 'noopener,noreferrer');
     setLiConfirm(true);
   }
 

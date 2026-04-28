@@ -1606,11 +1606,15 @@ Powered by ${toBold('Technical Hub')}, led by CEO ${toBold('Babji Neelam')} Sir,
   }
 
   function postToLinkedIn() {
-    const text = encodeURIComponent(liPost);
-    const showcaseUrl = `https://projectspace.technicalhub.io/showcase/${details.teamNumber}?v=${Date.now()}`;
+    const showcaseUrl = `https://projectspace.technicalhub.io/showcase/${details.teamNumber}`;
     const url = encodeURIComponent(showcaseUrl);
+    // Copy post text to clipboard so user can paste it in LinkedIn's editor
+    if (liPost && navigator.clipboard) {
+      navigator.clipboard.writeText(liPost).catch(() => {});
+    }
+    // Drop &text param — long text causes "Server Hangup" on mobile and breaks unfurler
     window.open(
-      `https://www.linkedin.com/sharing/share-offsite/?url=${url}&text=${text}`,
+      `https://www.linkedin.com/sharing/share-offsite/?url=${url}`,
       '_blank',
       'noopener,noreferrer'
     );

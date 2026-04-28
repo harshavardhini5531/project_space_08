@@ -61,7 +61,7 @@ export async function GET(request) {
     if (!team) return new Response('Team not found', { status: 404 })
 
     const { data: reg } = await supabase.from('team_registrations').select('*').eq('serial_number', team.serial_number).single()
-    const { data: members } = await supabase.from('team_members').select('roll_number, short_name, is_leader').eq('serial_number', team.serial_number).order('is_leader', { ascending: false })
+    const { data: members } = await supabase.from('team_members').select('roll_number, short_name, is_leader').eq('serial_number', team.serial_number).order('is_leader', { ascending: false }).order('roll_number', { ascending: true })
 
     // Fetch student images
     const rollNumbers = (members || []).map(m => m.roll_number)

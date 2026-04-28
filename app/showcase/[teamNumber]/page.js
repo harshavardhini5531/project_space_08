@@ -69,7 +69,7 @@ export default async function ShowcasePage({ params }) {
   }
 
   const { data: reg } = await supabase.from('team_registrations').select('*').eq('serial_number', team.serial_number).single()
-  const { data: members } = await supabase.from('team_members').select('roll_number, short_name, is_leader').eq('serial_number', team.serial_number).order('is_leader', { ascending: false })
+  const { data: members } = await supabase.from('team_members').select('roll_number, short_name, is_leader').eq('serial_number', team.serial_number).order('is_leader', { ascending: false }).order('roll_number', { ascending: true })
   
   const rollNumbers = (members || []).map(m => m.roll_number)
   const { data: students } = await supabase.from('students').select('roll_number, name, image_url').in('roll_number', rollNumbers)

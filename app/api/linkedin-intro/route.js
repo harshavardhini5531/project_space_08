@@ -34,18 +34,50 @@ export async function POST(request) {
     ]
 
     const apiKey = process.env.ANTHROPIC_API_KEY
+    // Robust JSON extractor — finds the first {...} block in any text Claude returns
+    const extractJson = (text) => {
+      if (!text) return null
+      const cleaned = text.replace(/```json|```/g, '').trim()
+      // Try parsing whole text first
+      try { return JSON.parse(cleaned) } catch {}
+      // Find first { and matching closing }
+      const start = cleaned.indexOf('{')
+      if (start === -1) return null
+      let depth = 0, inString = false, escape = false
+      for (let i = start; i < cleaned.length; i++) {
+        const c = cleaned[i]
+        if (escape) { escape = false; continue }
+        if (c === '\\') { escape = true; continue }
+        if (c === '"') { inString = !inString; continue }
+        if (inString) continue
+        if (c === '{') depth++
+        else if (c === '}') {
+          depth--
+          if (depth === 0) {
+            try { return JSON.parse(cleaned.slice(start, i + 1)) } catch { return null }
+          }
+        }
+      }
+      return null
+    }
+
     if (apiKey) {
-      try {
-        const res = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': apiKey,
-            'anthropic-version': '2023-06-01'
-          },
-          body: JSON.stringify({
-            model: 'claude-haiku-4-5-20251001',
-            max_tokens: 800,
+      // Retry up to 3 times on failures (network blip, 429, malformed JSON, timeout)
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 18000) // 18s timeout
+        try {
+          const res = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            signal: controller.signal,
+            headers: {
+              'Content-Type': 'application/json',
+              'x-api-key': apiKey,
+              'anthropic-version': '2023-06-01'
+            },
+            body: JSON.stringify({
+              model: 'claude-haiku-4-5-20251001',
+              max_tokens: 800,
             messages: [{
               role: 'user',
              content: isMentor
@@ -76,26 +108,37 @@ Make all 3 unique and personal to this project. Do NOT repeat words across the t
             }]
           })
         })
-        const data = await res.json()
-        const text = data?.content?.[0]?.text?.trim()
-        if (text) {
-          try {
-            const cleaned = text.replace(/```json|```/g, '').trim()
-            const parsed = JSON.parse(cleaned)
-            if (parsed.intro && parsed.title && parsed.highlights) {
-              return Response.json({
-                title: parsed.title,
-                intro: parsed.intro,
-                highlights: parsed.highlights,
-                source: 'ai'
-              })
+        clearTimeout(timeoutId)
+          if (!res.ok) {
+            const errText = await res.text().catch(() => '')
+            console.error(`Claude API attempt ${attempt + 1} HTTP ${res.status}:`, errText.slice(0, 200))
+            // 429 = rate limit, retry with backoff. 5xx = server error, retry. Others = give up.
+            if (res.status === 429 || res.status >= 500) {
+              await new Promise(r => setTimeout(r, 1000 * (attempt + 1)))
+              continue
             }
-          } catch (parseErr) {
-            console.error('JSON parse failed:', parseErr, text)
+            break
           }
+          const data = await res.json()
+          const text = data?.content?.[0]?.text?.trim()
+          const parsed = extractJson(text)
+          if (parsed?.intro && parsed?.title && parsed?.highlights) {
+            return Response.json({
+              title: parsed.title,
+              intro: parsed.intro,
+              highlights: parsed.highlights,
+              source: 'ai'
+            })
+          }
+          console.error(`Claude attempt ${attempt + 1}: malformed response:`, (text || '').slice(0, 200))
+          // Malformed → retry
+          if (attempt < 2) await new Promise(r => setTimeout(r, 600))
+        } catch (e) {
+          clearTimeout(timeoutId)
+          const isAbort = e?.name === 'AbortError'
+          console.error(`Claude attempt ${attempt + 1} ${isAbort ? 'TIMEOUT' : 'ERROR'}:`, e?.message || e)
+          if (attempt < 2) await new Promise(r => setTimeout(r, 800))
         }
-      } catch (e) {
-        console.error('Claude API failed:', e)
       }
     }
 
