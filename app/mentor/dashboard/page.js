@@ -206,26 +206,26 @@ export default function MentorDashboard() {
 
     const techStack = (t.techStack || []).join(' · ');
     const projectArea = (t.projectArea || []).join(' · ');
-    const aiInfo = t.aiUsage === 'Yes' && t.aiCapabilities ? ` Their approach: ${t.aiCapabilities}.` : '';
-    const techLine = techStack ? `The team will be building with ${techStack}` : '';
-    const areaLine = projectArea ? ` in the ${projectArea} domain` : '';
-    const techAreaLine = [techLine, areaLine].filter(Boolean).join('');
     const projectDesc = t.projectDescription || t.problemStatement || '';
     const intro = customIntro || `There's something deeply fulfilling about watching students grow from curious learners into confident builders. As we gear up for Project Space, I'm proud to introduce one of the teams I've had the privilege of mentoring.`;
+
+    const techLine = techStack ? `\n\n💻 ${toBoldM('Tech Stack:')} ${techStack}` : '';
+    const areaLine = projectArea ? `\n🎯 ${toBoldM('Domain:')} ${projectArea}` : '';
+    const aiLine = (t.aiUsage === 'Yes' && t.aiCapabilities) ? `\n\n🤖 ${toBoldM('AI Approach:')} ${t.aiCapabilities}` : '';
+    const teamSection = namesStr
+      ? `\n\n👥 ${toBoldM('The Team Behind This:')}\nThroughout their course journey, I've had the privilege of guiding this talented group — ${namesStr}. Watching them evolve from learners to innovators has been one of the most rewarding experiences of my journey as a mentor.`
+      : '';
 
     return `${toBoldM('Proud Mentor Moment — Introducing Team ' + (t.teamNumber || ''))}
 
 ${intro}
 
-${toBoldM(t.projectTitle || 'Our Project')}
+🚀 ${toBoldM(t.projectTitle || 'Our Project')}
 
-${projectDesc}
+${projectDesc}${techLine}${areaLine}${aiLine}${teamSection}
 
-${techAreaLine ? techAreaLine + '.' : ''}${aiInfo}
+${toBoldM('𝗘𝘃𝗲𝗻𝘁 𝗛𝗶𝗴𝗵𝗹𝗶𝗴𝗵𝘁𝘀 — 𝗠𝗮𝘆 𝟲 𝘁𝗼 𝟭𝟮, 𝟮𝟬𝟮𝟲')}
 
-${namesStr ? `Throughout their course journey, I've had the privilege of guiding this talented group — ${namesStr}. Watching them evolve from learners to innovators has been one of the most rewarding experiences.
-
-` : ''}${toBoldM('𝗘𝘃𝗲𝗻𝘁 𝗛𝗶𝗴𝗵𝗹𝗶𝗴𝗵𝘁𝘀 — 𝗠𝗮𝘆 𝟲 𝘁𝗼 𝟭𝟮, 𝟮𝟬𝟮𝟲')}
 ${toBoldM('Project Space')} brings together 900+ students across 160 teams, exploring 7 cutting-edge technology stacks with an AI-first theme. For 7 days straight, teams will be working 24/7 on real-world projects — supported by dedicated mentors, hands-on learning, and the vibrant energy of Project Street. Proud to be part of this incredible initiative!
 
 Powered by ${toBoldM('Technical Hub')}, led by CEO ${toBoldM('Babji Neelam')} Sir, and proudly hosted at ${toBoldM('Aditya University')}.
@@ -331,28 +331,36 @@ Powered by ${toBoldM('Technical Hub')}, led by CEO ${toBoldM('Babji Neelam')} Si
     const url = encodeURIComponent(showcaseUrl);
     // Detect mobile via user-agent — LinkedIn mobile share endpoint chokes on long text
     const isMobileDevice = typeof navigator !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent || '');
-    // Sanitizer: remove anything that looks like a URL/domain so LinkedIn doesn't auto-unfurl a competing OG card
-    // Strips: http(s):// URLs, www.example.com patterns, and bare technology names with dots like "socket.io", "next.js", "node.js"
-    function stripUrlLikeTokens(str) {
+    // Sanitizer: strip URL-like tokens (http(s)://, www.X, "socket.io", "next.js" etc.) so LinkedIn doesn't auto-unfurl competing OG cards
+    // Then preserve newlines through LinkedIn's URL by converting \n to U+2028 LINE SEPARATOR (LinkedIn preserves it; \n is stripped)
+    function sanitizeForLinkedIn(str) {
       if (!str) return '';
-      return str
+      const stripped = str
         .replace(/https?:\/\/[^\s]+/gi, '')
         .replace(/\bwww\.[^\s]+/gi, '')
-        .replace(/\b([a-zA-Z][\w-]*)\.(io|js|com|net|org|co|app|dev|ai|tech|cloud|me)\b/gi, '$1')
-        .replace(/\s+/g, ' ')
+        .replace(/\b([a-zA-Z][\w-]*)\.(io|js|com|net|org|co|app|dev|ai|tech|cloud|me)\b/gi, '$1');
+      // Convert paragraph breaks (\n\n) to double LINE SEPARATOR; single \n to single LINE SEPARATOR
+      return stripped
+        .replace(/\n\n+/g, '\u2028\u2028')
+        .replace(/\n/g, '\u2028')
+        .replace(/[ \t]+/g, ' ')
         .trim();
     }
     let textToSend = liPost || '';
     if (isMobileDevice) {
-      // Short ~200-char post for mobile — full liPost still copied to clipboard as backup
+      // Short ~200-char post for mobile — newlines preserved via \u2028
       const projectName = liTeam?.projectTitle || 'our team\'s project';
       const teamNum = liTeam?.teamNumber || '';
-      textToSend = `Mentoring Team ${teamNum} at Project Space — ${projectName}. Proud to guide this team through their journey of building, learning, and growing. #ProjectSpace #Mentorship #AdityaUniversity`;
+      textToSend = `Mentoring Team ${teamNum} at Project Space — ${projectName}.\n\nProud to guide this team through their journey of building, learning, and growing.\n\n#ProjectSpace #Mentorship #AdityaUniversity`;
     }
-    textToSend = stripUrlLikeTokens(textToSend);
-    // Always copy full liPost (sanitized) to clipboard as backup — works whether mobile or desktop
+    textToSend = sanitizeForLinkedIn(textToSend);
+    // Clipboard backup with proper newlines (no \u2028 — Ctrl+V uses real \n)
     if (liPost && navigator.clipboard) {
-      navigator.clipboard.writeText(stripUrlLikeTokens(liPost)).catch(() => {});
+      const clipText = liPost
+        .replace(/https?:\/\/[^\s]+/gi, '')
+        .replace(/\bwww\.[^\s]+/gi, '')
+        .replace(/\b([a-zA-Z][\w-]*)\.(io|js|com|net|org|co|app|dev|ai|tech|cloud|me)\b/gi, '$1');
+      navigator.clipboard.writeText(clipText).catch(() => {});
     }
     const text = encodeURIComponent(textToSend);
     window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}&text=${text}`, '_blank', 'noopener,noreferrer');
