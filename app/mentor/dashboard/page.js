@@ -331,6 +331,17 @@ Powered by ${toBoldM('Technical Hub')}, led by CEO ${toBoldM('Babji Neelam')} Si
     const url = encodeURIComponent(showcaseUrl);
     // Detect mobile via user-agent — LinkedIn mobile share endpoint chokes on long text
     const isMobileDevice = typeof navigator !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent || '');
+    // Sanitizer: remove anything that looks like a URL/domain so LinkedIn doesn't auto-unfurl a competing OG card
+    // Strips: http(s):// URLs, www.example.com patterns, and bare technology names with dots like "socket.io", "next.js", "node.js"
+    function stripUrlLikeTokens(str) {
+      if (!str) return '';
+      return str
+        .replace(/https?:\/\/[^\s]+/gi, '')
+        .replace(/\bwww\.[^\s]+/gi, '')
+        .replace(/\b([a-zA-Z][\w-]*)\.(io|js|com|net|org|co|app|dev|ai|tech|cloud|me)\b/gi, '$1')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
     let textToSend = liPost || '';
     if (isMobileDevice) {
       // Short ~200-char post for mobile — full liPost still copied to clipboard as backup
@@ -338,9 +349,10 @@ Powered by ${toBoldM('Technical Hub')}, led by CEO ${toBoldM('Babji Neelam')} Si
       const teamNum = liTeam?.teamNumber || '';
       textToSend = `Mentoring Team ${teamNum} at Project Space — ${projectName}. Proud to guide this team through their journey of building, learning, and growing. #ProjectSpace #Mentorship #AdityaUniversity`;
     }
-    // Always copy full liPost to clipboard as backup — works whether mobile or desktop
+    textToSend = stripUrlLikeTokens(textToSend);
+    // Always copy full liPost (sanitized) to clipboard as backup — works whether mobile or desktop
     if (liPost && navigator.clipboard) {
-      navigator.clipboard.writeText(liPost).catch(() => {});
+      navigator.clipboard.writeText(stripUrlLikeTokens(liPost)).catch(() => {});
     }
     const text = encodeURIComponent(textToSend);
     window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}&text=${text}`, '_blank', 'noopener,noreferrer');

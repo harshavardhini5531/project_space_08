@@ -82,6 +82,7 @@ export async function POST(request) {
               role: 'user',
              content: isMentor
                 ? `You are writing content for a MENTOR's LinkedIn post about an UPCOMING event called "Project Space" (May 6-12, 2026) at Aditya University, powered by Technical Hub. The mentor is proudly introducing one of the teams they have guided throughout this course journey. Write from a proud, experienced mentor perspective. Do NOT mention any specific time duration like "year" or "months" — instead use phrases like "throughout this course", "during their learning journey", or "across this program". Do NOT use the word "hackathon" anywhere.
+CRITICAL: Do NOT include ANY URLs, domain names, or technology names that contain dots (e.g. "socket.io", "next.js", "node.js", "vue.js", "express.js", "tensorflow.js", "react.js"). LinkedIn will auto-render those as preview cards and break the post. If you must mention a tech, use formats WITHOUT dots: write "Socket IO" or "Sockets" instead of "socket.io"; "NextJS" or "Next" instead of "Next.js"; "NodeJS" instead of "Node.js"; "TensorFlow" instead of "TensorFlow.js"; "ReactJS" instead of "React.js". This rule is absolute.
 PROJECT CONTEXT:
 - Project Title: ${projectTitle || 'Their Project'}
 - Technology Track: ${technology || 'Tech'}
@@ -94,6 +95,7 @@ Generate THREE things in this EXACT JSON format (no markdown, no code blocks, ju
 }
 Make all 3 unique. Do NOT repeat words across fields. Output ONLY the JSON.`
                 : `You are writing content for a student's LinkedIn post about an UPCOMING event called "Project Space" (May 6-12, 2026) at Aditya University, powered by Technical Hub.
+CRITICAL: Do NOT include ANY URLs, domain names, or technology names that contain dots (e.g. "socket.io", "next.js", "node.js", "vue.js", "express.js", "tensorflow.js", "react.js"). LinkedIn will auto-render those as preview cards and break the post. If you must mention a tech, use formats WITHOUT dots: write "Socket IO" or "Sockets" instead of "socket.io"; "NextJS" or "Next" instead of "Next.js"; "NodeJS" instead of "Node.js"; "TensorFlow" instead of "TensorFlow.js"; "ReactJS" instead of "React.js". This rule is absolute.
 PROJECT CONTEXT:
 - Project Title: ${projectTitle || 'Their Project'}
 - Technology Track: ${technology || 'Tech'}
