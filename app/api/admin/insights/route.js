@@ -124,22 +124,67 @@ export async function GET(request) {
       else mentorActivity[r.mentor_name].reenableRequestsHandled++
     })
 
-    // Stage review history (latest 200)
+    // Build a map of team_number -> project_title, technology, mentor for enrichment
+    const teamMetaMap = {}
+    ;(teams || []).forEach(t => {
+      if (t.team_number) teamMetaMap[t.team_number] = {
+        projectTitle: t.project_title,
+        technology: t.technology,
+        mentor: t.mentor_assigned
+      }
+    })
+
+    // Stage review history (latest 500) — enriched with project title, technology, mentor
     const stageReviews = (submissions || [])
       .filter(s => s.status === 'in-review' || s.status === 'completed' || s.status === 'rejected')
-      .map(s => ({
-        teamNumber: s.team_number,
-        stageNumber: s.stage_number,
-        status: s.status,
-        submittedBy: s.submitted_by_name,
-        submittedAt: s.submitted_at,
-        reviewedBy: s.reviewed_by_name,
-        reviewedAt: s.reviewed_at,
-        comment: s.mentor_comment,
-        credits: s.credits_earned
-      }))
+      .map(s => {
+        const meta = teamMetaMap[s.team_number] || {}
+        return {
+          teamNumber: s.team_number,
+          projectTitle: meta.projectTitle || null,
+          technology: meta.technology || null,
+          stageNumber: s.stage_number,
+          status: s.status,
+          submittedBy: s.submitted_by_name,
+          submittedAt: s.submitted_at,
+          reviewedBy: s.reviewed_by_name || meta.mentor,
+          reviewedAt: s.reviewed_at,
+          comment: s.mentor_comment,
+          credits: s.credits_earned
+        }
+      })
       .sort((a, b) => new Date(b.submittedAt || 0) - new Date(a.submittedAt || 0))
       .slice(0, 500)
+
+    // Stage analysis matrix: per-team, per-stage status
+    // Status values: 'completed' | 'in-review' | 'rejected' | 'none'
+    const stageMatrix = {}
+    ;(teams || []).forEach(t => {
+      if (!t.team_number) return
+      stageMatrix[t.team_number] = {
+        teamNumber: t.team_number,
+        projectTitle: t.project_title,
+        technology: t.technology,
+        mentor: t.mentor_assigned,
+        stages: { 1: 'none', 2: 'none', 3: 'none', 4: 'none', 5: 'none', 6: 'none', 7: 'none' }
+      }
+    })
+    ;(submissions || []).forEach(s => {
+      const team = stageMatrix[s.team_number]
+      if (!team || s.stage_number < 1 || s.stage_number > 7) return
+      // Map status: completed/in-review/rejected (keep latest non-pending)
+      if (s.status === 'completed' || s.status === 'in-review' || s.status === 'rejected') {
+        team.stages[s.stage_number] = s.status
+      }
+    })
+
+    // Per-stage completion counts
+    const stageCounts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 }
+    Object.values(stageMatrix).forEach(t => {
+      Object.entries(t.stages).forEach(([sn, status]) => {
+        if (status === 'completed') stageCounts[sn]++
+      })
+    })
 
     // Summary stats
     const summary = {
@@ -162,6 +207,8 @@ export async function GET(request) {
       teamData: Object.values(teamData),
       mentorActivity: Object.values(mentorActivity),
       stageReviews,
+      stageMatrix: Object.values(stageMatrix),
+      stageCounts,
       summary
     })
   } catch (err) {

@@ -46,6 +46,8 @@ export default function AdminDashboard() {
   const [insightsLoading, setInsightsLoading] = useState(false)
   const [psSearch, setPsSearch] = useState('')
   const [psStatusFilter, setPsStatusFilter] = useState('all')
+  const [psSubTab, setPsSubTab] = useState('reviews')
+  const [psTechFilter, setPsTechFilter] = useState('all')
   const [mentorTab, setMentorTab] = useState('registration') // registration | linkedin | stages | reenable
 
   const pwRules = [
@@ -818,24 +820,52 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
             {/* PROJECT STATUS */}
             {activeTab === 'milestones' && <div className="adm-lb">
               <style>{`
-.ps-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
-.ps-stat{padding:16px 18px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05)}
-.ps-stat-lb{font-size:.58rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:8px}
-.ps-stat-v{font-family:'Orbitron',sans-serif;font-size:1.6rem;font-weight:800;line-height:1}
+.ps-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+.ps-stat{padding:14px 16px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05)}
+.ps-stat-lb{font-size:.55rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:6px}
+.ps-stat-v{font-family:'Orbitron',sans-serif;font-size:1.4rem;font-weight:800;line-height:1}
+.ps-stages-row{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:20px}
+.ps-stage-card{padding:12px 8px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);text-align:center;transition:all .2s}
+.ps-stage-card:hover{border-color:rgba(255,255,255,.15)}
+.ps-stage-card .ps-stage-num{font-size:.55rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:6px}
+.ps-stage-card .ps-stage-val{font-family:'Orbitron',sans-serif;font-size:1.3rem;font-weight:800;line-height:1;color:#4ade80}
+.ps-stage-card .ps-stage-bar{margin-top:6px;height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden}
+.ps-stage-card .ps-stage-bar-f{height:100%;background:#4ade80;transition:width .6s}
+.ps-subtabs{display:flex;gap:6px;padding:5px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);margin-bottom:18px;width:fit-content}
+.ps-subtab{padding:8px 18px;border-radius:8px;background:transparent;border:none;color:rgba(255,255,255,.45);font-family:'DM Sans,sans-serif';font-size:.72rem;font-weight:600;cursor:pointer;transition:all .2s}
+.ps-subtab.on{background:linear-gradient(135deg,rgba(253,28,0,.15),rgba(238,167,39,.08));color:#fff}
 .ps-filters{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
-.ps-filter-pill{padding:7px 14px;border-radius:8px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);color:rgba(255,255,255,.55);font-family:'DM Sans,sans-serif';font-size:.7rem;font-weight:600;cursor:pointer;transition:all .2s}
+.ps-filter-pill{padding:7px 14px;border-radius:8px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);color:rgba(255,255,255,.55);font-family:'DM Sans,sans-serif';font-size:.7rem;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap}
 .ps-filter-pill.on{background:rgba(253,28,0,.12);border-color:rgba(253,28,0,.3);color:#fd1c00}
+.ps-tech-pills{display:flex;gap:6px;padding:4px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);margin-bottom:14px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.ps-tech-pills::-webkit-scrollbar{display:none}
+.ps-tech-pill{padding:7px 12px;border-radius:7px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);color:rgba(255,255,255,.55);font-size:.66rem;font-weight:600;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:6px;flex-shrink:0;font-family:'DM Sans,sans-serif'}
+.ps-tech-pill.on{background:rgba(253,28,0,.12);border-color:rgba(253,28,0,.4);color:#fff}
+.ps-tech-dot{width:7px;height:7px;border-radius:50%}
 .ps-search{flex:1;min-width:200px;padding:9px 14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:10px;color:#fff;font-size:.78rem;outline:none;font-family:'DM Sans,sans-serif'}
 .ps-search:focus{border-color:rgba(253,28,0,.2)}
 .ps-pill{padding:3px 10px;border-radius:6px;font-size:.58rem;font-weight:700;letter-spacing:.5px;display:inline-flex;align-items:center;gap:4px}
 .ps-pill.completed{background:rgba(74,222,128,.08);color:#4ade80;border:1px solid rgba(74,222,128,.2)}
 .ps-pill.in-review{background:rgba(238,167,39,.08);color:#EEA727;border:1px solid rgba(238,167,39,.2)}
 .ps-pill.rejected{background:rgba(255,96,64,.08);color:#ff6040;border:1px solid rgba(255,96,64,.2)}
+.ps-pill.none{background:rgba(255,255,255,.03);color:rgba(255,255,255,.3);border:1px solid rgba(255,255,255,.08)}
+.ps-matrix{width:100%;border-collapse:separate;border-spacing:0 4px}
+.ps-matrix th{text-align:left;padding:9px 10px;font-size:.55rem;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1.5px;background:rgba(255,255,255,.02);position:sticky;top:0}
+.ps-matrix td{padding:9px 10px;background:rgba(255,255,255,.015);font-size:.7rem;color:rgba(255,255,255,.7);vertical-align:middle}
+.ps-matrix tr td:first-child{border-radius:8px 0 0 8px}
+.ps-matrix tr td:last-child{border-radius:0 8px 8px 0}
+.ps-matrix tr:hover td{background:rgba(255,255,255,.03)}
+.ps-cell{display:inline-flex;align-items:center;justify-content:center;width:30px;height:24px;border-radius:5px;font-size:.6rem;font-weight:700}
+.ps-cell.completed{background:rgba(74,222,128,.12);color:#4ade80}
+.ps-cell.in-review{background:rgba(238,167,39,.12);color:#EEA727}
+.ps-cell.rejected{background:rgba(255,96,64,.12);color:#ff6040}
+.ps-cell.none{background:rgba(255,255,255,.04);color:rgba(255,255,255,.2)}
               `}</style>
-              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20,flexWrap:'wrap',gap:12}}>
+
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6,flexWrap:'wrap',gap:12}}>
                 <div>
                   <div style={{fontSize:'1.1rem',fontWeight:700,color:'#fff'}}>Project Status</div>
-                  <div style={{fontSize:'.72rem',color:'rgba(255,255,255,.3)',marginTop:2}}>Detailed stage review history across all teams</div>
+                  <div style={{fontSize:'.72rem',color:'rgba(255,255,255,.3)',marginTop:2}}>Detailed stage tracking across all teams</div>
                 </div>
                 <div className="adm-notif-wrap">
                   <div className="adm-notif-btn" onClick={()=>setShowAdNotif(!showAdNotif)}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>{adUnread>0&&<div className="adm-notif-badge">{adUnread}</div>}</div>
@@ -846,16 +876,16 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
               {!insights && insightsLoading && <div style={{textAlign:'center',padding:40,color:'rgba(255,255,255,.2)'}}>Loading project status data...</div>}
               {insights && (() => {
                 const reviews = insights.stageReviews || []
+                const matrix = insights.stageMatrix || []
+                const stageCounts = insights.stageCounts || {}
                 const summary = insights.summary?.stages || {}
-                const q = psSearch.toLowerCase()
-                const filtered = reviews.filter(r => {
-                  if (psStatusFilter !== 'all' && r.status !== psStatusFilter) return false
-                  if (q) return (r.teamNumber||'').toLowerCase().includes(q) || (r.submittedBy||'').toLowerCase().includes(q) || (r.reviewedBy||'').toLowerCase().includes(q)
-                  return true
-                })
-                const calcDuration = (subAt, revAt) => {
-                  if (!subAt || !revAt) return '—'
-                  const ms = new Date(revAt) - new Date(subAt)
+                const totalTeams = matrix.length
+                const TC = { 'AWS Development':'#ff9900','Google Flutter':'#42a5f5','Full Stack':'#4ade80','Data Specialist':'#a78bfa','ServiceNow':'#22c55e','VLSI':'#ef4444','SkillUp Coder':'#f59e0b' }
+                const allTechs = [...new Set(matrix.map(m => m.technology).filter(Boolean))].sort()
+                const fmt = d => d ? new Date(d).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '—'
+                const calcDuration = (a, b) => {
+                  if (!a || !b) return '—'
+                  const ms = new Date(b) - new Date(a)
                   if (ms < 0) return '—'
                   const mins = Math.floor(ms / 60000)
                   if (mins < 60) return `${mins}m`
@@ -863,47 +893,127 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
                   if (hrs < 24) return `${hrs}h ${mins % 60}m`
                   return `${Math.floor(hrs / 24)}d ${hrs % 24}h`
                 }
-                const fmt = d => d ? new Date(d).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '—'
                 return <>
+                  {/* Top stats */}
                   <div className="ps-stats">
-                    <div className="ps-stat"><div className="ps-stat-lb">Total Submissions</div><div className="ps-stat-v" style={{color:'#fd1c00'}}>{summary.totalSubmitted || 0}</div></div>
+                    <div className="ps-stat"><div className="ps-stat-lb">Total Teams</div><div className="ps-stat-v" style={{color:'#fd1c00'}}>{totalTeams}</div></div>
+                    <div className="ps-stat"><div className="ps-stat-lb">Submissions</div><div className="ps-stat-v" style={{color:'#a78bfa'}}>{summary.totalSubmitted || 0}</div></div>
                     <div className="ps-stat"><div className="ps-stat-lb">Approved</div><div className="ps-stat-v" style={{color:'#4ade80'}}>{summary.approved || 0}</div></div>
                     <div className="ps-stat"><div className="ps-stat-lb">In Review</div><div className="ps-stat-v" style={{color:'#EEA727'}}>{summary.inReview || 0}</div></div>
                     <div className="ps-stat"><div className="ps-stat-lb">Rejected</div><div className="ps-stat-v" style={{color:'#ff6040'}}>{summary.rejected || 0}</div></div>
                   </div>
-                  <div className="ps-filters">
-                    <input className="ps-search" placeholder="Search team, leader, mentor..." value={psSearch} onChange={e=>setPsSearch(e.target.value)} />
-                    <button className={`ps-filter-pill ${psStatusFilter==='all'?'on':''}`} onClick={()=>setPsStatusFilter('all')}>All ({reviews.length})</button>
-                    <button className={`ps-filter-pill ${psStatusFilter==='in-review'?'on':''}`} onClick={()=>setPsStatusFilter('in-review')}>In Review ({summary.inReview || 0})</button>
-                    <button className={`ps-filter-pill ${psStatusFilter==='completed'?'on':''}`} onClick={()=>setPsStatusFilter('completed')}>Approved ({summary.approved || 0})</button>
-                    <button className={`ps-filter-pill ${psStatusFilter==='rejected'?'on':''}`} onClick={()=>setPsStatusFilter('rejected')}>Rejected ({summary.rejected || 0})</button>
+
+                  {/* 7 stages cards */}
+                  <div className="ps-stages-row">
+                    {[1,2,3,4,5,6,7].map(n => {
+                      const completed = stageCounts[n] || 0
+                      const pct = totalTeams > 0 ? Math.round(completed/totalTeams*100) : 0
+                      return <div key={n} className="ps-stage-card">
+                        <div className="ps-stage-num">Stage {n}</div>
+                        <div className="ps-stage-val">{completed}<span style={{fontSize:'.7rem',color:'rgba(255,255,255,.25)',marginLeft:3}}>/ {totalTeams}</span></div>
+                        <div className="ps-stage-bar"><div className="ps-stage-bar-f" style={{width:`${pct}%`}}/></div>
+                      </div>
+                    })}
                   </div>
-                  <div style={{overflowX:'auto'}}>
-                    <table className="adm-lb-tbl" style={{minWidth:1100}}>
-                      <thead><tr><th>Team</th><th>Stage</th><th>Submitted By</th><th>Submitted At</th><th>Mentor</th><th>Reviewed At</th><th>Time Taken</th><th>Status</th><th>Comment</th><th>Credits</th></tr></thead>
-                      <tbody>
-                        {filtered.length === 0 && <tr><td colSpan={10} style={{textAlign:'center',padding:30,color:'rgba(255,255,255,.15)'}}>No reviews match your filter</td></tr>}
-                        {filtered.map((r, i) => (
-                          <tr key={`${r.teamNumber}-${r.stageNumber}-${i}`}>
-                            <td style={{fontWeight:700,color:'#fd1c00'}}>{r.teamNumber}</td>
-                            <td><span style={{fontSize:'.62rem',padding:'2px 8px',borderRadius:5,background:'rgba(255,255,255,.04)',color:'rgba(255,255,255,.5)'}}>S-{r.stageNumber}</span></td>
-                            <td style={{fontSize:'.7rem',color:'rgba(255,255,255,.55)'}}>{r.submittedBy || '—'}</td>
-                            <td style={{fontSize:'.65rem',color:'rgba(255,255,255,.35)'}}>{fmt(r.submittedAt)}</td>
-                            <td style={{fontSize:'.7rem',color:'rgba(255,255,255,.55)'}}>{r.reviewedBy || '—'}</td>
-                            <td style={{fontSize:'.65rem',color:'rgba(255,255,255,.35)'}}>{fmt(r.reviewedAt)}</td>
-                            <td style={{fontSize:'.65rem',color:'rgba(255,255,255,.4)'}}>{calcDuration(r.submittedAt, r.reviewedAt)}</td>
-                            <td><span className={`ps-pill ${r.status}`}>{r.status === 'completed' ? '✓ Approved' : r.status === 'rejected' ? 'Rejected' : 'In Review'}</span></td>
-                            <td style={{fontSize:'.65rem',color:'rgba(255,255,255,.35)',maxWidth:180,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}} title={r.comment || ''}>{r.comment || '—'}</td>
-                            <td style={{fontWeight:700,color:r.credits>0?'#EEA727':'rgba(255,255,255,.2)'}}>{r.credits || 0}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+
+                  {/* Tech filter */}
+                  <div className="ps-tech-pills">
+                    <button className={`ps-tech-pill ${psTechFilter==='all'?'on':''}`} onClick={()=>setPsTechFilter('all')}><span className="ps-tech-dot" style={{background:'#fd1c00'}}/>All</button>
+                    {allTechs.map(tech => (
+                      <button key={tech} className={`ps-tech-pill ${psTechFilter===tech?'on':''}`} onClick={()=>setPsTechFilter(tech)} style={psTechFilter===tech?{borderColor:`${TC[tech]||'#888'}60`,background:`${TC[tech]||'#888'}15`}:{}}><span className="ps-tech-dot" style={{background:TC[tech]||'#888'}}/>{tech}</button>
+                    ))}
                   </div>
+
+                  {/* Sub-tabs */}
+                  <div className="ps-subtabs">
+                    <button className={`ps-subtab ${psSubTab==='reviews'?'on':''}`} onClick={()=>setPsSubTab('reviews')}>Reviews Log</button>
+                    <button className={`ps-subtab ${psSubTab==='matrix'?'on':''}`} onClick={()=>setPsSubTab('matrix')}>Stage Analysis</button>
+                  </div>
+
+                  {/* SUB-TAB 1: REVIEWS */}
+                  {psSubTab === 'reviews' && (() => {
+                    const q = psSearch.toLowerCase()
+                    const filtered = reviews.filter(r => {
+                      if (psStatusFilter !== 'all' && r.status !== psStatusFilter) return false
+                      if (psTechFilter !== 'all' && r.technology !== psTechFilter) return false
+                      if (q) return (r.teamNumber||'').toLowerCase().includes(q) || (r.projectTitle||'').toLowerCase().includes(q) || (r.submittedBy||'').toLowerCase().includes(q) || (r.reviewedBy||'').toLowerCase().includes(q)
+                      return true
+                    })
+                    return <>
+                      <div className="ps-filters">
+                        <input className="ps-search" placeholder="Search team, project, person..." value={psSearch} onChange={e=>setPsSearch(e.target.value)} />
+                        <button className={`ps-filter-pill ${psStatusFilter==='all'?'on':''}`} onClick={()=>setPsStatusFilter('all')}>All ({reviews.length})</button>
+                        <button className={`ps-filter-pill ${psStatusFilter==='in-review'?'on':''}`} onClick={()=>setPsStatusFilter('in-review')}>In Review ({summary.inReview || 0})</button>
+                        <button className={`ps-filter-pill ${psStatusFilter==='completed'?'on':''}`} onClick={()=>setPsStatusFilter('completed')}>Approved ({summary.approved || 0})</button>
+                        <button className={`ps-filter-pill ${psStatusFilter==='rejected'?'on':''}`} onClick={()=>setPsStatusFilter('rejected')}>Rejected ({summary.rejected || 0})</button>
+                      </div>
+                      <div style={{overflowX:'auto'}}>
+                        <table className="adm-lb-tbl" style={{minWidth:1100}}>
+                          <thead><tr><th>Team</th><th>Project</th><th>Stage</th><th>Submitted By</th><th>Submitted At</th><th>Mentor</th><th>Reviewed At</th><th>Time Taken</th><th>Status</th><th>Comment</th></tr></thead>
+                          <tbody>
+                            {filtered.length === 0 && <tr><td colSpan={10} style={{textAlign:'center',padding:30,color:'rgba(255,255,255,.15)'}}>No reviews match your filter</td></tr>}
+                            {filtered.map((r, i) => (
+                              <tr key={`${r.teamNumber}-${r.stageNumber}-${i}`}>
+                                <td style={{fontWeight:700,color:'#fd1c00'}}>{r.teamNumber}</td>
+                                <td style={{maxWidth:150,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',color:'rgba(255,255,255,.55)',fontSize:'.7rem'}} title={r.projectTitle || ''}>{r.projectTitle || '—'}</td>
+                                <td><span style={{fontSize:'.62rem',padding:'2px 8px',borderRadius:5,background:'rgba(255,255,255,.04)',color:'rgba(255,255,255,.5)'}}>S-{r.stageNumber}</span></td>
+                                <td style={{fontSize:'.7rem',color:'rgba(255,255,255,.55)'}}>{r.submittedBy || '—'}</td>
+                                <td style={{fontSize:'.65rem',color:'rgba(255,255,255,.35)'}}>{fmt(r.submittedAt)}</td>
+                                <td style={{fontSize:'.7rem',color:'rgba(255,255,255,.55)'}}>{r.reviewedBy || '—'}</td>
+                                <td style={{fontSize:'.65rem',color:'rgba(255,255,255,.35)'}}>{fmt(r.reviewedAt)}</td>
+                                <td style={{fontSize:'.65rem',color:'rgba(255,255,255,.4)'}}>{calcDuration(r.submittedAt, r.reviewedAt)}</td>
+                                <td><span className={`ps-pill ${r.status}`}>{r.status === 'completed' ? '✓ Approved' : r.status === 'rejected' ? 'Rejected' : 'In Review'}</span></td>
+                                <td style={{fontSize:'.65rem',color:'rgba(255,255,255,.35)',maxWidth:180,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}} title={r.comment || ''}>{r.comment || '—'}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </>
+                  })()}
+
+                  {/* SUB-TAB 2: STAGE ANALYSIS MATRIX */}
+                  {psSubTab === 'matrix' && (() => {
+                    const q = psSearch.toLowerCase()
+                    const filtered = matrix.filter(t => {
+                      if (psTechFilter !== 'all' && t.technology !== psTechFilter) return false
+                      if (q) return (t.teamNumber||'').toLowerCase().includes(q) || (t.projectTitle||'').toLowerCase().includes(q) || (t.mentor||'').toLowerCase().includes(q)
+                      return true
+                    })
+                    const cellLabel = s => s === 'completed' ? '✓' : s === 'in-review' ? '⏳' : s === 'rejected' ? '✗' : '—'
+                    return <>
+                      <div className="ps-filters">
+                        <input className="ps-search" placeholder="Search team, project, mentor..." value={psSearch} onChange={e=>setPsSearch(e.target.value)} />
+                        <span style={{fontSize:'.66rem',color:'rgba(255,255,255,.3)'}}>{filtered.length} teams · ✓ Complete · ⏳ In Review · ✗ Rejected · — Pending</span>
+                      </div>
+                      <div style={{overflowX:'auto'}}>
+                        <table className="ps-matrix" style={{minWidth:1000}}>
+                          <thead><tr><th>Team</th><th>Project</th><th>Mentor</th>{[1,2,3,4,5,6,7].map(n => <th key={n} style={{textAlign:'center'}}>S{n}</th>)}<th style={{textAlign:'center'}}>Progress</th></tr></thead>
+                          <tbody>
+                            {filtered.length === 0 && <tr><td colSpan={11} style={{textAlign:'center',padding:30,color:'rgba(255,255,255,.15)'}}>No teams match your filter</td></tr>}
+                            {filtered.map(t => {
+                              const completedCount = Object.values(t.stages).filter(s => s === 'completed').length
+                              const pct = Math.round(completedCount/7*100)
+                              return <tr key={t.teamNumber}>
+                                <td style={{fontWeight:700,color:'#fd1c00'}}>{t.teamNumber}</td>
+                                <td style={{maxWidth:160,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}} title={t.projectTitle || ''}>{t.projectTitle || '—'}</td>
+                                <td style={{fontSize:'.66rem',color:'rgba(255,255,255,.45)',maxWidth:120,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{t.mentor || '—'}</td>
+                                {[1,2,3,4,5,6,7].map(n => {
+                                  const status = t.stages[n] || 'none'
+                                  const tooltipMap = { completed: 'Completed', 'in-review': 'In Review', rejected: 'Rejected', none: 'No Action' }
+                                  return <td key={n} style={{textAlign:'center'}}><span className={`ps-cell ${status}`} title={tooltipMap[status]}>{cellLabel(status)}</span></td>
+                                })}
+                                <td style={{textAlign:'center',fontWeight:700,color:pct===100?'#4ade80':pct>50?'#EEA727':'rgba(255,255,255,.4)'}}>{completedCount}/7<div style={{fontSize:'.55rem',color:'rgba(255,255,255,.3)',marginTop:2}}>{pct}%</div></td>
+                              </tr>
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </>
+                  })()}
                 </>
               })()}
             </div>}
-
             {/* LEADERBOARD */}
             {activeTab === 'leaderboard' && <div className="adm-lb">
               <div style={{fontSize:'1.1rem',fontWeight:700,color:'#fff',marginBottom:4}}>Leaderboard</div>
