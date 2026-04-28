@@ -329,10 +329,21 @@ Powered by ${toBoldM('Technical Hub')}, led by CEO ${toBoldM('Babji Neelam')} Si
     if (!liTeam?.teamNumber) { alert('This team does not have a team number yet. Cannot share until registration is complete.'); return; }
     const showcaseUrl = `https://projectspace.technicalhub.io/showcase/${liTeam.teamNumber}`;
     const url = encodeURIComponent(showcaseUrl);
+    // Detect mobile via user-agent — LinkedIn mobile share endpoint chokes on long text
+    const isMobileDevice = typeof navigator !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent || '');
+    let textToSend = liPost || '';
+    if (isMobileDevice) {
+      // Short ~200-char post for mobile — full liPost still copied to clipboard as backup
+      const projectName = liTeam?.projectTitle || 'our team\'s project';
+      const teamNum = liTeam?.teamNumber || '';
+      textToSend = `Mentoring Team ${teamNum} at Project Space — ${projectName}. Proud to guide this team through their journey of building, learning, and growing. #ProjectSpace #Mentorship #AdityaUniversity`;
+    }
+    // Always copy full liPost to clipboard as backup — works whether mobile or desktop
     if (liPost && navigator.clipboard) {
       navigator.clipboard.writeText(liPost).catch(() => {});
     }
-    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank', 'noopener,noreferrer');
+    const text = encodeURIComponent(textToSend);
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}&text=${text}`, '_blank', 'noopener,noreferrer');
     setLiConfirm(true);
   }
 
