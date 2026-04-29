@@ -330,17 +330,14 @@ Powered by ${toBoldM('Technical Hub')}, led by CEO ${toBoldM('Babji Neelam')} Si
     const showcaseUrl = `https://projectspace.technicalhub.io/showcase/${liTeam.teamNumber}`;
     const url = encodeURIComponent(showcaseUrl);
     const isMobileDevice = typeof navigator !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent || '');
-    // Sanitize for LinkedIn: strip URL-like tokens (so LinkedIn doesn't unfurl extra OG cards),
-    // then convert real newlines to U+2028 LINE SEPARATOR — LinkedIn's URL parser strips \n but preserves \u2028
+    // Sanitize for LinkedIn: strip URL-like tokens (so LinkedIn doesn't unfurl extra OG cards).
+    // Preserve real \n newlines — encodeURIComponent encodes them as %0A which LinkedIn renders as paragraph breaks.
     function sanitizeForLinkedIn(str) {
       if (!str) return '';
-      const stripped = str
+      return str
         .replace(/https?:\/\/[^\s]+/gi, '')
         .replace(/\bwww\.[^\s]+/gi, '')
-        .replace(/\b([a-zA-Z][\w-]*)\.(io|js|com|net|org|co|app|dev|ai|tech|cloud|me)\b/gi, '$1');
-      return stripped
-        .replace(/\n\n+/g, '\u2028\u2028')
-        .replace(/\n/g, '\u2028')
+        .replace(/\b([a-zA-Z][\w-]*)\.(io|js|com|net|org|co|app|dev|ai|tech|cloud|me)\b/gi, '$1')
         .replace(/[ \t]+/g, ' ')
         .trim();
     }
