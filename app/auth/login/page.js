@@ -316,7 +316,9 @@ function LoginPageInner() {
                 <div className="lf-pass-wrap">
                   <input className="ps-input" type={showPass?'text':'password'} placeholder="Enter password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key==='Enter' && handleLeaderLogin()} style={{paddingRight:'52px'}} />
                   <button className="lf-pass-toggle" onClick={() => setShowPass(v=>!v)}>{showPass?'HIDE':'SHOW'}</button>
-                </div></div>
+                </div>
+                <div style={{textAlign:'right',marginTop:'6px'}}><span style={{fontSize:'11px',color:'#fd1c00',cursor:'pointer'}} onClick={() => router.push('/auth/forgot-password')}>Forgot password?</span></div>
+              </div>
               <button className="ps-btn-primary" onClick={handleLeaderLogin} disabled={loading||!rollNumber||!password}>{loading?'Logging in...':'Login →'}</button>
               <div className="lf-link">Don&apos;t have an account? <span onClick={() => router.push('/auth/register')}>Create Account</span></div>
             </>)}
@@ -329,7 +331,7 @@ function LoginPageInner() {
 
               {mode==='signin' && (<>
                 <div className="lf-field"><label className="lf-label">Roll Number</label><input className="ps-input" placeholder="e.g. 23P31A4441" value={rollNumber} onChange={e => setRollNumber(e.target.value.toUpperCase())} autoFocus /></div>
-                <div className="lf-field"><label className="lf-label">Password</label><div className="lf-pass-wrap"><input className="ps-input" type={showPass?'text':'password'} placeholder="Enter password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key==='Enter' && handleMemberSignin()} style={{paddingRight:'52px'}} /><button className="lf-pass-toggle" onClick={() => setShowPass(v=>!v)}>{showPass?'HIDE':'SHOW'}</button></div></div>
+                <div className="lf-field"><label className="lf-label">Password</label><div className="lf-pass-wrap"><input className="ps-input" type={showPass?'text':'password'} placeholder="Enter password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key==='Enter' && handleMemberSignin()} style={{paddingRight:'52px'}} /><button className="lf-pass-toggle" onClick={() => setShowPass(v=>!v)}>{showPass?'HIDE':'SHOW'}</button></div><div style={{textAlign:'right',marginTop:'6px'}}><span style={{fontSize:'11px',color:'#fd1c00',cursor:'pointer'}} onClick={() => router.push('/auth/forgot-password')}>Forgot password?</span></div></div>
                 <button className="ps-btn-primary" onClick={handleMemberSignin} disabled={loading||!rollNumber||!password}>{loading?'Logging in...':'Sign In →'}</button>
               </>)}
 

@@ -119,6 +119,9 @@ body{font-family:'Poppins',sans-serif;color:#fff}
                 <input className="ma-input" style={{paddingRight:'52px'}} type={showPass?'text':'password'} placeholder="Enter password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key==='Enter' && handleLogin()} />
                 <button style={{position:'absolute',right:'12px',top:'50%',transform:'translateY(-50%)',background:'none',border:'none',color:'rgba(255,255,255,0.35)',fontSize:'10px',cursor:'pointer',fontFamily:"'Poppins',sans-serif"}} onClick={() => setShowPass(v=>!v)}>{showPass?'HIDE':'SHOW'}</button>
               </div>
+              <div style={{textAlign:'right',marginTop:'6px'}}>
+                <span style={{fontSize:'11px',color:'#fd1c00',cursor:'pointer',fontFamily:"'Poppins',sans-serif"}} onClick={() => router.push('/auth/forgot-password')}>Forgot password?</span>
+              </div>
             </div>
             <button className="ma-btn" onClick={handleLogin} disabled={loading||!rollNumber||!password}>
               {loading ? 'Signing in...' : 'Sign In →'}
@@ -218,6 +221,9 @@ ${globalStyles}
             <div className="pass-wrap">
               <input className="ps-input" type={showPass ? 'text' : 'password'} placeholder="Enter your password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleLogin()} style={{paddingRight:'52px'}} autoFocus />
               <button className="pass-toggle" onClick={() => setShowPass(v => !v)}>{showPass ? 'HIDE' : 'SHOW'}</button>
+            </div>
+            <div style={{textAlign:'right',marginTop:'8px'}}>
+              <span style={{fontSize:'12px',color:'#fd1c00',cursor:'pointer'}} onClick={() => router.push('/auth/forgot-password')}>Forgot password?</span>
             </div>
           </div>
 
