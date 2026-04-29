@@ -1606,47 +1606,13 @@ Powered by ${toBold('Technical Hub')}, led by CEO ${toBold('Babji Neelam')} Sir,
   }
 
   function postToLinkedIn() {
-    const showcaseUrl = `https://projectspace.technicalhub.io/showcase/${details.teamNumber}`;
+    const text = encodeURIComponent(liPost);
+    const showcaseUrl = `https://projectspace.technicalhub.io/showcase/${details.teamNumber}?v=3`;
     const url = encodeURIComponent(showcaseUrl);
-    // Detect mobile via user-agent (works for Android, iOS, mobile browsers)
-    const isMobileDevice = typeof navigator !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent || '');
-    // Sanitizer: strip URL-like tokens + convert \n to U+2028 LINE SEPARATOR (LinkedIn preserves it through &text=)
-    function sanitizeForLinkedIn(str) {
-      if (!str) return '';
-      const stripped = str
-        .replace(/https?:\/\/[^\s]+/gi, '')
-        .replace(/\bwww\.[^\s]+/gi, '')
-        .replace(/\b([a-zA-Z][\w-]*)\.(io|js|com|net|org|co|app|dev|ai|tech|cloud|me)\b/gi, '$1');
-      return stripped
-        .replace(/\n\n+/g, '\u2028\u2028')
-        .replace(/\n/g, '\u2028')
-        .replace(/[ \t]+/g, ' ')
-        .trim();
-    }
-    let textToSend = liPost || '';
-    if (isMobileDevice) {
-      const shortPost = `🚀 Excited to be part of Project Space at Aditya University!\n\nBuilding "${details.projectTitle || 'our project'}" with my team.\n\nMay 6-12, 2026.\n\n#ProjectSpace #AdityaUniversity`;
-      textToSend = shortPost;
-      // Clipboard backup with real newlines (Ctrl+V preserves \n)
-      if (liPost && navigator.clipboard) {
-        const clipText = liPost
-          .replace(/https?:\/\/[^\s]+/gi, '')
-          .replace(/\bwww\.[^\s]+/gi, '')
-          .replace(/\b([a-zA-Z][\w-]*)\.(io|js|com|net|org|co|app|dev|ai|tech|cloud|me)\b/gi, '$1');
-        navigator.clipboard.writeText(clipText).catch(() => {});
-      }
-    }
-    textToSend = sanitizeForLinkedIn(textToSend);
-    const text = encodeURIComponent(textToSend);
-    window.open(
-      `https://www.linkedin.com/sharing/share-offsite/?url=${url}&text=${text}`,
-      '_blank',
-      'noopener,noreferrer'
-    );
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}&text=${text}`, '_blank', 'noopener,noreferrer');
     setLiPosted(true);
     setLiConfirm(true);
   }
-
   async function confirmLinkedInPost() {
     try {
       await fetch('/api/linkedin-share', {

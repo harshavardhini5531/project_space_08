@@ -327,28 +327,9 @@ Powered by ${toBoldM('Technical Hub')}, led by CEO ${toBoldM('Babji Neelam')} Si
 
   function postMentorLinkedIn() {
     if (!liTeam?.teamNumber) { alert('This team does not have a team number yet. Cannot share until registration is complete.'); return; }
-    const showcaseUrl = `https://projectspace.technicalhub.io/showcase/${liTeam.teamNumber}`;
+    const text = encodeURIComponent(liPost);
+    const showcaseUrl = `https://projectspace.technicalhub.io/showcase/${liTeam.teamNumber}?v=3`;
     const url = encodeURIComponent(showcaseUrl);
-    const isMobileDevice = typeof navigator !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent || '');
-    // Sanitize for LinkedIn: strip URL-like tokens (so LinkedIn doesn't unfurl extra OG cards).
-    // Preserve real \n newlines — encodeURIComponent encodes them as %0A which LinkedIn renders as paragraph breaks.
-    function sanitizeForLinkedIn(str) {
-      if (!str) return '';
-      return str
-        .replace(/https?:\/\/[^\s]+/gi, '')
-        .replace(/\bwww\.[^\s]+/gi, '')
-        .replace(/\b([a-zA-Z][\w-]*)\.(io|js|com|net|org|co|app|dev|ai|tech|cloud|me)\b/gi, '$1')
-        .replace(/[ \t]+/g, ' ')
-        .trim();
-    }
-    let textToSend = liPost || '';
-    if (isMobileDevice) {
-      const projectName = liTeam?.projectTitle || 'our team\'s project';
-      const teamNum = liTeam?.teamNumber || '';
-      textToSend = `Mentoring Team ${teamNum} at Project Space — ${projectName}.\n\nProud to guide this team through their journey of building, learning, and growing.\n\n#ProjectSpace #Mentorship #AdityaUniversity`;
-    }
-    textToSend = sanitizeForLinkedIn(textToSend);
-    const text = encodeURIComponent(textToSend);
     window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}&text=${text}`, '_blank', 'noopener,noreferrer');
     setLiConfirm(true);
   }
