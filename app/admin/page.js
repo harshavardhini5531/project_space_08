@@ -197,6 +197,8 @@ export default function AdminDashboard() {
       <>
         <style>{`*{margin:0;padding:0;box-sizing:border-box}html,body{background:#050008;overflow:auto}body,.ad-layout,.ad-layout *{font-family:'DM Sans',sans-serif;color:inherit}
 .ad-layout .ad-sv,.ad-layout .ad-mst-v,.ad-layout .ps-stat-v,.ad-layout .ps-stage-val,.ad-layout .li-stat-val,.ad-layout .li-title,.ad-layout .li-section-title,.ad-layout .li-tech-count,.ad-layout .ad-sb-brand,.ad-layout .adm-lb-sv{font-family:'Orbitron',sans-serif}
+body,.ad-layout,.ad-layout *{font-family:'DM Sans',sans-serif;color:inherit}
+.ad-layout .ad-sv,.ad-layout .ad-mst-v,.ad-layout .ps-stat-v,.ad-layout .ps-stage-val,.ad-layout .li-stat-val,.ad-layout .li-title,.ad-layout .li-section-title,.ad-layout .li-tech-count,.ad-layout .ad-sb-brand,.ad-layout .adm-lb-sv{font-family:'Orbitron',sans-serif}
 body{font-family:'DM Sans',sans-serif;color:#fff}@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}.adm-wrap{width:100%;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:#050008;position:relative}.adm-card{width:100%;max-width:420px;background:rgba(12,8,20,.9);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:40px 32px;backdrop-filter:blur(20px);animation:fadeUp .5s ease;position:relative;z-index:2}@media(max-width:480px){.adm-card{padding:28px 20px;border-radius:16px}}`}</style>
         <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=Orbitron:wght@400;600;700&display=swap" rel="stylesheet" />
         <AuthBackground>
