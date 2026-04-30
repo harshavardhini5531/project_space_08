@@ -85,13 +85,32 @@ export async function GET(request) {
       }
     }).sort((a, b) => b.completed - a.completed || new Date(a.last_completed_at || '2099') - new Date(b.last_completed_at || '2099'))
 
-    // 7. Stats
+    // 7. Stage-level progress (counts per stage across all mentor's teams)
+    const stageProgress = (stages || []).map(stage => {
+      const stageSubs = (allSubs || []).filter(s => s.stage_number === stage.stage_number)
+      const completed = stageSubs.filter(s => s.status === 'completed').length
+      const inReview = stageSubs.filter(s => s.status === 'in-review').length
+      const totalForStage = teamNumbers.length
+      const stillPending = totalForStage - completed - inReview
+      return {
+        stage_number: stage.stage_number,
+        stage_name: stage.stage_name,
+        completed,
+        in_review: inReview,
+        pending: stillPending,
+        total: totalForStage,
+        percent: totalForStage > 0 ? Math.round((completed / totalForStage) * 100) : 0,
+      }
+    })
+
+    // 8. Stats
     const totalCompleted = teamProgress.reduce((s, t) => s + t.completed, 0)
     const totalPending = pending.length
 
     return Response.json({
       pending,
       teams: teamProgress,
+      stageProgress,
       stats: {
         pending_reviews: totalPending,
         total_teams: teamNumbers.length,

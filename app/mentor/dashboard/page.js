@@ -866,6 +866,60 @@ body.sb-open{overflow:hidden}
 
               <div className="rv-stats"><div className="rv-stat"><div className="rv-stat-val" style={{color:'#EEA727'}}>{reviews.stats?.pending_reviews||0}</div><div className="rv-stat-lb">Pending</div></div><div className="rv-stat"><div className="rv-stat-val" style={{color:'#4ade80'}}>{reviews.stats?.total_completed_stages||0}</div><div className="rv-stat-lb">Approved</div></div><div className="rv-stat"><div className="rv-stat-val" style={{color:'#3b82f6'}}>{reviews.stats?.total_teams||0}</div><div className="rv-stat-lb">Teams</div></div></div>
 
+              {/* 7-Stage Horizontal Progress */}
+              {reviews.stageProgress?.length>0&&<>
+                <style>{`
+.stg-section{margin:18px 0 24px}
+.stg-hdr{font-size:.82rem;font-weight:700;color:rgba(255,255,255,.5);margin-bottom:12px;letter-spacing:.5px}
+.stg-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;scrollbar-width:thin;scrollbar-color:rgba(253,28,0,.3) transparent}
+.stg-row::-webkit-scrollbar{height:4px}
+.stg-row::-webkit-scrollbar-thumb{background:rgba(253,28,0,.3);border-radius:2px}
+.stg-card{flex:0 0 180px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:14px;position:relative;overflow:hidden;transition:border-color .2s}
+.stg-card:hover{border-color:rgba(253,28,0,.2)}
+.stg-num{position:absolute;top:10px;right:10px;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.04);color:rgba(255,255,255,.4);font-size:.65rem;font-weight:700;display:flex;align-items:center;justify-content:center}
+.stg-name{font-size:.78rem;font-weight:700;color:#fff;margin-bottom:8px;padding-right:28px}
+.stg-pct{font-size:1.4rem;font-weight:800;color:#fd1c00;margin-bottom:4px;letter-spacing:-.5px}
+.stg-pct-lb{font-size:.6rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+.stg-bar{height:3px;border-radius:2px;background:rgba(255,255,255,.05);overflow:hidden;margin-bottom:10px}
+.stg-bar-fill{height:100%;background:linear-gradient(90deg,#4ade80,#22c55e);transition:width .4s}
+.stg-counts{display:flex;justify-content:space-between;gap:6px}
+.stg-cnt{display:flex;flex-direction:column;align-items:center;flex:1}
+.stg-cnt-val{font-size:.78rem;font-weight:700}
+.stg-cnt-lb{font-size:.55rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.stg-cnt-ico{width:10px;height:10px;margin-bottom:2px}
+@media (max-width:768px){.stg-card{flex:0 0 160px;padding:12px}.stg-name{font-size:.72rem}.stg-pct{font-size:1.2rem}}
+                `}</style>
+                <div className="stg-section">
+                  <div className="stg-hdr">7-STAGE PROGRESS — All Your Teams</div>
+                  <div className="stg-row">
+                    {reviews.stageProgress.map(s=>(<div key={s.stage_number} className="stg-card">
+                      <div className="stg-num">{s.stage_number}</div>
+                      <div className="stg-name">{s.stage_name}</div>
+                      <div className="stg-pct">{s.percent}%</div>
+                      <div className="stg-pct-lb">Completion</div>
+                      <div className="stg-bar"><div className="stg-bar-fill" style={{width:`${s.percent}%`}}/></div>
+                      <div className="stg-counts">
+                        <div className="stg-cnt">
+                          <svg className="stg-cnt-ico" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                          <div className="stg-cnt-val" style={{color:'#4ade80'}}>{s.completed}</div>
+                          <div className="stg-cnt-lb">Done</div>
+                        </div>
+                        <div className="stg-cnt">
+                          <svg className="stg-cnt-ico" viewBox="0 0 24 24" fill="none" stroke="#EEA727" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                          <div className="stg-cnt-val" style={{color:'#EEA727'}}>{s.in_review}</div>
+                          <div className="stg-cnt-lb">Review</div>
+                        </div>
+                        <div className="stg-cnt">
+                          <svg className="stg-cnt-ico" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/></svg>
+                          <div className="stg-cnt-val" style={{color:'rgba(255,255,255,.5)'}}>{s.pending}</div>
+                          <div className="stg-cnt-lb">Pending</div>
+                        </div>
+                      </div>
+                    </div>))}
+                  </div>
+                </div>
+              </>}
+
               {reviewsLoading&&<div style={{textAlign:'center',padding:30,color:'rgba(255,255,255,.2)'}}>Loading...</div>}
               {!reviewsLoading&&reviews.pending?.length===0&&<div className="rv-empty">No pending reviews — all caught up!</div>}
 
