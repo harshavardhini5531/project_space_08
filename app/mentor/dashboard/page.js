@@ -864,39 +864,94 @@ body.sb-open{overflow:hidden}
                 {showReviewNotif&&<div className="lb-notif-dd" onClick={e=>e.stopPropagation()}><div className="lb-notif-dd-hdr"><span>Notifications</span>{reviewUnread>0&&<button className="lb-notif-dd-mark" onClick={async()=>{await fetch('/api/milestones/notifications',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'mark-all-read',type:'mentor',email:mentor?.email})});setReviewUnread(0);setReviewNotifs(p=>p.map(n=>({...n,read:true})))}}>Mark all read</button>}</div>{reviewNotifs.length===0?<div style={{padding:20,textAlign:'center',fontSize:11,color:'rgba(255,255,255,.15)'}}>No notifications</div>:reviewNotifs.map(n=><div key={n.id} className={`lb-notif-item ${!n.read?'unread':''}`}><div className="lb-notif-item-t">{n.title}</div><div className="lb-notif-item-m">{n.message}</div><div className="lb-notif-item-time">{new Date(n.created_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div></div>)}</div>}</div>
               </div>
 
-              <div className="rv-stats"><div className="rv-stat"><div className="rv-stat-val" style={{color:'#EEA727'}}>{reviews.stats?.pending_reviews||0}</div><div className="rv-stat-lb">Pending</div></div><div className="rv-stat"><div className="rv-stat-val" style={{color:'#4ade80'}}>{reviews.stats?.total_completed_stages||0}</div><div className="rv-stat-lb">Approved</div></div><div className="rv-stat"><div className="rv-stat-val" style={{color:'#3b82f6'}}>{reviews.stats?.total_teams||0}</div><div className="rv-stat-lb">Teams</div></div></div>
+              {/* 7 STAGE STAT CARDS */}
+              <style>{`
+.stg-stat-row{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:18px}
+.stg-stat-card{background:linear-gradient(135deg,rgba(253,28,0,.04),rgba(238,167,39,.02));border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:14px 10px;position:relative;overflow:hidden;transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease;animation:stgCardIn .5s ease both;cursor:default}
+.stg-stat-card:hover{transform:translateY(-3px);border-color:rgba(253,28,0,.28);box-shadow:0 8px 24px rgba(253,28,0,.14),0 0 0 1px rgba(253,28,0,.08)}
+.stg-stat-card::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(253,28,0,.1) 0%,transparent 60%);opacity:0;transition:opacity .35s ease;pointer-events:none}
+.stg-stat-card:hover::before{opacity:1}
+.stg-stat-card:nth-child(1){animation-delay:.05s}
+.stg-stat-card:nth-child(2){animation-delay:.1s}
+.stg-stat-card:nth-child(3){animation-delay:.15s}
+.stg-stat-card:nth-child(4){animation-delay:.2s}
+.stg-stat-card:nth-child(5){animation-delay:.25s}
+.stg-stat-card:nth-child(6){animation-delay:.3s}
+.stg-stat-card:nth-child(7){animation-delay:.35s}
+@keyframes stgCardIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.stg-stat-num{position:absolute;top:8px;right:10px;font-size:.55rem;font-weight:800;color:rgba(255,255,255,.25);letter-spacing:1px}
+.stg-stat-name{font-size:.62rem;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;text-align:center;min-height:14px}
+.stg-stat-pct{font-size:1.6rem;font-weight:800;text-align:center;letter-spacing:-1px;line-height:1;margin-bottom:4px;background:linear-gradient(135deg,#fd1c00,#faa000);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 24px rgba(253,28,0,.2)}
+.stg-stat-pct-lb{font-size:.55rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1px;text-align:center;margin-bottom:8px}
+.stg-stat-bar{height:3px;border-radius:2px;background:rgba(255,255,255,.05);overflow:hidden;margin-bottom:9px}
+.stg-stat-bar-fill{height:100%;background:linear-gradient(90deg,#4ade80,#22c55e);border-radius:2px;transition:width .8s cubic-bezier(.4,0,.2,1);box-shadow:0 0 8px rgba(74,222,128,.4);animation:barGlow 2.5s ease-in-out infinite}
+@keyframes barGlow{0%,100%{box-shadow:0 0 8px rgba(74,222,128,.4)}50%{box-shadow:0 0 14px rgba(74,222,128,.7)}}
+.stg-stat-counts{display:flex;justify-content:space-around;align-items:center;gap:4px}
+.stg-stat-cnt{display:flex;flex-direction:column;align-items:center;gap:1px}
+.stg-stat-cnt-val{font-size:.78rem;font-weight:800;line-height:1}
+.stg-stat-cnt-lb{font-size:.5rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.5px;margin-top:1px}
+@media (max-width:900px){.stg-stat-row{grid-template-columns:repeat(4,1fr)}.stg-stat-card:nth-child(n+5){animation-delay:.35s}}
+@media (max-width:600px){.stg-stat-row{grid-template-columns:repeat(2,1fr);gap:8px}.stg-stat-card{padding:12px 8px}.stg-stat-pct{font-size:1.3rem}}
+              `}</style>
+              <div className="stg-stat-row">
+                {(reviews.stageProgress||[]).map(s=>(<div key={s.stage_number} className="stg-stat-card">
+                  <div className="stg-stat-num">S{s.stage_number}</div>
+                  <div className="stg-stat-name">{s.stage_name}</div>
+                  <div className="stg-stat-pct">{s.percent}%</div>
+                  <div className="stg-stat-pct-lb">Completion</div>
+                  <div className="stg-stat-bar"><div className="stg-stat-bar-fill" style={{width:`${s.percent}%`}}/></div>
+                  <div className="stg-stat-counts">
+                    <div className="stg-stat-cnt"><div className="stg-stat-cnt-val" style={{color:'#4ade80'}}>{s.completed}</div><div className="stg-stat-cnt-lb">Done</div></div>
+                    <div className="stg-stat-cnt"><div className="stg-stat-cnt-val" style={{color:'#EEA727'}}>{s.in_review}</div><div className="stg-stat-cnt-lb">Rev</div></div>
+                    <div className="stg-stat-cnt"><div className="stg-stat-cnt-val" style={{color:'rgba(255,255,255,.5)'}}>{s.pending}</div><div className="stg-stat-cnt-lb">Pend</div></div>
+                  </div>
+                </div>))}
+              </div>
 
               {/* TEAM × STAGE MATRIX */}
               {reviews.teams?.length>0&&<>
                 <style>{`
-.tsm-section{margin:18px 0 24px}
-.tsm-hdr{font-size:.82rem;font-weight:700;color:rgba(255,255,255,.5);margin-bottom:12px;letter-spacing:.5px}
-.tsm-wrap{overflow-x:auto;border:1px solid rgba(255,255,255,.06);border-radius:10px;background:rgba(255,255,255,.02);scrollbar-width:thin;scrollbar-color:rgba(253,28,0,.3) transparent}
+.tsm-section{margin:18px 0 24px;animation:tsmSectionIn .6s ease both}
+@keyframes tsmSectionIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.tsm-hdr{font-size:.82rem;font-weight:700;color:rgba(255,255,255,.55);margin-bottom:12px;letter-spacing:.6px;display:flex;align-items:center;gap:8px}
+.tsm-hdr::before{content:'';width:3px;height:14px;background:linear-gradient(180deg,#fd1c00,#faa000);border-radius:2px;box-shadow:0 0 10px rgba(253,28,0,.5)}
+.tsm-wrap{overflow-x:auto;border:1px solid rgba(255,255,255,.06);border-radius:12px;background:rgba(255,255,255,.015);scrollbar-width:thin;scrollbar-color:rgba(253,28,0,.3) transparent;backdrop-filter:blur(4px);box-shadow:0 4px 20px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.03)}
 .tsm-wrap::-webkit-scrollbar{height:5px}
 .tsm-wrap::-webkit-scrollbar-thumb{background:rgba(253,28,0,.3);border-radius:3px}
 .tsm-table{width:100%;border-collapse:collapse;min-width:780px;font-family:'DM Sans',sans-serif}
-.tsm-table th{padding:10px 8px;text-align:center;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.4);background:rgba(0,0,0,.25);border-bottom:1px solid rgba(255,255,255,.05);white-space:nowrap}
-.tsm-table th.team-col{text-align:left;padding-left:14px;width:80px}
-.tsm-table th.proj-col{text-align:left;width:170px;padding-left:8px}
-.tsm-table th.pct-col{width:70px}
-.tsm-table th.stg-col{width:62px;font-size:.58rem;line-height:1.15}
-.tsm-table th.stg-col span{display:block;font-size:.7rem;font-weight:800;color:rgba(255,255,255,.55);margin-bottom:2px}
-.tsm-table td{padding:10px 8px;text-align:center;border-bottom:1px solid rgba(255,255,255,.04);font-size:.74rem;vertical-align:middle}
+.tsm-table th{padding:14px 8px;text-align:center;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.45);background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,.18));border-bottom:1px solid rgba(255,255,255,.06);white-space:nowrap;position:relative}
+.tsm-table th.team-col{width:90px}
+.tsm-table th.proj-col{width:180px}
+.tsm-table th.pct-col{width:80px}
+.tsm-table th.stg-col{width:64px;font-size:.58rem;line-height:1.15}
+.tsm-table th.stg-col span{display:block;font-size:.74rem;font-weight:800;color:rgba(253,28,0,.85);margin-bottom:3px;text-shadow:0 0 8px rgba(253,28,0,.4)}
+.tsm-table td{padding:12px 8px;text-align:center;border-bottom:1px solid rgba(255,255,255,.035);font-size:.74rem;vertical-align:middle;transition:background .25s ease}
+.tsm-table tbody tr{animation:tsmRowIn .4s ease both;transition:background .25s ease}
+.tsm-table tbody tr:nth-child(1){animation-delay:.05s}
+.tsm-table tbody tr:nth-child(2){animation-delay:.1s}
+.tsm-table tbody tr:nth-child(3){animation-delay:.15s}
+.tsm-table tbody tr:nth-child(4){animation-delay:.2s}
+.tsm-table tbody tr:nth-child(5){animation-delay:.25s}
+.tsm-table tbody tr:nth-child(n+6){animation-delay:.3s}
+@keyframes tsmRowIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
 .tsm-table tr:last-child td{border-bottom:none}
-.tsm-table tr:hover td{background:rgba(255,255,255,.015)}
-.tsm-team{font-weight:700;color:#fd1c00;font-size:.78rem;text-align:left;padding-left:14px}
-.tsm-proj{color:rgba(255,255,255,.7);font-size:.72rem;text-align:left;padding-left:8px;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tsm-cell{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px}
-.tsm-cell.done{background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.25)}
-.tsm-cell.review{background:rgba(238,167,39,.12);border:1px solid rgba(238,167,39,.3);animation:tsmPulse 2s ease-in-out infinite}
-.tsm-cell.pending{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05)}
-.tsm-cell.rejected{background:rgba(253,28,0,.12);border:1px solid rgba(253,28,0,.3)}
-@keyframes tsmPulse{0%,100%{box-shadow:0 0 0 0 rgba(238,167,39,.3)}50%{box-shadow:0 0 0 4px rgba(238,167,39,0)}}
-.tsm-pct{font-weight:800;font-size:.82rem;letter-spacing:-.3px}
-.tsm-legend{display:flex;gap:14px;margin-top:10px;padding-left:4px;flex-wrap:wrap}
-.tsm-leg{display:flex;align-items:center;gap:6px;font-size:.62rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.5px}
-.tsm-leg-dot{width:10px;height:10px;border-radius:3px}
-@media (max-width:768px){.tsm-table th.proj-col,.tsm-table .tsm-proj{display:none}.tsm-table{min-width:620px}}
+.tsm-table tbody tr:hover td{background:rgba(253,28,0,.03)}
+.tsm-team{font-weight:800;color:#fd1c00;font-size:.82rem;text-align:center;letter-spacing:.5px;text-shadow:0 0 12px rgba(253,28,0,.35)}
+.tsm-proj{color:rgba(255,255,255,.75);font-size:.72rem;text-align:center;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.tsm-cell{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;transition:transform .25s ease,box-shadow .25s ease}
+.tsm-cell:hover{transform:scale(1.1)}
+.tsm-cell.done{background:radial-gradient(circle,rgba(74,222,128,.18),rgba(74,222,128,.05));border:1px solid rgba(74,222,128,.35);box-shadow:0 0 12px rgba(74,222,128,.25),inset 0 0 8px rgba(74,222,128,.1)}
+.tsm-cell.done:hover{box-shadow:0 0 18px rgba(74,222,128,.5),inset 0 0 8px rgba(74,222,128,.15)}
+.tsm-cell.review{background:radial-gradient(circle,rgba(238,167,39,.2),rgba(238,167,39,.05));border:1px solid rgba(238,167,39,.45);animation:tsmReviewPulse 2s ease-in-out infinite}
+@keyframes tsmReviewPulse{0%,100%{box-shadow:0 0 0 0 rgba(238,167,39,.5),0 0 8px rgba(238,167,39,.2)}50%{box-shadow:0 0 0 6px rgba(238,167,39,0),0 0 16px rgba(238,167,39,.5)}}
+.tsm-cell.pending{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06)}
+.tsm-cell.rejected{background:radial-gradient(circle,rgba(253,28,0,.2),rgba(253,28,0,.05));border:1px solid rgba(253,28,0,.4);box-shadow:0 0 12px rgba(253,28,0,.25)}
+.tsm-pct{font-weight:800;font-size:.92rem;letter-spacing:-.3px;display:inline-block;padding:4px 10px;border-radius:8px;text-shadow:0 0 12px currentColor;animation:tsmPctPulse 3s ease-in-out infinite}
+@keyframes tsmPctPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.tsm-legend{display:flex;gap:18px;margin-top:14px;padding-left:4px;flex-wrap:wrap;justify-content:center}
+.tsm-leg{display:flex;align-items:center;gap:7px;font-size:.62rem;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.6px;font-weight:600}
+.tsm-leg-dot{width:11px;height:11px;border-radius:3px;box-shadow:0 0 6px currentColor}
+@media (max-width:768px){.tsm-table th.proj-col,.tsm-table .tsm-proj{display:none}.tsm-table{min-width:640px}}
                 `}</style>
                 <div className="tsm-section">
                   <div className="tsm-hdr">7-STAGE TEAM MATRIX</div>
@@ -918,8 +973,8 @@ body.sb-open{overflow:hidden}
                       </thead>
                       <tbody>
                         {reviews.teams.map(t=>(<tr key={t.team_number}>
-                          <td className="tsm-team">{t.team_number}</td>
-                          <td className="tsm-proj" title={t.project_title}>{t.project_title||'—'}</td>
+                          <td><span className="tsm-team">{t.team_number}</span></td>
+                          <td><span className="tsm-proj" title={t.project_title}>{t.project_title||'—'}</span></td>
                           {(t.stages||[1,2,3,4,5,6,7].map(n=>({stage_number:n,status:'pending'}))).map(s=>{
                             const cls=s.status==='completed'?'done':s.status==='in-review'?'review':s.status==='rejected'?'rejected':'pending';
                             return (<td key={s.stage_number}>
