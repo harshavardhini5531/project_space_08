@@ -178,6 +178,7 @@ export default function AdminDashboard() {
     target:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>,
   }
   const NAV=[
+    {id:'overview',label:'Overview',icon:IC.grid},
     {id:'mentors',label:'Mentors',icon:IC.users},
     {id:'teams',label:'Teams',icon:IC.group},
     {id:'milestones',label:'Project Status',icon:IC.target},
@@ -194,7 +195,9 @@ export default function AdminDashboard() {
     const tSt = { position:'absolute',right:'12px',top:'50%',transform:'translateY(-50%)',background:'none',border:'none',color:'rgba(255,255,255,.35)',fontSize:'10px',cursor:'pointer' }
     return (
       <>
-        <style>{`*{margin:0;padding:0;box-sizing:border-box}html,body{background:#050008;overflow:auto}body{font-family:'DM Sans',sans-serif;color:#fff}@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}.adm-wrap{width:100%;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:#050008;position:relative}.adm-card{width:100%;max-width:420px;background:rgba(12,8,20,.9);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:40px 32px;backdrop-filter:blur(20px);animation:fadeUp .5s ease;position:relative;z-index:2}@media(max-width:480px){.adm-card{padding:28px 20px;border-radius:16px}}`}</style>
+        <style>{`*{margin:0;padding:0;box-sizing:border-box}html,body{background:#050008;overflow:auto}body,.ad-layout,.ad-layout *{font-family:'DM Sans',sans-serif;color:inherit}
+.ad-layout .ad-sv,.ad-layout .ad-mst-v,.ad-layout .ps-stat-v,.ad-layout .ps-stage-val,.ad-layout .li-stat-val,.ad-layout .li-title,.ad-layout .li-section-title,.ad-layout .li-tech-count,.ad-layout .ad-sb-brand,.ad-layout .adm-lb-sv{font-family:'Orbitron',sans-serif}
+body{font-family:'DM Sans',sans-serif;color:#fff}@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}.adm-wrap{width:100%;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:#050008;position:relative}.adm-card{width:100%;max-width:420px;background:rgba(12,8,20,.9);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:40px 32px;backdrop-filter:blur(20px);animation:fadeUp .5s ease;position:relative;z-index:2}@media(max-width:480px){.adm-card{padding:28px 20px;border-radius:16px}}`}</style>
         <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=Orbitron:wght@400;600;700&display=swap" rel="stylesheet" />
         <AuthBackground>
           <div className="adm-wrap"><div className="adm-card">
@@ -631,7 +634,7 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
 .ad-stat{padding:22px 18px;border-radius:16px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);animation:countUp .5s ease both;position:relative;overflow:hidden}
 .ad-stat:nth-child(2){animation-delay:.1s}.ad-stat:nth-child(3){animation-delay:.2s}.ad-stat:nth-child(4){animation-delay:.3s}
 .ad-stat::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle,var(--gw,.04) 0%,transparent 70%);pointer-events:none}
-.ad-sv{font-size:2rem;font-weight:800;line-height:1}
+.ad-sv{font-family:'Orbitron',sans-serif;font-size:2rem;font-weight:800;line-height:1}
 .ad-sl{font-size:.62rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1.5px;margin-top:6px;font-weight:600}
 
 /* Progress */
