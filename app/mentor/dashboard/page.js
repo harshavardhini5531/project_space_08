@@ -866,80 +866,84 @@ body.sb-open{overflow:hidden}
 
               <div className="rv-stats"><div className="rv-stat"><div className="rv-stat-val" style={{color:'#EEA727'}}>{reviews.stats?.pending_reviews||0}</div><div className="rv-stat-lb">Pending</div></div><div className="rv-stat"><div className="rv-stat-val" style={{color:'#4ade80'}}>{reviews.stats?.total_completed_stages||0}</div><div className="rv-stat-lb">Approved</div></div><div className="rv-stat"><div className="rv-stat-val" style={{color:'#3b82f6'}}>{reviews.stats?.total_teams||0}</div><div className="rv-stat-lb">Teams</div></div></div>
 
-              {/* 7-Stage Horizontal Progress */}
-              {reviews.stageProgress?.length>0&&<>
+              {/* TEAM × STAGE MATRIX */}
+              {reviews.teams?.length>0&&<>
                 <style>{`
-.stg-section{margin:18px 0 24px}
-.stg-hdr{font-size:.82rem;font-weight:700;color:rgba(255,255,255,.5);margin-bottom:12px;letter-spacing:.5px}
-.stg-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;scrollbar-width:thin;scrollbar-color:rgba(253,28,0,.3) transparent}
-.stg-row::-webkit-scrollbar{height:4px}
-.stg-row::-webkit-scrollbar-thumb{background:rgba(253,28,0,.3);border-radius:2px}
-.stg-card{flex:0 0 180px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:14px;position:relative;overflow:hidden;transition:border-color .2s}
-.stg-card:hover{border-color:rgba(253,28,0,.2)}
-.stg-num{position:absolute;top:10px;right:10px;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.04);color:rgba(255,255,255,.4);font-size:.65rem;font-weight:700;display:flex;align-items:center;justify-content:center}
-.stg-name{font-size:.78rem;font-weight:700;color:#fff;margin-bottom:8px;padding-right:28px}
-.stg-pct{font-size:1.4rem;font-weight:800;color:#fd1c00;margin-bottom:4px;letter-spacing:-.5px}
-.stg-pct-lb{font-size:.6rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
-.stg-bar{height:3px;border-radius:2px;background:rgba(255,255,255,.05);overflow:hidden;margin-bottom:10px}
-.stg-bar-fill{height:100%;background:linear-gradient(90deg,#4ade80,#22c55e);transition:width .4s}
-.stg-counts{display:flex;justify-content:space-between;gap:6px}
-.stg-cnt{display:flex;flex-direction:column;align-items:center;flex:1}
-.stg-cnt-val{font-size:.78rem;font-weight:700}
-.stg-cnt-lb{font-size:.55rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
-.stg-cnt-ico{width:10px;height:10px;margin-bottom:2px}
-@media (max-width:768px){.stg-card{flex:0 0 160px;padding:12px}.stg-name{font-size:.72rem}.stg-pct{font-size:1.2rem}}
+.tsm-section{margin:18px 0 24px}
+.tsm-hdr{font-size:.82rem;font-weight:700;color:rgba(255,255,255,.5);margin-bottom:12px;letter-spacing:.5px}
+.tsm-wrap{overflow-x:auto;border:1px solid rgba(255,255,255,.06);border-radius:10px;background:rgba(255,255,255,.02);scrollbar-width:thin;scrollbar-color:rgba(253,28,0,.3) transparent}
+.tsm-wrap::-webkit-scrollbar{height:5px}
+.tsm-wrap::-webkit-scrollbar-thumb{background:rgba(253,28,0,.3);border-radius:3px}
+.tsm-table{width:100%;border-collapse:collapse;min-width:780px;font-family:'DM Sans',sans-serif}
+.tsm-table th{padding:10px 8px;text-align:center;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.4);background:rgba(0,0,0,.25);border-bottom:1px solid rgba(255,255,255,.05);white-space:nowrap}
+.tsm-table th.team-col{text-align:left;padding-left:14px;width:80px}
+.tsm-table th.proj-col{text-align:left;width:170px;padding-left:8px}
+.tsm-table th.pct-col{width:70px}
+.tsm-table th.stg-col{width:62px;font-size:.58rem;line-height:1.15}
+.tsm-table th.stg-col span{display:block;font-size:.7rem;font-weight:800;color:rgba(255,255,255,.55);margin-bottom:2px}
+.tsm-table td{padding:10px 8px;text-align:center;border-bottom:1px solid rgba(255,255,255,.04);font-size:.74rem;vertical-align:middle}
+.tsm-table tr:last-child td{border-bottom:none}
+.tsm-table tr:hover td{background:rgba(255,255,255,.015)}
+.tsm-team{font-weight:700;color:#fd1c00;font-size:.78rem;text-align:left;padding-left:14px}
+.tsm-proj{color:rgba(255,255,255,.7);font-size:.72rem;text-align:left;padding-left:8px;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tsm-cell{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px}
+.tsm-cell.done{background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.25)}
+.tsm-cell.review{background:rgba(238,167,39,.12);border:1px solid rgba(238,167,39,.3);animation:tsmPulse 2s ease-in-out infinite}
+.tsm-cell.pending{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05)}
+.tsm-cell.rejected{background:rgba(253,28,0,.12);border:1px solid rgba(253,28,0,.3)}
+@keyframes tsmPulse{0%,100%{box-shadow:0 0 0 0 rgba(238,167,39,.3)}50%{box-shadow:0 0 0 4px rgba(238,167,39,0)}}
+.tsm-pct{font-weight:800;font-size:.82rem;letter-spacing:-.3px}
+.tsm-legend{display:flex;gap:14px;margin-top:10px;padding-left:4px;flex-wrap:wrap}
+.tsm-leg{display:flex;align-items:center;gap:6px;font-size:.62rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.5px}
+.tsm-leg-dot{width:10px;height:10px;border-radius:3px}
+@media (max-width:768px){.tsm-table th.proj-col,.tsm-table .tsm-proj{display:none}.tsm-table{min-width:620px}}
                 `}</style>
-                <div className="stg-section">
-                  <div className="stg-hdr">7-STAGE PROGRESS — All Your Teams</div>
-                  <div className="stg-row">
-                    {reviews.stageProgress.map(s=>(<div key={s.stage_number} className="stg-card">
-                      <div className="stg-num">{s.stage_number}</div>
-                      <div className="stg-name">{s.stage_name}</div>
-                      <div className="stg-pct">{s.percent}%</div>
-                      <div className="stg-pct-lb">Completion</div>
-                      <div className="stg-bar"><div className="stg-bar-fill" style={{width:`${s.percent}%`}}/></div>
-                      <div className="stg-counts">
-                        <div className="stg-cnt">
-                          <svg className="stg-cnt-ico" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                          <div className="stg-cnt-val" style={{color:'#4ade80'}}>{s.completed}</div>
-                          <div className="stg-cnt-lb">Done</div>
-                        </div>
-                        <div className="stg-cnt">
-                          <svg className="stg-cnt-ico" viewBox="0 0 24 24" fill="none" stroke="#EEA727" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                          <div className="stg-cnt-val" style={{color:'#EEA727'}}>{s.in_review}</div>
-                          <div className="stg-cnt-lb">Review</div>
-                        </div>
-                        <div className="stg-cnt">
-                          <svg className="stg-cnt-ico" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/></svg>
-                          <div className="stg-cnt-val" style={{color:'rgba(255,255,255,.5)'}}>{s.pending}</div>
-                          <div className="stg-cnt-lb">Pending</div>
-                        </div>
-                      </div>
-                    </div>))}
+                <div className="tsm-section">
+                  <div className="tsm-hdr">7-STAGE TEAM MATRIX</div>
+                  <div className="tsm-wrap">
+                    <table className="tsm-table">
+                      <thead>
+                        <tr>
+                          <th className="team-col">Team</th>
+                          <th className="proj-col">Project</th>
+                          <th className="stg-col"><span>S1</span>Ideation</th>
+                          <th className="stg-col"><span>S2</span>Planning</th>
+                          <th className="stg-col"><span>S3</span>Design</th>
+                          <th className="stg-col"><span>S4</span>Develop</th>
+                          <th className="stg-col"><span>S5</span>Testing</th>
+                          <th className="stg-col"><span>S6</span>Deploy</th>
+                          <th className="stg-col"><span>S7</span>Docs</th>
+                          <th className="pct-col">%</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {reviews.teams.map(t=>(<tr key={t.team_number}>
+                          <td className="tsm-team">{t.team_number}</td>
+                          <td className="tsm-proj" title={t.project_title}>{t.project_title||'—'}</td>
+                          {(t.stages||[1,2,3,4,5,6,7].map(n=>({stage_number:n,status:'pending'}))).map(s=>{
+                            const cls=s.status==='completed'?'done':s.status==='in-review'?'review':s.status==='rejected'?'rejected':'pending';
+                            return (<td key={s.stage_number}>
+                              <span className={`tsm-cell ${cls}`}>
+                                {s.status==='completed'&&<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                                {s.status==='in-review'&&<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#EEA727" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>}
+                                {s.status==='rejected'&&<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fd1c00" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>}
+                                {s.status==='pending'&&<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.25)" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/></svg>}
+                              </span>
+                            </td>);
+                          })}
+                          <td><span className="tsm-pct" style={{color:t.percent>=70?'#4ade80':t.percent>=40?'#EEA727':t.percent>0?'#fd1c00':'rgba(255,255,255,.3)'}}>{t.percent}%</span></td>
+                        </tr>))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="tsm-legend">
+                    <div className="tsm-leg"><span className="tsm-leg-dot" style={{background:'rgba(74,222,128,.4)',border:'1px solid rgba(74,222,128,.6)'}}/>Approved</div>
+                    <div className="tsm-leg"><span className="tsm-leg-dot" style={{background:'rgba(238,167,39,.4)',border:'1px solid rgba(238,167,39,.6)'}}/>In Review</div>
+                    <div className="tsm-leg"><span className="tsm-leg-dot" style={{background:'rgba(253,28,0,.3)',border:'1px solid rgba(253,28,0,.5)'}}/>Rejected</div>
+                    <div className="tsm-leg"><span className="tsm-leg-dot" style={{background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.1)'}}/>Locked / Pending</div>
                   </div>
                 </div>
-              </>}
-
-              {reviewsLoading&&<div style={{textAlign:'center',padding:30,color:'rgba(255,255,255,.2)'}}>Loading...</div>}
-              {!reviewsLoading&&reviews.pending?.length===0&&<div className="rv-empty">No pending reviews — all caught up!</div>}
-
-              {reviews.pending?.length>0&&<div style={{overflowX:'auto'}}>
-                <table className="lb-table" style={{minWidth:700}}>
-                  <thead><tr><th>Team</th><th>Project</th><th>Stage</th><th>Submitted By</th><th>Time</th><th>Status</th><th>Action</th></tr></thead>
-                  <tbody>{reviews.pending.map((p,i)=><tr key={p.id||i}>
-                    <td style={{fontWeight:700,color:'#fd1c00'}}>{p.team_number}</td>
-                    <td style={{maxWidth:160,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',color:'rgba(255,255,255,.6)'}}>{p.project_title||'—'}</td>
-                    <td><span style={{fontSize:'.65rem',padding:'3px 10px',borderRadius:6,background:'rgba(238,167,39,.08)',color:'#EEA727',border:'1px solid rgba(238,167,39,.15)'}}>S-{p.stage_number}: {p.stage_name}</span></td>
-                    <td style={{fontSize:'.72rem',color:'rgba(255,255,255,.5)'}}>{p.submitted_by_name||p.submitted_by_roll}</td>
-                    <td style={{fontSize:'.68rem',color:'rgba(255,255,255,.3)'}}>{p.submitted_at?new Date(p.submitted_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):''}</td>
-                    <td><span style={{fontSize:'.62rem',padding:'3px 10px',borderRadius:6,background:'rgba(238,167,39,.08)',color:'#EEA727',border:'1px solid rgba(238,167,39,.15)'}}>In Review</span></td>
-                    <td style={{display:'flex',gap:6}}><button className="rv-btn approve" style={{padding:'6px 14px',fontSize:'.7rem'}} disabled={actionLoading===`${p.team_number}-${p.stage_number}`} onClick={()=>handleMilestoneAction(p.team_number,p.stage_number,'approve')}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>{actionLoading===`${p.team_number}-${p.stage_number}`?'...':'Approve'}</button><button className="rv-btn reject" style={{padding:'6px 14px',fontSize:'.7rem'}} disabled={actionLoading===`${p.team_number}-${p.stage_number}`} onClick={()=>setRejectModal(p)}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Reject</button></td>
-                  </tr>)}</tbody>
-                </table>
-              </div>}
-
-              {/* Team Progress */}
-              {reviews.teams?.length>0&&<><div style={{fontSize:'.82rem',fontWeight:700,color:'rgba(255,255,255,.5)',marginTop:28,marginBottom:12}}>Team Progress</div><div className="rv-progress">{reviews.teams.map(t=><div key={t.team_number} className="rv-team-prog"><div style={{fontWeight:700,color:'#fd1c00',fontSize:'.8rem',minWidth:60}}>{t.team_number}</div><div className="rv-team-prog-info"><div className="rv-team-prog-name">{t.project_title||'Untitled'}</div><div className="rv-team-prog-sub">{t.completed}/7 done · {t.in_review} reviewing</div></div><div className="rv-team-prog-bar"><div className="rv-team-prog-fill" style={{width:`${t.percent}%`}}/></div><div className="rv-team-prog-pct" style={{color:t.percent>=70?'#4ade80':t.percent>=40?'#EEA727':'rgba(255,255,255,.3)'}}>{t.percent}%</div></div>)}</div></>}
+              </>} 
             </div>)}
 
             {/* LINKEDIN STATS */}

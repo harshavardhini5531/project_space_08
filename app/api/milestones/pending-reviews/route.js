@@ -64,7 +64,7 @@ export async function GET(request) {
         technology: (teams || []).find(t => t.team_number === s.team_number)?.technology || '',
       }))
 
-    // 6. Build team progress summary
+    // 6. Build team progress summary - includes per-stage status array
     const teamProgress = teamNumbers.map(tn => {
       const teamSubs = (allSubs || []).filter(s => s.team_number === tn)
       const completed = teamSubs.filter(s => s.status === 'completed').length
@@ -72,6 +72,19 @@ export async function GET(request) {
       const lastCompleted = teamSubs
         .filter(s => s.status === 'completed')
         .sort((a, b) => new Date(b.reviewed_at) - new Date(a.reviewed_at))[0]
+
+      // Build per-stage status array (1 to 7)
+      const stages = []
+      for (let n = 1; n <= 7; n++) {
+        const sub = teamSubs.find(s => s.stage_number === n)
+        stages.push({
+          stage_number: n,
+          stage_name: stageMap[n] || `Stage ${n}`,
+          status: sub?.status || 'pending',
+          submitted_at: sub?.submitted_at || null,
+          reviewed_at: sub?.reviewed_at || null,
+        })
+      }
 
       return {
         team_number: tn,
@@ -82,6 +95,7 @@ export async function GET(request) {
         pending: 7 - completed - inReview,
         percent: Math.round((completed / 7) * 100),
         last_completed_at: lastCompleted?.reviewed_at || null,
+        stages,
       }
     }).sort((a, b) => b.completed - a.completed || new Date(a.last_completed_at || '2099') - new Date(b.last_completed_at || '2099'))
 
