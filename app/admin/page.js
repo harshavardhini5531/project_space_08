@@ -25,6 +25,7 @@ export default function AdminDashboard() {
   const [filterStatus, setFilterStatus] = useState('all')
   const [expandedTeam, setExpandedTeam] = useState(null)
   const [expandedMentor, setExpandedMentor] = useState(null)
+  const [mentorSubTab, setMentorSubTab] = useState('registration')
   const [reminding, setReminding] = useState(false)
   const [reminderMsg, setReminderMsg] = useState('')
   const [adLeaderboard, setAdLeaderboard] = useState({ leaderboard: [], stats: {} })
@@ -655,6 +656,38 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
 .ad-ri{display:flex;align-items:center;gap:14px;padding:11px 14px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.03);margin-bottom:7px}
 
 /* ═══ MENTORS ═══ */
+.ad-msub{display:flex;gap:6px;margin-bottom:18px;border-bottom:1px solid rgba(255,255,255,.05);overflow-x:auto;scrollbar-width:none}
+.ad-msub::-webkit-scrollbar{display:none}
+.ad-msub-tab{padding:10px 18px;background:none;border:none;color:rgba(255,255,255,.4);font-family:'DM Sans',sans-serif;font-size:.74rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px;border-bottom:2px solid transparent;transition:all .25s ease;white-space:nowrap;letter-spacing:.3px}
+.ad-msub-tab:hover{color:rgba(255,255,255,.7)}
+.ad-msub-tab.on{color:#fd1c00;border-bottom-color:#fd1c00;text-shadow:0 0 8px rgba(253,28,0,.3)}
+.ad-msub-cnt{font-size:.6rem;padding:1px 7px;border-radius:8px;background:rgba(255,255,255,.06);color:rgba(255,255,255,.5);font-weight:700;letter-spacing:0}
+.ad-msub-tab.on .ad-msub-cnt{background:rgba(253,28,0,.18);color:#fd1c00}
+.ad-mst{display:grid;grid-template-columns:repeat(${isMobile?2:4},1fr);gap:10px;margin-bottom:18px}
+.ad-mst-c{padding:14px 14px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);position:relative;overflow:hidden}
+.ad-mst-c::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at top,var(--gw,rgba(255,255,255,.03)),transparent 60%);pointer-events:none}
+.ad-mst-v{font-family:'Orbitron',sans-serif;font-size:1.4rem;font-weight:800;line-height:1;position:relative}
+.ad-mst-l{font-size:.55rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1.5px;margin-top:6px;font-weight:700}
+.ad-mtbl{width:100%;border-collapse:separate;border-spacing:0 5px;font-family:'DM Sans',sans-serif}
+.ad-mtbl th{text-align:left;padding:8px 12px;font-size:.58rem;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1.5px;background:rgba(0,0,0,.18)}
+.ad-mtbl th.c{text-align:center}
+.ad-mtbl td{padding:11px 12px;background:rgba(255,255,255,.015);border-top:1px solid rgba(255,255,255,.02);border-bottom:1px solid rgba(255,255,255,.02);font-size:.76rem;color:rgba(255,255,255,.7);transition:background .2s}
+.ad-mtbl td.c{text-align:center}
+.ad-mtbl tr td:first-child{border-left:1px solid rgba(255,255,255,.02);border-radius:10px 0 0 10px}
+.ad-mtbl tr td:last-child{border-right:1px solid rgba(255,255,255,.02);border-radius:0 10px 10px 0}
+.ad-mtbl tr:hover td{background:rgba(255,255,255,.04)}
+.ad-mname{display:flex;align-items:center;gap:10px}
+.ad-mavt{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#fd1c00,#faa000);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.76rem;flex-shrink:0;overflow:hidden}
+.ad-mavt img{width:100%;height:100%;object-fit:cover}
+.ad-mnm{font-weight:700;color:#fff;font-size:.78rem;line-height:1.2}
+.ad-mem{font-size:.62rem;color:rgba(255,255,255,.3);margin-top:1px}
+.ad-mbar{display:inline-block;width:80px;height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;vertical-align:middle;margin-right:7px}
+.ad-mbar-f{height:100%;background:linear-gradient(90deg,#4ade80,#22c55e);border-radius:2px;box-shadow:0 0 8px rgba(74,222,128,.3)}
+.ad-mb-pill{font-size:.62rem;padding:3px 9px;border-radius:6px;font-weight:700;display:inline-flex;align-items:center;gap:4px}
+.ad-mb-pill.gd{background:rgba(74,222,128,.1);color:#4ade80;border:1px solid rgba(74,222,128,.18)}
+.ad-mb-pill.wr{background:rgba(238,167,39,.1);color:#EEA727;border:1px solid rgba(238,167,39,.18)}
+.ad-mb-pill.bd{background:rgba(253,28,0,.1);color:#fd1c00;border:1px solid rgba(253,28,0,.18)}
+.ad-mb-pill.nu{background:rgba(255,255,255,.04);color:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.06)}
 .ad-mg{display:grid;grid-template-columns:repeat(${isMobile?1:2},1fr);gap:14px}
 .ad-mc{padding:18px;border-radius:14px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);cursor:pointer;transition:all .2s}
 .ad-mc:hover{border-color:rgba(255,255,255,.08)}.ad-mc.ex{border-color:rgba(253,28,0,.12)}
@@ -811,8 +844,109 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
               {(data.recentRegistrations||[]).map((r,i)=><div key={i} className="ad-ri"><div style={{fontSize:'.82rem',fontWeight:700,color:'#fd1c00',minWidth:58}}>{r.teamNumber}</div><div><div style={{fontSize:'.76rem',fontWeight:500,color:'rgba(255,255,255,.65)'}}>{r.projectTitle}</div><div style={{fontSize:'.62rem',color:'rgba(255,255,255,.25)',marginTop:1}}>{r.technology}</div></div><div style={{fontSize:'.62rem',color:'rgba(255,255,255,.15)',whiteSpace:'nowrap',marginLeft:'auto'}}>{r.registeredAt?new Date(r.registeredAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):''}</div></div>)}
             </>}
 
-            {/* MENTORS */}
-            {data && activeTab === 'mentors' && <div className="ad-mg">{Object.entries(data.mentorBreakdown||{}).sort((a,b)=>b[1].total-a[1].total).map(([name,v])=><div key={name} className={`ad-mc ${expandedMentor===name?'ex':''}`} onClick={()=>setExpandedMentor(expandedMentor===name?null:name)}><div className="ad-mh"><div className="ad-mna">{name}</div><div className={`ad-mb ${v.registered===v.total?'dn':'pe'}`}>{v.registered===v.total?'✓ All Done':`${v.pending} pending`}</div></div><div className="ad-ms"><span>{v.total} teams</span><span>{v.registered} registered</span><span>{v.pending} pending</span></div><div className="ad-mr"><div className="ad-mrf" style={{width:`${v.total>0?Math.round(v.registered/v.total*100):0}%`}}/></div>{expandedMentor===name&&<div className="ad-mt">{v.teams.map(t=><div key={t.serialNumber} className="ad-mi"><span className="ad-min">#{t.serialNumber} {t.projectTitle||t.leaderName} {!t.registered&&t.leaderPhone&&t.leaderPhone.length>=10&&<a href={`tel:${t.leaderPhone}`} onClick={e=>e.stopPropagation()} style={{color:'#4ade80',textDecoration:'none',marginLeft:4}} title={t.leaderPhone}>{IC.ph}</a>}</span><span className={`ad-mis ${t.registered?'r':'p'}`}>{t.registered?'Registered':'Pending'}</span></div>)}</div>}</div>)}</div>}
+            {/* MENTORS — 4 SUB-TABS */}
+            {data && activeTab === 'mentors' && (() => {
+              const mList = (insights?.mentorActivity || []).slice().sort((a,b) => (b.totalTeams||0) - (a.totalTeams||0))
+              // Rollup totals across all mentors
+              const sumPending = mList.reduce((s,m) => s + (m.requestsPending||0), 0)
+              const sumResolved = mList.reduce((s,m) => s + (m.requestsResolved||0), 0)
+              const sumApproved = mList.reduce((s,m) => s + (m.stagesApproved||0), 0)
+              const sumInReview = mList.reduce((s,m) => s + (m.stagesInReview||0), 0)
+              const sumLiPosted = mList.filter(m => m.linkedinPosted).length
+              const sumStudentPosts = mList.reduce((s,m) => s + (m.studentLinkedinPosts||0), 0)
+              const sumReg = mList.reduce((s,m) => s + (m.registeredTeams||0), 0)
+              const sumTotal = mList.reduce((s,m) => s + (m.totalTeams||0), 0)
+              const initials = (n) => (n||'').split(' ').filter(Boolean).slice(0,2).map(p=>p[0]).join('').toUpperCase()
+              const allMentors = data.allMentors || {}
+
+              return <>
+                {/* Sub-tab nav */}
+                <div className="ad-msub">
+                  <button className={`ad-msub-tab ${mentorSubTab==='registration'?'on':''}`} onClick={()=>setMentorSubTab('registration')}>{IC.users} Registration <span className="ad-msub-cnt">{mList.length}</span></button>
+                  <button className={`ad-msub-tab ${mentorSubTab==='linkedin'?'on':''}`} onClick={()=>setMentorSubTab('linkedin')}>{IC.share} LinkedIn Posts <span className="ad-msub-cnt">{sumLiPosted}</span></button>
+                  <button className={`ad-msub-tab ${mentorSubTab==='approvals'?'on':''}`} onClick={()=>setMentorSubTab('approvals')}>{IC.target} Stage Approvals <span className="ad-msub-cnt">{sumInReview}</span></button>
+                  <button className={`ad-msub-tab ${mentorSubTab==='requests'?'on':''}`} onClick={()=>setMentorSubTab('requests')}>{IC.bell} Mentor Requests <span className="ad-msub-cnt">{sumPending}</span></button>
+                </div>
+
+                {/* REGISTRATION SUB-TAB */}
+                {mentorSubTab==='registration' && <>
+                  <div className="ad-mst">
+                    <div className="ad-mst-c" style={{'--gw':'rgba(253,28,0,.06)'}}><div className="ad-mst-v" style={{color:'#fd1c00'}}>{mList.length}</div><div className="ad-mst-l">Total Mentors</div></div>
+                    <div className="ad-mst-c" style={{'--gw':'rgba(74,222,128,.06)'}}><div className="ad-mst-v" style={{color:'#4ade80'}}>{sumReg}</div><div className="ad-mst-l">Teams Registered</div></div>
+                    <div className="ad-mst-c" style={{'--gw':'rgba(238,167,39,.06)'}}><div className="ad-mst-v" style={{color:'#EEA727'}}>{sumTotal-sumReg}</div><div className="ad-mst-l">Pending</div></div>
+                    <div className="ad-mst-c" style={{'--gw':'rgba(59,130,246,.06)'}}><div className="ad-mst-v" style={{color:'#3b82f6'}}>{sumTotal>0?Math.round(sumReg/sumTotal*100):0}%</div><div className="ad-mst-l">Overall Progress</div></div>
+                  </div>
+                  <div style={{overflowX:'auto'}}><table className="ad-mtbl"><thead><tr><th>Mentor</th><th>Technology</th><th className="c">Total</th><th className="c">Registered</th><th className="c">Pending</th><th>Progress</th></tr></thead><tbody>
+                    {mList.map(m=>{const pct=m.totalTeams>0?Math.round(m.registeredTeams/m.totalTeams*100):0;return <tr key={m.name}>
+                      <td><div className="ad-mname"><div className="ad-mavt">{allMentors[m.name]?<img src={allMentors[m.name]} alt={m.name}/>:initials(m.name)}</div><div><div className="ad-mnm">{m.name}</div><div className="ad-mem">{m.email||''}</div></div></div></td>
+                      <td><span style={{fontSize:'.62rem',padding:'3px 8px',borderRadius:6,background:'rgba(255,255,255,.04)',color:'rgba(255,255,255,.6)'}}>{m.technology||'—'}</span></td>
+                      <td className="c" style={{fontWeight:700}}>{m.totalTeams||0}</td>
+                      <td className="c" style={{color:'#4ade80',fontWeight:700}}>{m.registeredTeams||0}</td>
+                      <td className="c" style={{color:m.pendingTeams>0?'#EEA727':'rgba(255,255,255,.3)',fontWeight:700}}>{m.pendingTeams||0}</td>
+                      <td><span className="ad-mbar"><span className="ad-mbar-f" style={{width:`${pct}%`}}/></span><span style={{fontWeight:700,color:pct>=70?'#4ade80':pct>=40?'#EEA727':'#fd1c00'}}>{pct}%</span></td>
+                    </tr>})}
+                  </tbody></table></div>
+                </>}
+
+                {/* LINKEDIN SUB-TAB */}
+                {mentorSubTab==='linkedin' && <>
+                  <div className="ad-mst">
+                    <div className="ad-mst-c" style={{'--gw':'rgba(0,119,181,.06)'}}><div className="ad-mst-v" style={{color:'#0a8fd6'}}>{sumLiPosted}</div><div className="ad-mst-l">Mentors Posted</div></div>
+                    <div className="ad-mst-c" style={{'--gw':'rgba(253,28,0,.06)'}}><div className="ad-mst-v" style={{color:'#fd1c00'}}>{mList.length-sumLiPosted}</div><div className="ad-mst-l">Not Posted Yet</div></div>
+                    <div className="ad-mst-c" style={{'--gw':'rgba(74,222,128,.06)'}}><div className="ad-mst-v" style={{color:'#4ade80'}}>{sumStudentPosts}</div><div className="ad-mst-l">Student Posts</div></div>
+                    <div className="ad-mst-c" style={{'--gw':'rgba(238,167,39,.06)'}}><div className="ad-mst-v" style={{color:'#EEA727'}}>{mList.length>0?Math.round(sumLiPosted/mList.length*100):0}%</div><div className="ad-mst-l">Mentor Coverage</div></div>
+                  </div>
+                  <div style={{overflowX:'auto'}}><table className="ad-mtbl"><thead><tr><th>Mentor</th><th>Technology</th><th className="c">Posted</th><th className="c">Student Posts</th><th className="c">Their Teams</th></tr></thead><tbody>
+                    {mList.slice().sort((a,b)=>(b.studentLinkedinPosts||0)-(a.studentLinkedinPosts||0)).map(m=><tr key={m.name}>
+                      <td><div className="ad-mname"><div className="ad-mavt">{allMentors[m.name]?<img src={allMentors[m.name]} alt={m.name}/>:initials(m.name)}</div><div><div className="ad-mnm">{m.name}</div><div className="ad-mem">{m.email||''}</div></div></div></td>
+                      <td><span style={{fontSize:'.62rem',padding:'3px 8px',borderRadius:6,background:'rgba(255,255,255,.04)',color:'rgba(255,255,255,.6)'}}>{m.technology||'—'}</span></td>
+                      <td className="c"><span className={`ad-mb-pill ${m.linkedinPosted?'gd':'nu'}`}>{m.linkedinPosted?'✓ Posted':'Not yet'}</span></td>
+                      <td className="c" style={{fontWeight:700,color:m.studentLinkedinPosts>0?'#4ade80':'rgba(255,255,255,.3)'}}>{m.studentLinkedinPosts||0}</td>
+                      <td className="c" style={{fontWeight:700,color:'rgba(255,255,255,.5)'}}>{m.totalTeams||0}</td>
+                    </tr>)}
+                  </tbody></table></div>
+                </>}
+
+                {/* STAGE APPROVALS SUB-TAB */}
+                {mentorSubTab==='approvals' && <>
+                  <div className="ad-mst">
+                    <div className="ad-mst-c" style={{'--gw':'rgba(238,167,39,.06)'}}><div className="ad-mst-v" style={{color:'#EEA727'}}>{sumInReview}</div><div className="ad-mst-l">Pending Reviews</div></div>
+                    <div className="ad-mst-c" style={{'--gw':'rgba(74,222,128,.06)'}}><div className="ad-mst-v" style={{color:'#4ade80'}}>{sumApproved}</div><div className="ad-mst-l">Approved</div></div>
+                    <div className="ad-mst-c" style={{'--gw':'rgba(253,28,0,.06)'}}><div className="ad-mst-v" style={{color:'#fd1c00'}}>{mList.reduce((s,m)=>s+(m.stagesRejected||0),0)}</div><div className="ad-mst-l">Rejected</div></div>
+                    <div className="ad-mst-c" style={{'--gw':'rgba(59,130,246,.06)'}}><div className="ad-mst-v" style={{color:'#3b82f6'}}>{mList.filter(m=>(m.stagesApproved||0)+(m.stagesRejected||0)>0).length}</div><div className="ad-mst-l">Active Reviewers</div></div>
+                  </div>
+                  <div style={{overflowX:'auto'}}><table className="ad-mtbl"><thead><tr><th>Mentor</th><th className="c">Pending</th><th className="c">Approved</th><th className="c">Rejected</th><th className="c">Total Reviewed</th></tr></thead><tbody>
+                    {mList.slice().sort((a,b)=>((b.stagesInReview||0)-(a.stagesInReview||0))||((b.stagesApproved||0)-(a.stagesApproved||0))).map(m=>{const reviewed=(m.stagesApproved||0)+(m.stagesRejected||0);return <tr key={m.name}>
+                      <td><div className="ad-mname"><div className="ad-mavt">{allMentors[m.name]?<img src={allMentors[m.name]} alt={m.name}/>:initials(m.name)}</div><div><div className="ad-mnm">{m.name}</div><div className="ad-mem">{m.technology||''}</div></div></div></td>
+                      <td className="c"><span className={`ad-mb-pill ${m.stagesInReview>0?'wr':'nu'}`}>{m.stagesInReview||0}</span></td>
+                      <td className="c" style={{fontWeight:700,color:m.stagesApproved>0?'#4ade80':'rgba(255,255,255,.3)'}}>{m.stagesApproved||0}</td>
+                      <td className="c" style={{fontWeight:700,color:m.stagesRejected>0?'#fd1c00':'rgba(255,255,255,.3)'}}>{m.stagesRejected||0}</td>
+                      <td className="c" style={{fontWeight:700,color:'rgba(255,255,255,.55)'}}>{reviewed}</td>
+                    </tr>})}
+                  </tbody></table></div>
+                </>}
+
+                {/* MENTOR REQUESTS SUB-TAB */}
+                {mentorSubTab==='requests' && <>
+                  <div className="ad-mst">
+                    <div className="ad-mst-c" style={{'--gw':'rgba(238,167,39,.06)'}}><div className="ad-mst-v" style={{color:'#EEA727'}}>{sumPending}</div><div className="ad-mst-l">Pending Requests</div></div>
+                    <div className="ad-mst-c" style={{'--gw':'rgba(74,222,128,.06)'}}><div className="ad-mst-v" style={{color:'#4ade80'}}>{sumResolved}</div><div className="ad-mst-l">Resolved</div></div>
+                    <div className="ad-mst-c" style={{'--gw':'rgba(253,28,0,.06)'}}><div className="ad-mst-v" style={{color:'#fd1c00'}}>{sumPending+sumResolved}</div><div className="ad-mst-l">Total Received</div></div>
+                    <div className="ad-mst-c" style={{'--gw':'rgba(59,130,246,.06)'}}><div className="ad-mst-v" style={{color:'#3b82f6'}}>{(()=>{const r=mList.filter(m=>m.totalRated>0);return r.length>0?(r.reduce((s,m)=>s+m.avgRating,0)/r.length).toFixed(1):'—'})()}</div><div className="ad-mst-l">Avg Rating</div></div>
+                  </div>
+                  <div style={{overflowX:'auto'}}><table className="ad-mtbl"><thead><tr><th>Mentor</th><th>Technology</th><th className="c">Received</th><th className="c">Pending</th><th className="c">Resolved</th><th className="c">Rating</th></tr></thead><tbody>
+                    {mList.slice().sort((a,b)=>(b.requestsReceived||0)-(a.requestsReceived||0)).map(m=><tr key={m.name}>
+                      <td><div className="ad-mname"><div className="ad-mavt">{allMentors[m.name]?<img src={allMentors[m.name]} alt={m.name}/>:initials(m.name)}</div><div><div className="ad-mnm">{m.name}</div><div className="ad-mem">{m.email||''}</div></div></div></td>
+                      <td><span style={{fontSize:'.62rem',padding:'3px 8px',borderRadius:6,background:'rgba(255,255,255,.04)',color:'rgba(255,255,255,.6)'}}>{m.technology||'—'}</span></td>
+                      <td className="c" style={{fontWeight:700,color:'rgba(255,255,255,.55)'}}>{m.requestsReceived||0}</td>
+                      <td className="c"><span className={`ad-mb-pill ${m.requestsPending>0?'bd':'nu'}`}>{m.requestsPending||0}</span></td>
+                      <td className="c" style={{fontWeight:700,color:m.requestsResolved>0?'#4ade80':'rgba(255,255,255,.3)'}}>{m.requestsResolved||0}</td>
+                      <td className="c" style={{fontWeight:700,color:m.totalRated>0?'#EEA727':'rgba(255,255,255,.25)'}}>{m.totalRated>0?m.avgRating.toFixed(1)+' ★':'—'}</td>
+                    </tr>)}
+                  </tbody></table></div>
+                </>}
+              </>
+            })()}
 
             {/* TEAMS */}
             {data && activeTab === 'teams' && <><div className="ad-fc"><input className="ad-fi" placeholder="Search teams, projects, leaders..." value={search} onChange={e=>setSearch(e.target.value)}/><button className={`ad-ff ${filterStatus==='all'?'on':''}`} onClick={()=>setFilterStatus('all')}>All</button><button className={`ad-ff ${filterStatus==='registered'?'on':''}`} onClick={()=>setFilterStatus('registered')}>Registered</button><button className={`ad-ff ${filterStatus==='pending'?'on':''}`} onClick={()=>setFilterStatus('pending')}>Pending</button><select className="ad-ff" value={filterTech} onChange={e=>setFilterTech(e.target.value)} style={{appearance:'auto'}}><option value="all">All Technologies</option>{Object.keys(data.techBreakdown||{}).map(t=><option key={t} value={t}>{t}</option>)}</select><span className="ad-fn">{filteredTeams.length} teams</span></div><table className="ad-tt"><thead><tr><th>#</th><th>Team</th><th>Project</th><th>Technology</th><th>Leader</th><th>Mentor</th><th>Status</th><th></th></tr></thead><tbody>{filteredTeams.map(t=><React.Fragment key={t.serialNumber}><tr><td style={{fontWeight:600,color:'rgba(255,255,255,.3)'}}>{t.serialNumber}</td><td style={{fontWeight:600,color:'#fd1c00'}}>{t.teamNumber||'—'}</td><td style={{maxWidth:200,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{t.projectTitle||'—'}</td><td><span style={{fontSize:'.62rem',padding:'3px 8px',borderRadius:6,background:`${TC[t.technology]||'#888'}15`,color:TC[t.technology]||'#888',border:`1px solid ${TC[t.technology]||'#888'}30`}}>{t.technology}</span></td><td><span>{t.leaderName}</span>{t.leaderPhone&&t.leaderPhone.length>=10&&<a href={`tel:${t.leaderPhone}`} style={{marginLeft:6,color:'rgba(255,255,255,.2)',textDecoration:'none'}} title={t.leaderPhone}>{IC.ph}</a>}</td><td style={{color:'rgba(255,255,255,.3)'}}>{t.mentorAssigned||'—'}</td><td><span style={{fontSize:'.65rem',padding:'3px 10px',borderRadius:6,fontWeight:500,background:t.registered?'rgba(74,222,128,.08)':'rgba(255,255,255,.04)',color:t.registered?'#4ade80':'rgba(255,255,255,.3)'}}>{t.registered?'✓ Registered':'Pending'}</span></td><td><button className="ad-te" onClick={()=>setExpandedTeam(expandedTeam===t.serialNumber?null:t.serialNumber)}>{expandedTeam===t.serialNumber?'▲':'▼'}</button></td></tr>{expandedTeam===t.serialNumber&&<tr><td colSpan={8}><div className="ad-tdl"><div style={{fontWeight:600,color:'rgba(255,255,255,.55)',marginBottom:8}}>{t.projectTitle}</div>{t.projectDescription&&<div style={{marginBottom:8,lineHeight:1.5}}>{t.projectDescription}</div>}<div className="ad-tdg"><div className="ad-tdi"><div className="ad-tdla">Problem Statement</div><div className="ad-tdv">{t.problemStatement||'—'}</div></div><div className="ad-tdi"><div className="ad-tdla">AI Usage</div><div className="ad-tdv">{t.aiUsage}</div></div><div className="ad-tdi"><div className="ad-tdla">Tech Stack</div><div className="ad-tdv">{(t.techStack||[]).join(', ')||'—'}</div></div><div className="ad-tdi"><div className="ad-tdla">Members ({t.memberCount})</div><div className="ad-tdv">{(t.members||[]).map(m=>`${m.name}${m.isLeader?' ★':''}`).join(', ')}</div></div></div></div></td></tr>}</React.Fragment>)}</tbody></table></>}

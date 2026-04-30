@@ -23,6 +23,10 @@ export async function GET(request) {
     const { data: reenables } = await supabase
       .from('linkedin_reenable_requests')
       .select('roll_number, team_number, mentor_name, status, created_at, resolved_at')
+    // ── 3b. Fetch all mentor help requests ──
+    const { data: mentorReqs } = await supabase
+      .from('mentor_requests')
+      .select('mentor_name, mentor_email, team_number, priority, status, created_at, resolved_at, rating')
 
     // ── 4. Fetch teams (lightweight) ──
     const { data: teams } = await supabase
@@ -90,8 +94,14 @@ export async function GET(request) {
           studentLinkedinPosts: 0,
           stagesApproved: 0,
           stagesRejected: 0,
+          stagesInReview: 0,
           reenableRequestsHandled: 0,
-          reenableRequestsPending: 0
+          reenableRequestsPending: 0,
+          requestsReceived: 0,
+          requestsResolved: 0,
+          requestsPending: 0,
+          avgRating: 0,
+          totalRated: 0
         }
       }
       mentorActivity[m].totalTeams++
@@ -111,10 +121,17 @@ export async function GET(request) {
 
     // Mentor stage actions
     ;(submissions || []).forEach(s => {
+      // For approved/rejected — credit the reviewer
       const reviewer = s.reviewed_by_name
-      if (!reviewer || !mentorActivity[reviewer]) return
-      if (s.status === 'completed') mentorActivity[reviewer].stagesApproved++
-      else if (s.status === 'rejected') mentorActivity[reviewer].stagesRejected++
+      if (reviewer && mentorActivity[reviewer]) {
+        if (s.status === 'completed') mentorActivity[reviewer].stagesApproved++
+        else if (s.status === 'rejected') mentorActivity[reviewer].stagesRejected++
+      }
+      // For in-review — credit the mentor of that team
+      if (s.status === 'in-review') {
+        const teamMentor = (teams || []).find(t => t.team_number === s.team_number)?.mentor_assigned
+        if (teamMentor && mentorActivity[teamMentor]) mentorActivity[teamMentor].stagesInReview++
+      }
     })
 
     // Mentor re-enable handling
@@ -122,6 +139,18 @@ export async function GET(request) {
       if (!r.mentor_name || !mentorActivity[r.mentor_name]) return
       if (r.status === 'pending') mentorActivity[r.mentor_name].reenableRequestsPending++
       else mentorActivity[r.mentor_name].reenableRequestsHandled++
+    })
+    // Mentor help requests aggregation
+    ;(mentorReqs || []).forEach(r => {
+      const m = r.mentor_name
+      if (!m || !mentorActivity[m]) return
+      mentorActivity[m].requestsReceived++
+      if (r.status === 'Pending') mentorActivity[m].requestsPending++
+      else mentorActivity[m].requestsResolved++
+      if (typeof r.rating === 'number' && r.rating > 0) {
+        mentorActivity[m].avgRating = ((mentorActivity[m].avgRating * mentorActivity[m].totalRated) + r.rating) / (mentorActivity[m].totalRated + 1)
+        mentorActivity[m].totalRated++
+      }
     })
 
     // Build a map of team_number -> project_title, technology, mentor for enrichment
