@@ -864,48 +864,59 @@ body.sb-open{overflow:hidden}
                 {showReviewNotif&&<div className="lb-notif-dd" onClick={e=>e.stopPropagation()}><div className="lb-notif-dd-hdr"><span>Notifications</span>{reviewUnread>0&&<button className="lb-notif-dd-mark" onClick={async()=>{await fetch('/api/milestones/notifications',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'mark-all-read',type:'mentor',email:mentor?.email})});setReviewUnread(0);setReviewNotifs(p=>p.map(n=>({...n,read:true})))}}>Mark all read</button>}</div>{reviewNotifs.length===0?<div style={{padding:20,textAlign:'center',fontSize:11,color:'rgba(255,255,255,.15)'}}>No notifications</div>:reviewNotifs.map(n=><div key={n.id} className={`lb-notif-item ${!n.read?'unread':''}`}><div className="lb-notif-item-t">{n.title}</div><div className="lb-notif-item-m">{n.message}</div><div className="lb-notif-item-time">{new Date(n.created_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div></div>)}</div>}</div>
               </div>
 
-              {/* 7 STAGE STAT CARDS */}
+              {/* 7 STAGE HORIZONTAL STEPPER */}
               <style>{`
-.stg-stat-row{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:18px}
-.stg-stat-card{background:linear-gradient(135deg,rgba(253,28,0,.04),rgba(238,167,39,.02));border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:14px 10px;position:relative;overflow:hidden;transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease;animation:stgCardIn .5s ease both;cursor:default}
-.stg-stat-card:hover{transform:translateY(-3px);border-color:rgba(253,28,0,.28);box-shadow:0 8px 24px rgba(253,28,0,.14),0 0 0 1px rgba(253,28,0,.08)}
-.stg-stat-card::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(253,28,0,.1) 0%,transparent 60%);opacity:0;transition:opacity .35s ease;pointer-events:none}
-.stg-stat-card:hover::before{opacity:1}
-.stg-stat-card:nth-child(1){animation-delay:.05s}
-.stg-stat-card:nth-child(2){animation-delay:.1s}
-.stg-stat-card:nth-child(3){animation-delay:.15s}
-.stg-stat-card:nth-child(4){animation-delay:.2s}
-.stg-stat-card:nth-child(5){animation-delay:.25s}
-.stg-stat-card:nth-child(6){animation-delay:.3s}
-.stg-stat-card:nth-child(7){animation-delay:.35s}
-@keyframes stgCardIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-.stg-stat-num{position:absolute;top:8px;right:10px;font-size:.55rem;font-weight:800;color:rgba(255,255,255,.25);letter-spacing:1px}
-.stg-stat-name{font-size:.62rem;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;text-align:center;min-height:14px}
-.stg-stat-pct{font-size:1.6rem;font-weight:800;text-align:center;letter-spacing:-1px;line-height:1;margin-bottom:4px;background:linear-gradient(135deg,#fd1c00,#faa000);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 24px rgba(253,28,0,.2)}
-.stg-stat-pct-lb{font-size:.55rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1px;text-align:center;margin-bottom:8px}
-.stg-stat-bar{height:3px;border-radius:2px;background:rgba(255,255,255,.05);overflow:hidden;margin-bottom:9px}
-.stg-stat-bar-fill{height:100%;background:linear-gradient(90deg,#4ade80,#22c55e);border-radius:2px;transition:width .8s cubic-bezier(.4,0,.2,1);box-shadow:0 0 8px rgba(74,222,128,.4);animation:barGlow 2.5s ease-in-out infinite}
-@keyframes barGlow{0%,100%{box-shadow:0 0 8px rgba(74,222,128,.4)}50%{box-shadow:0 0 14px rgba(74,222,128,.7)}}
-.stg-stat-counts{display:flex;justify-content:space-around;align-items:center;gap:4px}
-.stg-stat-cnt{display:flex;flex-direction:column;align-items:center;gap:1px}
-.stg-stat-cnt-val{font-size:.78rem;font-weight:800;line-height:1}
-.stg-stat-cnt-lb{font-size:.5rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.5px;margin-top:1px}
-@media (max-width:900px){.stg-stat-row{grid-template-columns:repeat(4,1fr)}.stg-stat-card:nth-child(n+5){animation-delay:.35s}}
-@media (max-width:600px){.stg-stat-row{grid-template-columns:repeat(2,1fr);gap:8px}.stg-stat-card{padding:12px 8px}.stg-stat-pct{font-size:1.3rem}}
+.stp-wrap{display:flex;align-items:flex-start;justify-content:space-between;padding:28px 18px 14px;margin-bottom:24px;background:linear-gradient(135deg,rgba(255,255,255,.015),rgba(253,28,0,.015));border:1px solid rgba(255,255,255,.05);border-radius:14px;position:relative;overflow:hidden}
+.stp-wrap::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at top,rgba(253,28,0,.06),transparent 60%);pointer-events:none}
+.stp-step{display:flex;flex-direction:column;align-items:center;flex:1;position:relative;min-width:0;animation:stpIn .5s ease both}
+.stp-step:nth-child(1){animation-delay:.05s}
+.stp-step:nth-child(2){animation-delay:.1s}
+.stp-step:nth-child(3){animation-delay:.15s}
+.stp-step:nth-child(4){animation-delay:.2s}
+.stp-step:nth-child(5){animation-delay:.25s}
+.stp-step:nth-child(6){animation-delay:.3s}
+.stp-step:nth-child(7){animation-delay:.35s}
+@keyframes stpIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.stp-name{font-size:.68rem;font-weight:700;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;padding:0 2px;transition:color .3s}
+.stp-step.active .stp-name{color:#fd1c00;text-shadow:0 0 12px rgba(253,28,0,.4)}
+.stp-step.done-st .stp-name{color:#4ade80}
+.stp-circle-row{display:flex;align-items:center;width:100%;position:relative}
+.stp-line{flex:1;height:2px;background:rgba(255,255,255,.08);position:relative;overflow:hidden;border-radius:1px}
+.stp-line.before{margin-right:0}
+.stp-line.after{margin-left:0}
+.stp-line.first{visibility:hidden}
+.stp-line.last{visibility:hidden}
+.stp-line-fill{position:absolute;left:0;top:0;height:100%;background:linear-gradient(90deg,#fd1c00,#faa000);border-radius:1px;box-shadow:0 0 10px rgba(253,28,0,.5);transition:width .8s cubic-bezier(.4,0,.2,1)}
+.stp-circle{flex:0 0 auto;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;background:rgba(255,255,255,.04);color:rgba(255,255,255,.35);border:2px solid rgba(255,255,255,.08);position:relative;z-index:2;transition:all .35s ease;font-family:'DM Sans',sans-serif}
+.stp-step.active .stp-circle{background:linear-gradient(135deg,#fd1c00,#faa000);color:#fff;border-color:rgba(253,28,0,.6);box-shadow:0 0 24px rgba(253,28,0,.5),0 0 0 4px rgba(253,28,0,.12);animation:stpPulse 2s ease-in-out infinite}
+.stp-step.done-st .stp-circle{background:linear-gradient(135deg,#4ade80,#22c55e);color:#fff;border-color:rgba(74,222,128,.5);box-shadow:0 0 14px rgba(74,222,128,.4)}
+@keyframes stpPulse{0%,100%{box-shadow:0 0 24px rgba(253,28,0,.5),0 0 0 4px rgba(253,28,0,.12)}50%{box-shadow:0 0 32px rgba(253,28,0,.7),0 0 0 8px rgba(253,28,0,.05)}}
+.stp-counts{display:flex;gap:10px;margin-top:12px;font-size:.62rem;font-weight:600;letter-spacing:.3px}
+.stp-cnt{display:flex;align-items:center;gap:4px;color:rgba(255,255,255,.4)}
+.stp-cnt-dot{width:6px;height:6px;border-radius:50%}
+.stp-cnt-num{color:rgba(255,255,255,.85);font-weight:800;font-size:.7rem}
+@media (max-width:768px){.stp-wrap{padding:22px 8px 10px;overflow-x:auto;justify-content:flex-start;gap:0}.stp-step{min-width:78px;flex:0 0 78px}.stp-name{font-size:.58rem;letter-spacing:.4px}.stp-circle{width:32px;height:32px;font-size:.74rem}.stp-counts{gap:5px;font-size:.55rem}.stp-cnt-num{font-size:.62rem}}
               `}</style>
-              <div className="stg-stat-row">
-                {(reviews.stageProgress||[]).map(s=>(<div key={s.stage_number} className="stg-stat-card">
-                  <div className="stg-stat-num">S{s.stage_number}</div>
-                  <div className="stg-stat-name">{s.stage_name}</div>
-                  <div className="stg-stat-pct">{s.percent}%</div>
-                  <div className="stg-stat-pct-lb">Completion</div>
-                  <div className="stg-stat-bar"><div className="stg-stat-bar-fill" style={{width:`${s.percent}%`}}/></div>
-                  <div className="stg-stat-counts">
-                    <div className="stg-stat-cnt"><div className="stg-stat-cnt-val" style={{color:'#4ade80'}}>{s.completed}</div><div className="stg-stat-cnt-lb">Done</div></div>
-                    <div className="stg-stat-cnt"><div className="stg-stat-cnt-val" style={{color:'#EEA727'}}>{s.in_review}</div><div className="stg-stat-cnt-lb">Rev</div></div>
-                    <div className="stg-stat-cnt"><div className="stg-stat-cnt-val" style={{color:'rgba(255,255,255,.5)'}}>{s.pending}</div><div className="stg-stat-cnt-lb">Pend</div></div>
-                  </div>
-                </div>))}
+              <div className="stp-wrap">
+                {(reviews.stageProgress||[]).map((s,i,arr)=>{
+                  const isDone=s.percent===100;
+                  const isActive=!isDone&&(i===0||arr[i-1].percent===100);
+                  const stepClass=isDone?'done-st':isActive?'active':'';
+                  // line fill: 100% if this stage is done, partial if in progress
+                  const lineBeforeFill=i===0?0:(arr[i-1].percent>=50?100:arr[i-1].percent*2);
+                  return (<div key={s.stage_number} className={`stp-step ${stepClass}`}>
+                    <div className="stp-name">{s.stage_name}</div>
+                    <div className="stp-circle-row">
+                      <div className={`stp-line before ${i===0?'first':''}`}><div className="stp-line-fill" style={{width:`${lineBeforeFill}%`}}/></div>
+                      <div className="stp-circle">{s.stage_number}</div>
+                      <div className={`stp-line after ${i===arr.length-1?'last':''}`}/>
+                    </div>
+                    <div className="stp-counts">
+                      <div className="stp-cnt"><span className="stp-cnt-dot" style={{background:'#4ade80',boxShadow:'0 0 6px #4ade80'}}/><span className="stp-cnt-num" style={{color:s.completed>0?'#4ade80':'rgba(255,255,255,.4)'}}>{s.completed}</span></div>
+                      <div className="stp-cnt"><span className="stp-cnt-dot" style={{background:'#EEA727',boxShadow:s.in_review>0?'0 0 6px #EEA727':'none'}}/><span className="stp-cnt-num" style={{color:s.in_review>0?'#EEA727':'rgba(255,255,255,.4)'}}>{s.in_review}</span></div>
+                    </div>
+                  </div>);
+                })}
               </div>
 
               {/* TEAM × STAGE MATRIX */}
