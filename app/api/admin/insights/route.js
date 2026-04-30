@@ -50,13 +50,24 @@ export async function GET(request) {
         linkedinShares: 0,
         reenableRequests: { pending: 0, approved: 0, denied: 0 },
         stages: { completed: 0, inReview: 0, rejected: 0 },
-        currentStage: 0
+        currentStage: 0,
+        stagesDetail: [],
+        linkedinDetail: [],
+        mentorRequestsDetail: []
       }
     })
 
-    // Add linkedin shares to teams
+    // Add linkedin shares to teams (count + detail)
     ;(shares || []).forEach(s => {
-      if (teamData[s.team_number]) teamData[s.team_number].linkedinShares++
+      if (!teamData[s.team_number]) return
+      teamData[s.team_number].linkedinShares++
+      teamData[s.team_number].linkedinDetail.push({
+        roll_number: s.roll_number,
+        posted_by_name: s.posted_by_name,
+        posted_by_role: s.posted_by_role,
+        mentor_name: s.mentor_name,
+        created_at: s.created_at
+      })
     })
 
     // Add reenable requests to teams
@@ -68,7 +79,7 @@ export async function GET(request) {
       else if (r.status === 'denied') t.reenableRequests.denied++
     })
 
-    // Add stage info to teams
+    // Add stage info to teams (count + full detail)
     ;(submissions || []).forEach(s => {
       const t = teamData[s.team_number]
       if (!t) return
@@ -77,6 +88,21 @@ export async function GET(request) {
         if (s.stage_number > t.currentStage) t.currentStage = s.stage_number
       } else if (s.status === 'in-review') t.stages.inReview++
       else if (s.status === 'rejected') t.stages.rejected++
+      t.stagesDetail.push({
+        stage_number: s.stage_number,
+        status: s.status,
+        submitted_by_name: s.submitted_by_name,
+        submitted_at: s.submitted_at,
+        reviewed_by_name: s.reviewed_by_name,
+        reviewed_at: s.reviewed_at,
+        mentor_comment: s.mentor_comment,
+        credits_earned: s.credits_earned
+      })
+    })
+    // Sort each team's stagesDetail by stage_number
+    Object.values(teamData).forEach(t => {
+      t.stagesDetail.sort((a, b) => a.stage_number - b.stage_number)
+      t.linkedinDetail.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
     })
 
     // Per-mentor aggregations
@@ -143,14 +169,30 @@ export async function GET(request) {
     // Mentor help requests aggregation
     ;(mentorReqs || []).forEach(r => {
       const m = r.mentor_name
-      if (!m || !mentorActivity[m]) return
-      mentorActivity[m].requestsReceived++
-      if (r.status === 'Pending') mentorActivity[m].requestsPending++
-      else mentorActivity[m].requestsResolved++
-      if (typeof r.rating === 'number' && r.rating > 0) {
-        mentorActivity[m].avgRating = ((mentorActivity[m].avgRating * mentorActivity[m].totalRated) + r.rating) / (mentorActivity[m].totalRated + 1)
-        mentorActivity[m].totalRated++
+      if (m && mentorActivity[m]) {
+        mentorActivity[m].requestsReceived++
+        if (r.status === 'Pending') mentorActivity[m].requestsPending++
+        else mentorActivity[m].requestsResolved++
+        if (typeof r.rating === 'number' && r.rating > 0) {
+          mentorActivity[m].avgRating = ((mentorActivity[m].avgRating * mentorActivity[m].totalRated) + r.rating) / (mentorActivity[m].totalRated + 1)
+          mentorActivity[m].totalRated++
+        }
       }
+      // Per-team detail
+      if (r.team_number && teamData[r.team_number]) {
+        teamData[r.team_number].mentorRequestsDetail.push({
+          mentor_name: r.mentor_name,
+          priority: r.priority,
+          status: r.status,
+          created_at: r.created_at,
+          resolved_at: r.resolved_at,
+          rating: r.rating
+        })
+      }
+    })
+    // Sort mentorRequestsDetail by date desc
+    Object.values(teamData).forEach(t => {
+      t.mentorRequestsDetail.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
     })
 
     // Build a map of team_number -> project_title, technology, mentor for enrichment

@@ -26,6 +26,7 @@ export default function AdminDashboard() {
   const [expandedTeam, setExpandedTeam] = useState(null)
   const [expandedMentor, setExpandedMentor] = useState(null)
   const [mentorSubTab, setMentorSubTab] = useState('registration')
+  const [teamSubExpand, setTeamSubExpand] = useState('details')
   const [reminding, setReminding] = useState(false)
   const [reminderMsg, setReminderMsg] = useState('')
   const [adLeaderboard, setAdLeaderboard] = useState({ leaderboard: [], stats: {} })
@@ -730,6 +731,58 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
 .ad-tdla{font-size:.55rem;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
 .ad-tdv{font-size:.74rem;color:rgba(255,255,255,.6)}
 
+/* ═══ TEAM ROW EXPAND ═══ */
+.ad-tex-wrap{padding:18px;background:linear-gradient(135deg,rgba(253,28,0,.025),rgba(238,167,39,.015));border:1px solid rgba(253,28,0,.08);border-radius:12px;margin:6px 0 10px;animation:texIn .3s ease both}
+@keyframes texIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.ad-tex-tabs{display:flex;gap:4px;padding:4px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.05);border-radius:10px;margin-bottom:14px;width:fit-content;flex-wrap:wrap}
+.ad-tex-tab{padding:7px 14px;border-radius:7px;background:transparent;border:none;color:rgba(255,255,255,.45);font-family:'DM Sans',sans-serif;font-size:.7rem;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.ad-tex-tab:hover{color:rgba(255,255,255,.75)}
+.ad-tex-tab.on{background:linear-gradient(135deg,rgba(253,28,0,.18),rgba(238,167,39,.1));color:#fff;box-shadow:0 0 12px rgba(253,28,0,.18)}
+.ad-tex-cnt{font-size:.58rem;padding:1px 6px;border-radius:6px;background:rgba(255,255,255,.06);color:rgba(255,255,255,.5);font-weight:700;letter-spacing:0}
+.ad-tex-tab.on .ad-tex-cnt{background:rgba(253,28,0,.25);color:#fd1c00}
+.ad-tex-body{animation:texIn .25s ease both}
+.ad-tex-grid{display:grid;grid-template-columns:${isMobile?'1fr':'1fr 1fr'};gap:10px;margin-bottom:12px}
+.ad-tex-card{padding:11px 13px;border-radius:9px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.05)}
+.ad-tex-lb{font-size:.55rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1.2px;font-weight:700;margin-bottom:5px}
+.ad-tex-vl{font-size:.78rem;color:rgba(255,255,255,.85);font-weight:500;line-height:1.5}
+.ad-tex-mems{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.ad-tex-mem{padding:3px 9px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);font-size:.7rem;color:rgba(255,255,255,.7);display:inline-flex;align-items:center;gap:5px}
+.ad-tex-mem.lead{background:rgba(253,28,0,.08);border-color:rgba(253,28,0,.2);color:#fd1c00;font-weight:700}
+.ad-tex-stp{display:flex;align-items:flex-start;justify-content:space-between;padding:14px 8px 6px;background:rgba(0,0,0,.18);border-radius:10px;margin-bottom:10px;overflow-x:auto}
+.ad-tex-step{display:flex;flex-direction:column;align-items:center;flex:1;min-width:70px;position:relative}
+.ad-tex-step-name{font-size:.55rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;text-align:center;padding:0 2px}
+.ad-tex-step.done .ad-tex-step-name{color:#4ade80}
+.ad-tex-step.review .ad-tex-step-name{color:#EEA727}
+.ad-tex-step.rejected .ad-tex-step-name{color:#fd1c00}
+.ad-tex-circle-row{display:flex;align-items:center;width:100%}
+.ad-tex-line{flex:1;height:2px;background:rgba(255,255,255,.06)}
+.ad-tex-line.fill{background:linear-gradient(90deg,#4ade80,#22c55e);box-shadow:0 0 6px rgba(74,222,128,.3)}
+.ad-tex-line.first,.ad-tex-line.last{visibility:hidden}
+.ad-tex-circle{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.7rem;background:rgba(255,255,255,.05);color:rgba(255,255,255,.4);border:2px solid rgba(255,255,255,.08);position:relative;z-index:1;flex-shrink:0;transition:all .25s}
+.ad-tex-step.done .ad-tex-circle{background:linear-gradient(135deg,#4ade80,#22c55e);color:#fff;border-color:rgba(74,222,128,.5);box-shadow:0 0 10px rgba(74,222,128,.4)}
+.ad-tex-step.review .ad-tex-circle{background:linear-gradient(135deg,#EEA727,#faa000);color:#fff;border-color:rgba(238,167,39,.5);box-shadow:0 0 10px rgba(238,167,39,.45);animation:texPulse 2s ease-in-out infinite}
+.ad-tex-step.rejected .ad-tex-circle{background:linear-gradient(135deg,#fd1c00,#c41600);color:#fff;border-color:rgba(253,28,0,.5);box-shadow:0 0 10px rgba(253,28,0,.4)}
+@keyframes texPulse{0%,100%{box-shadow:0 0 10px rgba(238,167,39,.4)}50%{box-shadow:0 0 18px rgba(238,167,39,.7)}}
+.ad-tex-step-meta{font-size:.5rem;color:rgba(255,255,255,.3);margin-top:5px;text-align:center;line-height:1.2}
+.ad-tex-list{display:flex;flex-direction:column;gap:7px}
+.ad-tex-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 13px;border-radius:9px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.05);font-size:.74rem;transition:all .2s}
+.ad-tex-item:hover{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.1)}
+.ad-tex-item-left{display:flex;align-items:center;gap:9px;min-width:0;flex:1}
+.ad-tex-li-ico{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:rgba(0,119,181,.15);border:1px solid rgba(0,119,181,.3)}
+.ad-tex-mr-ico{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:rgba(238,167,39,.15);border:1px solid rgba(238,167,39,.3)}
+.ad-tex-itxt{min-width:0;flex:1}
+.ad-tex-it1{color:#fff;font-weight:600;font-size:.74rem;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ad-tex-it2{color:rgba(255,255,255,.4);font-size:.62rem;margin-top:2px}
+.ad-tex-bg-r{font-size:.6rem;padding:3px 8px;border-radius:6px;font-weight:700;flex-shrink:0}
+.ad-tex-bg-r.role-mentor{background:rgba(253,28,0,.1);color:#fd1c00;border:1px solid rgba(253,28,0,.2)}
+.ad-tex-bg-r.role-student{background:rgba(74,222,128,.1);color:#4ade80;border:1px solid rgba(74,222,128,.2)}
+.ad-tex-bg-r.pri-high{background:rgba(253,28,0,.1);color:#fd1c00;border:1px solid rgba(253,28,0,.2)}
+.ad-tex-bg-r.pri-medium{background:rgba(238,167,39,.1);color:#EEA727;border:1px solid rgba(238,167,39,.2)}
+.ad-tex-bg-r.pri-low{background:rgba(74,222,128,.08);color:#4ade80;border:1px solid rgba(74,222,128,.18)}
+.ad-tex-bg-r.st-pending{background:rgba(238,167,39,.1);color:#EEA727;border:1px solid rgba(238,167,39,.2)}
+.ad-tex-bg-r.st-resolved{background:rgba(74,222,128,.1);color:#4ade80;border:1px solid rgba(74,222,128,.2)}
+.ad-tex-empty{padding:24px;text-align:center;color:rgba(255,255,255,.3);font-size:.78rem;border-radius:9px;background:rgba(255,255,255,.015);border:1px dashed rgba(255,255,255,.06)}
+
 /* ═══ ACTIONS ═══ */
 .ad-ag{display:grid;grid-template-columns:repeat(${isMobile?1:2},1fr);gap:14px}
 .ad-ac{padding:22px;border-radius:14px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04)}
@@ -954,7 +1007,95 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
             })()}
 
             {/* TEAMS */}
-            {data && activeTab === 'teams' && <><div className="ad-fc"><input className="ad-fi" placeholder="Search teams, projects, leaders..." value={search} onChange={e=>setSearch(e.target.value)}/><button className={`ad-ff ${filterStatus==='all'?'on':''}`} onClick={()=>setFilterStatus('all')}>All</button><button className={`ad-ff ${filterStatus==='registered'?'on':''}`} onClick={()=>setFilterStatus('registered')}>Registered</button><button className={`ad-ff ${filterStatus==='pending'?'on':''}`} onClick={()=>setFilterStatus('pending')}>Pending</button><select className="ad-ff" value={filterTech} onChange={e=>setFilterTech(e.target.value)} style={{appearance:'auto'}}><option value="all">All Technologies</option>{Object.keys(data.techBreakdown||{}).map(t=><option key={t} value={t}>{t}</option>)}</select><span className="ad-fn">{filteredTeams.length} teams</span></div><table className="ad-tt"><thead><tr><th>#</th><th>Team</th><th>Project</th><th>Technology</th><th>Leader</th><th>Mentor</th><th>Status</th><th></th></tr></thead><tbody>{filteredTeams.map(t=><React.Fragment key={t.serialNumber}><tr><td style={{fontWeight:600,color:'rgba(255,255,255,.3)'}}>{t.serialNumber}</td><td style={{fontWeight:600,color:'#fd1c00'}}>{t.teamNumber||'—'}</td><td style={{maxWidth:200,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{t.projectTitle||'—'}</td><td><span style={{fontSize:'.62rem',padding:'3px 8px',borderRadius:6,background:`${TC[t.technology]||'#888'}15`,color:TC[t.technology]||'#888',border:`1px solid ${TC[t.technology]||'#888'}30`}}>{t.technology}</span></td><td><span>{t.leaderName}</span>{t.leaderPhone&&t.leaderPhone.length>=10&&<a href={`tel:${t.leaderPhone}`} style={{marginLeft:6,color:'rgba(255,255,255,.2)',textDecoration:'none'}} title={t.leaderPhone}>{IC.ph}</a>}</td><td style={{color:'rgba(255,255,255,.3)'}}>{t.mentorAssigned||'—'}</td><td><span style={{fontSize:'.65rem',padding:'3px 10px',borderRadius:6,fontWeight:500,background:t.registered?'rgba(74,222,128,.08)':'rgba(255,255,255,.04)',color:t.registered?'#4ade80':'rgba(255,255,255,.3)'}}>{t.registered?'✓ Registered':'Pending'}</span></td><td><button className="ad-te" onClick={()=>setExpandedTeam(expandedTeam===t.serialNumber?null:t.serialNumber)}>{expandedTeam===t.serialNumber?'▲':'▼'}</button></td></tr>{expandedTeam===t.serialNumber&&<tr><td colSpan={8}><div className="ad-tdl"><div style={{fontWeight:600,color:'rgba(255,255,255,.55)',marginBottom:8}}>{t.projectTitle}</div>{t.projectDescription&&<div style={{marginBottom:8,lineHeight:1.5}}>{t.projectDescription}</div>}<div className="ad-tdg"><div className="ad-tdi"><div className="ad-tdla">Problem Statement</div><div className="ad-tdv">{t.problemStatement||'—'}</div></div><div className="ad-tdi"><div className="ad-tdla">AI Usage</div><div className="ad-tdv">{t.aiUsage}</div></div><div className="ad-tdi"><div className="ad-tdla">Tech Stack</div><div className="ad-tdv">{(t.techStack||[]).join(', ')||'—'}</div></div><div className="ad-tdi"><div className="ad-tdla">Members ({t.memberCount})</div><div className="ad-tdv">{(t.members||[]).map(m=>`${m.name}${m.isLeader?' ★':''}`).join(', ')}</div></div></div></div></td></tr>}</React.Fragment>)}</tbody></table></>}
+            {data && activeTab === 'teams' && <><div className="ad-fc"><input className="ad-fi" placeholder="Search teams, projects, leaders..." value={search} onChange={e=>setSearch(e.target.value)}/><button className={`ad-ff ${filterStatus==='all'?'on':''}`} onClick={()=>setFilterStatus('all')}>All</button><button className={`ad-ff ${filterStatus==='registered'?'on':''}`} onClick={()=>setFilterStatus('registered')}>Registered</button><button className={`ad-ff ${filterStatus==='pending'?'on':''}`} onClick={()=>setFilterStatus('pending')}>Pending</button><select className="ad-ff" value={filterTech} onChange={e=>setFilterTech(e.target.value)} style={{appearance:'auto'}}><option value="all">All Technologies</option>{Object.keys(data.techBreakdown||{}).map(t=><option key={t} value={t}>{t}</option>)}</select><span className="ad-fn">{filteredTeams.length} teams</span></div><table className="ad-tt"><thead><tr><th>#</th><th>Team</th><th>Project</th><th>Technology</th><th>Leader</th><th>Mentor</th><th>Status</th><th></th></tr></thead><tbody>{filteredTeams.map(t=><React.Fragment key={t.serialNumber}><tr><td style={{fontWeight:600,color:'rgba(255,255,255,.3)'}}>{t.serialNumber}</td><td style={{fontWeight:600,color:'#fd1c00'}}>{t.teamNumber||'—'}</td><td style={{maxWidth:200,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{t.projectTitle||'—'}</td><td><span style={{fontSize:'.62rem',padding:'3px 8px',borderRadius:6,background:`${TC[t.technology]||'#888'}15`,color:TC[t.technology]||'#888',border:`1px solid ${TC[t.technology]||'#888'}30`}}>{t.technology}</span></td><td><span>{t.leaderName}</span>{t.leaderPhone&&t.leaderPhone.length>=10&&<a href={`tel:${t.leaderPhone}`} style={{marginLeft:6,color:'rgba(255,255,255,.2)',textDecoration:'none'}} title={t.leaderPhone}>{IC.ph}</a>}</td><td style={{color:'rgba(255,255,255,.3)'}}>{t.mentorAssigned||'—'}</td><td><span style={{fontSize:'.65rem',padding:'3px 10px',borderRadius:6,fontWeight:500,background:t.registered?'rgba(74,222,128,.08)':'rgba(255,255,255,.04)',color:t.registered?'#4ade80':'rgba(255,255,255,.3)'}}>{t.registered?'✓ Registered':'Pending'}</span></td><td><button className="ad-te" onClick={()=>setExpandedTeam(expandedTeam===t.serialNumber?null:t.serialNumber)}>{expandedTeam===t.serialNumber?'▲':'▼'}</button></td></tr>{expandedTeam===t.serialNumber&&(()=>{
+  const tx = (insights?.teamData||[]).find(td => td.teamNumber === t.teamNumber) || {}
+  const stagesDet = tx.stagesDetail || []
+  const liDet = tx.linkedinDetail || []
+  const mrDet = tx.mentorRequestsDetail || []
+  const STAGE_NAMES = ['Ideation','Planning','Design','Development','Testing','Deployment','Documentation']
+  const fmtDt = d => d ? new Date(d).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '—'
+  const stageStatus = (n) => stagesDet.find(s => s.stage_number === n)?.status || 'pending'
+  return <tr><td colSpan={8}><div className="ad-tex-wrap">
+    <div className="ad-tex-tabs">
+      <button className={`ad-tex-tab ${teamSubExpand==='details'?'on':''}`} onClick={()=>setTeamSubExpand('details')}>{IC.file} Project Details</button>
+      <button className={`ad-tex-tab ${teamSubExpand==='status'?'on':''}`} onClick={()=>setTeamSubExpand('status')}>{IC.target} Project Status <span className="ad-tex-cnt">{tx.stages?.completed||0}/7</span></button>
+      <button className={`ad-tex-tab ${teamSubExpand==='linkedin'?'on':''}`} onClick={()=>setTeamSubExpand('linkedin')}>{IC.share} LinkedIn <span className="ad-tex-cnt">{liDet.length}</span></button>
+      <button className={`ad-tex-tab ${teamSubExpand==='requests'?'on':''}`} onClick={()=>setTeamSubExpand('requests')}>{IC.bell} Mentor Requests <span className="ad-tex-cnt">{mrDet.length}</span></button>
+    </div>
+
+    {teamSubExpand==='details' && <div className="ad-tex-body">
+      <div className="ad-tex-grid">
+        <div className="ad-tex-card"><div className="ad-tex-lb">Project Title</div><div className="ad-tex-vl" style={{color:'#fd1c00',fontWeight:700}}>{t.projectTitle||'—'}</div></div>
+        <div className="ad-tex-card"><div className="ad-tex-lb">Mentor</div><div className="ad-tex-vl">{t.mentorAssigned||'—'}</div></div>
+      </div>
+      {t.projectDescription && <div className="ad-tex-card" style={{marginBottom:10}}><div className="ad-tex-lb">Description</div><div className="ad-tex-vl" style={{lineHeight:1.55}}>{t.projectDescription}</div></div>}
+      <div className="ad-tex-grid">
+        <div className="ad-tex-card"><div className="ad-tex-lb">Problem Statement</div><div className="ad-tex-vl">{t.problemStatement||'—'}</div></div>
+        <div className="ad-tex-card"><div className="ad-tex-lb">AI Usage</div><div className="ad-tex-vl">{t.aiUsage||'—'}</div></div>
+      </div>
+      <div className="ad-tex-grid">
+        <div className="ad-tex-card"><div className="ad-tex-lb">Tech Stack</div><div className="ad-tex-vl">{(t.techStack||[]).join(' · ')||'—'}</div></div>
+        <div className="ad-tex-card"><div className="ad-tex-lb">Members ({t.memberCount||0})</div><div className="ad-tex-mems">{(t.members||[]).map((m,i)=><span key={i} className={`ad-tex-mem ${m.isLeader?'lead':''}`}>{m.name}{m.isLeader?' ★':''}</span>)}</div></div>
+      </div>
+    </div>}
+
+    {teamSubExpand==='status' && <div className="ad-tex-body">
+      <div className="ad-tex-stp">
+        {[1,2,3,4,5,6,7].map((n,i)=>{const st=stageStatus(n);const cls=st==='completed'?'done':st==='in-review'?'review':st==='rejected'?'rejected':'';const prevDone=i===0||stageStatus(n-1)==='completed';return <div key={n} className={`ad-tex-step ${cls}`}>
+          <div className="ad-tex-step-name">{STAGE_NAMES[i]}</div>
+          <div className="ad-tex-circle-row">
+            <div className={`ad-tex-line ${i===0?'first':''} ${prevDone&&i>0?'fill':''}`}/>
+            <div className="ad-tex-circle">{n}</div>
+            <div className={`ad-tex-line ${i===6?'last':''}`}/>
+          </div>
+          <div className="ad-tex-step-meta">{st==='completed'?'✓ Done':st==='in-review'?'In Review':st==='rejected'?'Rejected':'Locked'}</div>
+        </div>})}
+      </div>
+      <div className="ad-tex-list">
+        {stagesDet.length===0?<div className="ad-tex-empty">No stage submissions yet</div>:stagesDet.filter(s=>s.status!=='pending').map((s,i)=><div key={i} className="ad-tex-item">
+          <div className="ad-tex-item-left">
+            <div className="ad-tex-li-ico" style={{background:s.status==='completed'?'rgba(74,222,128,.15)':s.status==='in-review'?'rgba(238,167,39,.15)':'rgba(253,28,0,.15)',borderColor:s.status==='completed'?'rgba(74,222,128,.3)':s.status==='in-review'?'rgba(238,167,39,.3)':'rgba(253,28,0,.3)'}}>
+              <span style={{fontSize:'.7rem',fontWeight:800,color:s.status==='completed'?'#4ade80':s.status==='in-review'?'#EEA727':'#fd1c00'}}>{s.stage_number}</span>
+            </div>
+            <div className="ad-tex-itxt">
+              <div className="ad-tex-it1">{STAGE_NAMES[s.stage_number-1]} {s.status==='completed'?'approved':s.status==='in-review'?'submitted':'rejected'}</div>
+              <div className="ad-tex-it2">By {s.submitted_by_name||'—'} · {fmtDt(s.submitted_at)} {s.reviewed_by_name?` · Reviewed by ${s.reviewed_by_name}`:''}</div>
+              {s.mentor_comment && <div className="ad-tex-it2" style={{marginTop:4,fontStyle:'italic',color:'rgba(255,255,255,.5)'}}>"{s.mentor_comment}"</div>}
+            </div>
+          </div>
+          <span className={`ad-tex-bg-r ${s.status==='completed'?'st-resolved':s.status==='rejected'?'pri-high':'st-pending'}`}>{s.status==='completed'?`+${s.credits_earned||0} credits`:s.status==='in-review'?'In Review':'Rejected'}</span>
+        </div>)}
+      </div>
+    </div>}
+
+    {teamSubExpand==='linkedin' && <div className="ad-tex-body">
+      {liDet.length===0?<div className="ad-tex-empty">No LinkedIn posts yet from this team</div>:<div className="ad-tex-list">
+        {liDet.map((p,i)=><div key={i} className="ad-tex-item">
+          <div className="ad-tex-item-left">
+            <div className="ad-tex-li-ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="#0a8fd6"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg></div>
+            <div className="ad-tex-itxt"><div className="ad-tex-it1">{p.posted_by_name||p.roll_number||'—'}</div><div className="ad-tex-it2">{fmtDt(p.created_at)}</div></div>
+          </div>
+          <span className={`ad-tex-bg-r role-${p.posted_by_role||'student'}`}>{(p.posted_by_role||'student').toUpperCase()}</span>
+        </div>)}
+      </div>}
+    </div>}
+
+    {teamSubExpand==='requests' && <div className="ad-tex-body">
+      {mrDet.length===0?<div className="ad-tex-empty">No mentor requests from this team</div>:<div className="ad-tex-list">
+        {mrDet.map((r,i)=><div key={i} className="ad-tex-item">
+          <div className="ad-tex-item-left">
+            <div className="ad-tex-mr-ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#EEA727" strokeWidth="2" strokeLinecap="round"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg></div>
+            <div className="ad-tex-itxt"><div className="ad-tex-it1">Request to {r.mentor_name||'—'}</div><div className="ad-tex-it2">{fmtDt(r.created_at)}{r.resolved_at?` · Resolved ${fmtDt(r.resolved_at)}`:''}{r.rating?` · ${r.rating}★`:''}</div></div>
+          </div>
+          <div style={{display:'flex',gap:6}}>
+            {r.priority && <span className={`ad-tex-bg-r pri-${(r.priority||'').toLowerCase()}`}>{r.priority}</span>}
+            <span className={`ad-tex-bg-r ${r.status==='Pending'?'st-pending':'st-resolved'}`}>{r.status||'—'}</span>
+          </div>
+        </div>)}
+      </div>}
+    </div>}
+  </div></td></tr>
+})()}</React.Fragment>)}</tbody></table></>}
 
             {/* PROJECT STATUS */}
             {activeTab === 'milestones' && <div className="adm-lb">
