@@ -101,6 +101,59 @@ export default function AdminDashboard() {
 
   useEffect(() => { if (phase==='dashboard') { fetchAdLeaderboard(); fetchAdNotifs(); const iv=setInterval(()=>{fetchAdLeaderboard();fetchAdNotifs()},30000); return ()=>clearInterval(iv) } }, [phase])
 
+  // ── Attendance fetch ──
+  async function fetchAttendance(date = attDate) {
+    if (!token) return
+    setAttLoading(true)
+    try {
+      const r = await fetch(`/api/admin/attendance?date=${date}`, { headers: { 'x-admin-token': token } })
+      const d = await r.json()
+      if (!d.error) setAttData(d)
+    } catch {} finally { setAttLoading(false) }
+  }
+  useEffect(() => { if (activeTab === 'attendance' && token) fetchAttendance() }, [activeTab, attDate, token])
+
+  async function handleSyncNow() {
+    if (!token) return
+    setAttSyncing(true); setAttSyncMsg('')
+    try {
+      const r = await fetch('/api/admin/attendance-sync', { method: 'POST', headers: { 'x-admin-token': token } })
+      const d = await r.json()
+      if (d.success) {
+        setAttSyncMsg(`✓ Synced: ${d.inserted} inserted, ${d.skipped} skipped, ${d.api_total} API total`)
+        fetchAttendance()
+      } else {
+        setAttSyncMsg(`✗ Failed: ${d.error}`)
+      }
+    } catch (e) { setAttSyncMsg(`✗ Error: ${e.message}`) }
+    setAttSyncing(false)
+    setTimeout(() => setAttSyncMsg(''), 5000)
+  }
+
+  async function handleManualUpload() {
+    if (!token) return
+    const rolls = manualUploadRolls.split(/[\n,\s]+/).map(r => r.trim()).filter(Boolean)
+    if (rolls.length === 0) { setManualUploadMsg('✗ No roll numbers provided'); return }
+    setManualUploading(true); setManualUploadMsg('')
+    try {
+      const r = await fetch('/api/admin/attendance-manual', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
+        body: JSON.stringify({ date: attDate, punchType: manualUploadType, rolls })
+      })
+      const d = await r.json()
+      if (d.success) {
+        setManualUploadMsg(`✓ Uploaded ${d.total} punches (${d.matched} matched, ${d.unmatched} unmatched)`)
+        setManualUploadRolls('')
+        fetchAttendance()
+      } else {
+        setManualUploadMsg(`✗ Failed: ${d.error}`)
+      }
+    } catch (e) { setManualUploadMsg(`✗ Error: ${e.message}`) }
+    setManualUploading(false)
+    setTimeout(() => setManualUploadMsg(''), 8000)
+  }
+
   // Fetch admin insights (cross-functional data)
   useEffect(() => {
     if (phase !== 'dashboard' || !token) return
@@ -1097,6 +1150,273 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
   </div></td></tr>
 })()}</React.Fragment>)}</tbody></table></>}
 
+            {/* ATTENDANCE */}
+            {activeTab === 'attendance' && (() => {
+              if (attLoading && !attData) return <div style={{textAlign:'center',padding:60,color:'rgba(255,255,255,.3)'}}>Loading attendance...</div>
+              const summary = attData?.dailySummary || {}
+              const teamAtt = attData?.teamAttendance || []
+              const mentorAtt = attData?.mentorAttendance || []
+              const mentorTeamAtt = attData?.mentorTeamAttendance || []
+              const projectStreet = attData?.projectStreet || { evening_4_30: [], dinner_7pm: [] }
+              const studentTimeline = attData?.studentTimeline || []
+              const lastSync = attData?.lastSync
+              const fmtTime = d => d ? new Date(d).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '—'
+              const fmtPunchTime = d => d ? new Date(d).toLocaleString('en-IN',{hour:'2-digit',minute:'2-digit'}) : '—'
+
+              const filteredTeams = teamAtt.filter(t => attTeamFilter === 'all' ? true : attTeamFilter === 'incomplete' ? t.percent < 100 : attTeamFilter === 'absent' ? t.present === 0 : true)
+              const filteredStudents = studentTimeline.filter(s => !attStudentSearch || s.roll.toLowerCase().includes(attStudentSearch.toLowerCase()) || (s.name||'').toLowerCase().includes(attStudentSearch.toLowerCase()))
+              const filteredMentor = attMentorFilter ? mentorTeamAtt.find(m => m.mentorName === attMentorFilter) : null
+
+              return <div className="att-wrap">
+                <style>{`
+.att-wrap{animation:fadeUp .4s ease both;font-family:'DM Sans',sans-serif}
+.att-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;margin-bottom:18px;padding:16px;background:linear-gradient(135deg,rgba(253,28,0,.04),rgba(238,167,39,.02));border:1px solid rgba(255,255,255,.06);border-radius:12px}
+.att-date{display:flex;align-items:center;gap:10px}
+.att-date input{padding:8px 14px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.1);border-radius:9px;color:#fff;font-size:.78rem;font-family:'DM Sans',sans-serif;outline:none}
+.att-date input:focus{border-color:rgba(253,28,0,.4)}
+.att-date label{font-size:.62rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1.5px;font-weight:700}
+.att-sync{display:flex;align-items:center;gap:10px}
+.att-sync-btn{padding:9px 18px;background:linear-gradient(135deg,#fd1c00,#fd3a20);border:none;border-radius:9px;color:#fff;font-family:'DM Sans',sans-serif;font-size:.74rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;letter-spacing:.3px;transition:all .2s;box-shadow:0 0 16px rgba(253,28,0,.2)}
+.att-sync-btn:hover{transform:translateY(-1px);box-shadow:0 4px 22px rgba(253,28,0,.3)}
+.att-sync-btn:disabled{opacity:.5;cursor:wait;transform:none}
+.att-sync-meta{font-size:.62rem;color:rgba(255,255,255,.4);text-align:right}
+.att-sync-msg{padding:8px 14px;background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.2);border-radius:8px;color:#4ade80;font-size:.72rem;margin-bottom:14px;animation:fadeUp .3s ease}
+.att-sync-msg.err{background:rgba(253,28,0,.08);border-color:rgba(253,28,0,.2);color:#fd1c00}
+.att-stats{display:grid;grid-template-columns:repeat(${isMobile?2:4},1fr);gap:10px;margin-bottom:18px}
+.att-st{padding:16px 14px;border-radius:12px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06);position:relative;overflow:hidden;transition:all .25s}
+.att-st:hover{border-color:rgba(255,255,255,.12);transform:translateY(-2px)}
+.att-st::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at top,var(--gw,rgba(253,28,0,.06)),transparent 60%);pointer-events:none}
+.att-st-v{font-family:'Orbitron',sans-serif;font-size:1.6rem;font-weight:800;line-height:1;position:relative}
+.att-st-l{font-size:.55rem;color:rgba(255,255,255,.32);text-transform:uppercase;letter-spacing:1.5px;margin-top:7px;font-weight:700}
+.att-st-pct{font-size:.7rem;color:rgba(255,255,255,.55);margin-top:6px}
+.att-tabs{display:flex;gap:4px;padding:4px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.05);border-radius:11px;margin-bottom:16px;overflow-x:auto;scrollbar-width:none}
+.att-tabs::-webkit-scrollbar{display:none}
+.att-tab{padding:9px 18px;border-radius:8px;background:transparent;border:none;color:rgba(255,255,255,.45);font-family:'DM Sans',sans-serif;font-size:.74rem;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.att-tab:hover{color:rgba(255,255,255,.75)}
+.att-tab.on{background:linear-gradient(135deg,rgba(253,28,0,.2),rgba(238,167,39,.1));color:#fff;box-shadow:0 0 14px rgba(253,28,0,.18)}
+.att-tab-cnt{font-size:.58rem;padding:1px 7px;border-radius:7px;background:rgba(255,255,255,.06);color:rgba(255,255,255,.5);font-weight:700}
+.att-tab.on .att-tab-cnt{background:rgba(253,28,0,.25);color:#fd1c00}
+.att-section{animation:fadeUp .3s ease both}
+.att-tech-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:14px}
+.att-tech-card{padding:12px 14px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05)}
+.att-tech-name{font-size:.72rem;font-weight:700;color:#fff;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+.att-tech-pct{font-family:'Orbitron',sans-serif;font-size:.92rem;font-weight:800}
+.att-tech-bar{height:5px;border-radius:3px;background:rgba(255,255,255,.06);overflow:hidden;margin-top:7px}
+.att-tech-bar-f{height:100%;border-radius:3px;background:linear-gradient(90deg,#4ade80,#22c55e);transition:width .8s}
+.att-tech-meta{font-size:.6rem;color:rgba(255,255,255,.35);margin-top:5px;display:flex;justify-content:space-between}
+.att-filter{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.att-fpill{padding:6px 13px;border-radius:8px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);color:rgba(255,255,255,.55);font-family:'DM Sans',sans-serif;font-size:.7rem;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap}
+.att-fpill:hover{color:rgba(255,255,255,.8)}
+.att-fpill.on{background:rgba(253,28,0,.15);border-color:rgba(253,28,0,.3);color:#fd1c00}
+.att-tbl{width:100%;border-collapse:separate;border-spacing:0 5px;font-family:'DM Sans',sans-serif}
+.att-tbl th{text-align:left;padding:8px 12px;font-size:.58rem;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1.5px;background:rgba(0,0,0,.18)}
+.att-tbl th.c{text-align:center}
+.att-tbl td{padding:11px 12px;background:rgba(255,255,255,.015);border-top:1px solid rgba(255,255,255,.02);border-bottom:1px solid rgba(255,255,255,.02);font-size:.76rem;color:rgba(255,255,255,.7)}
+.att-tbl td.c{text-align:center}
+.att-tbl tr td:first-child{border-left:1px solid rgba(255,255,255,.02);border-radius:10px 0 0 10px}
+.att-tbl tr td:last-child{border-right:1px solid rgba(255,255,255,.02);border-radius:0 10px 10px 0}
+.att-tbl tr:hover td{background:rgba(255,255,255,.04)}
+.att-bar-mini{display:inline-block;width:60px;height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;vertical-align:middle;margin-right:6px}
+.att-bar-mini-f{height:100%;background:linear-gradient(90deg,#4ade80,#22c55e);border-radius:2px}
+.att-pres-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:7px;font-size:.62rem;font-weight:700;letter-spacing:.3px}
+.att-pres-pill.p{background:rgba(74,222,128,.1);color:#4ade80;border:1px solid rgba(74,222,128,.18)}
+.att-pres-pill.a{background:rgba(253,28,0,.1);color:#fd1c00;border:1px solid rgba(253,28,0,.18)}
+.att-pres-pill.w{background:rgba(238,167,39,.1);color:#EEA727;border:1px solid rgba(238,167,39,.18)}
+.att-mavt{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#fd1c00,#faa000);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.72rem;flex-shrink:0;overflow:hidden}
+.att-mavt img{width:100%;height:100%;object-fit:cover}
+.att-mname{display:flex;align-items:center;gap:10px}
+.att-absent-list{font-size:.68rem;color:#fd1c00;font-weight:600;margin-top:3px}
+.att-empty{padding:36px;text-align:center;color:rgba(255,255,255,.3);font-size:.85rem;border:1px dashed rgba(255,255,255,.06);border-radius:10px;background:rgba(255,255,255,.01)}
+.att-empty-sub{font-size:.68rem;color:rgba(255,255,255,.2);margin-top:6px}
+.att-search{width:100%;padding:10px 14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:9px;color:#fff;font-family:'DM Sans',sans-serif;font-size:.78rem;outline:none;margin-bottom:12px}
+.att-search:focus{border-color:rgba(253,28,0,.3)}
+.att-search::placeholder{color:rgba(255,255,255,.25)}
+.att-stl{display:flex;flex-direction:column;gap:7px}
+.att-stl-item{padding:11px 14px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);transition:all .2s}
+.att-stl-item:hover{border-color:rgba(255,255,255,.1);background:rgba(255,255,255,.03)}
+.att-stl-hdr{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.att-stl-name{font-weight:700;color:#fff;font-size:.82rem}
+.att-stl-meta{font-size:.65rem;color:rgba(255,255,255,.4)}
+.att-stl-punches{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.att-pchip{padding:3px 9px;border-radius:6px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);font-size:.64rem;color:rgba(255,255,255,.65);display:flex;gap:5px}
+.att-pchip.morning{background:rgba(74,222,128,.08);color:#4ade80;border-color:rgba(74,222,128,.15)}
+.att-pchip.lunch{background:rgba(238,167,39,.08);color:#EEA727;border-color:rgba(238,167,39,.15)}
+.att-pchip.afternoon{background:rgba(59,130,246,.08);color:#60a5fa;border-color:rgba(59,130,246,.15)}
+.att-pchip.project_street_evening,.att-pchip.project_street_4_30,.att-pchip.project_street_7pm{background:rgba(167,139,250,.08);color:#a78bfa;border-color:rgba(167,139,250,.15)}
+.att-pchip.dinner{background:rgba(238,167,39,.08);color:#EEA727;border-color:rgba(238,167,39,.15)}
+.att-pchip.night_in,.att-pchip.night_out{background:rgba(253,28,0,.08);color:#fd1c00;border-color:rgba(253,28,0,.15)}
+.att-pchip-time{opacity:.65}
+.att-up-form{padding:18px;border-radius:12px;background:linear-gradient(135deg,rgba(253,28,0,.04),rgba(238,167,39,.02));border:1px solid rgba(255,255,255,.06)}
+.att-up-row{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.att-up-row label{font-size:.62rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;display:block;margin-bottom:5px}
+.att-up-row select{padding:9px 14px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.1);border-radius:9px;color:#fff;font-size:.78rem;font-family:'DM Sans',sans-serif;outline:none}
+.att-up-row select:focus{border-color:rgba(253,28,0,.4)}
+.att-up-textarea{width:100%;padding:12px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.1);border-radius:9px;color:#fff;font-family:monospace;font-size:.76rem;outline:none;min-height:140px;resize:vertical;line-height:1.6}
+.att-up-textarea:focus{border-color:rgba(253,28,0,.4)}
+.att-up-textarea::placeholder{color:rgba(255,255,255,.2)}
+.att-up-help{font-size:.66rem;color:rgba(255,255,255,.35);margin-top:5px;line-height:1.5}
+.att-up-btn{padding:11px 22px;background:linear-gradient(135deg,#fd1c00,#fd3a20);border:none;border-radius:9px;color:#fff;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px;margin-top:14px;transition:all .2s}
+.att-up-btn:hover{transform:translateY(-1px);box-shadow:0 4px 18px rgba(253,28,0,.25)}
+.att-up-btn:disabled{opacity:.5;cursor:wait}
+.att-up-msg{padding:10px 14px;border-radius:8px;font-size:.74rem;margin-top:12px}
+.att-up-msg.ok{background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.18);color:#4ade80}
+.att-up-msg.err{background:rgba(253,28,0,.08);border:1px solid rgba(253,28,0,.18);color:#fd1c00}
+@media(max-width:640px){.att-stats{grid-template-columns:1fr 1fr}.att-tbl{display:block;overflow-x:auto;font-size:.7rem}.att-tbl td,.att-tbl th{padding:8px 10px;white-space:nowrap}}
+                `}</style>
+
+                {/* Top control bar */}
+                <div className="att-top">
+                  <div className="att-date">
+                    <label>Date:</label>
+                    <input type="date" value={attDate} onChange={e=>setAttDate(e.target.value)} max={new Date().toISOString().slice(0,10)}/>
+                  </div>
+                  <div className="att-sync">
+                    {lastSync && <div className="att-sync-meta">Last sync: {fmtTime(lastSync.finished_at)} · {lastSync.inserted||0} rows</div>}
+                    <button className="att-sync-btn" onClick={handleSyncNow} disabled={attSyncing}>{IC.ref} {attSyncing?'Syncing...':'Sync Now'}</button>
+                  </div>
+                </div>
+
+                {attSyncMsg && <div className={`att-sync-msg ${attSyncMsg.startsWith('✗')?'err':''}`}>{attSyncMsg}</div>}
+
+                {/* 4 stat cards */}
+                <div className="att-stats">
+                  <div className="att-st" style={{'--gw':'rgba(74,222,128,.08)'}}><div className="att-st-v" style={{color:'#4ade80'}}>{summary.presentStudents||0}</div><div className="att-st-l">Present</div><div className="att-st-pct">of {summary.totalStudents||0} students · {summary.attendancePercent||0}%</div></div>
+                  <div className="att-st" style={{'--gw':'rgba(253,28,0,.08)'}}><div className="att-st-v" style={{color:'#fd1c00'}}>{summary.absentStudents||0}</div><div className="att-st-l">Absent</div><div className="att-st-pct">{summary.totalStudents>0?Math.round((summary.absentStudents/summary.totalStudents)*100):0}% absent</div></div>
+                  <div className="att-st" style={{'--gw':'rgba(238,167,39,.08)'}}><div className="att-st-v" style={{color:'#EEA727'}}>{summary.presentMentors||0}/{summary.totalMentors||0}</div><div className="att-st-l">Mentors</div><div className="att-st-pct">{summary.mentorAttendancePercent||0}% present</div></div>
+                  <div className="att-st" style={{'--gw':'rgba(59,130,246,.08)'}}><div className="att-st-v" style={{color:'#3b82f6'}}>{summary.totalPunches||0}</div><div className="att-st-l">Total Punches</div><div className="att-st-pct">{summary.unknownPunches||0} unmapped</div></div>
+                </div>
+
+                {/* Sub-tabs */}
+                <div className="att-tabs">
+                  <button className={`att-tab ${attSubTab==='summary'?'on':''}`} onClick={()=>setAttSubTab('summary')}>{IC.grid} Daily Summary</button>
+                  <button className={`att-tab ${attSubTab==='teams'?'on':''}`} onClick={()=>setAttSubTab('teams')}>{IC.group} By Team <span className="att-tab-cnt">{teamAtt.length}</span></button>
+                  <button className={`att-tab ${attSubTab==='mentors'?'on':''}`} onClick={()=>setAttSubTab('mentors')}>{IC.users} By Mentor <span className="att-tab-cnt">{mentorAtt.length}</span></button>
+                  <button className={`att-tab ${attSubTab==='street'?'on':''}`} onClick={()=>setAttSubTab('street')}>{IC.cal} Project Street <span className="att-tab-cnt">{(projectStreet.evening_4_30?.length||0)+(projectStreet.dinner_7pm?.length||0)}</span></button>
+                  <button className={`att-tab ${attSubTab==='timeline'?'on':''}`} onClick={()=>setAttSubTab('timeline')}>{IC.clk} Student Timeline</button>
+                  <button className={`att-tab ${attSubTab==='upload'?'on':''}`} onClick={()=>setAttSubTab('upload')}>{IC.upload} Manual Upload</button>
+                </div>
+
+                {/* DAILY SUMMARY TAB */}
+                {attSubTab==='summary' && <div className="att-section">
+                  <div style={{fontSize:'.74rem',fontWeight:700,color:'rgba(255,255,255,.55)',textTransform:'uppercase',letterSpacing:'1.5px',marginBottom:10}}>By Technology</div>
+                  <div className="att-tech-grid">
+                    {Object.entries(summary.byTechnology||{}).sort((a,b)=>b[1].total-a[1].total).map(([tech,v])=>{const pct=v.total>0?Math.round((v.present/v.total)*100):0;return <div key={tech} className="att-tech-card">
+                      <div className="att-tech-name"><span>{tech}</span><span className="att-tech-pct" style={{color:pct>=70?'#4ade80':pct>=40?'#EEA727':'#fd1c00'}}>{pct}%</span></div>
+                      <div className="att-tech-bar"><div className="att-tech-bar-f" style={{width:`${pct}%`}}/></div>
+                      <div className="att-tech-meta"><span>{v.present} present</span><span>{v.absent} absent</span></div>
+                    </div>})}
+                  </div>
+                </div>}
+
+                {/* BY TEAM TAB */}
+                {attSubTab==='teams' && <div className="att-section">
+                  <div className="att-filter">
+                    <button className={`att-fpill ${attTeamFilter==='all'?'on':''}`} onClick={()=>setAttTeamFilter('all')}>All ({teamAtt.length})</button>
+                    <button className={`att-fpill ${attTeamFilter==='incomplete'?'on':''}`} onClick={()=>setAttTeamFilter('incomplete')}>Incomplete</button>
+                    <button className={`att-fpill ${attTeamFilter==='absent'?'on':''}`} onClick={()=>setAttTeamFilter('absent')}>0 Present</button>
+                  </div>
+                  <div style={{overflowX:'auto'}}><table className="att-tbl"><thead><tr><th>Team</th><th>Project</th><th>Tech</th><th>Mentor</th><th className="c">Present</th><th>Attendance</th><th>Absent Members</th></tr></thead><tbody>
+                    {filteredTeams.length===0?<tr><td colSpan={7} style={{textAlign:'center',padding:30,color:'rgba(255,255,255,.3)'}}>No teams match filter</td></tr>:filteredTeams.map(t=><tr key={t.teamNumber}>
+                      <td style={{fontWeight:700,color:'#fd1c00'}}>{t.teamNumber}</td>
+                      <td style={{maxWidth:160,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{t.projectTitle||'—'}</td>
+                      <td><span style={{fontSize:'.6rem',padding:'2px 7px',borderRadius:5,background:'rgba(255,255,255,.04)',color:'rgba(255,255,255,.55)'}}>{t.technology||'—'}</span></td>
+                      <td style={{color:'rgba(255,255,255,.5)',fontSize:'.7rem'}}>{t.mentor||'—'}</td>
+                      <td className="c" style={{fontWeight:700}}><span style={{color:t.present===t.total?'#4ade80':t.present===0?'#fd1c00':'#EEA727'}}>{t.present}/{t.total}</span></td>
+                      <td><span className="att-bar-mini"><span className="att-bar-mini-f" style={{width:`${t.percent}%`,background:t.percent>=70?'linear-gradient(90deg,#4ade80,#22c55e)':t.percent>=40?'linear-gradient(90deg,#EEA727,#faa000)':'linear-gradient(90deg,#fd1c00,#c41600)'}}/></span><span style={{fontWeight:700,color:t.percent>=70?'#4ade80':t.percent>=40?'#EEA727':'#fd1c00'}}>{t.percent}%</span></td>
+                      <td style={{fontSize:'.7rem',color:'rgba(255,255,255,.5)'}}>{t.absentMembers.length===0?'—':t.absentMembers.map(m=><span key={m.roll} style={{display:'inline-block',marginRight:6,marginBottom:3,padding:'2px 7px',borderRadius:5,background:'rgba(253,28,0,.08)',color:'#fd1c00',border:'1px solid rgba(253,28,0,.15)',fontSize:'.62rem'}}>{m.name||m.roll}{m.isLeader?' ★':''}</span>)}</td>
+                    </tr>)}
+                  </tbody></table></div>
+                </div>}
+
+                {/* BY MENTOR TAB */}
+                {attSubTab==='mentors' && <div className="att-section">
+                  <div style={{overflowX:'auto'}}><table className="att-tbl"><thead><tr><th>Mentor</th><th>Tech</th><th className="c">Present</th><th className="c">First Punch</th><th className="c">Last Punch</th><th className="c">Punches</th><th className="c">Their Teams</th></tr></thead><tbody>
+                    {mentorAtt.map(m=>{const initials=(m.name||'').split(' ').filter(Boolean).slice(0,2).map(p=>p[0]).join('').toUpperCase();const teamPct=mentorTeamAtt.find(x=>x.mentorName===m.name)?.percent||0;return <tr key={m.empId||m.name} onClick={()=>{setAttMentorFilter(attMentorFilter===m.name?'':m.name)}} style={{cursor:'pointer'}}>
+                      <td><div className="att-mname"><div className="att-mavt">{m.imageUrl?<img src={m.imageUrl} alt={m.name}/>:initials}</div><div><div style={{fontWeight:700,color:'#fff',fontSize:'.78rem'}}>{m.name}</div><div style={{fontSize:'.6rem',color:'rgba(255,255,255,.3)'}}>EMP {m.empId||'—'}</div></div></div></td>
+                      <td><span style={{fontSize:'.6rem',padding:'2px 7px',borderRadius:5,background:'rgba(255,255,255,.04)',color:'rgba(255,255,255,.55)'}}>{m.technology||'—'}</span></td>
+                      <td className="c">{m.present?<span className="att-pres-pill p">✓ Present</span>:<span className="att-pres-pill a">Absent</span>}{m.missingMorning&&<div style={{fontSize:'.58rem',color:'#EEA727',marginTop:3}}>Morning IN missing</div>}</td>
+                      <td className="c" style={{fontSize:'.7rem'}}>{m.firstPunch?fmtPunchTime(m.firstPunch):'—'}</td>
+                      <td className="c" style={{fontSize:'.7rem'}}>{m.lastPunch?fmtPunchTime(m.lastPunch):'—'}</td>
+                      <td className="c" style={{fontWeight:700}}>{m.punchCount||0}</td>
+                      <td className="c"><span style={{fontWeight:700,color:teamPct>=70?'#4ade80':teamPct>=40?'#EEA727':'#fd1c00'}}>{m.assignedTeams} ({teamPct}%)</span></td>
+                    </tr>})}
+                  </tbody></table></div>
+                  {filteredMentor && <div style={{marginTop:14,padding:14,borderRadius:11,background:'rgba(253,28,0,.04)',border:'1px solid rgba(253,28,0,.12)'}}>
+                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
+                      <div style={{fontSize:'.82rem',fontWeight:700,color:'#fd1c00'}}>{filteredMentor.mentorName} — Team Breakdown</div>
+                      <button onClick={()=>setAttMentorFilter('')} style={{background:'none',border:'1px solid rgba(255,255,255,.1)',borderRadius:6,color:'rgba(255,255,255,.5)',padding:'4px 10px',fontSize:'.7rem',cursor:'pointer',fontFamily:'DM Sans,sans-serif'}}>Close</button>
+                    </div>
+                    <table className="att-tbl"><thead><tr><th>Team</th><th>Project</th><th className="c">Present</th><th>Absent Members</th></tr></thead><tbody>
+                      {filteredMentor.teams.map(t=><tr key={t.teamNumber}>
+                        <td style={{fontWeight:700,color:'#fd1c00'}}>{t.teamNumber}</td>
+                        <td style={{fontSize:'.7rem'}}>{t.projectTitle}</td>
+                        <td className="c"><span style={{color:t.present===t.total?'#4ade80':t.present===0?'#fd1c00':'#EEA727',fontWeight:700}}>{t.present}/{t.total}</span></td>
+                        <td style={{fontSize:'.65rem',color:'rgba(255,255,255,.5)'}}>{t.absentMembers.map(m=>m.name).join(', ')||'—'}</td>
+                      </tr>)}
+                    </tbody></table>
+                  </div>}
+                </div>}
+
+                {/* PROJECT STREET TAB */}
+                {attSubTab==='street' && <div className="att-section">
+                  <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'1fr 1fr',gap:14}}>
+                    <div className="att-tech-card">
+                      <div style={{fontSize:'.78rem',fontWeight:700,color:'#a78bfa',marginBottom:10}}>4:30pm Punches ({projectStreet.evening_4_30?.length||0})</div>
+                      {(projectStreet.evening_4_30||[]).length===0?<div style={{fontSize:'.7rem',color:'rgba(255,255,255,.3)',padding:'10px 0'}}>No 4:30pm entries yet — upload via Manual Upload tab</div>:projectStreet.evening_4_30.map((p,i)=><div key={i} style={{display:'flex',justifyContent:'space-between',padding:'7px 0',borderBottom:'1px solid rgba(255,255,255,.04)',fontSize:'.72rem'}}><span style={{color:'#fff'}}>{p.name}</span><span style={{color:'rgba(255,255,255,.4)'}}>{p.roll}</span></div>)}
+                    </div>
+                    <div className="att-tech-card">
+                      <div style={{fontSize:'.78rem',fontWeight:700,color:'#EEA727',marginBottom:10}}>7:00pm Punches ({projectStreet.dinner_7pm?.length||0})</div>
+                      {(projectStreet.dinner_7pm||[]).length===0?<div style={{fontSize:'.7rem',color:'rgba(255,255,255,.3)',padding:'10px 0'}}>No 7:00pm entries yet — upload via Manual Upload tab</div>:projectStreet.dinner_7pm.map((p,i)=><div key={i} style={{display:'flex',justifyContent:'space-between',padding:'7px 0',borderBottom:'1px solid rgba(255,255,255,.04)',fontSize:'.72rem'}}><span style={{color:'#fff'}}>{p.name}</span><span style={{color:'rgba(255,255,255,.4)'}}>{p.roll}</span></div>)}
+                    </div>
+                  </div>
+                </div>}
+
+                {/* STUDENT TIMELINE TAB */}
+                {attSubTab==='timeline' && <div className="att-section">
+                  <input className="att-search" placeholder="Search by roll number or name..." value={attStudentSearch} onChange={e=>setAttStudentSearch(e.target.value)}/>
+                  <div className="att-stl">
+                    {filteredStudents.length===0?<div className="att-empty">No students match search<div className="att-empty-sub">Try a partial roll number or name</div></div>:filteredStudents.slice(0,200).map(s=><div key={s.roll} className="att-stl-item">
+                      <div className="att-stl-hdr">
+                        <div>
+                          <div className="att-stl-name">{s.name||s.roll}</div>
+                          <div className="att-stl-meta">{s.roll} · {s.technology||'—'} · {s.team?'Team '+s.team:'No team'}</div>
+                        </div>
+                        <div>{s.present?<span className="att-pres-pill p">✓ Present</span>:<span className="att-pres-pill a">Absent</span>}{s.missingMorning&&<span className="att-pres-pill w" style={{marginLeft:5}}>No Morning IN</span>}</div>
+                      </div>
+                      {s.punches.length>0?<div className="att-stl-punches">
+                        {s.punches.map((p,i)=><span key={i} className={`att-pchip ${p.type||''}`}>{p.type||'—'}<span className="att-pchip-time">{fmtPunchTime(p.time)}</span></span>)}
+                      </div>:null}
+                    </div>)}
+                    {filteredStudents.length>200 && <div style={{textAlign:'center',padding:14,fontSize:'.7rem',color:'rgba(255,255,255,.3)'}}>Showing first 200 of {filteredStudents.length} matches — refine search to see more</div>}
+                  </div>
+                </div>}
+
+                {/* MANUAL UPLOAD TAB */}
+                {attSubTab==='upload' && <div className="att-section">
+                  <div className="att-up-form">
+                    <div className="att-up-row">
+                      <div>
+                        <label>Punch Type</label>
+                        <select value={manualUploadType} onChange={e=>setManualUploadType(e.target.value)}>
+                          <option value="project_street_4_30">Project Street — 4:30pm</option>
+                          <option value="project_street_7pm">Project Street — 7:00pm</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label>Date</label>
+                        <input type="date" value={attDate} onChange={e=>setAttDate(e.target.value)} max={new Date().toISOString().slice(0,10)} style={{padding:'9px 14px',background:'rgba(0,0,0,.3)',border:'1px solid rgba(255,255,255,.1)',borderRadius:9,color:'#fff',fontSize:'.78rem',fontFamily:'DM Sans,sans-serif',outline:'none'}}/>
+                      </div>
+                    </div>
+                    <label style={{fontSize:'.62rem',color:'rgba(255,255,255,.4)',textTransform:'uppercase',letterSpacing:'1.5px',fontWeight:700,display:'block',marginBottom:5}}>Roll Numbers</label>
+                    <textarea className="att-up-textarea" placeholder="Paste roll numbers — one per line, or comma-separated&#10;e.g.&#10;23A91A6193&#10;24B11CS218&#10;1285" value={manualUploadRolls} onChange={e=>setManualUploadRolls(e.target.value)}/>
+                    <div className="att-up-help">Accepts one roll per line, or comma/space separated. Mentor emp_ids (numeric) work too. Re-uploading the same date+type will overwrite existing entries.</div>
+                    <button className="att-up-btn" onClick={handleManualUpload} disabled={manualUploading||!manualUploadRolls.trim()}>{IC.upload} {manualUploading?'Uploading...':`Upload ${manualUploadRolls.split(/[\n,\s]+/).filter(Boolean).length} Rolls`}</button>
+                    {manualUploadMsg && <div className={`att-up-msg ${manualUploadMsg.startsWith('✗')?'err':'ok'}`}>{manualUploadMsg}</div>}
+                  </div>
+                </div>}
+              </div>
+            })()}
+            
             {/* PROJECT STATUS */}
             {activeTab === 'milestones' && <div className="adm-lb">
               <style>{`
@@ -1302,6 +1622,7 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
               {adLbLoading&&<div style={{textAlign:'center',padding:30,color:'rgba(255,255,255,.2)'}}>Loading...</div>}
               {!adLbLoading&&<table className="adm-lb-tbl"><thead><tr><th>Rank</th><th>Team</th><th>Project</th><th>Technology</th><th>Mentor</th><th>Progress</th><th>Credits</th></tr></thead><tbody>{(adLeaderboard.leaderboard||[]).map(t=><tr key={t.team_number}><td><span className={`adm-lb-rank ${t.rank===1?'gold':t.rank===2?'silver':t.rank===3?'bronze':''}`}>#{t.rank}</span></td><td style={{fontWeight:700,color:'#fd1c00'}}>{t.team_number}</td><td style={{maxWidth:160,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{t.project_title||'—'}</td><td><span style={{fontSize:'.6rem',padding:'2px 8px',borderRadius:5,background:'rgba(255,255,255,.04)',color:'rgba(255,255,255,.45)'}}>{t.technology}</span></td><td style={{fontSize:'.7rem',color:'rgba(255,255,255,.35)'}}>{t.mentor||'—'}</td><td><div className="adm-lb-bar"><div className="adm-lb-bar-fill" style={{width:`${t.percent}%`}}/></div><span style={{fontSize:'.72rem',fontWeight:700,color:t.percent>=70?'#4ade80':t.percent>=40?'#EEA727':'rgba(255,255,255,.3)'}}>{t.completed_stages}/7</span></td><td style={{fontWeight:700,color:'#EEA727'}}>{t.total_credits}</td></tr>)}</tbody></table>}
             </div>}
+            
 
             {/* LINKEDIN STATS */}
             {activeTab === 'linkedin-stats' && (
