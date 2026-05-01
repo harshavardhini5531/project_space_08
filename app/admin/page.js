@@ -730,6 +730,102 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
 .ad-rti{font-size:.82rem;font-weight:600;color:rgba(255,255,255,.45);margin-bottom:12px;margin-top:24px;display:flex;align-items:center;gap:6px}
 .ad-ri{display:flex;align-items:center;gap:14px;padding:11px 14px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.03);margin-bottom:7px}
 
+/* ═══ OVERVIEW V2 — DASHBOARD ═══ */
+.ov-stats{display:grid;grid-template-columns:repeat(${isMobile?2:6},1fr);gap:10px;margin-bottom:18px}
+.ov-stat{padding:14px 14px;border-radius:12px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.05);position:relative;overflow:hidden;transition:all .25s ease;animation:fadeUp .4s ease both;cursor:default}
+.ov-stat:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.12);box-shadow:0 6px 22px rgba(0,0,0,.3)}
+.ov-stat::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at top,var(--gw,rgba(253,28,0,.06)),transparent 60%);pointer-events:none}
+.ov-stat:nth-child(1){animation-delay:.05s}.ov-stat:nth-child(2){animation-delay:.1s}.ov-stat:nth-child(3){animation-delay:.15s}.ov-stat:nth-child(4){animation-delay:.2s}.ov-stat:nth-child(5){animation-delay:.25s}.ov-stat:nth-child(6){animation-delay:.3s}
+.ov-stat-ico{position:absolute;top:12px;right:12px;width:22px;height:22px;color:rgba(255,255,255,.15);transition:all .25s}
+.ov-stat:hover .ov-stat-ico{color:rgba(255,255,255,.4);transform:rotate(8deg) scale(1.1)}
+.ov-stat-v{font-family:'Orbitron',sans-serif;font-size:1.5rem;font-weight:800;line-height:1;letter-spacing:-.5px;position:relative}
+.ov-stat-l{font-size:.55rem;color:rgba(255,255,255,.32);text-transform:uppercase;letter-spacing:1.5px;margin-top:6px;font-weight:700}
+.ov-stat-sub{font-size:.62rem;color:rgba(255,255,255,.4);margin-top:4px;line-height:1.3}
+.ov-stat-bar{height:3px;background:rgba(255,255,255,.05);border-radius:2px;margin-top:8px;overflow:hidden}
+.ov-stat-bar-f{height:100%;border-radius:2px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+.ov-stages{padding:18px;border-radius:14px;background:linear-gradient(135deg,rgba(253,28,0,.03),rgba(238,167,39,.02));border:1px solid rgba(255,255,255,.05);margin-bottom:18px;animation:fadeUp .4s ease both;animation-delay:.35s}
+.ov-stages-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.ov-stages-title{font-size:.78rem;font-weight:700;color:rgba(255,255,255,.85);display:flex;align-items:center;gap:8px;letter-spacing:.4px}
+.ov-stages-title::before{content:'';width:3px;height:14px;background:linear-gradient(180deg,#fd1c00,#faa000);border-radius:2px;box-shadow:0 0 10px rgba(253,28,0,.5)}
+.ov-stages-row{display:flex;align-items:flex-start;justify-content:space-between;gap:0;padding:8px 0;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+.ov-stages-row::-webkit-scrollbar{display:none}
+.ov-step{display:flex;flex-direction:column;align-items:center;flex:1;min-width:88px;position:relative}
+.ov-step-name{font-size:.6rem;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;font-weight:700;white-space:nowrap}
+.ov-step.done .ov-step-name{color:#4ade80}
+.ov-step.active .ov-step-name{color:#fd1c00;text-shadow:0 0 10px rgba(253,28,0,.4)}
+.ov-circle-row{display:flex;align-items:center;width:100%;position:relative}
+.ov-line{flex:1;height:2px;background:rgba(255,255,255,.08);border-radius:1px;position:relative;overflow:hidden}
+.ov-line.fill{background:linear-gradient(90deg,#fd1c00,#faa000);box-shadow:0 0 8px rgba(253,28,0,.4)}
+.ov-line.first,.ov-line.last{visibility:hidden}
+.ov-circle{flex-shrink:0;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.78rem;background:rgba(255,255,255,.04);color:rgba(255,255,255,.4);border:2px solid rgba(255,255,255,.08);font-family:'DM Sans',sans-serif;position:relative;z-index:2;transition:all .35s}
+.ov-step.done .ov-circle{background:linear-gradient(135deg,#4ade80,#22c55e);color:#fff;border-color:rgba(74,222,128,.5);box-shadow:0 0 12px rgba(74,222,128,.4)}
+.ov-step.active .ov-circle{background:linear-gradient(135deg,#fd1c00,#faa000);color:#fff;border-color:rgba(253,28,0,.55);box-shadow:0 0 22px rgba(253,28,0,.5),0 0 0 4px rgba(253,28,0,.12);animation:ovPulse 2s ease-in-out infinite}
+@keyframes ovPulse{0%,100%{box-shadow:0 0 22px rgba(253,28,0,.5),0 0 0 4px rgba(253,28,0,.12)}50%{box-shadow:0 0 30px rgba(253,28,0,.7),0 0 0 8px rgba(253,28,0,.05)}}
+.ov-step-pct{font-family:'Orbitron',sans-serif;font-size:.84rem;font-weight:800;margin-top:9px;letter-spacing:-.3px}
+.ov-step-counts{display:flex;gap:6px;margin-top:5px;font-size:.58rem;font-weight:600}
+.ov-step-cnt-d{color:#4ade80}
+.ov-step-cnt-r{color:#EEA727}
+.ov-step-cnt-p{color:rgba(255,255,255,.35)}
+.ov-action{padding:18px;border-radius:14px;background:linear-gradient(135deg,rgba(238,167,39,.04),rgba(253,28,0,.02));border:1px solid rgba(238,167,39,.12);margin-bottom:18px;animation:fadeUp .4s ease both;animation-delay:.4s}
+.ov-action-hdr{font-size:.78rem;font-weight:700;color:#EEA727;letter-spacing:.4px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.ov-action-hdr::before{content:'⚠';font-size:.9rem}
+.ov-action-grid{display:grid;grid-template-columns:repeat(${isMobile?1:2},1fr);gap:9px}
+.ov-action-item{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-radius:10px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.05);transition:all .2s;cursor:pointer}
+.ov-action-item:hover{background:rgba(255,255,255,.04);border-color:rgba(238,167,39,.25);transform:translateX(2px)}
+.ov-action-item.ok{border-color:rgba(74,222,128,.15);background:rgba(74,222,128,.04)}
+.ov-action-item.ok:hover{border-color:rgba(74,222,128,.25)}
+.ov-action-left{display:flex;align-items:center;gap:11px;min-width:0}
+.ov-action-num{font-family:'Orbitron',sans-serif;font-size:1.3rem;font-weight:800;line-height:1;letter-spacing:-.5px;color:#EEA727;min-width:30px;text-align:right}
+.ov-action-item.ok .ov-action-num{color:#4ade80}
+.ov-action-txt{font-size:.74rem;color:rgba(255,255,255,.75);font-weight:500;line-height:1.3}
+.ov-action-arrow{font-size:.7rem;color:rgba(255,255,255,.3);font-weight:600;letter-spacing:.5px}
+.ov-2col{display:grid;grid-template-columns:${isMobile?'1fr':'1fr 1fr'};gap:14px;margin-bottom:18px}
+.ov-panel{padding:18px;border-radius:14px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);animation:fadeUp .4s ease both}
+.ov-panel.delay1{animation-delay:.45s}.ov-panel.delay2{animation-delay:.5s}.ov-panel.delay3{animation-delay:.55s}.ov-panel.delay4{animation-delay:.6s}
+.ov-panel-hdr{font-size:.74rem;font-weight:700;color:rgba(255,255,255,.85);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.ov-panel-hdr-l{display:flex;align-items:center;gap:8px}
+.ov-panel-hdr-l::before{content:'';width:3px;height:13px;background:linear-gradient(180deg,#fd1c00,#faa000);border-radius:2px}
+.ov-panel-hdr-cnt{font-size:.6rem;color:rgba(255,255,255,.4);font-weight:600;letter-spacing:.5px;text-transform:none}
+.ov-tech{display:flex;flex-direction:column;gap:9px}
+.ov-tech-item{display:flex;align-items:center;gap:10px}
+.ov-tech-name{font-size:.74rem;font-weight:600;color:rgba(255,255,255,.8);min-width:128px}
+.ov-tech-bar{flex:1;height:6px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden;position:relative}
+.ov-tech-bar-f{height:100%;border-radius:3px;transition:width .9s cubic-bezier(.4,0,.2,1);box-shadow:0 0 8px rgba(74,222,128,.25)}
+.ov-tech-pct{font-family:'Orbitron',sans-serif;font-size:.78rem;font-weight:800;min-width:42px;text-align:right;letter-spacing:-.3px}
+.ov-tech-meta{font-size:.6rem;color:rgba(255,255,255,.35);min-width:60px;text-align:right}
+.ov-mentor-list{display:flex;flex-direction:column;gap:8px}
+.ov-mentor-item{display:flex;align-items:center;gap:11px;padding:8px 11px;border-radius:9px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);transition:all .2s}
+.ov-mentor-item:hover{background:rgba(253,28,0,.03);border-color:rgba(253,28,0,.12)}
+.ov-mentor-rank{font-family:'Orbitron',sans-serif;font-size:.9rem;font-weight:800;color:#EEA727;min-width:22px;text-align:center}
+.ov-mentor-rank.gold{color:#f59e0b;text-shadow:0 0 10px rgba(245,158,11,.4)}
+.ov-mentor-rank.silver{color:#94a3b8}
+.ov-mentor-rank.bronze{color:#c68a5b}
+.ov-mentor-name{font-size:.76rem;font-weight:700;color:#fff;flex:1;line-height:1.2}
+.ov-mentor-stat{font-size:.62rem;color:rgba(255,255,255,.5);margin-top:2px;font-weight:500}
+.ov-mentor-pct{font-family:'Orbitron',sans-serif;font-size:.86rem;font-weight:800;letter-spacing:-.3px}
+.ov-recent-list,.ov-feed-list{display:flex;flex-direction:column;gap:8px}
+.ov-recent-item{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:9px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);transition:all .2s}
+.ov-recent-item:hover{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.1)}
+.ov-recent-team{font-size:.78rem;font-weight:800;color:#fd1c00;min-width:62px;text-shadow:0 0 8px rgba(253,28,0,.25)}
+.ov-recent-info{flex:1;min-width:0}
+.ov-recent-title{font-size:.74rem;font-weight:600;color:rgba(255,255,255,.8);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ov-recent-meta{font-size:.6rem;color:rgba(255,255,255,.35);margin-top:2px}
+.ov-recent-time{font-size:.6rem;color:rgba(255,255,255,.3);white-space:nowrap;font-weight:500}
+.ov-feed-item{display:flex;align-items:flex-start;gap:11px;padding:10px 12px;border-radius:9px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);transition:all .2s;animation:fadeUp .35s ease both}
+.ov-feed-item:hover{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.1)}
+.ov-feed-icon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.85rem;font-weight:700}
+.ov-feed-icon.stage-completed{background:rgba(74,222,128,.14);color:#4ade80;border:1px solid rgba(74,222,128,.3)}
+.ov-feed-icon.stage-in-review{background:rgba(238,167,39,.14);color:#EEA727;border:1px solid rgba(238,167,39,.3)}
+.ov-feed-icon.stage-rejected{background:rgba(253,28,0,.14);color:#fd1c00;border:1px solid rgba(253,28,0,.3)}
+.ov-feed-icon.linkedin{background:rgba(0,119,181,.14);color:#0a8fd6;border:1px solid rgba(0,119,181,.3)}
+.ov-feed-icon.mentor_request{background:rgba(167,139,250,.14);color:#a78bfa;border:1px solid rgba(167,139,250,.3)}
+.ov-feed-info{flex:1;min-width:0}
+.ov-feed-line{font-size:.74rem;color:rgba(255,255,255,.85);font-weight:500;line-height:1.4}
+.ov-feed-team{font-weight:800;color:#fd1c00}
+.ov-feed-meta{font-size:.6rem;color:rgba(255,255,255,.35);margin-top:3px}
+.ov-empty{padding:28px;text-align:center;color:rgba(255,255,255,.3);font-size:.78rem;border:1px dashed rgba(255,255,255,.06);border-radius:9px;background:rgba(255,255,255,.01)}
+@media(max-width:640px){.ov-stages-row{padding-bottom:6px}.ov-step{min-width:72px}.ov-step-name{font-size:.55rem}.ov-circle{width:30px;height:30px;font-size:.72rem}.ov-step-pct{font-size:.78rem}}
+
 /* ═══ MENTORS ═══ */
 .ad-msub{display:flex;gap:6px;margin-bottom:18px;border-bottom:1px solid rgba(255,255,255,.05);overflow-x:auto;scrollbar-width:none}
 .ad-msub::-webkit-scrollbar{display:none}
@@ -957,19 +1053,174 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
           <div className="ad-body">
             {loading && !data && <div style={{textAlign:'center',padding:'60px',color:'rgba(255,255,255,.3)'}}>Loading dashboard...</div>}
 
-            {/* OVERVIEW */}
-            {data && activeTab === 'overview' && <>
-              <div className="ad-stats">
-                <div className="ad-stat" style={{'--gw':'rgba(253,28,0,.06)'}}><div className="ad-sv"><AnimNum value={s.totalTeams} color="#fd1c00"/></div><div className="ad-sl">Total Teams</div></div>
-                <div className="ad-stat" style={{'--gw':'rgba(74,222,128,.06)'}}><div className="ad-sv"><AnimNum value={s.registeredCount} color="#4ade80"/></div><div className="ad-sl">Registered</div></div>
-                <div className="ad-stat" style={{'--gw':'rgba(238,167,39,.06)'}}><div className="ad-sv"><AnimNum value={s.pendingCount} color="#EEA727"/></div><div className="ad-sl">Pending</div></div>
-                <div className="ad-stat" style={{'--gw':'rgba(59,130,246,.06)'}}><div className="ad-sv"><AnimNum value={s.accountsCreated} color="#3b82f6"/></div><div className="ad-sl">Accounts</div></div>
-              </div>
-              <div className="ad-prog"><div className="ad-prog-hdr"><span className="ad-prog-title">Registration Progress</span><span className="ad-prog-pct">{s.progressPercent}%</span></div><div className="ad-prog-bar"><div className="ad-prog-fill" style={{width:`${s.progressPercent}%`}}/></div></div>
-              <div className="ad-tg">{Object.entries(data.techBreakdown||{}).map(([t,v])=><div key={t} className="ad-tc"><div className="ad-td" style={{background:TC[t]||'#888'}}/><div style={{flex:1}}><div className="ad-tn">{t}</div><div className="ad-ts">{v.registered}/{v.total} registered</div><div className="ad-tb"><div className="ad-tbf" style={{width:`${v.total>0?Math.round(v.registered/v.total*100):0}%`,background:TC[t]||'#888'}}/></div></div></div>)}</div>
-              <div className="ad-rti">{IC.clk} Recent Registrations</div>
-              {(data.recentRegistrations||[]).map((r,i)=><div key={i} className="ad-ri"><div style={{fontSize:'.82rem',fontWeight:700,color:'#fd1c00',minWidth:58}}>{r.teamNumber}</div><div><div style={{fontSize:'.76rem',fontWeight:500,color:'rgba(255,255,255,.65)'}}>{r.projectTitle}</div><div style={{fontSize:'.62rem',color:'rgba(255,255,255,.25)',marginTop:1}}>{r.technology}</div></div><div style={{fontSize:'.62rem',color:'rgba(255,255,255,.15)',whiteSpace:'nowrap',marginLeft:'auto'}}>{r.registeredAt?new Date(r.registeredAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):''}</div></div>)}
-            </>}
+            {/* OVERVIEW V2 — DASHBOARD */}
+            {data && activeTab === 'overview' && (() => {
+              const ov = insights?.overview || {}
+              const todayAct = ov.todayActivity || {}
+              const stages = ov.stageBreakdown || []
+              const action = ov.actionItems || {}
+              const topMentors = ov.topMentors || []
+              const feed = ov.activityFeed || []
+              const fmtAgo = (t) => {
+                if (!t) return '—'
+                const diff = (Date.now() - new Date(t).getTime()) / 60000
+                if (diff < 1) return 'just now'
+                if (diff < 60) return `${Math.floor(diff)}m ago`
+                if (diff < 1440) return `${Math.floor(diff/60)}h ago`
+                return `${Math.floor(diff/1440)}d ago`
+              }
+              // Find current active stage (first incomplete)
+              const activeStageIdx = stages.findIndex(s => s.percent < 100)
+              return <>
+                {/* 6 STAT CARDS */}
+                <div className="ov-stats">
+                  <div className="ov-stat" style={{'--gw':'rgba(74,222,128,.08)'}}>
+                    <div className="ov-stat-ico">{IC.users}</div>
+                    <div className="ov-stat-v" style={{color:'#4ade80'}}><AnimNum value={s.registeredCount} color="#4ade80"/>/{s.totalTeams}</div>
+                    <div className="ov-stat-l">Registration</div>
+                    <div className="ov-stat-sub">{s.pendingCount} pending</div>
+                    <div className="ov-stat-bar"><div className="ov-stat-bar-f" style={{width:`${s.progressPercent}%`,background:'linear-gradient(90deg,#4ade80,#22c55e)',boxShadow:'0 0 8px rgba(74,222,128,.4)'}}/></div>
+                  </div>
+                  <div className="ov-stat" style={{'--gw':'rgba(59,130,246,.08)'}}>
+                    <div className="ov-stat-ico">{IC.cal}</div>
+                    <div className="ov-stat-v" style={{color:'#3b82f6'}}><AnimNum value={attData?.dailySummary?.presentStudents||0} color="#3b82f6"/>/{attData?.dailySummary?.totalStudents||'—'}</div>
+                    <div className="ov-stat-l">Attendance</div>
+                    <div className="ov-stat-sub">{attData?.dailySummary?.presentMentors||0}/{attData?.dailySummary?.totalMentors||0} mentors present</div>
+                    <div className="ov-stat-bar"><div className="ov-stat-bar-f" style={{width:`${attData?.dailySummary?.attendancePercent||0}%`,background:'linear-gradient(90deg,#3b82f6,#1e40af)',boxShadow:'0 0 8px rgba(59,130,246,.4)'}}/></div>
+                  </div>
+                  <div className="ov-stat" style={{'--gw':'rgba(253,28,0,.08)'}}>
+                    <div className="ov-stat-ico">{IC.bolt}</div>
+                    <div className="ov-stat-v" style={{color:'#fd1c00'}}><AnimNum value={(todayAct.stagesSubmittedToday||0)+(todayAct.linkedinPostsToday||0)+(todayAct.mentorRequestsToday||0)} color="#fd1c00"/></div>
+                    <div className="ov-stat-l">Active Today</div>
+                    <div className="ov-stat-sub">{todayAct.stagesSubmittedToday||0} stages · {todayAct.linkedinPostsToday||0} posts · {todayAct.mentorRequestsToday||0} req</div>
+                  </div>
+                  <div className="ov-stat" style={{'--gw':'rgba(0,119,181,.08)'}}>
+                    <div className="ov-stat-ico">{IC.share}</div>
+                    <div className="ov-stat-v" style={{color:'#0a8fd6'}}><AnimNum value={data?.summary?.linkedin?.totalPosts||insights?.summary?.linkedin?.totalPosts||0} color="#0a8fd6"/></div>
+                    <div className="ov-stat-l">LinkedIn Posts</div>
+                    <div className="ov-stat-sub">+{todayAct.linkedinPostsToday||0} today · {insights?.summary?.linkedin?.studentPosts||0} student / {insights?.summary?.linkedin?.mentorPosts||0} mentor</div>
+                  </div>
+                  <div className="ov-stat" style={{'--gw':'rgba(238,167,39,.08)'}}>
+                    <div className="ov-stat-ico">{IC.bell}</div>
+                    <div className="ov-stat-v" style={{color:'#EEA727'}}><AnimNum value={ov.mentorRequestsTotal||0} color="#EEA727"/></div>
+                    <div className="ov-stat-l">Mentor Requests</div>
+                    <div className="ov-stat-sub">{ov.mentorRequestsPending||0} pending · {ov.mentorRequestsResolved||0} resolved{ov.avgMentorRating>0?` · ${ov.avgMentorRating}★`:''}</div>
+                  </div>
+                  <div className="ov-stat" style={{'--gw':'rgba(167,139,250,.08)'}}>
+                    <div className="ov-stat-ico">{IC.target}</div>
+                    <div className="ov-stat-v" style={{color:'#a78bfa'}}><AnimNum value={insights?.summary?.stages?.approved||0} color="#a78bfa"/></div>
+                    <div className="ov-stat-l">Stages Approved</div>
+                    <div className="ov-stat-sub">{insights?.summary?.stages?.inReview||0} in review · {insights?.summary?.stages?.rejected||0} rejected</div>
+                  </div>
+                </div>
+
+                {/* 7-STAGE COMPACT STEPPER */}
+                <div className="ov-stages">
+                  <div className="ov-stages-hdr">
+                    <div className="ov-stages-title">7-Stage Progress · {insights?.summary?.stages?.totalSubmitted||0} submissions</div>
+                    <div style={{fontSize:'.66rem',color:'rgba(255,255,255,.4)',fontWeight:600}}>{insights?.summary?.stages?.approved||0} approved · {insights?.summary?.stages?.inReview||0} in review · {insights?.summary?.stages?.rejected||0} rejected</div>
+                  </div>
+                  <div className="ov-stages-row">
+                    {stages.map((st,i)=>{const isDone=st.percent===100;const isActive=i===activeStageIdx;const cls=isDone?'done':isActive?'active':'';const prevDone=i===0||stages[i-1].percent===100;return <div key={st.stage} className={`ov-step ${cls}`}>
+                      <div className="ov-step-name">{st.name}</div>
+                      <div className="ov-circle-row">
+                        <div className={`ov-line ${i===0?'first':''} ${prevDone&&i>0?'fill':''}`}/>
+                        <div className="ov-circle">{st.stage}</div>
+                        <div className={`ov-line ${i===stages.length-1?'last':''} ${isDone?'fill':''}`}/>
+                      </div>
+                      <div className="ov-step-pct" style={{color:isDone?'#4ade80':isActive?'#fd1c00':'rgba(255,255,255,.35)'}}>{st.percent}%</div>
+                      <div className="ov-step-counts">
+                        <span className="ov-step-cnt-d" title="Done">{st.completed}</span>
+                        <span className="ov-step-cnt-r" title="In Review">·{st.inReview}</span>
+                        <span className="ov-step-cnt-p" title="Pending">·{st.pending}</span>
+                      </div>
+                    </div>})}
+                  </div>
+                </div>
+
+                {/* ACTION ITEMS */}
+                <div className="ov-action">
+                  <div className="ov-action-hdr">Action Items</div>
+                  <div className="ov-action-grid">
+                    <div className={`ov-action-item ${action.pendingReviews===0?'ok':''}`} onClick={()=>setActiveTab('milestones')}>
+                      <div className="ov-action-left"><div className="ov-action-num">{action.pendingReviews||0}</div><div className="ov-action-txt">{action.pendingReviews===0?'No pending stage reviews':`Stage review${action.pendingReviews===1?'':'s'} waiting`}</div></div>
+                      <div className="ov-action-arrow">{action.pendingReviews>0?'→ Project Status':'✓'}</div>
+                    </div>
+                    <div className={`ov-action-item ${action.pendingMentorRequests===0?'ok':''}`} onClick={()=>{setActiveTab('mentors');setMentorSubTab('requests')}}>
+                      <div className="ov-action-left"><div className="ov-action-num">{action.pendingMentorRequests||0}</div><div className="ov-action-txt">{action.pendingMentorRequests===0?'All mentor requests resolved':`Mentor request${action.pendingMentorRequests===1?'':'s'} pending`}</div></div>
+                      <div className="ov-action-arrow">{action.pendingMentorRequests>0?'→ Mentor Requests':'✓'}</div>
+                    </div>
+                    <div className={`ov-action-item ${action.unregisteredTeams===0?'ok':''}`} onClick={()=>{setActiveTab('teams');setFilterStatus('pending')}}>
+                      <div className="ov-action-left"><div className="ov-action-num">{action.unregisteredTeams||0}</div><div className="ov-action-txt">{action.unregisteredTeams===0?'All teams registered':`Team${action.unregisteredTeams===1?'':'s'} haven't registered`}</div></div>
+                      <div className="ov-action-arrow">{action.unregisteredTeams>0?'→ Pending Teams':'✓'}</div>
+                    </div>
+                    <div className={`ov-action-item ${action.teamsWithoutMentor===0?'ok':''}`}>
+                      <div className="ov-action-left"><div className="ov-action-num">{action.teamsWithoutMentor||0}</div><div className="ov-action-txt">{action.teamsWithoutMentor===0?'All teams have mentors':`Team${action.teamsWithoutMentor===1?'':'s'} without mentor`}</div></div>
+                      <div className="ov-action-arrow">{action.teamsWithoutMentor>0?'⚠ Assign needed':'✓'}</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* TECH + TOP MENTORS */}
+                <div className="ov-2col">
+                  <div className="ov-panel delay1">
+                    <div className="ov-panel-hdr"><div className="ov-panel-hdr-l">By Technology</div><div className="ov-panel-hdr-cnt">{Object.keys(data.techBreakdown||{}).length} tracks</div></div>
+                    <div className="ov-tech">
+                      {Object.entries(data.techBreakdown||{}).sort((a,b)=>(b[1].registered/b[1].total)-(a[1].registered/a[1].total)).map(([t,v])=>{const pct=v.total>0?Math.round((v.registered/v.total)*100):0;return <div key={t} className="ov-tech-item">
+                        <div className="ov-tech-name">{t}</div>
+                        <div className="ov-tech-bar"><div className="ov-tech-bar-f" style={{width:`${pct}%`,background:`linear-gradient(90deg,${TC[t]||'#888'},${TC[t]||'#888'}99)`,boxShadow:`0 0 8px ${TC[t]||'#888'}55`}}/></div>
+                        <div className="ov-tech-meta">{v.registered}/{v.total}</div>
+                        <div className="ov-tech-pct" style={{color:pct>=70?'#4ade80':pct>=40?'#EEA727':'#fd1c00'}}>{pct}%</div>
+                      </div>})}
+                    </div>
+                  </div>
+                  <div className="ov-panel delay2">
+                    <div className="ov-panel-hdr"><div className="ov-panel-hdr-l">Top Mentors</div><div className="ov-panel-hdr-cnt">by completion rate</div></div>
+                    <div className="ov-mentor-list">
+                      {topMentors.length===0?<div className="ov-empty">No mentor activity yet</div>:topMentors.map((m,i)=>{const rankCls=i===0?'gold':i===1?'silver':i===2?'bronze':'';return <div key={m.name} className="ov-mentor-item">
+                        <div className={`ov-mentor-rank ${rankCls}`}>#{i+1}</div>
+                        <div style={{flex:1,minWidth:0}}>
+                          <div className="ov-mentor-name">{m.name}</div>
+                          <div className="ov-mentor-stat">{m.registeredTeams}/{m.totalTeams} teams · {m.stagesApproved} stages approved{m.linkedinPosted?' · LI ✓':''}</div>
+                        </div>
+                        <div className="ov-mentor-pct" style={{color:m.regPercent>=80?'#4ade80':m.regPercent>=50?'#EEA727':'#fd1c00'}}>{m.regPercent}%</div>
+                      </div>})}
+                    </div>
+                  </div>
+                </div>
+
+                {/* RECENT REGISTRATIONS + ACTIVITY FEED */}
+                <div className="ov-2col">
+                  <div className="ov-panel delay3">
+                    <div className="ov-panel-hdr"><div className="ov-panel-hdr-l">Recent Registrations</div><div className="ov-panel-hdr-cnt">latest 5</div></div>
+                    <div className="ov-recent-list">
+                      {(data.recentRegistrations||[]).slice(0,5).length===0?<div className="ov-empty">No registrations yet</div>:(data.recentRegistrations||[]).slice(0,5).map((r,i)=><div key={i} className="ov-recent-item">
+                        <div className="ov-recent-team">{r.teamNumber}</div>
+                        <div className="ov-recent-info"><div className="ov-recent-title">{r.projectTitle||'—'}</div><div className="ov-recent-meta">{r.technology}</div></div>
+                        <div className="ov-recent-time">{fmtAgo(r.registeredAt)}</div>
+                      </div>)}
+                    </div>
+                  </div>
+                  <div className="ov-panel delay4">
+                    <div className="ov-panel-hdr"><div className="ov-panel-hdr-l">Activity Feed</div><div className="ov-panel-hdr-cnt">live · last 5</div></div>
+                    <div className="ov-feed-list">
+                      {feed.length===0?<div className="ov-empty">No activity yet</div>:feed.map((e,i)=>{const iconCls=e.type==='stage'?`stage-${e.status}`:e.type;const iconChar=e.type==='stage'?(e.status==='completed'?'✓':e.status==='in-review'?'⏳':'✗'):e.type==='linkedin'?'in':'!';return <div key={i} className="ov-feed-item">
+                        <div className={`ov-feed-icon ${iconCls}`}>{iconChar}</div>
+                        <div className="ov-feed-info">
+                          <div className="ov-feed-line">
+                            <span className="ov-feed-team">{e.teamNumber}</span>
+                            {e.type==='stage' && <> · {e.stageName} {e.status==='completed'?'approved':e.status==='in-review'?'submitted':'rejected'} {e.actor?`by ${e.actor}`:''}</>}
+                            {e.type==='linkedin' && <> · {e.actor||'Someone'} posted on LinkedIn ({e.role})</>}
+                            {e.type==='mentor_request' && <> · {e.priority||'Medium'} request to {e.mentorName||'mentor'}</>}
+                          </div>
+                          <div className="ov-feed-meta">{fmtAgo(e.time)}</div>
+                        </div>
+                      </div>})}
+                    </div>
+                  </div>
+                </div>
+              </>
+            })()}
 
             {/* MENTORS — 4 SUB-TABS */}
             {data && activeTab === 'mentors' && (() => {

@@ -274,13 +274,129 @@ export async function GET(request) {
       }
     }
 
+    // ── OVERVIEW AGGREGATION ──
+    const STAGE_NAMES = ['Ideation','Planning','Design','Development','Testing','Deployment','Documentation']
+    // Per-stage breakdown
+    const totalTeamsCount = (teams || []).length
+    const stageBreakdown = [1,2,3,4,5,6,7].map(n => {
+      const subsForStage = (submissions || []).filter(s => s.stage_number === n)
+      const completed = subsForStage.filter(s => s.status === 'completed').length
+      const inReview = subsForStage.filter(s => s.status === 'in-review').length
+      const rejected = subsForStage.filter(s => s.status === 'rejected').length
+      return {
+        stage: n,
+        name: STAGE_NAMES[n-1],
+        completed, inReview, rejected,
+        pending: Math.max(0, totalTeamsCount - completed - inReview - rejected),
+        percent: totalTeamsCount > 0 ? Math.round((completed / totalTeamsCount) * 100) : 0
+      }
+    })
+
+    // Mentor request rollups
+    const mentorRequestsTotal = (mentorReqs || []).length
+    const mentorRequestsPending = (mentorReqs || []).filter(r => r.status === 'Pending').length
+    const mentorRequestsResolved = mentorRequestsTotal - mentorRequestsPending
+    const avgMentorRating = (() => {
+      const rated = (mentorReqs || []).filter(r => typeof r.rating === 'number' && r.rating > 0)
+      if (rated.length === 0) return 0
+      return rated.reduce((s, r) => s + r.rating, 0) / rated.length
+    })()
+
+    // Top 5 mentors by registration completion rate
+    const topMentors = Object.values(mentorActivity)
+      .filter(m => (m.totalTeams || 0) > 0)
+      .map(m => ({
+        name: m.name,
+        totalTeams: m.totalTeams,
+        registeredTeams: m.registeredTeams,
+        stagesApproved: m.stagesApproved,
+        stagesInReview: m.stagesInReview || 0,
+        regPercent: m.totalTeams > 0 ? Math.round((m.registeredTeams / m.totalTeams) * 100) : 0,
+        linkedinPosted: m.linkedinPosted,
+        studentLinkedinPosts: m.studentLinkedinPosts,
+        requestsPending: m.requestsPending || 0
+      }))
+      .sort((a, b) => b.regPercent - a.regPercent || b.stagesApproved - a.stagesApproved)
+      .slice(0, 5)
+
+    // Activity feed: merge latest events from stages, shares, mentor requests
+    const events = []
+    ;(submissions || []).forEach(s => {
+      if (s.status === 'in-review' || s.status === 'completed' || s.status === 'rejected') {
+        events.push({
+          type: 'stage',
+          status: s.status,
+          teamNumber: s.team_number,
+          stageName: STAGE_NAMES[s.stage_number - 1],
+          stageNumber: s.stage_number,
+          actor: s.status === 'completed' || s.status === 'rejected' ? s.reviewed_by_name : s.submitted_by_name,
+          time: s.status === 'completed' || s.status === 'rejected' ? s.reviewed_at : s.submitted_at
+        })
+      }
+    })
+    ;(shares || []).forEach(s => {
+      events.push({
+        type: 'linkedin',
+        teamNumber: s.team_number,
+        actor: s.posted_by_name,
+        role: s.posted_by_role,
+        time: s.created_at
+      })
+    })
+    ;(mentorReqs || []).forEach(r => {
+      events.push({
+        type: 'mentor_request',
+        teamNumber: r.team_number,
+        mentorName: r.mentor_name,
+        priority: r.priority,
+        status: r.status,
+        time: r.created_at
+      })
+    })
+    const activityFeed = events
+      .filter(e => e.time)
+      .sort((a, b) => new Date(b.time) - new Date(a.time))
+      .slice(0, 5)
+
+    // Action Items
+    const teamsWithoutMentor = (teams || []).filter(t => !t.mentor_assigned).length
+    const unregisteredTeams = (teams || []).filter(t => !t.registered).length
+    const actionItems = {
+      pendingReviews: summary.stages.inReview,
+      pendingMentorRequests: mentorRequestsPending,
+      unregisteredTeams,
+      teamsWithoutMentor
+    }
+
+    // Today's events count
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const todayActivity = {
+      stagesSubmittedToday: (submissions || []).filter(s => s.submitted_at && new Date(s.submitted_at) >= today).length,
+      linkedinPostsToday: (shares || []).filter(s => s.created_at && new Date(s.created_at) >= today).length,
+      mentorRequestsToday: (mentorReqs || []).filter(r => r.created_at && new Date(r.created_at) >= today).length
+    }
+
+    const overview = {
+      stageBreakdown,
+      mentorRequestsTotal,
+      mentorRequestsPending,
+      mentorRequestsResolved,
+      avgMentorRating: Number(avgMentorRating.toFixed(1)),
+      topMentors,
+      activityFeed,
+      actionItems,
+      todayActivity
+    }
+
     return Response.json({
       teamData: Object.values(teamData),
       mentorActivity: Object.values(mentorActivity),
       stageReviews,
       stageMatrix: Object.values(stageMatrix),
       stageCounts,
-      summary
+      summary,
+      overview
     })
   } catch (err) {
     console.error('Admin insights error:', err)
