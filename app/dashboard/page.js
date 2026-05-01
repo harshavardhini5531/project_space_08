@@ -6,6 +6,8 @@ import { createClient } from "@supabase/supabase-js";
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 import { useRouter } from "next/navigation";
 import { getSession } from "@/lib/session";
+import TermsGate from "@/app/components/TermsGate";
+import EventInfo from "@/app/dashboard/components/EventInfo";
 import {
   User, Users, FolderKanban, Activity, GraduationCap,
   UtensilsCrossed, Compass, CalendarDays, Megaphone,
@@ -30,12 +32,13 @@ const NAV_SECTIONS = [
     {id:"explore-teams",label:"Explore Teams",icon:Compass},
   ]},
   { title:"Updates", items:[
+    {id:"event-info",label:"Event Info",icon:MapPin},
     {id:"event-details",label:"Event Details",icon:CalendarDays},
     {id:"announcements",label:"Announcements",icon:Megaphone},
     {id:"space-jam",label:"Space Jam",icon:Rocket},
   ]},
 ];
-const PAGE_TITLES={"my-profile":"My Profile","team-profile":"Team Profile","project-details":"Project Details","project-status":"Project Status","mentor-request":"Mentor Request","food-section":"Food Section","explore-teams":"Explore Teams","event-details":"Event Details","announcements":"Announcements","space-jam":"Space Jam"};
+const PAGE_TITLES={"my-profile":"My Profile","team-profile":"Team Profile","project-details":"Project Details","project-status":"Project Status","mentor-request":"Mentor Request","food-section":"Food Section","explore-teams":"Explore Teams","event-info":"Event Info","event-details":"Event Details","announcements":"Announcements","space-jam":"Space Jam"};
 
 /* ═══ HELPER COMPONENTS ═══ */
 function StatCard({icon:Icon,label,value,color="#ff1d00"}){
@@ -2188,7 +2191,7 @@ export default function Dashboard(){
     ? NAV_SECTIONS
     : NAV_SECTIONS.map(sec => ({
         ...sec,
-        items: sec.items.filter(i => i.id === 'my-profile' || i.id === 'team-profile' || i.id === 'project-details' || i.id === 'project-status')
+        items: sec.items.filter(i => i.id === 'my-profile' || i.id === 'team-profile' || i.id === 'project-details' || i.id === 'project-status' || i.id === 'event-info')
       })).filter(sec => sec.items.length > 0);
   const activeItem=VISIBLE_NAV_SECTIONS.flatMap(s=>s.items).find(i=>i.id===active);
   const displayName = profile?.name || user?.name || 'Student';
@@ -2611,6 +2614,7 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
 }
       `}</style>
 
+      <TermsGate user={user}>
       <div className="dash">
         {isMobile && mobileMenuOpen && <div className="mob-overlay" onClick={()=>setMobileMenuOpen(false)}/>}
 
@@ -2667,7 +2671,8 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
             {active==="my-profile"?<MyProfile user={user} hootData={hootData} videoRatings={videoRatings} videoLoading={videoLoading}/>:
              active==="team-profile"?<TeamProfile user={user}/>:
              active==="project-details"?<ProjectDetails user={user}/>:
-             active==="project-status"?<ProjectStatus user={user}/>:(
+             active==="project-status"?<ProjectStatus user={user}/>:
+             active==="event-info"?<EventInfo user={user}/>:(
               <div className="page-placeholder">
                 <div className="page-icon">{activeItem&&<activeItem.icon size={36}/>}</div>
                 <div className="page-label">{PAGE_TITLES[active]}</div>
@@ -2677,6 +2682,7 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
           </div>
         </div>
       </div>
+      </TermsGate>
     </>
   );
 }
