@@ -64,14 +64,32 @@ export async function GET(request) {
       supabase.from('team_members').select('team_number, roll_number, is_leader')
     ])
 
-    const students = studentsRes.data || []
+    const allStudents = studentsRes.data || []
     const mentors = mentorsRes.data || []
     const teams = teamsRes.data || []
     const teamMembers = membersRes.data || []
 
+    // EVENT PARTICIPANTS ONLY — students who are in team_members table
+    const eventRollSet = new Set(teamMembers.map(tm => tm.roll_number).filter(Boolean))
+    const students = allStudents.filter(s => eventRollSet.has(s.roll_number))
+    // For students who are in team_members but NOT in students table, create stub records
+    const knownRolls = new Set(students.map(s => s.roll_number))
+    teamMembers.forEach(tm => {
+      if (!knownRolls.has(tm.roll_number)) {
+        students.push({
+          roll_number: tm.roll_number,
+          name: tm.short_name || tm.roll_number,
+          technology: null,
+          batch: tm.batch || null
+        })
+        knownRolls.add(tm.roll_number)
+      }
+    })
+
     // ── 3. Build lookup maps ──
     const studentByRoll = {}
-    students.forEach(s => { studentByRoll[s.roll_number] = s })
+    // Use allStudents for full lookup (so non-event students still resolve names/tech)
+    allStudents.forEach(s => { studentByRoll[s.roll_number] = s })
     const mentorByEmpId = {}
     mentors.forEach(m => { if (m.emp_id) mentorByEmpId[m.emp_id] = m })
     const teamByNumber = {}
