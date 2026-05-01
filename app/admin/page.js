@@ -27,6 +27,19 @@ export default function AdminDashboard() {
   const [expandedMentor, setExpandedMentor] = useState(null)
   const [mentorSubTab, setMentorSubTab] = useState('registration')
   const [teamSubExpand, setTeamSubExpand] = useState('details')
+  const [attData, setAttData] = useState(null)
+  const [attLoading, setAttLoading] = useState(false)
+  const [attDate, setAttDate] = useState(new Date().toISOString().slice(0,10))
+  const [attSubTab, setAttSubTab] = useState('summary')
+  const [attSyncing, setAttSyncing] = useState(false)
+  const [attSyncMsg, setAttSyncMsg] = useState('')
+  const [manualUploadType, setManualUploadType] = useState('project_street_4_30')
+  const [manualUploadRolls, setManualUploadRolls] = useState('')
+  const [manualUploading, setManualUploading] = useState(false)
+  const [manualUploadMsg, setManualUploadMsg] = useState('')
+  const [attTeamFilter, setAttTeamFilter] = useState('all')
+  const [attMentorFilter, setAttMentorFilter] = useState('')
+  const [attStudentSearch, setAttStudentSearch] = useState('')
   const [reminding, setReminding] = useState(false)
   const [reminderMsg, setReminderMsg] = useState('')
   const [adLeaderboard, setAdLeaderboard] = useState({ leaderboard: [], stats: {} })
@@ -1416,7 +1429,7 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
                 </div>}
               </div>
             })()}
-            
+
             {/* PROJECT STATUS */}
             {activeTab === 'milestones' && <div className="adm-lb">
               <style>{`
