@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { getSession } from "@/lib/session";
 import TermsGate from "@/app/components/TermsGate";
 import EventInfo from "@/app/dashboard/components/EventInfo";
+import MentorRequest from "@/app/dashboard/components/MentorRequest";
 import {
   User, Users, FolderKanban, Activity, GraduationCap,
   UtensilsCrossed, Compass, CalendarDays, Megaphone,
@@ -2672,7 +2673,8 @@ html,body{height:100%;overflow:hidden;background:#050008;font-family:'DM Sans',s
              active==="team-profile"?<TeamProfile user={user}/>:
              active==="project-details"?<ProjectDetails user={user}/>:
              active==="project-status"?<ProjectStatus user={user}/>:
-             active==="event-info"?<EventInfo user={user}/>:(
+             active==="event-info"?<EventInfo user={user}/>:
+             active==="mentor-request"?<MentorRequest user={user}/>:(
               <div className="page-placeholder">
                 <div className="page-icon">{activeItem&&<activeItem.icon size={36}/>}</div>
                 <div className="page-label">{PAGE_TITLES[active]}</div>
