@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
+import MentorHelpRequests from "@/app/mentor/dashboard/components/MentorHelpRequests";
 
 // ── LINE SVG ICONS ──
 const I = {
@@ -11,6 +12,7 @@ const I = {
   code: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>,
   settings: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9c.26.6.77 1.05 1.39 1.22l.12.03H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>,
   logout: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>,
+  lifebuoy: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>,
   phone: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>,
   mail: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22 6 12 13 2 6"/></svg>,
   star: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
@@ -21,10 +23,21 @@ const I = {
 
 export default function MentorDashboard() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [mentor, setMentor] = useState(null)
+  const [initialClaimId, setInitialClaimId] = useState(null)
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [activePage, setActivePage] = useState('overview')
+
+  // Email magic link: ?tab=help-requests&claim=<requestId>
+  useEffect(() => {
+    if (!searchParams) return
+    const tab = searchParams.get('tab')
+    const claim = searchParams.get('claim')
+    if (tab === 'help-requests') setActivePage('help-requests')
+    if (claim) setInitialClaimId(claim)
+  }, [searchParams])
   const [expandedTeam, setExpandedTeam] = useState(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
@@ -182,6 +195,7 @@ export default function MentorDashboard() {
     {id:'linkedin', label:'LinkedIn Stats', icon:I.share},
     {id:'leaderboard', label:'Leaderboard', icon:I.award},
     {id:'settings', label:'Settings', icon:I.settings},
+    { id: "help-requests", label: "Help Requests", icon: I.lifebuoy }
   ]
 
   const myTeams = data?.teams || []
@@ -327,13 +341,27 @@ Powered by ${toBoldM('Technical Hub')}, led by CEO ${toBoldM('Babji Neelam')} Si
   }
 
   const [liConfirm, setLiConfirm] = useState(false)
+  const [liCopiedToast, setLiCopiedToast] = useState(false)
 
   function postMentorLinkedIn() {
     if (!liTeam?.teamNumber) { alert('This team does not have a team number yet. Cannot share until registration is complete.'); return; }
-    const text = encodeURIComponent(liPost);
     const showcaseUrl = `https://projectspace.technicalhub.io/showcase/${liTeam.teamNumber}?v=3`;
     const url = encodeURIComponent(showcaseUrl);
-    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}&text=${text}`, '_blank', 'noopener,noreferrer');
+    // Copy post text to clipboard so user can paste it into LinkedIn compose box
+    try {
+      navigator.clipboard.writeText(liPost).then(() => {
+        setMtToast({ msg: 'Post copied! Paste it into LinkedIn', isError: false });
+        setTimeout(() => setMtToast(null), 4000);
+      }).catch(() => {
+        setMtToast({ msg: 'Open LinkedIn and paste your post manually', isError: true });
+        setTimeout(() => setMtToast(null), 4000);
+      });
+    } catch(e) {
+      setMtToast({ msg: 'Open LinkedIn and paste your post manually', isError: true });
+      setTimeout(() => setMtToast(null), 4000);
+    }
+    // Open LinkedIn share with URL only (text param breaks if too long)
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank', 'noopener,noreferrer');
     setLiConfirm(true);
   }
 
@@ -416,6 +444,13 @@ Powered by ${toBoldM('Technical Hub')}, led by CEO ${toBoldM('Babji Neelam')} Si
 
   return (
     <>
+      {mtToast && <div style={{position:'fixed',bottom:32,left:'50%',transform:'translateX(-50%)',background:'#13101a',border:`1px solid ${mtToast.isError?'rgba(239,68,68,.4)':'rgba(74,222,128,.4)'}`,color:'#fff',fontSize:13,fontWeight:500,padding:'12px 24px',borderRadius:12,boxShadow:'0 8px 32px rgba(0,0,0,.4)',display:'flex',alignItems:'center',gap:10,zIndex:9999,backdropFilter:'blur(8px)',animation:'mtToastIn .4s ease',fontFamily:"'DM Sans',sans-serif"}}>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={mtToast.isError?'#ef4444':'#10b981'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          {mtToast.isError ? <><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></> : <><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></>}
+        </svg>
+        <span>{mtToast.msg}</span>
+      </div>}
+      <style>{`@keyframes mtToastIn{from{opacity:0;transform:translate(-50%,20px)}to{opacity:1;transform:translate(-50%,0)}}`}</style>
       <style>{`
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{background:#050008;overflow:hidden}
@@ -1014,6 +1049,14 @@ body.sb-open{overflow:hidden}
                 </div>
               </>} 
             </div>)}
+
+            {/* HELP REQUESTS */}
+            {activePage==='help-requests' && (
+              <MentorHelpRequests
+                mentor={mentor}
+                initialClaim={initialClaimId}
+              />
+            )}
 
             {/* LINKEDIN STATS */}
             {activePage==='linkedin' && (<div className="li-mentor-section">

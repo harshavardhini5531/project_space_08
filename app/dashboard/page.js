@@ -1360,6 +1360,7 @@ function ProjectDetails({ user }) {
   const [liSuggestion, setLiSuggestion] = useState('');
   const [liPosted, setLiPosted] = useState(false);
   const [liConfirm, setLiConfirm] = useState(false);
+  const [liCopiedToast, setLiCopiedToast] = useState(false);
   const [hasLinkedInShare, setHasLinkedInShare] = useState(false);
   const [reenableRequest, setReenableRequest] = useState(null); // null | {status: 'pending'|'approved'|'denied'}
   const [showReenableModal, setShowReenableModal] = useState(false);
@@ -1610,10 +1611,20 @@ Powered by ${toBold('Technical Hub')}, led by CEO ${toBold('Babji Neelam')} Sir,
   }
 
   function postToLinkedIn() {
-    const text = encodeURIComponent(liPost);
     const showcaseUrl = `https://projectspace.technicalhub.io/showcase/${details.teamNumber}?v=3`;
     const url = encodeURIComponent(showcaseUrl);
-    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}&text=${text}`, '_blank', 'noopener,noreferrer');
+    // Copy post text to clipboard so user can paste it into LinkedIn compose box
+    try {
+      navigator.clipboard.writeText(liPost).then(() => {
+        showPsToast('Post copied! Paste it into LinkedIn');
+      }).catch(() => {
+        showPsToast('Open LinkedIn and paste your post manually', true);
+      });
+    } catch(e) {
+      showPsToast('Open LinkedIn and paste your post manually', true);
+    }
+    // Open LinkedIn share with URL only (text param breaks if too long)
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank', 'noopener,noreferrer');
     setLiPosted(true);
     setLiConfirm(true);
   }
