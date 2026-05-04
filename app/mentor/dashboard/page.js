@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import MentorHelpRequests from "@/app/mentor/dashboard/components/MentorHelpRequests";
 
 // ── LINE SVG ICONS ──
@@ -23,7 +23,7 @@ const I = {
 
 export default function MentorDashboard() {
   const router = useRouter()
-  const searchParams = useSearchParams()
+  // const searchParams = useSearchParams() — disabled until MentorHelpRequests is restored
   const [mentor, setMentor] = useState(null)
   const [initialClaimId, setInitialClaimId] = useState(null)
   const [data, setData] = useState(null)
@@ -444,13 +444,6 @@ Powered by ${toBoldM('Technical Hub')}, led by CEO ${toBoldM('Babji Neelam')} Si
 
   return (
     <>
-      {mtToast && <div style={{position:'fixed',bottom:32,left:'50%',transform:'translateX(-50%)',background:'#13101a',border:`1px solid ${mtToast.isError?'rgba(239,68,68,.4)':'rgba(74,222,128,.4)'}`,color:'#fff',fontSize:13,fontWeight:500,padding:'12px 24px',borderRadius:12,boxShadow:'0 8px 32px rgba(0,0,0,.4)',display:'flex',alignItems:'center',gap:10,zIndex:9999,backdropFilter:'blur(8px)',animation:'mtToastIn .4s ease',fontFamily:"'DM Sans',sans-serif"}}>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={mtToast.isError?'#ef4444':'#10b981'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          {mtToast.isError ? <><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></> : <><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></>}
-        </svg>
-        <span>{mtToast.msg}</span>
-      </div>}
-      <style>{`@keyframes mtToastIn{from{opacity:0;transform:translate(-50%,20px)}to{opacity:1;transform:translate(-50%,0)}}`}</style>
       <style>{`
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{background:#050008;overflow:hidden}
@@ -1059,6 +1052,13 @@ body.sb-open{overflow:hidden}
             )}
 
             {/* LINKEDIN STATS */}
+            {activePage==='help-requests' && (
+              <MentorHelpRequests
+                mentor={mentor}
+                initialClaim={initialClaimId}
+              />
+            )}
+
             {activePage==='linkedin' && (<div className="li-mentor-section">
               <style>{`
 .li-mentor-section{animation:fadeUp .4s ease both}
