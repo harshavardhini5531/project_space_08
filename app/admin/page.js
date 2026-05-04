@@ -1230,6 +1230,93 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
                     </div>
                   </div>
                 </div>
+
+                {/* ═══ AI TOOLS + TECH STACK CARD GRIDS ═══ */}
+                {(() => {
+                  const teams = data?.teamList || []
+                  const aiCounts = {}
+                  const techCounts = {}
+                  teams.forEach(t => {
+                    (t.aiTools || []).forEach(tool => { if (tool && tool.trim()) aiCounts[tool.trim()] = (aiCounts[tool.trim()]||0) + 1 });
+                    (t.techStack || []).forEach(tech => { if (tech && tech.trim()) techCounts[tech.trim()] = (techCounts[tech.trim()]||0) + 1 });
+                  })
+                  const aiSorted = Object.entries(aiCounts).sort((a,b) => b[1] - a[1])
+                  const techSorted = Object.entries(techCounts).sort((a,b) => b[1] - a[1])
+                  const totalTeams = teams.length || 1
+                  const aiColors = ['#fd1c00','#fa0068','#a78bfa','#7B2FBE','#3b82f6','#06b6d4','#10b981','#EEA727','#f59e0b','#ef4444']
+                  const techColors = ['#10b981','#3b82f6','#06b6d4','#a78bfa','#EEA727','#fd1c00','#fa0068','#7B2FBE','#f59e0b','#ef4444']
+                  return <>
+                    <style>{`
+.aitools-section{margin-top:20px;animation:fadeUp .4s ease both}
+.aitools-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px}
+.aitools-title{font-size:.78rem;font-weight:700;color:rgba(255,255,255,.85);letter-spacing:.4px;display:flex;align-items:center;gap:8px;text-transform:uppercase}
+.aitools-title::before{content:'';width:3px;height:14px;background:linear-gradient(180deg,#fd1c00,#faa000);border-radius:2px;box-shadow:0 0 10px rgba(253,28,0,.5)}
+.aitools-meta{font-size:.62rem;color:rgba(255,255,255,.4);font-weight:600}
+.aitools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+.aitools-card{position:relative;padding:14px 16px;border-radius:12px;background:linear-gradient(135deg,rgba(255,255,255,.03),rgba(255,255,255,.01));border:1px solid rgba(255,255,255,.06);overflow:hidden;transition:all .25s ease;cursor:default}
+.aitools-card:hover{transform:translateY(-2px);border-color:var(--aiac,rgba(253,28,0,.3));box-shadow:0 6px 20px rgba(0,0,0,.3)}
+.aitools-card::before{content:'';position:absolute;top:-30%;right:-30%;width:140%;height:140%;background:radial-gradient(circle,var(--aiac,rgba(253,28,0,.08)),transparent 60%);pointer-events:none;opacity:.6}
+.aitools-card-name{position:relative;font-size:.84rem;font-weight:700;color:#fff;margin-bottom:6px;letter-spacing:.2px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.aitools-card-count{position:relative;display:flex;align-items:baseline;gap:5px;margin-bottom:8px}
+.aitools-card-num{font-family:'Orbitron',sans-serif;font-size:1.55rem;font-weight:800;line-height:1;color:var(--aiac,#fd1c00);letter-spacing:-.5px}
+.aitools-card-of{font-size:.65rem;color:rgba(255,255,255,.35);font-weight:500}
+.aitools-card-bar{position:relative;height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;margin-bottom:5px}
+.aitools-card-bar-f{height:100%;border-radius:2px;background:var(--aiac,#fd1c00);box-shadow:0 0 6px var(--aiac,#fd1c00);transition:width .8s cubic-bezier(.4,0,.2,1)}
+.aitools-card-pct{position:relative;font-size:.6rem;color:rgba(255,255,255,.5);font-weight:600;letter-spacing:.3px}
+.aitools-empty{padding:24px;text-align:center;color:rgba(255,255,255,.3);font-size:.78rem;border:1px dashed rgba(255,255,255,.06);border-radius:9px;background:rgba(255,255,255,.01)}
+                    `}</style>
+
+                    {/* AI TOOLS */}
+                    <div className="aitools-section">
+                      <div className="aitools-hdr">
+                        <div className="aitools-title">⚡ AI Tools Used</div>
+                        <div className="aitools-meta">{aiSorted.length} unique tools · across {teams.filter(t => (t.aiTools||[]).length>0).length} teams</div>
+                      </div>
+                      {aiSorted.length === 0 ? <div className="aitools-empty">No AI tools data yet</div> : (
+                        <div className="aitools-grid">
+                          {aiSorted.map(([name, count], i) => {
+                            const color = aiColors[i % aiColors.length]
+                            const pct = Math.round(count / totalTeams * 100)
+                            return <div key={name} className="aitools-card" style={{'--aiac':color}}>
+                              <div className="aitools-card-name" title={name}>{name}</div>
+                              <div className="aitools-card-count">
+                                <span className="aitools-card-num">{count}</span>
+                                <span className="aitools-card-of">/ {totalTeams} teams</span>
+                              </div>
+                              <div className="aitools-card-bar"><div className="aitools-card-bar-f" style={{width:`${pct}%`}}/></div>
+                              <div className="aitools-card-pct">{pct}% adoption</div>
+                            </div>
+                          })}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* TECH STACK */}
+                    <div className="aitools-section">
+                      <div className="aitools-hdr">
+                        <div className="aitools-title">🛠 Tech Stack</div>
+                        <div className="aitools-meta">{techSorted.length} unique technologies · across {teams.filter(t => (t.techStack||[]).length>0).length} teams</div>
+                      </div>
+                      {techSorted.length === 0 ? <div className="aitools-empty">No tech stack data yet</div> : (
+                        <div className="aitools-grid">
+                          {techSorted.map(([name, count], i) => {
+                            const color = techColors[i % techColors.length]
+                            const pct = Math.round(count / totalTeams * 100)
+                            return <div key={name} className="aitools-card" style={{'--aiac':color}}>
+                              <div className="aitools-card-name" title={name}>{name}</div>
+                              <div className="aitools-card-count">
+                                <span className="aitools-card-num">{count}</span>
+                                <span className="aitools-card-of">/ {totalTeams} teams</span>
+                              </div>
+                              <div className="aitools-card-bar"><div className="aitools-card-bar-f" style={{width:`${pct}%`}}/></div>
+                              <div className="aitools-card-pct">{pct}% adoption</div>
+                            </div>
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </>
+                })()}
               </>
             })()}
 
@@ -1544,9 +1631,22 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
 
                 {/* Top control bar */}
                 <div className="att-top">
-                  <div className="att-date">
+                  <div className="att-date" style={{flexWrap:'wrap'}}>
                     <label>Date:</label>
                     <input type="date" value={attDate} onChange={e=>setAttDate(e.target.value)} max={new Date().toISOString().slice(0,10)}/>
+                    <div style={{display:'flex',gap:6,marginLeft:8,flexWrap:'wrap'}}>
+                      {[
+                        {label:'Today', days:0},
+                        {label:'Yesterday', days:1},
+                        {label:'2 days ago', days:2},
+                        {label:'1 week ago', days:7},
+                      ].map(p => {
+                        const d = new Date(); d.setDate(d.getDate()-p.days);
+                        const dStr = d.toISOString().slice(0,10);
+                        const isOn = attDate === dStr;
+                        return <button key={p.label} className={`att-fpill ${isOn?'on':''}`} onClick={()=>setAttDate(dStr)}>{p.label}</button>
+                      })}
+                    </div>
                   </div>
                   <div className="att-sync">
                     {lastSync && <div className="att-sync-meta">Last sync: {fmtTime(lastSync.finished_at)} · {lastSync.inserted||0} rows</div>}
@@ -1593,14 +1693,15 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
                     <button className={`att-fpill ${attTeamFilter==='incomplete'?'on':''}`} onClick={()=>setAttTeamFilter('incomplete')}>Incomplete</button>
                     <button className={`att-fpill ${attTeamFilter==='absent'?'on':''}`} onClick={()=>setAttTeamFilter('absent')}>0 Present</button>
                   </div>
-                  <div style={{overflowX:'auto'}}><table className="att-tbl"><thead><tr><th>Team</th><th>Project</th><th>Tech</th><th>Mentor</th><th className="c">Present</th><th>Attendance</th><th>Absent Members</th></tr></thead><tbody>
-                    {filteredTeams.length===0?<tr><td colSpan={7} style={{textAlign:'center',padding:30,color:'rgba(255,255,255,.3)'}}>No teams match filter</td></tr>:filteredTeams.map(t=><tr key={t.teamNumber}>
+                  <div style={{overflowX:'auto'}}><table className="att-tbl"><thead><tr><th>Team</th><th>Project</th><th>Tech</th><th>Mentor</th><th className="c">Present</th><th>Attendance</th><th>Present Members</th><th>Absent Members</th></tr></thead><tbody>
+                    {filteredTeams.length===0?<tr><td colSpan={8} style={{textAlign:'center',padding:30,color:'rgba(255,255,255,.3)'}}>No teams match filter</td></tr>:filteredTeams.map(t=><tr key={t.teamNumber}>
                       <td style={{fontWeight:700,color:'#fd1c00'}}>{t.teamNumber}</td>
                       <td style={{maxWidth:160,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{t.projectTitle||'—'}</td>
                       <td><span style={{fontSize:'.6rem',padding:'2px 7px',borderRadius:5,background:'rgba(255,255,255,.04)',color:'rgba(255,255,255,.55)'}}>{t.technology||'—'}</span></td>
                       <td style={{color:'rgba(255,255,255,.5)',fontSize:'.7rem'}}>{t.mentor||'—'}</td>
                       <td className="c" style={{fontWeight:700}}><span style={{color:t.present===t.total?'#4ade80':t.present===0?'#fd1c00':'#EEA727'}}>{t.present}/{t.total}</span></td>
                       <td><span className="att-bar-mini"><span className="att-bar-mini-f" style={{width:`${t.percent}%`,background:t.percent>=70?'linear-gradient(90deg,#4ade80,#22c55e)':t.percent>=40?'linear-gradient(90deg,#EEA727,#faa000)':'linear-gradient(90deg,#fd1c00,#c41600)'}}/></span><span style={{fontWeight:700,color:t.percent>=70?'#4ade80':t.percent>=40?'#EEA727':'#fd1c00'}}>{t.percent}%</span></td>
+                      <td style={{fontSize:'.7rem',color:'rgba(255,255,255,.5)'}}>{(t.presentMembers||[]).length===0?'—':(t.presentMembers||[]).map(m=><span key={m.roll} style={{display:'inline-block',marginRight:6,marginBottom:3,padding:'2px 7px',borderRadius:5,background:'rgba(74,222,128,.08)',color:'#4ade80',border:'1px solid rgba(74,222,128,.15)',fontSize:'.62rem'}}>{m.name||m.roll}{m.isLeader?' ★':''}</span>)}</td>
                       <td style={{fontSize:'.7rem',color:'rgba(255,255,255,.5)'}}>{t.absentMembers.length===0?'—':t.absentMembers.map(m=><span key={m.roll} style={{display:'inline-block',marginRight:6,marginBottom:3,padding:'2px 7px',borderRadius:5,background:'rgba(253,28,0,.08)',color:'#fd1c00',border:'1px solid rgba(253,28,0,.15)',fontSize:'.62rem'}}>{m.name||m.roll}{m.isLeader?' ★':''}</span>)}</td>
                     </tr>)}
                   </tbody></table></div>

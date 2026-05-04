@@ -3,16 +3,17 @@ import { supabase } from "@/lib/supabase";
 
 /* ============================================================
    POST  /api/mentor-request/resolve
-   Body: { request_id, resolved_by: 'mentor' | 'self', actor_id? }
-   - 'mentor':  deducts 2 credits from team. actor_id = mentor.id.
-   - 'self':    no credit deduction. actor_id = student roll.
+   Body: { request_id, leader_roll }
+   Only the team leader can mark a request as resolved.
+   - If status was 'Accepted' (a mentor claimed it) -> Mentor Resolved + deduct 2 credits
+   - If status was 'Pending' (no mentor claimed)    -> Self Resolved + no credit deduction
    ============================================================ */
 export async function POST(req) {
   try {
-    const { request_id, resolved_by, actor_id } = await req.json();
+    const { request_id, leader_roll } = await req.json();
 
-    if (!request_id || !["mentor", "self"].includes(resolved_by)) {
-      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+    if (!request_id || !leader_roll) {
+      return NextResponse.json({ error: "Missing request_id or leader_roll" }, { status: 400 });
     }
 
     // ---- fetch request
@@ -33,47 +34,42 @@ export async function POST(req) {
       );
     }
 
-    let updates = {
-      resolved_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-    let creditChange = 0;
+    // ---- verify the requester is the team leader
+    const { data: team } = await supabase
+      .from("teams")
+      .select("leader_roll, credits")
+      .eq("team_number", request.team_number)
+      .single();
 
-    if (resolved_by === "mentor") {
-      // Must be currently Accepted by this mentor
-      if (request.status !== "Accepted") {
-        return NextResponse.json(
-          { error: "Only an accepted request can be marked resolved by a mentor" },
-          { status: 400 }
-        );
-      }
-      if (request.mentor_id !== actor_id) {
-        return NextResponse.json(
-          { error: "Only the assigned mentor can resolve this request" },
-          { status: 403 }
-        );
-      }
-      updates.status = "Mentor Resolved";
-      updates.resolved_by = "mentor";
-      updates.credits_deducted = 2;
-      creditChange = -2;
+    if (!team || team.leader_roll !== leader_roll) {
+      return NextResponse.json(
+        { error: "Only the team leader can resolve this request" },
+        { status: 403 }
+      );
+    }
+
+    let newStatus, resolvedBy, creditsDeducted = 0;
+    if (request.status === "Accepted") {
+      newStatus = "Mentor Resolved";
+      resolvedBy = "leader-mentor-helped";
+      creditsDeducted = 2;
     } else {
-      // self
-      if (request.status === "Accepted") {
-        return NextResponse.json(
-          { error: "A mentor has already accepted. Please wait or contact them." },
-          { status: 409 }
-        );
-      }
-      updates.status = "Self Resolved";
-      updates.resolved_by = "self";
-      updates.credits_deducted = 0;
+      // Pending — no mentor took it
+      newStatus = "Self Resolved";
+      resolvedBy = "leader-self";
+      creditsDeducted = 0;
     }
 
     // ---- update request
     const { data: updated, error: uErr } = await supabase
       .from("mentor_requests")
-      .update(updates)
+      .update({
+        status: newStatus,
+        resolved_by: resolvedBy,
+        resolved_at: new Date().toISOString(),
+        credits_deducted: creditsDeducted,
+        updated_at: new Date().toISOString(),
+      })
       .eq("id", request_id)
       .select()
       .single();
@@ -83,16 +79,9 @@ export async function POST(req) {
       return NextResponse.json({ error: "Failed to resolve" }, { status: 500 });
     }
 
-    // ---- deduct credits if mentor-resolved
-    if (creditChange !== 0) {
-      const { data: team } = await supabase
-        .from("teams")
-        .select("credits")
-        .eq("team_number", request.team_number)
-        .single();
-
-      const newCredits = Math.max(0, (team?.credits ?? 20) + creditChange);
-
+    // ---- deduct credits if mentor helped
+    if (creditsDeducted > 0) {
+      const newCredits = Math.max(0, (team.credits ?? 20) - creditsDeducted);
       await supabase
         .from("teams")
         .update({ credits: newCredits })

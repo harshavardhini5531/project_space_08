@@ -173,6 +173,7 @@ export async function GET(request) {
       const present = memberPresence.filter(m => m.present).length
       const total = memberPresence.length
       const absentMembers = memberPresence.filter(m => !m.present)
+      const presentMembers = memberPresence.filter(m => m.present)
       return {
         teamNumber: t.team_number,
         projectTitle: t.project_title,
@@ -181,6 +182,7 @@ export async function GET(request) {
         present,
         total,
         percent: total > 0 ? Math.round((present / total) * 100) : 0,
+        presentMembers: presentMembers.map(m => ({ roll: m.roll, name: m.name, isLeader: m.isLeader })),
         absentMembers: absentMembers.map(m => ({ roll: m.roll, name: m.name, isLeader: m.isLeader }))
       }
     }).sort((a, b) => b.percent - a.percent || a.teamNumber.localeCompare(b.teamNumber))
