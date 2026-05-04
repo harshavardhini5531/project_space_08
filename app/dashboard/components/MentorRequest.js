@@ -32,9 +32,13 @@ const I = {
 
 /* ====================================================================== */
 export default function MentorRequest({ user }) {
+  // Defensive field reads — supports multiple field name variations
   const teamNumber = user?.teamNumber || user?.team_number;
   const technology = user?.technology;
-  const isLeader = user?.isLeader || user?.is_leader || (user?.roll_number === user?.leader_roll);
+  const rollNumber = user?.roll_number || user?.rollNumber || user?.roll;
+  const userName = user?.name || user?.fullName;
+  const leaderRoll = user?.leader_roll || user?.leaderRoll;
+  const isLeader = user?.isLeader || user?.is_leader || (rollNumber && leaderRoll && rollNumber === leaderRoll) || (user?.is_team_leader === true);
 
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -130,8 +134,8 @@ export default function MentorRequest({ user }) {
           technology,
           priority,
           issue_description: description.trim(),
-          requested_by_roll: user?.roll_number,
-          requested_by_name: user?.name,
+          requested_by_roll: rollNumber,
+          requested_by_name: userName,
         }),
       });
       const json = await res.json();
@@ -160,7 +164,7 @@ export default function MentorRequest({ user }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           request_id: requestId,
-          leader_roll: user?.roll_number,
+          leader_roll: rollNumber,
         }),
       });
       const json = await res.json();
@@ -193,7 +197,7 @@ export default function MentorRequest({ user }) {
         body: JSON.stringify({
           request_id: requestId,
           rating,
-          rater_roll: user?.roll_number,
+          rater_roll: rollNumber,
         }),
       });
       const json = await res.json();
