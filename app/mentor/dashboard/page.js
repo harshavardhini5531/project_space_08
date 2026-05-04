@@ -29,15 +29,6 @@ export default function MentorDashboard() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [activePage, setActivePage] = useState('overview')
-
-  // Email magic link: ?tab=help-requests&claim=<requestId>
-  useEffect(() => {
-    if (!searchParams) return
-    const tab = searchParams.get('tab')
-    const claim = searchParams.get('claim')
-    if (tab === 'help-requests') setActivePage('help-requests')
-    if (claim) setInitialClaimId(claim)
-  }, [searchParams])
   const [expandedTeam, setExpandedTeam] = useState(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
