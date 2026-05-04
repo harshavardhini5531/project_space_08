@@ -72,8 +72,18 @@ export default function AdminDashboard() {
     { label: 'One special character', test: v => /[^A-Za-z0-9]/.test(v) },
   ]
 
-  useEffect(() => { setMounted(true); const c = () => setIsMobile(window.innerWidth < 900); c(); window.addEventListener('resize', c); return () => window.removeEventListener('resize', c) }, [])
-  useEffect(() => { const s = sessionStorage.getItem('admin_token'); const se = sessionStorage.getItem('adminEmail'); if (se) { setEmail(se); sessionStorage.removeItem('adminEmail') }; if (s) { setToken(s); setPhase('dashboard') } }, [])
+  useEffect(() => {
+    setMounted(true);
+    const c = () => setIsMobile(window.innerWidth < 900);
+    c();
+    window.addEventListener('resize', c);
+    // Combined auth check on mount — prevents white flash on reload
+    const s = sessionStorage.getItem('admin_token');
+    const se = sessionStorage.getItem('adminEmail');
+    if (se) { setEmail(se); sessionStorage.removeItem('adminEmail') }
+    if (s) { setToken(s); setPhase('dashboard') }
+    return () => window.removeEventListener('resize', c)
+  }, [])
   useEffect(() => { if (phase === 'dashboard' && token) fetchDashboard() }, [phase, token])
 
   async function handleCheckAndSendOTP() {
@@ -112,7 +122,7 @@ export default function AdminDashboard() {
   async function handleRemind() { setReminding(true); setReminderMsg(''); try { const r = await fetch('/api/admin/remind', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-token': token }, body: JSON.stringify({ type: 'all-pending' }) }); const d = await r.json(); setReminderMsg(d.message || `Sent ${d.sent} reminders`) } catch { setReminderMsg('Failed') } finally { setReminding(false) } }
   function handleLogout() { sessionStorage.removeItem('admin_token'); setToken(''); setPhase('auth'); setData(null) }
 
-  useEffect(() => { if (phase==='dashboard') { fetchAdLeaderboard(); fetchAdNotifs(); const iv=setInterval(()=>{fetchAdLeaderboard();fetchAdNotifs()},30000); return ()=>clearInterval(iv) } }, [phase])
+  useEffect(() => { if (phase==='dashboard') { fetchAdLeaderboard(); fetchAdNotifs(); const iv=setInterval(()=>{fetchAdLeaderboard();fetchAdNotifs()},120000); return ()=>clearInterval(iv) } }, [phase])
 
   // ── Attendance fetch ──
   async function fetchAttendance(date = attDate) {
@@ -631,7 +641,8 @@ body{font-family:'DM Sans',sans-serif;color:#fff}@keyframes fadeUp{from{opacity:
     );
   }
   // ═══ DASHBOARD ═══
-  if (!mounted) return null
+  // Render a dark loading shell instead of null — prevents white flash on initial mount
+  if (!mounted) return <div style={{position:'fixed',inset:0,background:'#050008'}}/>
   const s = data?.stats || {}
   const pageLabel = NAV.find(n => n.id === activeTab)?.label || 'Overview'
 
