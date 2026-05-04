@@ -185,7 +185,7 @@ export default function MentorDashboard() {
     {id:'linkedin', label:'LinkedIn Stats', icon:I.share},
     {id:'leaderboard', label:'Leaderboard', icon:I.award},
     {id:'settings', label:'Settings', icon:I.settings},
-    { id: "help-requests", label: "Help Requests", icon: I.lifebuoy }
+    { id: "help-requests", label: "Mentor Requests", icon: I.lifebuoy }
   ]
 
   const myTeams = data?.teams || []
@@ -1034,7 +1034,12 @@ body.sb-open{overflow:hidden}
             </div>)}
 
             {/* HELP REQUESTS — disabled, component file missing */}
-            {activePage==='help-requests' && (<div style={{padding:40,textAlign:'center',color:'rgba(255,255,255,.3)'}}>Help Requests feature coming soon</div>)}
+            {activePage==='help-requests' && (
+              <MentorHelpRequests
+                mentor={mentor}
+                initialClaim={initialClaimId}
+              />
+            )}
 
             {/* LINKEDIN STATS */}
             {activePage==='linkedin' && (<div className="li-mentor-section">
