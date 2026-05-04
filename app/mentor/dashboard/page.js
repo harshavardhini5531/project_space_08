@@ -1,7 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import MentorHelpRequests from "@/app/mentor/dashboard/components/MentorHelpRequests";
 
 // ── LINE SVG ICONS ──
 const I = {
@@ -332,7 +331,7 @@ Powered by ${toBoldM('Technical Hub')}, led by CEO ${toBoldM('Babji Neelam')} Si
   }
 
   const [liConfirm, setLiConfirm] = useState(false)
-  const [liCopiedToast, setLiCopiedToast] = useState(false)
+  const [mtToast, setMtToast] = useState(null)
 
   function postMentorLinkedIn() {
     if (!liTeam?.teamNumber) { alert('This team does not have a team number yet. Cannot share until registration is complete.'); return; }
@@ -1034,22 +1033,10 @@ body.sb-open{overflow:hidden}
               </>} 
             </div>)}
 
-            {/* HELP REQUESTS */}
-            {activePage==='help-requests' && (
-              <MentorHelpRequests
-                mentor={mentor}
-                initialClaim={initialClaimId}
-              />
-            )}
+            {/* HELP REQUESTS — disabled, component file missing */}
+            {activePage==='help-requests' && (<div style={{padding:40,textAlign:'center',color:'rgba(255,255,255,.3)'}}>Help Requests feature coming soon</div>)}
 
             {/* LINKEDIN STATS */}
-            {activePage==='help-requests' && (
-              <MentorHelpRequests
-                mentor={mentor}
-                initialClaim={initialClaimId}
-              />
-            )}
-
             {activePage==='linkedin' && (<div className="li-mentor-section">
               <style>{`
 .li-mentor-section{animation:fadeUp .4s ease both}
