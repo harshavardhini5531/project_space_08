@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
+import MentorHelpRequests from '@/app/mentor/dashboard/components/MentorHelpRequests'
 
 // ── LINE SVG ICONS ──
 const I = {
