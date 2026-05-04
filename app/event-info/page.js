@@ -165,7 +165,7 @@ export default function EventInfo({ user }) {
 
   return (
     <div className="ev">
-      <style jsx>{`
+      <style jsx global>{`
         .ev {
           --base: #050008;
           --ink: #ffffff;
