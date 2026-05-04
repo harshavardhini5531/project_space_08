@@ -22,6 +22,8 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('overview')
   const [search, setSearch] = useState('')
   const [filterTech, setFilterTech] = useState('all')
+  const [atxModal, setAtxModal] = useState(null)
+  const [atxSearch, setAtxSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [expandedTeam, setExpandedTeam] = useState(null)
   const [expandedMentor, setExpandedMentor] = useState(null)
@@ -1231,7 +1233,7 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
                   </div>
                 </div>
 
-                {/* ═══ AI TOOLS + TECH STACK CARD GRIDS ═══ */}
+                {/* ═══ AI TOOLS + TECH STACK ANALYTICS ═══ */}
                 {(() => {
                   const teams = data?.teamList || []
                   const aiCounts = {}
@@ -1243,78 +1245,154 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
                   const aiSorted = Object.entries(aiCounts).sort((a,b) => b[1] - a[1])
                   const techSorted = Object.entries(techCounts).sort((a,b) => b[1] - a[1])
                   const totalTeams = teams.length || 1
-                  const aiColors = ['#fd1c00','#fa0068','#a78bfa','#7B2FBE','#3b82f6','#06b6d4','#10b981','#EEA727','#f59e0b','#ef4444']
-                  const techColors = ['#10b981','#3b82f6','#06b6d4','#a78bfa','#EEA727','#fd1c00','#fa0068','#7B2FBE','#f59e0b','#ef4444']
+                  const TOP_N = 5
+                  const aiTop = aiSorted.slice(0, TOP_N)
+                  const aiRest = aiSorted.slice(TOP_N)
+                  const techTop = techSorted.slice(0, TOP_N)
+                  const techRest = techSorted.slice(TOP_N)
+                  const maxAi = aiTop[0]?.[1] || 1
+                  const maxTech = techTop[0]?.[1] || 1
                   return <>
                     <style>{`
-.aitools-section{margin-top:20px;animation:fadeUp .4s ease both}
-.aitools-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px}
-.aitools-title{font-size:.78rem;font-weight:700;color:rgba(255,255,255,.85);letter-spacing:.4px;display:flex;align-items:center;gap:8px;text-transform:uppercase}
-.aitools-title::before{content:'';width:3px;height:14px;background:linear-gradient(180deg,#fd1c00,#faa000);border-radius:2px;box-shadow:0 0 10px rgba(253,28,0,.5)}
-.aitools-meta{font-size:.62rem;color:rgba(255,255,255,.4);font-weight:600}
-.aitools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
-.aitools-card{position:relative;padding:14px 16px;border-radius:12px;background:linear-gradient(135deg,rgba(255,255,255,.03),rgba(255,255,255,.01));border:1px solid rgba(255,255,255,.06);overflow:hidden;transition:all .25s ease;cursor:default}
-.aitools-card:hover{transform:translateY(-2px);border-color:var(--aiac,rgba(253,28,0,.3));box-shadow:0 6px 20px rgba(0,0,0,.3)}
-.aitools-card::before{content:'';position:absolute;top:-30%;right:-30%;width:140%;height:140%;background:radial-gradient(circle,var(--aiac,rgba(253,28,0,.08)),transparent 60%);pointer-events:none;opacity:.6}
-.aitools-card-name{position:relative;font-size:.84rem;font-weight:700;color:#fff;margin-bottom:6px;letter-spacing:.2px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.aitools-card-count{position:relative;display:flex;align-items:baseline;gap:5px;margin-bottom:8px}
-.aitools-card-num{font-family:'Orbitron',sans-serif;font-size:1.55rem;font-weight:800;line-height:1;color:var(--aiac,#fd1c00);letter-spacing:-.5px}
-.aitools-card-of{font-size:.65rem;color:rgba(255,255,255,.35);font-weight:500}
-.aitools-card-bar{position:relative;height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;margin-bottom:5px}
-.aitools-card-bar-f{height:100%;border-radius:2px;background:var(--aiac,#fd1c00);box-shadow:0 0 6px var(--aiac,#fd1c00);transition:width .8s cubic-bezier(.4,0,.2,1)}
-.aitools-card-pct{position:relative;font-size:.6rem;color:rgba(255,255,255,.5);font-weight:600;letter-spacing:.3px}
-.aitools-empty{padding:24px;text-align:center;color:rgba(255,255,255,.3);font-size:.78rem;border:1px dashed rgba(255,255,255,.06);border-radius:9px;background:rgba(255,255,255,.01)}
+.atx-section{margin-top:22px;animation:fadeUp .4s ease both}
+.atx-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px}
+.atx-title{font-size:.78rem;font-weight:700;color:rgba(255,255,255,.85);letter-spacing:.4px;display:flex;align-items:center;gap:8px;text-transform:uppercase}
+.atx-title::before{content:'';width:3px;height:14px;background:linear-gradient(180deg,#fd1c00,#faa000);border-radius:2px;box-shadow:0 0 10px rgba(253,28,0,.5)}
+.atx-meta{font-size:.62rem;color:rgba(255,255,255,.4);font-weight:600}
+.atx-list{display:flex;flex-direction:column;gap:8px;padding:14px;border-radius:14px;background:linear-gradient(135deg,rgba(255,255,255,.025),rgba(255,255,255,.01));border:1px solid rgba(255,255,255,.06)}
+.atx-row{display:grid;grid-template-columns:28px minmax(0,1.4fr) minmax(0,2fr) auto auto;gap:14px;align-items:center;padding:9px 12px;border-radius:9px;background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.04);transition:all .2s ease}
+.atx-row:hover{background:rgba(255,255,255,.035);border-color:rgba(255,255,255,.08);transform:translateX(2px)}
+.atx-rank{font-family:'Orbitron',sans-serif;font-size:.85rem;font-weight:800;color:rgba(255,255,255,.35);text-align:center}
+.atx-rank.r1{color:#f59e0b;text-shadow:0 0 8px rgba(245,158,11,.3)}
+.atx-rank.r2{color:#cbd5e1}
+.atx-rank.r3{color:#b45309}
+.atx-name{font-size:.82rem;font-weight:700;color:#fff;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.atx-bar{position:relative;height:8px;background:rgba(255,255,255,.05);border-radius:4px;overflow:hidden}
+.atx-bar-f{position:absolute;left:0;top:0;height:100%;border-radius:4px;background:linear-gradient(90deg,var(--ax,#fd1c00),var(--ax2,#faa000));box-shadow:0 0 8px var(--ax,rgba(253,28,0,.4));transition:width .9s cubic-bezier(.4,0,.2,1)}
+.atx-count{font-family:'Orbitron',sans-serif;font-size:.95rem;font-weight:800;color:#fff;text-align:right;min-width:36px;letter-spacing:-.3px}
+.atx-pct{font-size:.66rem;color:rgba(255,255,255,.45);font-weight:600;min-width:46px;text-align:right;font-variant-numeric:tabular-nums}
+.atx-foot{display:flex;align-items:center;justify-content:space-between;padding-top:10px;margin-top:6px;border-top:1px solid rgba(255,255,255,.04)}
+.atx-foot-info{font-size:.66rem;color:rgba(255,255,255,.4);font-weight:600}
+.atx-show-btn{padding:6px 14px;border-radius:8px;border:1px solid rgba(253,28,0,.25);background:rgba(253,28,0,.06);color:#fd1c00;font-family:'DM Sans',sans-serif;font-size:.7rem;font-weight:700;cursor:pointer;letter-spacing:.3px;transition:all .2s ease;display:inline-flex;align-items:center;gap:5px}
+.atx-show-btn:hover{background:rgba(253,28,0,.12);border-color:rgba(253,28,0,.4);transform:translateY(-1px)}
+.atx-empty{padding:24px;text-align:center;color:rgba(255,255,255,.3);font-size:.78rem}
+.atx-modal-bd{position:fixed;inset:0;background:rgba(0,0,0,.78);backdrop-filter:blur(8px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.atx-modal{width:100%;max-width:580px;max-height:80vh;background:linear-gradient(180deg,#0d0a14,#080610);border:1px solid rgba(253,28,0,.2);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.6);display:flex;flex-direction:column;overflow:hidden;animation:popIn .25s cubic-bezier(.34,1.56,.64,1)}
+@keyframes popIn{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+.atx-modal-h{padding:18px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.06)}
+.atx-modal-t{font-size:.95rem;font-weight:800;color:#fff;letter-spacing:.3px}
+.atx-modal-x{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.6);cursor:pointer;font-size:1.1rem;font-weight:700;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.atx-modal-x:hover{background:rgba(253,28,0,.1);color:#fd1c00;border-color:rgba(253,28,0,.3)}
+.atx-modal-search{padding:14px 22px;border-bottom:1px solid rgba(255,255,255,.04)}
+.atx-modal-input{width:100%;padding:9px 14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:9px;color:#fff;font-family:'DM Sans',sans-serif;font-size:.78rem;outline:none;transition:all .2s}
+.atx-modal-input:focus{border-color:rgba(253,28,0,.4);background:rgba(255,255,255,.06)}
+.atx-modal-body{flex:1;overflow-y:auto;padding:14px 22px}
+.atx-modal-row{display:grid;grid-template-columns:30px 1fr auto auto;gap:12px;align-items:center;padding:9px 12px;border-radius:8px;font-size:.78rem;border-bottom:1px solid rgba(255,255,255,.03)}
+.atx-modal-row:hover{background:rgba(255,255,255,.02)}
+.atx-modal-rank{color:rgba(255,255,255,.35);font-weight:700;font-family:'Orbitron',sans-serif;font-size:.72rem;text-align:center}
+.atx-modal-name{color:#fff;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.atx-modal-cnt{color:#fd1c00;font-weight:800;font-family:'Orbitron',sans-serif;font-size:.85rem;min-width:32px;text-align:right}
+.atx-modal-pc{color:rgba(255,255,255,.4);font-size:.68rem;font-weight:600;min-width:42px;text-align:right;font-variant-numeric:tabular-nums}
+@media(max-width:640px){
+  .atx-row{grid-template-columns:22px minmax(0,1fr) auto auto;gap:8px}
+  .atx-row .atx-bar{display:none}
+}
                     `}</style>
 
-                    {/* AI TOOLS */}
-                    <div className="aitools-section">
-                      <div className="aitools-hdr">
-                        <div className="aitools-title">⚡ AI Tools Used</div>
-                        <div className="aitools-meta">{aiSorted.length} unique tools · across {teams.filter(t => (t.aiTools||[]).length>0).length} teams</div>
+                    {/* AI TOOLS LIST */}
+                    <div className="atx-section">
+                      <div className="atx-hdr">
+                        <div className="atx-title">⚡ AI Tools — Top {Math.min(TOP_N, aiSorted.length)}</div>
+                        <div className="atx-meta">{aiSorted.length} unique · {teams.filter(t => (t.aiTools||[]).length>0).length} of {totalTeams} teams</div>
                       </div>
-                      {aiSorted.length === 0 ? <div className="aitools-empty">No AI tools data yet</div> : (
-                        <div className="aitools-grid">
-                          {aiSorted.map(([name, count], i) => {
-                            const color = aiColors[i % aiColors.length]
+                      {aiSorted.length === 0 ? <div className="atx-list"><div className="atx-empty">No AI tools data yet</div></div> : (
+                        <div className="atx-list">
+                          {aiTop.map(([name, count], i) => {
                             const pct = Math.round(count / totalTeams * 100)
-                            return <div key={name} className="aitools-card" style={{'--aiac':color}}>
-                              <div className="aitools-card-name" title={name}>{name}</div>
-                              <div className="aitools-card-count">
-                                <span className="aitools-card-num">{count}</span>
-                                <span className="aitools-card-of">/ {totalTeams} teams</span>
-                              </div>
-                              <div className="aitools-card-bar"><div className="aitools-card-bar-f" style={{width:`${pct}%`}}/></div>
-                              <div className="aitools-card-pct">{pct}% adoption</div>
+                            const barW = Math.round(count / maxAi * 100)
+                            const c1 = i === 0 ? '#fd1c00' : i === 1 ? '#fa0068' : i === 2 ? '#a78bfa' : i === 3 ? '#3b82f6' : '#06b6d4'
+                            const c2 = i === 0 ? '#faa000' : i === 1 ? '#fd1c00' : i === 2 ? '#7B2FBE' : i === 3 ? '#1e40af' : '#0891b2'
+                            return <div key={name} className="atx-row" style={{'--ax':c1,'--ax2':c2}}>
+                              <div className={`atx-rank r${i+1}`}>#{i+1}</div>
+                              <div className="atx-name" title={name}>{name}</div>
+                              <div className="atx-bar"><div className="atx-bar-f" style={{width:`${barW}%`}}/></div>
+                              <div className="atx-count">{count}</div>
+                              <div className="atx-pct">{pct}%</div>
                             </div>
                           })}
+                          {aiRest.length > 0 && (
+                            <div className="atx-foot">
+                              <div className="atx-foot-info">+ {aiRest.length} more tool{aiRest.length===1?'':'s'} not shown</div>
+                              <button className="atx-show-btn" onClick={()=>setAtxModal({type:'ai',data:aiSorted,total:totalTeams})}>Show all ({aiSorted.length}) →</button>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
 
-                    {/* TECH STACK */}
-                    <div className="aitools-section">
-                      <div className="aitools-hdr">
-                        <div className="aitools-title">🛠 Tech Stack</div>
-                        <div className="aitools-meta">{techSorted.length} unique technologies · across {teams.filter(t => (t.techStack||[]).length>0).length} teams</div>
+                    {/* TECH STACK LIST */}
+                    <div className="atx-section">
+                      <div className="atx-hdr">
+                        <div className="atx-title">🛠 Tech Stack — Top {Math.min(TOP_N, techSorted.length)}</div>
+                        <div className="atx-meta">{techSorted.length} unique · {teams.filter(t => (t.techStack||[]).length>0).length} of {totalTeams} teams</div>
                       </div>
-                      {techSorted.length === 0 ? <div className="aitools-empty">No tech stack data yet</div> : (
-                        <div className="aitools-grid">
-                          {techSorted.map(([name, count], i) => {
-                            const color = techColors[i % techColors.length]
+                      {techSorted.length === 0 ? <div className="atx-list"><div className="atx-empty">No tech stack data yet</div></div> : (
+                        <div className="atx-list">
+                          {techTop.map(([name, count], i) => {
                             const pct = Math.round(count / totalTeams * 100)
-                            return <div key={name} className="aitools-card" style={{'--aiac':color}}>
-                              <div className="aitools-card-name" title={name}>{name}</div>
-                              <div className="aitools-card-count">
-                                <span className="aitools-card-num">{count}</span>
-                                <span className="aitools-card-of">/ {totalTeams} teams</span>
-                              </div>
-                              <div className="aitools-card-bar"><div className="aitools-card-bar-f" style={{width:`${pct}%`}}/></div>
-                              <div className="aitools-card-pct">{pct}% adoption</div>
+                            const barW = Math.round(count / maxTech * 100)
+                            const c1 = i === 0 ? '#10b981' : i === 1 ? '#3b82f6' : i === 2 ? '#06b6d4' : i === 3 ? '#a78bfa' : '#EEA727'
+                            const c2 = i === 0 ? '#22c55e' : i === 1 ? '#1e40af' : i === 2 ? '#0891b2' : i === 3 ? '#7B2FBE' : '#faa000'
+                            return <div key={name} className="atx-row" style={{'--ax':c1,'--ax2':c2}}>
+                              <div className={`atx-rank r${i+1}`}>#{i+1}</div>
+                              <div className="atx-name" title={name}>{name}</div>
+                              <div className="atx-bar"><div className="atx-bar-f" style={{width:`${barW}%`}}/></div>
+                              <div className="atx-count">{count}</div>
+                              <div className="atx-pct">{pct}%</div>
                             </div>
                           })}
+                          {techRest.length > 0 && (
+                            <div className="atx-foot">
+                              <div className="atx-foot-info">+ {techRest.length} more technolog{techRest.length===1?'y':'ies'} not shown</div>
+                              <button className="atx-show-btn" onClick={()=>setAtxModal({type:'tech',data:techSorted,total:totalTeams})}>Show all ({techSorted.length}) →</button>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
+
+                    {/* MODAL */}
+                    {atxModal && (
+                      <div className="atx-modal-bd" onClick={()=>setAtxModal(null)}>
+                        <div className="atx-modal" onClick={e=>e.stopPropagation()}>
+                          <div className="atx-modal-h">
+                            <div className="atx-modal-t">{atxModal.type==='ai'?'⚡ All AI Tools':'🛠 All Technologies'} ({atxModal.data.length})</div>
+                            <button className="atx-modal-x" onClick={()=>setAtxModal(null)}>×</button>
+                          </div>
+                          <div className="atx-modal-search">
+                            <input className="atx-modal-input" placeholder={`Search ${atxModal.type==='ai'?'tools':'technologies'}...`} value={atxSearch} onChange={e=>setAtxSearch(e.target.value)} autoFocus/>
+                          </div>
+                          <div className="atx-modal-body">
+                            {(()=>{
+                              const q = atxSearch.toLowerCase().trim()
+                              const filtered = q ? atxModal.data.filter(([n])=>n.toLowerCase().includes(q)) : atxModal.data
+                              if (filtered.length === 0) return <div style={{padding:30,textAlign:'center',color:'rgba(255,255,255,.3)',fontSize:'.78rem'}}>No matches found</div>
+                              return filtered.map(([name, count], i) => {
+                                const realIdx = atxModal.data.findIndex(([n])=>n===name)
+                                const pct = Math.round(count / atxModal.total * 100)
+                                return <div key={name} className="atx-modal-row">
+                                  <div className="atx-modal-rank">#{realIdx+1}</div>
+                                  <div className="atx-modal-name" title={name}>{name}</div>
+                                  <div className="atx-modal-cnt">{count}</div>
+                                  <div className="atx-modal-pc">{pct}%</div>
+                                </div>
+                              })
+                            })()}
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </>
                 })()}
               </>
