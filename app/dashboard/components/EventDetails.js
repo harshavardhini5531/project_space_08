@@ -216,10 +216,10 @@ export default function EventDetails() {
         /* Day card */
         .ed-day{border-radius:16px;background:rgba(12,8,18,.55);border:1px solid rgba(255,255,255,.06);overflow:hidden;transition:all .35s cubic-bezier(.16,1,.3,1);animation:edDayIn .5s ease both;position:relative}
         @keyframes edDayIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-        .ed-day::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 0% 50%,color-mix(in srgb,var(--accent) 18%,transparent) 0%,transparent 35%);opacity:0;transition:opacity .4s ease;pointer-events:none;border-radius:16px}
-        .ed-day.open::before,.ed-day:hover::before{opacity:1}
-        .ed-day.open::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent 0%,var(--accent) 20%,var(--accent) 80%,transparent 100%);box-shadow:0 0 12px color-mix(in srgb,var(--accent) 60%,transparent);animation:edTopGlow 2s ease-in-out infinite;border-radius:16px 16px 0 0}
-        @keyframes edTopGlow{0%,100%{opacity:.7}50%{opacity:1}}
+        .ed-day::before{content:'';position:absolute;inset:0;border-radius:16px;padding:1px;background:linear-gradient(135deg,var(--accent),transparent 40%,transparent 60%,var(--accent));-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;opacity:0;transition:opacity .4s;pointer-events:none}
+        .ed-day.open::before,.ed-day:hover::before{opacity:.6}
+        .ed-day.open::before{animation:edBorderRotate 4s linear infinite}
+        @keyframes edBorderRotate{0%{background:linear-gradient(0deg,var(--accent),transparent 40%,transparent 60%,var(--accent))}25%{background:linear-gradient(90deg,var(--accent),transparent 40%,transparent 60%,var(--accent))}50%{background:linear-gradient(180deg,var(--accent),transparent 40%,transparent 60%,var(--accent))}75%{background:linear-gradient(270deg,var(--accent),transparent 40%,transparent 60%,var(--accent))}100%{background:linear-gradient(360deg,var(--accent),transparent 40%,transparent 60%,var(--accent))}}
         .ed-day:hover{border-color:rgba(255,255,255,.12);transform:translateY(-1px)}
         .ed-day.open{border-color:color-mix(in srgb,var(--accent) 25%,transparent);box-shadow:0 8px 32px color-mix(in srgb,var(--accent) 8%,transparent)}
 
@@ -227,13 +227,13 @@ export default function EventDetails() {
         .ed-day-hdr{display:flex;align-items:center;gap:16px;padding:16px 22px;cursor:pointer;transition:background .25s}
         .ed-day-hdr:hover{background:rgba(255,255,255,.02)}
 
-        .ed-day-num-box{flex-shrink:0;width:64px;height:64px;border-radius:12px;background:linear-gradient(135deg,rgba(255,255,255,.04),rgba(255,255,255,.02));border:1px solid color-mix(in srgb,var(--accent) 25%,transparent);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:all .35s;padding:10px 6px 8px}
+        .ed-day-num-box{flex-shrink:0;width:64px;height:64px;border-radius:12px;background:linear-gradient(135deg,rgba(255,255,255,.04),rgba(255,255,255,.02));border:1px solid color-mix(in srgb,var(--accent) 25%,transparent);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:all .35s;gap:3px;padding:8px 4px}
         .ed-day-num-box::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at top,color-mix(in srgb,var(--accent) 22%,transparent),transparent 70%);opacity:0;transition:opacity .35s}
         .ed-day.open .ed-day-num-box::before{opacity:1}
         .ed-day.today .ed-day-num-box{box-shadow:0 0 16px color-mix(in srgb,var(--accent) 35%,transparent);animation:edTodayPulse 3s ease-in-out infinite}
         @keyframes edTodayPulse{0%,100%{box-shadow:0 0 16px color-mix(in srgb,var(--accent) 30%,transparent)}50%{box-shadow:0 0 28px color-mix(in srgb,var(--accent) 50%,transparent)}}
-        .ed-day-num-label{font-family:'DM Sans',sans-serif;font-size:.5rem;font-weight:700;color:var(--accent);letter-spacing:1.5px;text-transform:uppercase;position:relative;z-index:1;line-height:1;margin-bottom:4px;display:block}
-        .ed-day-num{font-family:'Astro','Orbitron','DM Sans',sans-serif;font-size:1.25rem;font-weight:800;color:#fff;line-height:1;position:relative;z-index:1;text-shadow:0 1px 8px color-mix(in srgb,var(--accent) 40%,transparent);letter-spacing:.5px;display:block}
+        .ed-day-num-label{font-family:'DM Sans',sans-serif;font-size:.55rem;font-weight:700;color:var(--accent);letter-spacing:1.5px;text-transform:uppercase;position:relative;z-index:1;line-height:1}
+        .ed-day-num{font-family:'Astro','Orbitron','DM Sans',sans-serif;font-size:1.4rem;font-weight:800;color:#fff;line-height:1;position:relative;z-index:1;text-shadow:0 1px 8px color-mix(in srgb,var(--accent) 40%,transparent);letter-spacing:1px}
 
         .ed-day-info{flex:1;min-width:0}
         .ed-day-meta{display:flex;align-items:center;gap:10px;margin-bottom:5px;flex-wrap:wrap}
@@ -260,7 +260,7 @@ export default function EventDetails() {
 
         /* Timeline — much roomier */
         .ed-tl{padding:8px 24px 22px 24px;position:relative;margin-top:0}
-        .ed-tl::before{display:none}
+        .ed-tl::before{content:'';position:absolute;left:38px;top:4px;bottom:12px;width:2px;background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 35%,transparent),rgba(255,255,255,.04));border-radius:1px}
 
         @keyframes edEvIn{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
         .ed-ev{position:relative;padding:10px 0 10px 64px;animation:edEvIn .45s cubic-bezier(.16,1,.3,1) both}
