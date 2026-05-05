@@ -227,13 +227,14 @@ export default function EventDetails() {
         .ed-day-hdr{display:flex;align-items:center;gap:16px;padding:16px 22px;cursor:pointer;transition:background .25s}
         .ed-day-hdr:hover{background:rgba(255,255,255,.02)}
 
-        .ed-day-num-box{flex-shrink:0;width:64px;height:64px;border-radius:12px;background:linear-gradient(135deg,rgba(255,255,255,.04),rgba(255,255,255,.02));border:1px solid color-mix(in srgb,var(--accent) 25%,transparent);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:all .35s;gap:3px;padding:8px 4px}
+        .ed-day-num-box{flex-shrink:0;width:68px;height:68px;border-radius:12px;background:linear-gradient(135deg,rgba(255,255,255,.04),rgba(255,255,255,.02));border:1px solid color-mix(in srgb,var(--accent) 25%,transparent);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:all .35s;gap:5px;padding:10px 6px}
         .ed-day-num-box::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at top,color-mix(in srgb,var(--accent) 22%,transparent),transparent 70%);opacity:0;transition:opacity .35s}
         .ed-day.open .ed-day-num-box::before{opacity:1}
         .ed-day.today .ed-day-num-box{box-shadow:0 0 16px color-mix(in srgb,var(--accent) 35%,transparent);animation:edTodayPulse 3s ease-in-out infinite}
+        .ed-day.open .ed-day-num-box{border-color:color-mix(in srgb,var(--accent) 50%,transparent);transform:scale(1.05)}
         @keyframes edTodayPulse{0%,100%{box-shadow:0 0 16px color-mix(in srgb,var(--accent) 30%,transparent)}50%{box-shadow:0 0 28px color-mix(in srgb,var(--accent) 50%,transparent)}}
-        .ed-day-num-label{font-family:'DM Sans',sans-serif;font-size:.55rem;font-weight:700;color:var(--accent);letter-spacing:1.5px;text-transform:uppercase;position:relative;z-index:1;line-height:1}
-        .ed-day-num{font-family:'Astro','Orbitron','DM Sans',sans-serif;font-size:1.4rem;font-weight:800;color:#fff;line-height:1;position:relative;z-index:1;text-shadow:0 1px 8px color-mix(in srgb,var(--accent) 40%,transparent);letter-spacing:1px}
+        .ed-day-num-label{font-family:'DM Sans',sans-serif;font-size:.52rem;font-weight:700;color:var(--accent);letter-spacing:1.8px;text-transform:uppercase;position:relative;z-index:1;line-height:1;display:block}
+        .ed-day-num{font-family:'Astro','Orbitron','DM Sans',sans-serif;font-size:1.3rem;font-weight:800;color:#fff;line-height:1;position:relative;z-index:1;text-shadow:0 1px 8px color-mix(in srgb,var(--accent) 40%,transparent);letter-spacing:1px;display:block}
 
         .ed-day-info{flex:1;min-width:0}
         .ed-day-meta{display:flex;align-items:center;gap:10px;margin-bottom:5px;flex-wrap:wrap}
@@ -260,7 +261,7 @@ export default function EventDetails() {
 
         /* Timeline — much roomier */
         .ed-tl{padding:8px 24px 22px 24px;position:relative;margin-top:0}
-        .ed-tl::before{content:'';position:absolute;left:38px;top:4px;bottom:12px;width:2px;background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 35%,transparent),rgba(255,255,255,.04));border-radius:1px}
+        .ed-tl::before{display:none}
 
         @keyframes edEvIn{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
         .ed-ev{position:relative;padding:10px 0 10px 64px;animation:edEvIn .45s cubic-bezier(.16,1,.3,1) both}
@@ -311,10 +312,10 @@ export default function EventDetails() {
           .ed-day-counts{display:none}
 
           .ed-tl{padding:14px 18px 24px 18px}
-          .ed-tl::before{left:30px}
+          .ed-tl::before{display:none}
           .ed-ev{padding:16px 0 16px 60px}
           .ed-ev-dot{left:16px;width:28px;height:28px}
-          .ed-ev:not(:last-child)::after{left:30px;top:44px}
+          .ed-ev:not(:last-child)::after{display:none}
           .ed-ev-card{padding:14px 16px}
           .ed-ev-label{font-size:.63rem;letter-spacing:.5px}
           .ed-ev-desc{font-size:.74rem;line-height:1.6}
