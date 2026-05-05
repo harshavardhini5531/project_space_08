@@ -951,6 +951,70 @@ body.sb-open{overflow:hidden}
                 })}
               </div>
 
+              {/* PENDING REVIEWS — actionable cards */}
+              {reviews.pending?.length > 0 && (
+                <div style={{marginBottom:24}}>
+                  <div style={{fontSize:'.82rem',fontWeight:700,color:'rgba(255,255,255,.55)',marginBottom:12,letterSpacing:'.6px',display:'flex',alignItems:'center',gap:8}}>
+                    <span style={{width:3,height:14,background:'linear-gradient(180deg,#fd1c00,#faa000)',borderRadius:2,boxShadow:'0 0 10px rgba(253,28,0,.5)'}}/>
+                    PENDING REVIEWS
+                    <span style={{fontSize:'.62rem',fontWeight:700,padding:'3px 10px',borderRadius:6,background:'rgba(238,167,39,.1)',color:'#EEA727',border:'1px solid rgba(238,167,39,.2)',letterSpacing:'.5px',marginLeft:4}}>{reviews.pending.length} waiting</span>
+                  </div>
+                  {reviews.pending.map(p => (
+                    <div key={p.id} className="rv-card" style={{borderColor:'rgba(238,167,39,.2)',background:'rgba(238,167,39,.03)'}}>
+                      <div className="rv-card-top">
+                        <div style={{flex:1,minWidth:0}}>
+                          <div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap',marginBottom:6}}>
+                            <span className="rv-team">{p.team_number}</span>
+                            <span className="rv-stage-badge">Stage {p.stage_number} · {p.stage_name}</span>
+                            {p.technology && <span style={{fontSize:'.6rem',padding:'2px 8px',borderRadius:5,background:'rgba(255,255,255,.04)',color:'rgba(255,255,255,.5)',border:'1px solid rgba(255,255,255,.06)'}}>{p.technology}</span>}
+                          </div>
+                          {p.project_title && <div className="rv-project">{p.project_title}</div>}
+                          <div className="rv-meta">
+                            Submitted by <strong style={{color:'rgba(255,255,255,.7)'}}>{p.submitted_by_name || p.submitted_by_roll || 'Team'}</strong>
+                            {p.submitted_at && <> · {new Date(p.submitted_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</>}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="rv-actions">
+                        <button
+                          className="rv-btn approve"
+                          disabled={actionLoading === `${p.team_number}-${p.stage_number}`}
+                          onClick={() => handleMilestoneAction(p.team_number, p.stage_number, 'approve')}
+                        >
+                          {actionLoading === `${p.team_number}-${p.stage_number}` ? 'Approving...' : (
+                            <>
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                              Approve
+                            </>
+                          )}
+                        </button>
+                        <button
+                          className="rv-btn reject"
+                          disabled={actionLoading === `${p.team_number}-${p.stage_number}`}
+                          onClick={() => setRejectModal(p)}
+                        >
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                          Reject
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* No pending reviews — show friendly state */}
+              {reviews.pending?.length === 0 && reviews.teams?.length > 0 && (
+                <div style={{padding:'18px 22px',borderRadius:12,background:'rgba(74,222,128,.04)',border:'1px solid rgba(74,222,128,.12)',marginBottom:24,display:'flex',alignItems:'center',gap:12}}>
+                  <div style={{width:32,height:32,borderRadius:8,background:'rgba(74,222,128,.1)',border:'1px solid rgba(74,222,128,.25)',display:'flex',alignItems:'center',justifyContent:'center',color:'#4ade80',flexShrink:0}}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </div>
+                  <div>
+                    <div style={{fontSize:'.84rem',fontWeight:700,color:'#4ade80',marginBottom:2}}>All caught up</div>
+                    <div style={{fontSize:'.7rem',color:'rgba(255,255,255,.5)'}}>No teams waiting for your review right now.</div>
+                  </div>
+                </div>
+              )}
+
               {/* TEAM × STAGE MATRIX */}
               {reviews.teams?.length>0&&<>
                 <style>{`
