@@ -217,22 +217,183 @@ export default function MentorRequest({ user }) {
         .mr { font-family: 'DM Sans', system-ui, sans-serif; color: #fff; max-width: 1100px; margin: 0 auto; padding-bottom: 80px; }
         .mr *, .mr *::before, .mr *::after { box-sizing: border-box; }
 
-        /* HERO */
-        .mr-hero { position: relative; padding: 30px 28px; border-radius: 18px; background: linear-gradient(135deg, #fd1c00 0%, #fa0068 50%, #1a0a18 100%); overflow: hidden; margin-bottom: 22px; box-shadow: 0 8px 32px rgba(253,28,0,.15); animation: mr-fade-up .5s ease both; }
-        .mr-hero::before { content: ""; position: absolute; top: -100px; right: -100px; width: 380px; height: 380px; background: radial-gradient(circle, rgba(255,255,255,.10), transparent 60%); }
-        .mr-hero::after { content: ""; position: absolute; bottom: -60px; left: -60px; width: 240px; height: 240px; background: radial-gradient(circle, rgba(0,0,0,.25), transparent 65%); }
-        .mr-hero-inner { position: relative; z-index: 1; display: flex; align-items: flex-start; gap: 24px; flex-wrap: wrap; }
-        .mr-hero-info { flex: 1; min-width: 280px; }
-        .mr-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 10.5px; font-weight: 700; letter-spacing: .18em; color: #fff; text-transform: uppercase; padding: 5px 11px; border: 1px solid rgba(255,255,255,.3); border-radius: 100px; background: rgba(0,0,0,.2); }
-        .mr-eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: #fff; }
-        .mr-h1 { font-size: clamp(24px, 3.8vw, 36px); line-height: 1.05; letter-spacing: 1px; font-weight: 800; margin: 12px 0 8px; text-transform: uppercase; }
-        .mr-sub { font-size: 13.5px; color: rgba(255,255,255,.85); line-height: 1.55; max-width: 460px; margin: 0; }
-        .mr-hero-side { display: flex; flex-direction: column; gap: 10px; min-width: 180px; }
-        .mr-hero-card { padding: 14px 16px; background: rgba(0,0,0,.28); border: 1px solid rgba(255,255,255,.18); border-radius: 12px; display: flex; align-items: center; gap: 12px; }
-        .mr-hero-card-icn { width: 36px; height: 36px; padding: 8px; background: rgba(255,255,255,.12); border-radius: 8px; color: #fff; flex-shrink: 0; }
-        .mr-hero-card-lab { font-size: 9.5px; letter-spacing: .14em; color: rgba(255,255,255,.7); text-transform: uppercase; font-weight: 600; }
-        .mr-hero-card-val { font-size: 18px; font-weight: 700; color: #fff; line-height: 1.1; margin-top: 2px; }
-        .mr-hero-card-sub { font-size: 11px; color: rgba(255,255,255,.65); margin-top: 2px; }
+        /* HERO — v4 split layout (professional) */
+        .mr-hero {
+          position: relative;
+          padding: 22px 26px;
+          border-radius: 14px;
+          background: rgba(13,10,20,.6);
+          border: 1px solid rgba(255,255,255,.08);
+          overflow: hidden;
+          margin-bottom: 22px;
+          display: grid;
+          grid-template-columns: 1fr auto;
+          gap: 24px;
+          align-items: center;
+          animation: mr-fade-up .45s cubic-bezier(.22,.61,.36,1) both;
+        }
+        .mr-hero::before {
+          content: "";
+          position: absolute;
+          left: 0; top: 0; bottom: 0;
+          width: 3px;
+          background: linear-gradient(180deg, #fd1c00, #faa000);
+          opacity: .9;
+        }
+        .mr-hero-info { min-width: 0; }
+        .mr-eyebrow {
+          display: inline-flex; align-items: center; gap: 7px;
+          font-size: 10.5px; letter-spacing: .16em;
+          color: #fd1c00; font-weight: 700; text-transform: uppercase;
+          margin-bottom: 10px;
+        }
+        .mr-eyebrow-dot {
+          width: 5px; height: 5px; border-radius: 50%;
+          background: #fd1c00;
+          box-shadow: 0 0 8px rgba(253,28,0,.8);
+          animation: mr-eye-pulse 2s ease-in-out infinite;
+        }
+        @keyframes mr-eye-pulse {
+          0%, 100% { box-shadow: 0 0 6px rgba(253,28,0,.6); transform: scale(1); }
+          50% { box-shadow: 0 0 14px rgba(253,28,0,1); transform: scale(1.15); }
+        }
+        .mr-h1 {
+          font-family: 'DM Sans', system-ui, sans-serif;
+          font-size: clamp(20px, 2.6vw, 24px);
+          line-height: 1.2;
+          letter-spacing: -.015em;
+          font-weight: 700;
+          margin: 0 0 6px;
+          color: #fff;
+          text-transform: none;
+        }
+        .mr-sub {
+          font-size: 13px;
+          color: rgba(255,255,255,.55);
+          line-height: 1.5;
+          max-width: 540px;
+          margin: 0;
+        }
+        .mr-sub strong { color: rgba(255,255,255,.92); font-weight: 600; }
+        .mr-hero-side {
+          display: flex;
+          gap: 10px;
+          flex-shrink: 0;
+        }
+        .mr-hero-card {
+          padding: 12px 16px;
+          background: rgba(255,255,255,.025);
+          border: 1px solid rgba(255,255,255,.06);
+          border-radius: 10px;
+          min-width: 118px;
+          transition: border-color .2s, background .2s;
+        }
+        .mr-hero-card:hover {
+          border-color: rgba(255,255,255,.14);
+          background: rgba(255,255,255,.04);
+        }
+        .mr-hero-card-lab {
+          font-size: 9.5px; letter-spacing: .14em;
+          color: rgba(255,255,255,.45);
+          text-transform: uppercase; font-weight: 700;
+          display: flex; align-items: center; gap: 6px;
+        }
+        .mr-hero-card-lab-dot {
+          width: 5px; height: 5px; border-radius: 50%;
+          flex-shrink: 0;
+        }
+        .mr-hero-card-lab-dot.green { background: #10b981; box-shadow: 0 0 6px rgba(16,185,129,.7); animation: mr-eye-pulse 2s ease-in-out infinite; }
+        .mr-hero-card-lab-dot.amber { background: #faa000; }
+        .mr-hero-card-val {
+          font-size: 19px; font-weight: 700;
+          color: #fff; line-height: 1.1;
+          margin-top: 6px;
+          font-variant-numeric: tabular-nums;
+        }
+        .mr-hero-card-val .mr-num-dim { color: rgba(255,255,255,.35); font-weight: 500; font-size: 14px; }
+        .mr-hero-card-val .mr-num-green { color: #10b981; }
+        @media (max-width: 720px) {
+          .mr-hero { grid-template-columns: 1fr; }
+          .mr-hero-side { flex-wrap: wrap; }
+          .mr-hero-card { flex: 1; min-width: 130px; }
+        }
+ 
+ 
+/* ===========================================================
+   STEP 2 — REPLACE the JSX hero block (in the return)
+   ===========================================================
+   FIND this block (search for "<div className=\"mr-hero\">"):
+*/
+ 
+        <div className="mr-hero">
+          <div className="mr-hero-inner">
+            <div className="mr-hero-info">
+              <span className="mr-eyebrow"><span className="mr-eyebrow-dot" />Mentor Request</span>
+              <h1 className="mr-h1">Stuck somewhere? Get help fast.</h1>
+              <p className="mr-sub">
+                Send a request to all <strong style={{ color: "#fff" }}>{technology || "your track"}</strong> mentors.
+                Costs 2 credits per request, deducted instantly.
+              </p>
+            </div>
+            <div className="mr-hero-side">
+              <div className="mr-hero-card">
+                <span className="mr-hero-card-icn">{I.coins}</span>
+                <div>
+                  <div className="mr-hero-card-lab">Credits</div>
+                  <div className="mr-hero-card-val">{credits} / 20</div>
+                  <div className="mr-hero-card-sub">−2 per request</div>
+                </div>
+              </div>
+              <div className="mr-hero-card">
+                <span className="mr-hero-card-icn">{I.user}</span>
+                <div>
+                  <div className="mr-hero-card-lab">Mentors active</div>
+                  <div className="mr-hero-card-val">{activeCount} / {totalMentors}</div>
+                  <div className="mr-hero-card-sub">{technology || "Loading…"}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+ 
+ 
+/* ===========================================================
+   REPLACE WITH this block:
+   =========================================================== */
+ 
+        <div className="mr-hero">
+          <div className="mr-hero-info">
+            <div className="mr-eyebrow">
+              <span className="mr-eyebrow-dot" />
+              Mentor Request
+            </div>
+            <h1 className="mr-h1">Stuck somewhere? Get help fast.</h1>
+            <p className="mr-sub">
+              Send a request to all <strong>{technology || "your track"}</strong> mentors.
+              Costs 2 credits per request, deducted instantly.
+            </p>
+          </div>
+          <div className="mr-hero-side">
+            <div className="mr-hero-card">
+              <div className="mr-hero-card-lab">
+                <span className="mr-hero-card-lab-dot amber" />
+                Credits
+              </div>
+              <div className="mr-hero-card-val">
+                {credits}<span className="mr-num-dim"> / 20</span>
+              </div>
+            </div>
+            <div className="mr-hero-card">
+              <div className="mr-hero-card-lab">
+                <span className="mr-hero-card-lab-dot green" />
+                Mentors active
+              </div>
+              <div className="mr-hero-card-val">
+                <span className="mr-num-green">{activeCount}</span><span className="mr-num-dim"> / {totalMentors}</span>
+              </div>
+            </div>
+          </div>
+        </div>
 
         /* OPEN REQUEST BANNER (when one is active) */
         .mr-open-banner {
