@@ -260,7 +260,7 @@ export default function EventDetails() {
 
         /* Timeline — much roomier */
         .ed-tl{padding:8px 24px 22px 24px;position:relative;margin-top:0}
-        .ed-tl::before{content:'';position:absolute;left:38px;top:4px;bottom:12px;width:2px;background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 35%,transparent),rgba(255,255,255,.04));border-radius:1px}
+        .ed-tl::before{display:none}
 
         @keyframes edEvIn{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
         .ed-ev{position:relative;padding:10px 0 10px 64px;animation:edEvIn .45s cubic-bezier(.16,1,.3,1) both}
@@ -275,7 +275,7 @@ export default function EventDetails() {
         .ed-ev:nth-child(9){animation-delay:.45s}
         .ed-ev:nth-child(10){animation-delay:.5s}
         .ed-ev:nth-child(n+11){animation-delay:.55s}
-        .ed-ev:not(:last-child)::after{display:none}
+        .ed-ev:not(:last-child)::after{content:'';position:absolute;left:38px;top:40px;bottom:-10px;width:2px;background:rgba(255,255,255,.04)}
 
         .ed-ev-dot{position:absolute;left:24px;top:10px;width:28px;height:28px;border-radius:50%;background:#13101a;border:2px solid var(--ckind);display:flex;align-items:center;justify-content:center;color:var(--ckind);transition:all .3s;z-index:2;box-shadow:0 0 0 5px rgba(19,16,26,1)}
         .ed-ev:hover .ed-ev-dot{transform:scale(1.15);box-shadow:0 0 0 5px rgba(19,16,26,1),0 0 14px color-mix(in srgb,var(--ckind) 40%,transparent)}
