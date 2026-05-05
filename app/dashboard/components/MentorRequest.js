@@ -2,13 +2,15 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 
 /* ============================================================
-   MENTOR REQUEST — Student / Leader page  (v2)
+   MENTOR REQUEST — Student / Leader page  (v3)
    Path: app/dashboard/components/MentorRequest.js
-   Changes from v1:
-   - Removed self-resolve modal + rate modal
-   - Added inline Action column (Mark Resolved button)
-   - Added inline Review column (5-star inline rating)
-   - Mentor cannot resolve — only leader can
+   v3 changes:
+   - Mentor PHOTOS (image_url) instead of initials in avatars
+   - LIVE availability cards (Active / Busy with "with PS-007")
+   - One-active-request rule: send blocked while open
+   - 2 credits deducted at SUBMIT (not resolve)
+   - Open request banner with mentor photo + Mark Resolved
+   - Inline 5-star rating, locked after submit
    ============================================================ */
 
 const PRIORITY_OPTIONS = [
@@ -17,7 +19,6 @@ const PRIORITY_OPTIONS = [
   { id: "High",   label: "High",   color: "#fd1c00", desc: "Blocked — need help right away" },
 ];
 
-/* ---------- ICONS ---------- */
 const I = {
   send: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>,
   zap: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>,
@@ -32,7 +33,6 @@ const I = {
 
 /* ====================================================================== */
 export default function MentorRequest({ user }) {
-  // Defensive field reads — supports multiple field name variations
   const teamNumber = user?.teamNumber || user?.team_number;
   const technology = user?.technology;
   const rollNumber = user?.roll_number || user?.rollNumber || user?.roll;
@@ -42,22 +42,18 @@ export default function MentorRequest({ user }) {
 
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [credits, setCredits] = useState(20);
-  const [mentorCount, setMentorCount] = useState(0);
+  const [availability, setAvailability] = useState(null);
 
   const [priority, setPriority] = useState("Medium");
   const [description, setDescription] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
 
-  // inline action loading states
   const [resolvingId, setResolvingId] = useState(null);
   const [ratingId, setRatingId] = useState(null);
 
   const [toast, setToast] = useState(null);
   const toastTimer = useRef(null);
-
-  const hasActive = requests.some((r) => r.status === "Pending" || r.status === "Accepted");
 
   /* ---------- fetch ---------- */
   const fetchRequests = useCallback(async () => {
@@ -73,55 +69,48 @@ export default function MentorRequest({ user }) {
     }
   }, [teamNumber]);
 
-  const fetchCredits = useCallback(async () => {
-    if (!teamNumber) return;
+  const fetchAvailability = useCallback(async () => {
+    if (!technology || !teamNumber) return;
     try {
-      const res = await fetch(`/api/team/credits?team_number=${encodeURIComponent(teamNumber)}`);
-      if (res.ok) {
-        const json = await res.json();
-        if (typeof json.credits === "number") setCredits(json.credits);
-      }
+      const res = await fetch(
+        `/api/mentor-request/availability?technology=${encodeURIComponent(technology)}&team_number=${encodeURIComponent(teamNumber)}`
+      );
+      const json = await res.json();
+      if (json.success) setAvailability(json);
     } catch {}
-  }, [teamNumber]);
-
-  const fetchMentorCount = useCallback(async () => {
-    if (!technology) return;
-    try {
-      const res = await fetch(`/api/mentors/count?technology=${encodeURIComponent(technology)}`);
-      if (res.ok) {
-        const json = await res.json();
-        if (typeof json.count === "number") setMentorCount(json.count);
-      }
-    } catch {}
-  }, [technology]);
+  }, [technology, teamNumber]);
 
   useEffect(() => {
     fetchRequests();
-    fetchCredits();
-    fetchMentorCount();
-  }, [fetchRequests, fetchCredits, fetchMentorCount]);
+    fetchAvailability();
+  }, [fetchRequests, fetchAvailability]);
 
+  // poll while open request exists
+  const hasActive = requests.some((r) => r.status === "Pending" || r.status === "Accepted");
   useEffect(() => {
-    if (!hasActive) return;
     const t = setInterval(() => {
       fetchRequests();
-      fetchCredits();
-    }, 5000);
+      fetchAvailability();
+    }, hasActive ? 5000 : 15000);
     return () => clearInterval(t);
-  }, [hasActive, fetchRequests, fetchCredits]);
+  }, [hasActive, fetchRequests, fetchAvailability]);
 
   /* ---------- toast ---------- */
   const showToast = (kind, message) => {
     if (toastTimer.current) clearTimeout(toastTimer.current);
     setToast({ kind, message });
-    toastTimer.current = setTimeout(() => setToast(null), 3500);
+    toastTimer.current = setTimeout(() => setToast(null), 4000);
   };
 
-  /* ---------- submit new request ---------- */
+  /* ---------- submit ---------- */
   const handleSubmit = async () => {
     setFormError("");
     if (description.trim().length < 10) {
       setFormError("Description must be at least 10 characters");
+      return;
+    }
+    if (availability && !availability.can_submit) {
+      setFormError(availability.reason || "Cannot submit right now");
       return;
     }
     setSubmitting(true);
@@ -141,44 +130,34 @@ export default function MentorRequest({ user }) {
       const json = await res.json();
       if (!res.ok) {
         setFormError(json.error || "Failed to submit");
-        setSubmitting(false);
         return;
       }
-      showToast("success", `Request sent to ${json.notified_mentors} mentors`);
+      showToast("success", `Request sent to ${json.notified_mentors} active mentor${json.notified_mentors > 1 ? "s" : ""}. -2 credits.`);
       setDescription("");
       setPriority("Medium");
-      await fetchRequests();
-    } catch (e) {
+      await Promise.all([fetchRequests(), fetchAvailability()]);
+    } catch {
       setFormError("Network error. Please try again.");
     } finally {
       setSubmitting(false);
     }
   };
 
-  /* ---------- inline: mark resolved ---------- */
+  /* ---------- mark resolved ---------- */
   const markResolved = async (requestId) => {
     setResolvingId(requestId);
     try {
       const res = await fetch("/api/mentor-request/resolve", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          request_id: requestId,
-          leader_roll: rollNumber,
-        }),
+        body: JSON.stringify({ request_id: requestId, leader_roll: rollNumber }),
       });
       const json = await res.json();
       if (!res.ok) {
         showToast("error", json.error || "Failed to resolve");
       } else {
-        const status = json.request?.status;
-        if (status === "Mentor Resolved") {
-          showToast("success", "Resolved. 2 credits deducted. Please rate the mentor →");
-        } else {
-          showToast("success", "Marked as self-resolved");
-        }
-        await fetchRequests();
-        await fetchCredits();
+        showToast("success", json.message || "Resolved");
+        await Promise.all([fetchRequests(), fetchAvailability()]);
       }
     } catch {
       showToast("error", "Network error");
@@ -187,24 +166,20 @@ export default function MentorRequest({ user }) {
     }
   };
 
-  /* ---------- inline: rate ---------- */
+  /* ---------- rate ---------- */
   const submitRating = async (requestId, rating) => {
     setRatingId(requestId);
     try {
       const res = await fetch("/api/mentor-request/rate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          request_id: requestId,
-          rating,
-          rater_roll: rollNumber,
-        }),
+        body: JSON.stringify({ request_id: requestId, rating, rater_roll: rollNumber }),
       });
       const json = await res.json();
       if (!res.ok) {
         showToast("error", json.error || "Failed to submit rating");
       } else {
-        showToast("success", `Thanks for the ${rating}-star rating`);
+        showToast("success", json.message || `Rated ${rating}/5`);
         await fetchRequests();
       }
     } catch {
@@ -222,46 +197,66 @@ export default function MentorRequest({ user }) {
     selfResolved: requests.filter((r) => r.status === "Self Resolved").length,
   };
 
+  const credits = availability?.team_status?.credits ?? 20;
+  const mentorList = availability?.mentors || [];
+  const activeCount = availability?.counts?.active || 0;
+  const totalMentors = availability?.counts?.total || 0;
+
+  // mentors map (id → mentor object) for showing photos in request rows
+  const mentorById = {};
+  mentorList.forEach((m) => { mentorById[m.id] = m; });
+
   return (
     <>
       <style jsx global>{`
         @keyframes mr-fade-up { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
         @keyframes mr-pulse-amber { 0%, 100% { box-shadow: 0 0 0 0 rgba(250,160,0,.45); } 50% { box-shadow: 0 0 0 8px rgba(250,160,0,0); } }
+        @keyframes mr-pulse-green { 0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,.45); } 50% { box-shadow: 0 0 0 6px rgba(16,185,129,0); } }
         @keyframes mr-spin { to { transform: rotate(360deg); } }
 
         .mr { font-family: 'DM Sans', system-ui, sans-serif; color: #fff; max-width: 1100px; margin: 0 auto; padding-bottom: 80px; }
         .mr *, .mr *::before, .mr *::after { box-sizing: border-box; }
 
-        .mr-hero {
-          position: relative; padding: 30px 28px; border-radius: 18px;
-          background: linear-gradient(135deg, #fd1c00 0%, #fa0068 50%, #1a0a18 100%);
-          overflow: hidden; margin-bottom: 22px;
-          box-shadow: 0 8px 32px rgba(253,28,0,.15);
-          animation: mr-fade-up .5s ease both;
-        }
-        .mr-hero::before { content: ""; position: absolute; top: -100px; right: -100px; width: 380px; height: 380px; background: radial-gradient(circle, rgba(255,255,255,.10), transparent 60%); pointer-events: none; }
-        .mr-hero::after { content: ""; position: absolute; bottom: -60px; left: -60px; width: 240px; height: 240px; background: radial-gradient(circle, rgba(0,0,0,.25), transparent 65%); pointer-events: none; }
+        /* HERO */
+        .mr-hero { position: relative; padding: 30px 28px; border-radius: 18px; background: linear-gradient(135deg, #fd1c00 0%, #fa0068 50%, #1a0a18 100%); overflow: hidden; margin-bottom: 22px; box-shadow: 0 8px 32px rgba(253,28,0,.15); animation: mr-fade-up .5s ease both; }
+        .mr-hero::before { content: ""; position: absolute; top: -100px; right: -100px; width: 380px; height: 380px; background: radial-gradient(circle, rgba(255,255,255,.10), transparent 60%); }
+        .mr-hero::after { content: ""; position: absolute; bottom: -60px; left: -60px; width: 240px; height: 240px; background: radial-gradient(circle, rgba(0,0,0,.25), transparent 65%); }
         .mr-hero-inner { position: relative; z-index: 1; display: flex; align-items: flex-start; gap: 24px; flex-wrap: wrap; }
         .mr-hero-info { flex: 1; min-width: 280px; }
-        .mr-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 10.5px; font-weight: 700; letter-spacing: .18em; color: #fff; text-transform: uppercase; padding: 5px 11px; border: 1px solid rgba(255,255,255,.3); border-radius: 100px; background: rgba(0,0,0,.2); backdrop-filter: blur(6px); }
-        .mr-eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: #fff; box-shadow: 0 0 8px rgba(255,255,255,.6); }
-        .mr-h1 { font-family: 'Astro', 'DM Sans', sans-serif; font-size: clamp(24px, 3.8vw, 36px); line-height: 1.05; letter-spacing: 1px; font-weight: 800; margin: 12px 0 8px; text-transform: uppercase; text-shadow: 0 2px 12px rgba(0,0,0,.25); }
+        .mr-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 10.5px; font-weight: 700; letter-spacing: .18em; color: #fff; text-transform: uppercase; padding: 5px 11px; border: 1px solid rgba(255,255,255,.3); border-radius: 100px; background: rgba(0,0,0,.2); }
+        .mr-eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: #fff; }
+        .mr-h1 { font-size: clamp(24px, 3.8vw, 36px); line-height: 1.05; letter-spacing: 1px; font-weight: 800; margin: 12px 0 8px; text-transform: uppercase; }
         .mr-sub { font-size: 13.5px; color: rgba(255,255,255,.85); line-height: 1.55; max-width: 460px; margin: 0; }
-
         .mr-hero-side { display: flex; flex-direction: column; gap: 10px; min-width: 180px; }
-        .mr-hero-card { padding: 14px 16px; background: rgba(0,0,0,.28); border: 1px solid rgba(255,255,255,.18); border-radius: 12px; backdrop-filter: blur(8px); display: flex; align-items: center; gap: 12px; }
+        .mr-hero-card { padding: 14px 16px; background: rgba(0,0,0,.28); border: 1px solid rgba(255,255,255,.18); border-radius: 12px; display: flex; align-items: center; gap: 12px; }
         .mr-hero-card-icn { width: 36px; height: 36px; padding: 8px; background: rgba(255,255,255,.12); border-radius: 8px; color: #fff; flex-shrink: 0; }
         .mr-hero-card-lab { font-size: 9.5px; letter-spacing: .14em; color: rgba(255,255,255,.7); text-transform: uppercase; font-weight: 600; }
         .mr-hero-card-val { font-size: 18px; font-weight: 700; color: #fff; line-height: 1.1; margin-top: 2px; }
         .mr-hero-card-sub { font-size: 11px; color: rgba(255,255,255,.65); margin-top: 2px; }
 
+        /* OPEN REQUEST BANNER (when one is active) */
+        .mr-open-banner {
+          padding: 16px 20px; margin-bottom: 18px; border-radius: 14px;
+          background: linear-gradient(135deg, rgba(96,165,250,.08), rgba(59,130,246,.04));
+          border: 1px solid rgba(96,165,250,.3); border-left: 4px solid #60a5fa;
+          display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+          animation: mr-fade-up .35s ease both;
+        }
+        .mr-open-banner.high-prio { background: linear-gradient(135deg, rgba(253,28,0,.07), rgba(253,28,0,.02)); border-color: rgba(253,28,0,.3); border-left-color: #fd1c00; }
+        .mr-open-mentor { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 200px; }
+        .mr-open-photo { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #fd1c00, #faa000); border: 2px solid rgba(96,165,250,.3); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 14px; flex-shrink: 0; overflow: hidden; }
+        .mr-open-photo img { width: 100%; height: 100%; object-fit: cover; }
+        .mr-open-text { flex: 1; }
+        .mr-open-h { font-size: 13px; font-weight: 700; color: #fff; }
+        .mr-open-p { font-size: 12px; color: rgba(255,255,255,.6); margin-top: 2px; }
+
+        /* FORM */
         .mr-card { background: rgba(13,10,20,.6); border: 1px solid rgba(255,255,255,.06); border-radius: 14px; overflow: hidden; animation: mr-fade-up .55s ease both; }
         .mr-form { padding: 22px 24px; }
         .mr-form-h { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
         .mr-form-icn { width: 30px; height: 30px; padding: 7px; background: linear-gradient(135deg, rgba(253,28,0,.15), rgba(250,160,0,.06)); border: 1px solid rgba(253,28,0,.25); border-radius: 8px; color: #fd1c00; flex-shrink: 0; }
         .mr-form-title { font-size: 15px; font-weight: 700; color: #fff; }
         .mr-form-sub { font-size: 12.5px; color: rgba(255,255,255,.5); margin: 0 0 18px; }
-
         .mr-label { font-size: 10.5px; letter-spacing: .14em; color: rgba(255,255,255,.55); text-transform: uppercase; font-weight: 700; margin-bottom: 9px; }
 
         .mr-priority-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 18px; }
@@ -272,24 +267,39 @@ export default function MentorRequest({ user }) {
         .mr-prio-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
         .mr-prio-name { font-size: 13px; font-weight: 700; color: #fff; }
         .mr-prio-desc { font-size: 11px; color: rgba(255,255,255,.5); margin-top: 5px; line-height: 1.4; }
-        .mr-prio.active { background: rgba(255,255,255,.05); }
-        .mr-prio.active.low    { border-color: #10b981; box-shadow: 0 0 0 1px rgba(16,185,129,.4); }
+        .mr-prio.active.low { border-color: #10b981; box-shadow: 0 0 0 1px rgba(16,185,129,.4); }
         .mr-prio.active.medium { border-color: #faa000; box-shadow: 0 0 0 1px rgba(250,160,0,.4); }
-        .mr-prio.active.high   { border-color: #fd1c00; box-shadow: 0 0 0 1px rgba(253,28,0,.4); }
+        .mr-prio.active.high { border-color: #fd1c00; box-shadow: 0 0 0 1px rgba(253,28,0,.4); }
 
-        .mr-textarea { width: 100%; min-height: 110px; padding: 14px 16px; background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.08); border-radius: 10px; color: #fff; font-family: inherit; font-size: 13.5px; line-height: 1.55; resize: vertical; outline: none; transition: border-color .18s, background .18s; }
+        .mr-textarea { width: 100%; min-height: 110px; padding: 14px 16px; background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.08); border-radius: 10px; color: #fff; font-family: inherit; font-size: 13.5px; line-height: 1.55; resize: vertical; outline: none; }
         .mr-textarea:focus { border-color: #faa000; background: rgba(238,167,39,.04); }
         .mr-textarea::placeholder { color: rgba(255,255,255,.25); }
 
+        /* MENTOR AVAILABILITY CARDS */
+        .mr-mlist { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; margin: 12px 0 18px; }
+        .mr-mcard { padding: 10px 12px; background: rgba(255,255,255,.02); border: 1px solid rgba(255,255,255,.06); border-radius: 10px; display: flex; align-items: center; gap: 10px; transition: border-color .15s; }
+        .mr-mcard.active { border-color: rgba(16,185,129,.3); }
+        .mr-mcard.busy { opacity: .55; }
+        .mr-mphoto { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #fd1c00, #faa000); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 12px; flex-shrink: 0; overflow: hidden; position: relative; }
+        .mr-mphoto img { width: 100%; height: 100%; object-fit: cover; }
+        .mr-mphoto-status { position: absolute; bottom: -2px; right: -2px; width: 11px; height: 11px; border-radius: 50%; border: 2px solid rgba(13,10,20,.95); }
+        .mr-mphoto-status.active { background: #10b981; animation: mr-pulse-green 2s ease-in-out infinite; }
+        .mr-mphoto-status.busy { background: #faa000; }
+        .mr-mname { font-size: 12px; font-weight: 600; color: #fff; line-height: 1.2; word-break: break-word; }
+        .mr-mstat-lab { font-size: 9.5px; color: rgba(255,255,255,.5); margin-top: 2px; letter-spacing: .04em; }
+        .mr-mstat-lab.active { color: #10b981; font-weight: 600; }
+        .mr-mstat-lab.busy { color: #faa000; }
+
+        /* FORM FOOTER */
         .mr-form-foot { margin-top: 18px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.06); }
         .mr-foot-info { flex: 1; min-width: 240px; display: flex; flex-direction: column; gap: 4px; }
-        .mr-foot-line { font-size: 12px; color: rgba(255,255,255,.6); display: flex; align-items: center; gap: 7px; line-height: 1.4; }
+        .mr-foot-line { font-size: 12px; color: rgba(255,255,255,.6); display: flex; align-items: center; gap: 7px; }
         .mr-foot-line svg { width: 13px; height: 13px; color: #faa000; flex-shrink: 0; }
         .mr-foot-line strong { color: #fff; font-weight: 700; }
 
-        .mr-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 22px; background: linear-gradient(135deg, #fd1c00, #faa000); color: #fff; font-family: inherit; font-size: 13px; font-weight: 700; border: none; border-radius: 10px; cursor: pointer; transition: transform .15s, box-shadow .15s, opacity .15s; box-shadow: 0 4px 14px rgba(253,28,0,.3); letter-spacing: .02em; }
+        .mr-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 22px; background: linear-gradient(135deg, #fd1c00, #faa000); color: #fff; font-family: inherit; font-size: 13px; font-weight: 700; border: none; border-radius: 10px; cursor: pointer; transition: transform .15s, box-shadow .15s, opacity .15s; box-shadow: 0 4px 14px rgba(253,28,0,.3); }
         .mr-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(253,28,0,.4); }
-        .mr-btn:disabled { opacity: .55; cursor: not-allowed; }
+        .mr-btn:disabled { opacity: .4; cursor: not-allowed; box-shadow: none; }
         .mr-btn-icn { width: 14px; height: 14px; }
         .mr-btn-spin { animation: mr-spin .9s linear infinite; }
 
@@ -300,33 +310,31 @@ export default function MentorRequest({ user }) {
         .mr-readonly svg { width: 18px; height: 18px; color: #faa000; flex-shrink: 0; margin-top: 1px; }
         .mr-readonly strong { color: #faa000; font-weight: 700; }
 
+        /* STATS */
         .mr-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin: 22px 0 18px; }
         @media (max-width: 700px) { .mr-stats { grid-template-columns: repeat(2,1fr); } }
-        .mr-stat { padding: 14px 16px; background: rgba(13,10,20,.6); border: 1px solid rgba(255,255,255,.06); border-radius: 12px; transition: border-color .2s; }
-        .mr-stat:hover { border-color: rgba(255,255,255,.12); }
+        .mr-stat { padding: 14px 16px; background: rgba(13,10,20,.6); border: 1px solid rgba(255,255,255,.06); border-radius: 12px; }
         .mr-stat-lab { font-size: 9.5px; letter-spacing: .15em; color: rgba(255,255,255,.45); text-transform: uppercase; font-weight: 700; }
         .mr-stat-num { font-size: 22px; font-weight: 800; color: #fff; margin-top: 5px; line-height: 1; font-variant-numeric: tabular-nums; }
         .mr-stat-num.amber { color: #faa000; }
         .mr-stat-num.green { color: #10b981; }
 
+        /* TABLE */
         .mr-table-wrap { background: rgba(13,10,20,.6); border: 1px solid rgba(255,255,255,.06); border-radius: 14px; overflow: hidden; }
         .mr-table-h { padding: 14px 18px; border-bottom: 1px solid rgba(255,255,255,.06); font-size: 11.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #fff; display: flex; align-items: center; gap: 9px; }
         .mr-table-h-icn { width: 15px; height: 15px; color: #faa000; }
-
         .mr-table-scroll { overflow-x: auto; }
         .mr-table { width: 100%; border-collapse: collapse; min-width: 980px; }
         .mr-table thead th { padding: 11px 14px; font-size: 9.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; text-align: left; color: rgba(255,255,255,.45); background: rgba(0,0,0,.18); border-bottom: 1px solid rgba(255,255,255,.06); white-space: nowrap; }
         .mr-table tbody tr { border-bottom: 1px solid rgba(255,255,255,.04); transition: background .15s; }
-        .mr-table tbody tr:last-child { border-bottom: none; }
         .mr-table tbody tr:hover { background: rgba(255,255,255,.015); }
         .mr-table tbody tr.active { background: linear-gradient(90deg, rgba(253,28,0,.05), transparent 80%); }
         .mr-table td { padding: 13px 14px; font-size: 12.5px; color: rgba(255,255,255,.85); vertical-align: middle; }
 
-        .mr-prio-tag { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 100px; font-size: 10.5px; font-weight: 700; letter-spacing: .04em; }
-        .mr-prio-tag-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-
-        .mr-status-tag { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 100px; font-size: 10.5px; font-weight: 700; letter-spacing: .04em; white-space: nowrap; }
-        .mr-status-tag-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+        .mr-prio-tag { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 100px; font-size: 10.5px; font-weight: 700; }
+        .mr-prio-tag-dot { width: 6px; height: 6px; border-radius: 50%; }
+        .mr-status-tag { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 100px; font-size: 10.5px; font-weight: 700; white-space: nowrap; }
+        .mr-status-tag-dot { width: 6px; height: 6px; border-radius: 50%; }
         .mr-status-tag.pending { background: rgba(250,160,0,.1); color: #faa000; border: 1px solid rgba(250,160,0,.3); }
         .mr-status-tag.pending .mr-status-tag-dot { background: #faa000; animation: mr-pulse-amber 2s ease-in-out infinite; }
         .mr-status-tag.accepted { background: rgba(59,130,246,.1); color: #60a5fa; border: 1px solid rgba(59,130,246,.3); }
@@ -336,50 +344,23 @@ export default function MentorRequest({ user }) {
         .mr-status-tag.self { background: rgba(167,139,250,.1); color: #a78bfa; border: 1px solid rgba(167,139,250,.3); }
         .mr-status-tag.self .mr-status-tag-dot { background: #a78bfa; }
 
+        /* MENTOR AVATARS — stacked photos in Sent To column */
         .mr-mentors-stack { display: inline-flex; align-items: center; }
-        .mr-mentor-chip { width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, #fd1c00, #faa000); border: 2px solid rgba(13,10,20,.95); margin-left: -8px; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: #fff; font-variant-numeric: tabular-nums; }
+        .mr-mentor-chip { width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, #fd1c00, #faa000); border: 2px solid rgba(13,10,20,.95); margin-left: -8px; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: #fff; overflow: hidden; }
+        .mr-mentor-chip img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .mr-mentor-chip:first-child { margin-left: 0; }
-        .mr-mentor-chip.more { background: rgba(255,255,255,.08); color: rgba(255,255,255,.7); border-color: rgba(13,10,20,.95); }
+        .mr-mentor-chip.more { background: rgba(255,255,255,.08); color: rgba(255,255,255,.7); }
         .mr-mentor-count { font-size: 11px; color: rgba(255,255,255,.5); margin-left: 8px; }
 
-        /* ACTION column — Mark Resolved button */
-        .mr-act-btn {
-          display: inline-flex; align-items: center; gap: 6px;
-          padding: 7px 12px;
-          background: linear-gradient(135deg, #10b981, #059669);
-          color: #fff; font-family: inherit;
-          font-size: 11.5px; font-weight: 700;
-          border: none; border-radius: 7px; cursor: pointer;
-          transition: transform .15s, box-shadow .15s, opacity .15s;
-          box-shadow: 0 3px 10px rgba(16,185,129,.25);
-          white-space: nowrap;
-        }
+        /* ACTION + REVIEW */
+        .mr-act-btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; background: linear-gradient(135deg, #10b981, #059669); color: #fff; font-family: inherit; font-size: 11.5px; font-weight: 700; border: none; border-radius: 7px; cursor: pointer; box-shadow: 0 3px 10px rgba(16,185,129,.25); white-space: nowrap; }
         .mr-act-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 5px 14px rgba(16,185,129,.4); }
         .mr-act-btn:disabled { opacity: .55; cursor: not-allowed; }
         .mr-act-btn svg { width: 12px; height: 12px; }
         .mr-act-btn.resolving svg { animation: mr-spin .9s linear infinite; }
-        .mr-act-pending {
-          display: inline-flex; align-items: center; gap: 6px;
-          padding: 7px 12px;
-          background: rgba(255,255,255,.04);
-          border: 1px solid rgba(255,255,255,.1);
-          color: rgba(255,255,255,.5);
-          font-size: 11px; font-weight: 600; border-radius: 7px;
-          white-space: nowrap;
-          cursor: pointer; font-family: inherit;
-        }
-        .mr-act-pending:hover { background: rgba(255,255,255,.06); color: rgba(255,255,255,.75); }
 
-        /* REVIEW column — inline 5 stars */
-        .mr-review-stars {
-          display: inline-flex; gap: 3px;
-          color: rgba(255,255,255,.18);
-        }
-        .mr-review-stars button {
-          background: transparent; border: none; padding: 0;
-          color: inherit; cursor: pointer;
-          transition: transform .12s, color .12s;
-        }
+        .mr-review-stars { display: inline-flex; gap: 3px; color: rgba(255,255,255,.18); }
+        .mr-review-stars button { background: transparent; border: none; padding: 0; color: inherit; cursor: pointer; transition: transform .12s, color .12s; }
         .mr-review-stars button:hover:not(:disabled) { transform: scale(1.2); color: #faa000; }
         .mr-review-stars button:disabled { cursor: not-allowed; opacity: .5; }
         .mr-review-stars button svg { width: 16px; height: 16px; display: block; }
@@ -399,18 +380,16 @@ export default function MentorRequest({ user }) {
           .mr-table-scroll { display: none; }
           .mr-cards { display: flex; flex-direction: column; gap: 8px; padding: 10px; }
         }
-        @media (min-width: 721px) {
-          .mr-cards { display: none; }
-        }
+        @media (min-width: 721px) { .mr-cards { display: none; } }
         .mr-rcard { background: rgba(255,255,255,.02); border: 1px solid rgba(255,255,255,.06); border-radius: 10px; padding: 12px 14px; }
         .mr-rcard.active { border-color: rgba(253,28,0,.3); background: rgba(253,28,0,.04); }
         .mr-rcard-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
         .mr-rcard-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; font-size: 12px; gap: 10px; }
         .mr-rcard-lab { color: rgba(255,255,255,.5); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; font-weight: 600; }
         .mr-rcard-val { color: rgba(255,255,255,.9); text-align: right; }
-        .mr-rcard-actions { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        .mr-rcard-actions { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
 
-        .mr-toast { position: fixed; top: 24px; right: 24px; padding: 12px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; color: #fff; z-index: 10000; animation: mr-fade-up .25s ease; backdrop-filter: blur(8px); display: flex; align-items: center; gap: 9px; max-width: 360px; }
+        .mr-toast { position: fixed; top: 24px; right: 24px; padding: 12px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; z-index: 10000; animation: mr-fade-up .25s ease; backdrop-filter: blur(8px); display: flex; align-items: center; gap: 9px; max-width: 380px; }
         .mr-toast svg { width: 16px; height: 16px; flex-shrink: 0; }
         .mr-toast.success { background: rgba(16,185,129,.15); border: 1px solid rgba(16,185,129,.4); color: #10b981; }
         .mr-toast.error { background: rgba(253,28,0,.15); border: 1px solid rgba(253,28,0,.4); color: #ff5535; }
@@ -425,7 +404,7 @@ export default function MentorRequest({ user }) {
               <h1 className="mr-h1">Stuck somewhere? Get help fast.</h1>
               <p className="mr-sub">
                 Send a request to all <strong style={{ color: "#fff" }}>{technology || "your track"}</strong> mentors.
-                The first one to claim it will be on their way to your team.
+                Costs 2 credits per request, deducted instantly.
               </p>
             </div>
             <div className="mr-hero-side">
@@ -434,20 +413,52 @@ export default function MentorRequest({ user }) {
                 <div>
                   <div className="mr-hero-card-lab">Credits</div>
                   <div className="mr-hero-card-val">{credits} / 20</div>
-                  <div className="mr-hero-card-sub">−2 per mentor resolution</div>
+                  <div className="mr-hero-card-sub">−2 per request</div>
                 </div>
               </div>
               <div className="mr-hero-card">
                 <span className="mr-hero-card-icn">{I.user}</span>
                 <div>
-                  <div className="mr-hero-card-lab">Mentors in track</div>
-                  <div className="mr-hero-card-val">{mentorCount || "—"}</div>
+                  <div className="mr-hero-card-lab">Mentors active</div>
+                  <div className="mr-hero-card-val">{activeCount} / {totalMentors}</div>
                   <div className="mr-hero-card-sub">{technology || "Loading…"}</div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
+        {/* OPEN REQUEST BANNER */}
+        {availability?.team_status?.has_open_request && (() => {
+          const open = availability.team_status.open_request;
+          const isHigh = open.priority === "High";
+          const acceptedMentor = open.status === "Accepted" ? requests.find((r) => r.id === open.id) : null;
+          const mentorPhoto = acceptedMentor?.mentor_id ? mentorById[acceptedMentor.mentor_id]?.image_url : null;
+          return (
+            <div className={`mr-open-banner ${isHigh ? "high-prio" : ""}`}>
+              <div className="mr-open-mentor">
+                <div className="mr-open-photo">
+                  {open.status === "Accepted" && mentorPhoto ? (
+                    <img src={mentorPhoto} alt={open.mentor_name} />
+                  ) : (
+                    open.mentor_name ? getInitials(open.mentor_name) : "?"
+                  )}
+                </div>
+                <div className="mr-open-text">
+                  <div className="mr-open-h">
+                    {open.status === "Pending"
+                      ? "Waiting for a mentor to accept…"
+                      : `${open.mentor_name} is on the way`}
+                  </div>
+                  <div className="mr-open-p">
+                    {open.priority} priority · {timeAgo(open.created_at)}
+                    {open.status === "Accepted" ? " · Mark resolved when done" : ""}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {isLeader ? (
           <div className="mr-card">
@@ -456,7 +467,7 @@ export default function MentorRequest({ user }) {
                 <span className="mr-form-icn">{I.lifebuoy}</span>
                 <span className="mr-form-title">Request Mentor Help</span>
               </div>
-              <p className="mr-form-sub">All mentors in your track will be notified instantly.</p>
+              <p className="mr-form-sub">All active mentors in your track will be notified instantly.</p>
 
               <div className="mr-label">Priority</div>
               <div className="mr-priority-row">
@@ -485,10 +496,39 @@ export default function MentorRequest({ user }) {
                 maxLength={1000}
               />
 
+              {/* MENTOR AVAILABILITY CARDS */}
+              {mentorList.length > 0 && (
+                <>
+                  <div className="mr-label" style={{ marginTop: 18 }}>Mentor Availability</div>
+                  <div className="mr-mlist">
+                    {mentorList.map((m) => (
+                      <div key={m.id} className={`mr-mcard ${m.status}`}>
+                        <div className="mr-mphoto">
+                          {m.image_url ? <img src={m.image_url} alt={m.name} /> : getInitials(m.name)}
+                          <span className={`mr-mphoto-status ${m.status}`} />
+                        </div>
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                          <div className="mr-mname">{m.name}</div>
+                          <div className={`mr-mstat-lab ${m.status}`}>
+                            {m.status === "active" ? "Available" : `Busy · ${m.busy_with_team}`}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+
               {formError && (
                 <div className="mr-form-error">
                   {I.alert}
                   <span>{formError}</span>
+                </div>
+              )}
+              {availability && !availability.can_submit && availability.reason && !formError && (
+                <div className="mr-form-error">
+                  {I.alert}
+                  <span>{availability.reason}</span>
                 </div>
               )}
 
@@ -496,23 +536,22 @@ export default function MentorRequest({ user }) {
                 <div className="mr-foot-info">
                   <div className="mr-foot-line">
                     {I.user}
-                    <span>Will notify <strong>{mentorCount || "—"} mentors</strong> in {technology}</span>
+                    <span>Will notify <strong>{activeCount} active mentor{activeCount > 1 ? "s" : ""}</strong> in {technology}</span>
                   </div>
                   <div className="mr-foot-line">
                     {I.coins}
-                    <span><strong>2 credits</strong> deducted only on mentor resolution · No deduction if self-resolved</span>
+                    <span><strong>2 credits</strong> deducted on submit · No refunds</span>
                   </div>
                 </div>
-                <button className="mr-btn" onClick={handleSubmit} disabled={submitting || hasActive}>
+                <button
+                  className="mr-btn"
+                  onClick={handleSubmit}
+                  disabled={submitting || (availability && !availability.can_submit)}
+                >
                   {submitting ? (
                     <>
                       <span className="mr-btn-icn mr-btn-spin">{I.zap}</span>
                       <span>Sending…</span>
-                    </>
-                  ) : hasActive ? (
-                    <>
-                      <span className="mr-btn-icn">{I.alert}</span>
-                      <span>Active request open</span>
                     </>
                   ) : (
                     <>
@@ -529,7 +568,6 @@ export default function MentorRequest({ user }) {
             {I.alert}
             <div>
               <strong>Members can view only.</strong> Only the team leader can submit and resolve mentor requests.
-              You'll see live updates here as your team raises and resolves requests.
             </div>
           </div>
         )}
@@ -578,6 +616,7 @@ export default function MentorRequest({ user }) {
                         isLeader={isLeader}
                         resolvingId={resolvingId}
                         ratingId={ratingId}
+                        mentorById={mentorById}
                         onMarkResolved={() => markResolved(r.id)}
                         onRate={(stars) => submitRating(r.id, stars)}
                       />
@@ -593,6 +632,7 @@ export default function MentorRequest({ user }) {
                     isLeader={isLeader}
                     resolvingId={resolvingId}
                     ratingId={ratingId}
+                    mentorById={mentorById}
                     onMarkResolved={() => markResolved(r.id)}
                     onRate={(stars) => submitRating(r.id, stars)}
                   />
@@ -614,16 +654,13 @@ export default function MentorRequest({ user }) {
 }
 
 /* ====================================================================== */
-function RequestRow({ r, isLeader, resolvingId, ratingId, onMarkResolved, onRate }) {
+function RequestRow({ r, isLeader, resolvingId, ratingId, mentorById, onMarkResolved, onRate }) {
   const isActive = r.status === "Pending" || r.status === "Accepted";
   const prioColor = { Low: "#10b981", Medium: "#faa000", High: "#fd1c00" }[r.priority];
-  const statusClass = {
-    "Pending": "pending",
-    "Accepted": "accepted",
-    "Mentor Resolved": "resolved",
-    "Self Resolved": "self",
-  }[r.status];
+  const statusClass = { "Pending": "pending", "Accepted": "accepted", "Mentor Resolved": "resolved", "Self Resolved": "self" }[r.status];
   const sentTo = r.sent_to || [];
+
+  const acceptedPhoto = r.mentor_id ? mentorById?.[r.mentor_id]?.image_url : null;
 
   return (
     <tr className={isActive ? "active" : ""}>
@@ -636,58 +673,45 @@ function RequestRow({ r, isLeader, resolvingId, ratingId, onMarkResolved, onRate
       <td><MentorAvatars names={sentTo} /></td>
       <td>
         {r.mentor_name ? (
-          <span style={{ color: "#fff", fontWeight: 600 }}>{r.mentor_name}</span>
-        ) : (
-          <span style={{ color: "rgba(255,255,255,.35)" }}>—</span>
-        )}
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+            <span className="mr-mentor-chip" style={{ width: 22, height: 22, marginLeft: 0 }}>
+              {acceptedPhoto ? <img src={acceptedPhoto} alt={r.mentor_name} /> : getInitials(r.mentor_name)}
+            </span>
+            <span style={{ color: "#fff", fontWeight: 600 }}>{r.mentor_name}</span>
+          </span>
+        ) : <span style={{ color: "rgba(255,255,255,.35)" }}>—</span>}
       </td>
       <td>
         {r.resolved_at && r.accepted_at ? (
           <span style={{ color: "#10b981", fontVariantNumeric: "tabular-nums", fontWeight: 600 }}>
             {formatDuration(r.accepted_at, r.resolved_at)}
           </span>
-        ) : r.accepted_at ? (
-          <LiveTimer since={r.accepted_at} />
-        ) : (
-          <span style={{ color: "rgba(255,255,255,.35)" }}>—</span>
-        )}
+        ) : r.accepted_at ? <LiveTimer since={r.accepted_at} /> : <span style={{ color: "rgba(255,255,255,.35)" }}>—</span>}
       </td>
       <td>
         <span className={`mr-status-tag ${statusClass}`}>
-          <span className="mr-status-tag-dot" />
-          {r.status}
+          <span className="mr-status-tag-dot" />{r.status}
         </span>
       </td>
-      <td>
-        <ActionCell r={r} isLeader={isLeader} resolvingId={resolvingId} onMarkResolved={onMarkResolved} />
-      </td>
-      <td>
-        <ReviewCell r={r} isLeader={isLeader} ratingId={ratingId} onRate={onRate} />
-      </td>
+      <td><ActionCell r={r} isLeader={isLeader} resolvingId={resolvingId} onMarkResolved={onMarkResolved} /></td>
+      <td><ReviewCell r={r} isLeader={isLeader} ratingId={ratingId} onRate={onRate} /></td>
     </tr>
   );
 }
 
-function RequestCard({ r, isLeader, resolvingId, ratingId, onMarkResolved, onRate }) {
+function RequestCard({ r, isLeader, resolvingId, ratingId, mentorById, onMarkResolved, onRate }) {
   const isActive = r.status === "Pending" || r.status === "Accepted";
   const prioColor = { Low: "#10b981", Medium: "#faa000", High: "#fd1c00" }[r.priority];
-  const statusClass = {
-    "Pending": "pending",
-    "Accepted": "accepted",
-    "Mentor Resolved": "resolved",
-    "Self Resolved": "self",
-  }[r.status];
+  const statusClass = { "Pending": "pending", "Accepted": "accepted", "Mentor Resolved": "resolved", "Self Resolved": "self" }[r.status];
 
   return (
     <div className={`mr-rcard ${isActive ? "active" : ""}`}>
       <div className="mr-rcard-top">
         <span className="mr-prio-tag" style={{ background: `${prioColor}1a`, color: prioColor, border: `1px solid ${prioColor}55` }}>
-          <span className="mr-prio-tag-dot" style={{ background: prioColor }} />
-          {r.priority}
+          <span className="mr-prio-tag-dot" style={{ background: prioColor }} />{r.priority}
         </span>
         <span className={`mr-status-tag ${statusClass}`}>
-          <span className="mr-status-tag-dot" />
-          {r.status}
+          <span className="mr-status-tag-dot" />{r.status}
         </span>
       </div>
       <div className="mr-rcard-row">
@@ -703,9 +727,7 @@ function RequestCard({ r, isLeader, resolvingId, ratingId, onMarkResolved, onRat
       {r.resolved_at && r.accepted_at && (
         <div className="mr-rcard-row">
           <span className="mr-rcard-lab">Resolution</span>
-          <span className="mr-rcard-val" style={{ color: "#10b981", fontVariantNumeric: "tabular-nums" }}>
-            {formatDuration(r.accepted_at, r.resolved_at)}
-          </span>
+          <span className="mr-rcard-val" style={{ color: "#10b981", fontVariantNumeric: "tabular-nums" }}>{formatDuration(r.accepted_at, r.resolved_at)}</span>
         </div>
       )}
       <div className="mr-rcard-actions">
@@ -716,59 +738,36 @@ function RequestCard({ r, isLeader, resolvingId, ratingId, onMarkResolved, onRat
   );
 }
 
-/* ---------- ACTION cell: Mark Resolved button or em-dash ---------- */
 function ActionCell({ r, isLeader, resolvingId, onMarkResolved }) {
   const canResolve = isLeader && (r.status === "Pending" || r.status === "Accepted");
   const isLoading = resolvingId === r.id;
-
-  if (!canResolve) {
-    return <span style={{ color: "rgba(255,255,255,.3)" }}>—</span>;
-  }
-
+  if (!canResolve) return <span style={{ color: "rgba(255,255,255,.3)" }}>—</span>;
   return (
-    <button
-      className={`mr-act-btn ${isLoading ? "resolving" : ""}`}
-      onClick={onMarkResolved}
-      disabled={isLoading}
-    >
+    <button className={`mr-act-btn ${isLoading ? "resolving" : ""}`} onClick={onMarkResolved} disabled={isLoading}>
       {isLoading ? I.zap : I.check}
       <span>{isLoading ? "Resolving…" : "Mark Resolved"}</span>
     </button>
   );
 }
 
-/* ---------- REVIEW cell: 5 inline stars ---------- */
 function ReviewCell({ r, isLeader, ratingId, onRate }) {
   const [hover, setHover] = useState(0);
   const isLoading = ratingId === r.id;
 
-  // Show locked stars if already rated
   if (r.rating) {
     return (
       <span className="mr-review-stars locked">
         {[1, 2, 3, 4, 5].map((n) => (
-          <span key={n} className={n <= r.rating ? "" : "empty"}>
-            {I.star}
-          </span>
+          <span key={n} className={n <= r.rating ? "" : "empty"}>{I.star}</span>
         ))}
       </span>
     );
   }
-
-  // Allow rating only if status is Mentor Resolved + leader
   const canRate = isLeader && r.status === "Mentor Resolved";
-
-  if (!canRate) {
-    return <span style={{ color: "rgba(255,255,255,.3)" }}>—</span>;
-  }
-
+  if (!canRate) return <span style={{ color: "rgba(255,255,255,.3)" }}>—</span>;
   const display = hover;
-
   return (
-    <span
-      className={`mr-review-stars hover-active`}
-      onMouseLeave={() => setHover(0)}
-    >
+    <span className="mr-review-stars hover-active" onMouseLeave={() => setHover(0)}>
       {[1, 2, 3, 4, 5].map((n) => (
         <button
           key={n}
@@ -776,7 +775,6 @@ function ReviewCell({ r, isLeader, ratingId, onRate }) {
           onClick={() => onRate(n)}
           onMouseEnter={() => setHover(n)}
           disabled={isLoading}
-          aria-label={`${n} star${n > 1 ? "s" : ""}`}
         >
           {I.star}
         </button>
@@ -797,7 +795,7 @@ function MentorAvatars({ names, compact }) {
         ))}
         {extra > 0 && <span className="mr-mentor-chip more" title={names.slice(3).join(", ")}>+{extra}</span>}
       </span>
-      {!compact && <span className="mr-mentor-count">{names.length} mentors</span>}
+      {!compact && <span className="mr-mentor-count">{names.length} mentor{names.length > 1 ? "s" : ""}</span>}
     </span>
   );
 }
@@ -820,6 +818,16 @@ function getInitials(name) {
   const parts = name.trim().split(/\s+/);
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+function timeAgo(iso) {
+  const sec = Math.max(0, Math.floor((Date.now() - new Date(iso)) / 1000));
+  if (sec < 60) return `${sec}s ago`;
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `${min}m ago`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr}h ago`;
+  return `${Math.floor(hr / 24)}d ago`;
 }
 
 function formatDuration(start, end) {

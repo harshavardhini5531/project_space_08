@@ -1480,25 +1480,8 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
                   </tbody></table></div>
                 </>}
 
-                {/* MENTOR REQUESTS SUB-TAB */}
-                {mentorSubTab==='requests' && <>
-                  <div className="ad-mst">
-                    <div className="ad-mst-c" style={{'--gw':'rgba(238,167,39,.06)'}}><div className="ad-mst-v" style={{color:'#EEA727'}}>{sumPending}</div><div className="ad-mst-l">Pending Requests</div></div>
-                    <div className="ad-mst-c" style={{'--gw':'rgba(74,222,128,.06)'}}><div className="ad-mst-v" style={{color:'#4ade80'}}>{sumResolved}</div><div className="ad-mst-l">Resolved</div></div>
-                    <div className="ad-mst-c" style={{'--gw':'rgba(253,28,0,.06)'}}><div className="ad-mst-v" style={{color:'#fd1c00'}}>{sumPending+sumResolved}</div><div className="ad-mst-l">Total Received</div></div>
-                    <div className="ad-mst-c" style={{'--gw':'rgba(59,130,246,.06)'}}><div className="ad-mst-v" style={{color:'#3b82f6'}}>{(()=>{const r=mList.filter(m=>m.totalRated>0);return r.length>0?(r.reduce((s,m)=>s+m.avgRating,0)/r.length).toFixed(1):'—'})()}</div><div className="ad-mst-l">Avg Rating</div></div>
-                  </div>
-                  <div style={{overflowX:'auto'}}><table className="ad-mtbl"><thead><tr><th>Mentor</th><th>Technology</th><th className="c">Received</th><th className="c">Pending</th><th className="c">Resolved</th><th className="c">Rating</th></tr></thead><tbody>
-                    {mList.slice().sort((a,b)=>(b.requestsReceived||0)-(a.requestsReceived||0)).map(m=><tr key={m.name}>
-                      <td><div className="ad-mname"><div className="ad-mavt">{allMentors[m.name]?<img src={allMentors[m.name]} alt={m.name}/>:initials(m.name)}</div><div><div className="ad-mnm">{m.name}</div><div className="ad-mem">{m.email||''}</div></div></div></td>
-                      <td><span style={{fontSize:'.62rem',padding:'3px 8px',borderRadius:6,background:'rgba(255,255,255,.04)',color:'rgba(255,255,255,.6)'}}>{m.technology||'—'}</span></td>
-                      <td className="c" style={{fontWeight:700,color:'rgba(255,255,255,.55)'}}>{m.requestsReceived||0}</td>
-                      <td className="c"><span className={`ad-mb-pill ${m.requestsPending>0?'bd':'nu'}`}>{m.requestsPending||0}</span></td>
-                      <td className="c" style={{fontWeight:700,color:m.requestsResolved>0?'#4ade80':'rgba(255,255,255,.3)'}}>{m.requestsResolved||0}</td>
-                      <td className="c" style={{fontWeight:700,color:m.totalRated>0?'#EEA727':'rgba(255,255,255,.25)'}}>{m.totalRated>0?m.avgRating.toFixed(1)+' ★':'—'}</td>
-                    </tr>)}
-                  </tbody></table></div>
-                </>}
+                {/* MENTOR REQUESTS SUB-TAB — v3 dynamic stats + tech pills + mentor selector + expandable rows */}
+                {mentorSubTab==='requests' && <AdminMentorRequestsTab />}
               </>
             })()}
 
@@ -2455,4 +2438,357 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
       </div>
     </>
   )
+}
+
+/* ============================================================
+   ADMIN MENTOR REQUESTS TAB — v3
+   Dynamic stats by tech + mentor · expandable rows · admin override
+   ============================================================ */
+function AdminMentorRequestsTab() {
+  const [statsData, setStatsData] = React.useState(null);
+  const [requests, setRequests] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const [techFilter, setTechFilter] = React.useState("all");
+  const [mentorFilter, setMentorFilter] = React.useState("all");
+  const [expandedId, setExpandedId] = React.useState(null);
+  const [overrideId, setOverrideId] = React.useState(null);
+  const [overrideReason, setOverrideReason] = React.useState("");
+  const [overrideSaving, setOverrideSaving] = React.useState(false);
+  const [adminEmail, setAdminEmail] = React.useState("");
+
+  // Get admin email from session storage (set when admin logs in)
+  React.useEffect(() => {
+    try {
+      const s = sessionStorage.getItem("admin_email") ||
+                sessionStorage.getItem("adminEmail") ||
+                sessionStorage.getItem("mentor_email") ||
+                "";
+      setAdminEmail(s);
+    } catch {}
+  }, []);
+
+  const fetchData = React.useCallback(async () => {
+    try {
+      const sParams = new URLSearchParams();
+      if (techFilter !== "all") sParams.set("technology", techFilter);
+      if (mentorFilter !== "all") sParams.set("mentor_id", mentorFilter);
+
+      const rParams = new URLSearchParams();
+      if (techFilter !== "all") rParams.set("technology", techFilter);
+      if (mentorFilter !== "all") rParams.set("mentor_id", mentorFilter);
+      rParams.set("limit", "300");
+
+      const [sRes, rRes] = await Promise.all([
+        fetch(`/api/admin/mentor-request-stats?${sParams.toString()}`),
+        fetch(`/api/mentor-request?${rParams.toString()}`),
+      ]);
+      const [sJson, rJson] = await Promise.all([sRes.json(), rRes.json()]);
+      if (sJson.success) setStatsData(sJson);
+      if (rJson.success) setRequests(rJson.requests || []);
+    } catch (e) {
+      console.error("[admin requests] fetch", e);
+    } finally {
+      setLoading(false);
+    }
+  }, [techFilter, mentorFilter]);
+
+  React.useEffect(() => { fetchData(); }, [fetchData]);
+  React.useEffect(() => {
+    const t = setInterval(fetchData, 15000);
+    return () => clearInterval(t);
+  }, [fetchData]);
+
+  const toggleExpand = (id) => setExpandedId(expandedId === id ? null : id);
+
+  const doOverride = async (requestId) => {
+    if (!adminEmail) {
+      alert("Admin email not found in session. Please re-login.");
+      return;
+    }
+    if (overrideReason.trim().length < 10) {
+      alert("Reason must be at least 10 characters.");
+      return;
+    }
+    setOverrideSaving(true);
+    try {
+      const res = await fetch("/api/admin/mentor-request-override", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ request_id: requestId, admin_email: adminEmail, reason: overrideReason }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        alert(json.error || "Override failed");
+      } else {
+        alert(json.message || "Override successful");
+        setOverrideId(null);
+        setOverrideReason("");
+        await fetchData();
+      }
+    } catch {
+      alert("Network error");
+    } finally {
+      setOverrideSaving(false);
+    }
+  };
+
+  const initialsLocal = (n) => (n || "").split(" ").filter(Boolean).slice(0, 2).map((p) => p[0]).join("").toUpperCase();
+  const fmtDt = (iso) => iso ? new Date(iso).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "—";
+
+  const techList = ["all", "AWS Development", "Google Flutter", "Full Stack", "Data Specialist", "ServiceNow", "VLSI", "SkillUp Coder"];
+  const mentorOptions = statsData?.mentors_in_scope || [];
+  const mentorById = {};
+  (statsData?.all_mentors || []).forEach((m) => { mentorById[m.id] = m; });
+
+  const stats = statsData?.stats || { total: 0, pending: 0, resolved: 0, avg_rating: 0, rated_count: 0 };
+
+  return (
+    <>
+      <style>{`
+        .amr-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+        .amr-pill { padding: 7px 13px; background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.08); border-radius: 100px; color: rgba(255,255,255,.65); font-size: 11.5px; font-weight: 600; cursor: pointer; transition: all .15s; font-family: 'DM Sans', sans-serif; }
+        .amr-pill:hover { color: #fff; border-color: rgba(255,255,255,.2); }
+        .amr-pill.on { background: linear-gradient(135deg, #fd1c00, #faa000); color: #fff; border-color: transparent; }
+        .amr-mselect { padding: 8px 12px; background: rgba(0,0,0,.3); border: 1px solid rgba(255,255,255,.1); border-radius: 8px; color: #fff; font-size: 12px; font-family: 'DM Sans', sans-serif; min-width: 240px; outline: none; margin-bottom: 14px; }
+        .amr-mselect:focus { border-color: rgba(253,28,0,.4); }
+        .amr-tbl tr.expandable { cursor: pointer; }
+        .amr-tbl tr.expandable:hover td { background: rgba(255,255,255,.04); }
+        .amr-expand-row td { padding: 0 !important; background: rgba(0,0,0,.3) !important; }
+        .amr-expand-body { padding: 18px 22px; }
+        .amr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        @media (max-width: 720px) { .amr-grid { grid-template-columns: 1fr; } }
+        .amr-mblock { background: rgba(255,255,255,.025); border: 1px solid rgba(255,255,255,.06); border-radius: 10px; padding: 14px; }
+        .amr-mblock-h { font-size: 10.5px; letter-spacing: .12em; color: rgba(255,255,255,.5); text-transform: uppercase; font-weight: 700; margin-bottom: 10px; }
+        .amr-mtop { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .amr-mphoto { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #fd1c00, #faa000); overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 14px; }
+        .amr-mphoto img { width: 100%; height: 100%; object-fit: cover; }
+        .amr-mname { font-size: 14px; font-weight: 700; color: #fff; }
+        .amr-mmeta { font-size: 11px; color: rgba(255,255,255,.5); margin-top: 2px; }
+        .amr-row-line { display: flex; justify-content: space-between; gap: 10px; padding: 6px 0; font-size: 12px; border-top: 1px solid rgba(255,255,255,.04); }
+        .amr-row-line:first-of-type { border-top: none; }
+        .amr-row-lab { color: rgba(255,255,255,.5); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; font-weight: 600; }
+        .amr-row-val { color: rgba(255,255,255,.85); text-align: right; word-break: break-word; }
+        .amr-desc { padding: 12px; background: rgba(0,0,0,.25); border: 1px solid rgba(255,255,255,.05); border-radius: 8px; font-size: 12.5px; color: rgba(255,255,255,.75); line-height: 1.55; margin-top: 10px; }
+        .amr-override-btn { padding: 7px 14px; background: rgba(253,28,0,.1); border: 1px solid rgba(253,28,0,.3); color: #fd1c00; border-radius: 7px; font-size: 11.5px; font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+        .amr-override-btn:hover { background: rgba(253,28,0,.2); }
+        .amr-override-form { margin-top: 12px; padding: 14px; background: rgba(253,28,0,.04); border: 1px solid rgba(253,28,0,.2); border-radius: 8px; }
+        .amr-override-form textarea { width: 100%; min-height: 60px; padding: 10px; background: rgba(0,0,0,.3); border: 1px solid rgba(255,255,255,.08); border-radius: 6px; color: #fff; font-size: 12.5px; font-family: 'DM Sans', sans-serif; resize: vertical; outline: none; margin: 8px 0; }
+        .amr-override-actions { display: flex; gap: 8px; }
+        .amr-override-actions button { padding: 7px 14px; border-radius: 6px; font-size: 11.5px; font-weight: 700; cursor: pointer; font-family: inherit; border: none; }
+        .amr-override-confirm { background: #fd1c00; color: #fff; }
+        .amr-override-confirm:disabled { opacity: .5; cursor: not-allowed; }
+        .amr-override-cancel { background: rgba(255,255,255,.06); color: rgba(255,255,255,.7); }
+        .amr-prio { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 100px; font-size: 10.5px; font-weight: 700; }
+        .amr-prio-dot { width: 6px; height: 6px; border-radius: 50%; }
+        .amr-status { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 100px; font-size: 10px; font-weight: 700; }
+        .amr-status .dot { width: 5px; height: 5px; border-radius: 50%; }
+        .amr-loading { padding: 60px; text-align: center; color: rgba(255,255,255,.5); }
+        .amr-empty { padding: 60px 24px; text-align: center; color: rgba(255,255,255,.45); font-size: 13px; }
+      `}</style>
+
+      {/* TECH FILTER PILLS */}
+      <div className="amr-pills">
+        {techList.map((t) => (
+          <button
+            key={t}
+            className={`amr-pill ${techFilter === t ? "on" : ""}`}
+            onClick={() => { setTechFilter(t); setMentorFilter("all"); }}
+          >
+            {t === "all" ? "All Technologies" : t}
+          </button>
+        ))}
+      </div>
+
+      {/* MENTOR SELECTOR */}
+      <select
+        className="amr-mselect"
+        value={mentorFilter}
+        onChange={(e) => setMentorFilter(e.target.value)}
+      >
+        <option value="all">All Mentors{techFilter !== "all" ? ` in ${techFilter}` : ""}</option>
+        {mentorOptions.map((m) => (
+          <option key={m.id} value={m.id}>
+            {m.name}{techFilter === "all" ? ` · ${m.technology}` : ""}
+          </option>
+        ))}
+      </select>
+
+      {/* 4 STAT CARDS */}
+      <div className="ad-mst">
+        <div className="ad-mst-c" style={{ "--gw": "rgba(253,28,0,.06)" }}>
+          <div className="ad-mst-v" style={{ color: "#fd1c00" }}>{stats.total}</div>
+          <div className="ad-mst-l">Total Requests</div>
+        </div>
+        <div className="ad-mst-c" style={{ "--gw": "rgba(238,167,39,.06)" }}>
+          <div className="ad-mst-v" style={{ color: "#EEA727" }}>{stats.pending}</div>
+          <div className="ad-mst-l">Pending</div>
+        </div>
+        <div className="ad-mst-c" style={{ "--gw": "rgba(74,222,128,.06)" }}>
+          <div className="ad-mst-v" style={{ color: "#4ade80" }}>{stats.resolved}</div>
+          <div className="ad-mst-l">Resolved</div>
+        </div>
+        <div className="ad-mst-c" style={{ "--gw": "rgba(59,130,246,.06)" }}>
+          <div className="ad-mst-v" style={{ color: "#60a5fa" }}>
+            {stats.avg_rating > 0 ? `${stats.avg_rating.toFixed(1)}★` : "—"}
+          </div>
+          <div className="ad-mst-l">Avg Rating ({stats.rated_count})</div>
+        </div>
+      </div>
+
+      {/* TABLE */}
+      {loading ? (
+        <div className="amr-loading">Loading…</div>
+      ) : requests.length === 0 ? (
+        <div className="amr-empty">No mentor requests for this filter.</div>
+      ) : (
+        <div style={{ overflowX: "auto" }}>
+          <table className="ad-mtbl amr-tbl">
+            <thead>
+              <tr>
+                <th>Team</th>
+                <th>Project</th>
+                <th>Time</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Mentor</th>
+                <th className="c"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {requests.map((r) => {
+                const prioColor = { Low: "#10b981", Medium: "#faa000", High: "#fd1c00" }[r.priority];
+                const statusColor = {
+                  "Pending": "#faa000",
+                  "Accepted": "#60a5fa",
+                  "Mentor Resolved": "#10b981",
+                  "Self Resolved": "#a78bfa",
+                }[r.status] || "#888";
+                const mentor = r.mentor_id ? mentorById[r.mentor_id] : null;
+                const isExpanded = expandedId === r.id;
+
+                return (
+                  <React.Fragment key={r.id}>
+                    <tr className="expandable" onClick={() => toggleExpand(r.id)}>
+                      <td style={{ fontWeight: 700, color: "#fd1c00" }}>{r.team_number}</td>
+                      <td style={{ color: "rgba(255,255,255,.85)", maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.project_title || "—"}</td>
+                      <td style={{ color: "rgba(255,255,255,.55)", fontSize: ".7rem" }}>{fmtDt(r.created_at)}</td>
+                      <td>
+                        <span className="amr-prio" style={{ background: `${prioColor}1a`, color: prioColor, border: `1px solid ${prioColor}55` }}>
+                          <span className="amr-prio-dot" style={{ background: prioColor }} />
+                          {r.priority}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="amr-status" style={{ background: `${statusColor}1a`, color: statusColor, border: `1px solid ${statusColor}55` }}>
+                          <span className="dot" style={{ background: statusColor }} />
+                          {r.status}
+                        </span>
+                      </td>
+                      <td>{r.mentor_name || <span style={{ color: "rgba(255,255,255,.3)" }}>—</span>}</td>
+                      <td className="c" style={{ color: "rgba(255,255,255,.4)" }}>{isExpanded ? "▲" : "▼"}</td>
+                    </tr>
+
+                    {isExpanded && (
+                      <tr className="amr-expand-row">
+                        <td colSpan={7}>
+                          <div className="amr-expand-body">
+                            <div className="amr-grid">
+                              {/* MENTOR DETAILS */}
+                              <div className="amr-mblock">
+                                <div className="amr-mblock-h">Mentor Details</div>
+                                {mentor ? (
+                                  <>
+                                    <div className="amr-mtop">
+                                      <div className="amr-mphoto">
+                                        {mentor.image_url ? <img src={mentor.image_url} alt={mentor.name} /> : initialsLocal(mentor.name)}
+                                      </div>
+                                      <div>
+                                        <div className="amr-mname">{mentor.name}</div>
+                                        <div className="amr-mmeta">{mentor.technology}</div>
+                                      </div>
+                                    </div>
+                                    <div className="amr-row-line"><span className="amr-row-lab">Email</span><span className="amr-row-val">{mentor.email}</span></div>
+                                    <div className="amr-row-line"><span className="amr-row-lab">Accepted at</span><span className="amr-row-val">{fmtDt(r.accepted_at)}</span></div>
+                                    <div className="amr-row-line"><span className="amr-row-lab">Resolved at</span><span className="amr-row-val">{fmtDt(r.resolved_at)}</span></div>
+                                    <div className="amr-row-line"><span className="amr-row-lab">Rating</span><span className="amr-row-val">{r.rating ? `${r.rating}★ / 5` : "Not rated"}</span></div>
+                                  </>
+                                ) : (
+                                  <div style={{ padding: 14, textAlign: "center", color: "rgba(255,255,255,.4)", fontSize: 12 }}>
+                                    No mentor accepted yet
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* REQUEST DETAILS */}
+                              <div className="amr-mblock">
+                                <div className="amr-mblock-h">Request Details</div>
+                                <div className="amr-row-line"><span className="amr-row-lab">Requested by</span><span className="amr-row-val">{r.requested_by_name}</span></div>
+                                <div className="amr-row-line"><span className="amr-row-lab">Roll</span><span className="amr-row-val">{r.requested_by_roll}</span></div>
+                                <div className="amr-row-line"><span className="amr-row-lab">Technology</span><span className="amr-row-val">{r.technology}</span></div>
+                                <div className="amr-row-line"><span className="amr-row-lab">Notified to</span><span className="amr-row-val">{(r.sent_to || []).length} mentor{(r.sent_to || []).length !== 1 ? "s" : ""}</span></div>
+                                <div className="amr-row-line"><span className="amr-row-lab">Busy marked</span><span className="amr-row-val">{(r.busy_mentors || []).length}</span></div>
+                                {r.admin_override && (
+                                  <div className="amr-row-line"><span className="amr-row-lab">Admin override</span><span className="amr-row-val" style={{ color: "#fd1c00" }}>By {r.admin_override_by}</span></div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* DESCRIPTION */}
+                            <div className="amr-desc">
+                              <div className="amr-mblock-h" style={{ marginBottom: 6 }}>Issue Description</div>
+                              {r.issue_description}
+                            </div>
+
+                            {/* ADMIN OVERRIDE — only for non-resolved */}
+                            {!["Mentor Resolved", "Self Resolved"].includes(r.status) && (
+                              <div style={{ marginTop: 14 }}>
+                                {overrideId === r.id ? (
+                                  <div className="amr-override-form">
+                                    <div style={{ fontSize: 12, fontWeight: 700, color: "#fd1c00", marginBottom: 6 }}>
+                                      Force Resolve — Admin Override
+                                    </div>
+                                    <div style={{ fontSize: 11, color: "rgba(255,255,255,.6)" }}>
+                                      This will mark the request resolved and unfreeze the mentor (if any). Reason is logged for audit.
+                                    </div>
+                                    <textarea
+                                      placeholder="Reason (min 10 chars)…"
+                                      value={overrideReason}
+                                      onChange={(e) => setOverrideReason(e.target.value)}
+                                    />
+                                    <div className="amr-override-actions">
+                                      <button
+                                        className="amr-override-confirm"
+                                        onClick={() => doOverride(r.id)}
+                                        disabled={overrideSaving}
+                                      >
+                                        {overrideSaving ? "Working…" : "Confirm Override"}
+                                      </button>
+                                      <button
+                                        className="amr-override-cancel"
+                                        onClick={() => { setOverrideId(null); setOverrideReason(""); }}
+                                      >
+                                        Cancel
+                                      </button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <button className="amr-override-btn" onClick={() => setOverrideId(r.id)}>
+                                    ⚠ Force Resolve (Admin Override)
+                                  </button>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </>
+  );
 }
