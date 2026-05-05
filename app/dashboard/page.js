@@ -1368,12 +1368,12 @@ function ProjectDetails({ user }) {
   const [reenableSubmitting, setReenableSubmitting] = useState(false);
   const [reenableMsg, setReenableMsg] = useState(null);
 
-  const myTeamNumber = user?.teamNumber || '';
+  const myTeamNumber = user?.teamNumber || user?.team_number || '';
 
   // Check if student has shared on LinkedIn + any pending re-enable request
   useEffect(() => {
     const roll = user?.rollNumber || '';
-    const tn = user?.teamNumber || '';
+    const tn = user?.teamNumber || user?.team_number || '';
     if (!roll) return;
     const refreshStatus = async () => {
       try {
@@ -2207,7 +2207,7 @@ export default function Dashboard(){
       })).filter(sec => sec.items.length > 0);
   const activeItem=VISIBLE_NAV_SECTIONS.flatMap(s=>s.items).find(i=>i.id===active);
   const displayName = profile?.name || user?.name || 'Student';
-  const displayTeam = user?.teamNumber || profile?.roll_number || '';
+  const displayTeam = user?.teamNumber || user?.team_number || profile?.roll_number || '';
 
   if (loading) return <div style={{width:'100%',height:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'#050008',color:'rgba(255,255,255,.4)',fontFamily:'sans-serif'}}>Loading...</div>;
 
