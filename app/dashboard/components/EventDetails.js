@@ -189,20 +189,20 @@ export default function EventDetails() {
         @keyframes edFadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 
         /* Hero — roomier */
-        .ed-hero{padding:36px 36px 32px;border-radius:20px;background:linear-gradient(135deg,#0c0614 0%,#1a0a1f 50%,#0c0614 100%);border:1px solid rgba(253,28,0,.18);position:relative;overflow:hidden;margin-bottom:32px}
+        .ed-hero{padding:24px 28px 22px;border-radius:18px;background:linear-gradient(135deg,#0c0614 0%,#1a0a1f 50%,#0c0614 100%);border:1px solid rgba(253,28,0,.18);position:relative;overflow:hidden;margin-bottom:20px}
         .ed-hero::before{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 40%,rgba(253,28,0,.08) 50%,rgba(238,167,39,.1) 55%,transparent 70%);background-size:200% 100%;animation:edShine 5s linear infinite;pointer-events:none}
         @keyframes edShine{0%{background-position:-100% 0}100%{background-position:200% 0}}
         .ed-hero-inner{position:relative;z-index:2}
-        .ed-hero-eyebrow{font-family:'DM Sans',sans-serif;font-size:.62rem;color:#fd1c00;letter-spacing:3.5px;font-weight:700;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+        .ed-hero-eyebrow{font-family:'DM Sans',sans-serif;font-size:.62rem;color:#fd1c00;letter-spacing:3.5px;font-weight:700;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:10px}
         .ed-hero-eyebrow::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(253,28,0,.3),transparent)}
-        .ed-hero-title{font-family:'Astro','Orbitron','DM Sans',sans-serif;font-size:2rem;font-weight:800;color:#fff;letter-spacing:2.5px;text-transform:uppercase;text-shadow:0 2px 24px rgba(253,28,0,.3);margin-bottom:14px;line-height:1.2;word-spacing:6px}
+        .ed-hero-title{font-family:'Astro','Orbitron','DM Sans',sans-serif;font-size:1.625rem;font-weight:800;color:#fff;letter-spacing:2.5px;text-transform:uppercase;text-shadow:0 2px 24px rgba(253,28,0,.3);margin-bottom:10px;line-height:1.2;word-spacing:6px}
         .ed-hero-sub{font-family:'DM Sans',sans-serif;font-size:.88rem;color:rgba(255,255,255,.6);line-height:1.65;max-width:640px;font-weight:400}
-        .ed-hero-meta{display:flex;gap:24px;margin-top:22px;flex-wrap:wrap}
+        .ed-hero-meta{display:flex;gap:18px;margin-top:14px;flex-wrap:wrap}
         .ed-hero-meta-item{font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:8px;font-size:.74rem;color:rgba(255,255,255,.5);font-weight:500}
         .ed-hero-meta-item strong{color:#fff;font-weight:700}
 
         /* Progress strip */
-        .ed-progress{display:flex;gap:8px;margin-bottom:24px;padding:14px 16px;border-radius:14px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05)}
+        .ed-progress{display:flex;gap:8px;margin-bottom:16px;padding:10px 14px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05)}
         .ed-progress-dot{flex:1;height:7px;border-radius:4px;background:rgba(255,255,255,.06);position:relative;overflow:hidden;cursor:pointer;transition:all .25s}
         .ed-progress-dot.past{background:rgba(74,222,128,.4)}
         .ed-progress-dot.today{background:linear-gradient(90deg,#fd1c00,#EEA727);box-shadow:0 0 12px rgba(253,28,0,.5);animation:edDotPulse 2s ease-in-out infinite}
@@ -211,7 +211,7 @@ export default function EventDetails() {
         @keyframes edDotPulse{0%,100%{box-shadow:0 0 12px rgba(253,28,0,.4)}50%{box-shadow:0 0 22px rgba(253,28,0,.7)}}
 
         /* Day cards stack */
-        .ed-stack{display:flex;flex-direction:column;gap:14px}
+        .ed-stack{display:flex;flex-direction:column;gap:10px}
 
         /* Day card */
         .ed-day{border-radius:16px;background:rgba(12,8,18,.55);border:1px solid rgba(255,255,255,.06);overflow:hidden;transition:all .35s cubic-bezier(.16,1,.3,1);animation:edDayIn .5s ease both;position:relative}
@@ -222,29 +222,29 @@ export default function EventDetails() {
         .ed-day.open{border-color:color-mix(in srgb,var(--accent) 25%,transparent);box-shadow:0 8px 32px color-mix(in srgb,var(--accent) 8%,transparent)}
 
         /* Day header */
-        .ed-day-hdr{display:flex;align-items:center;gap:20px;padding:24px 28px;cursor:pointer;transition:background .25s}
+        .ed-day-hdr{display:flex;align-items:center;gap:16px;padding:16px 22px;cursor:pointer;transition:background .25s}
         .ed-day-hdr:hover{background:rgba(255,255,255,.02)}
 
-        .ed-day-num-box{flex-shrink:0;width:72px;height:72px;border-radius:14px;background:linear-gradient(135deg,rgba(255,255,255,.04),rgba(255,255,255,.02));border:1px solid color-mix(in srgb,var(--accent) 25%,transparent);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:all .35s;gap:2px}
+        .ed-day-num-box{flex-shrink:0;width:64px;height:64px;border-radius:12px;background:linear-gradient(135deg,rgba(255,255,255,.04),rgba(255,255,255,.02));border:1px solid color-mix(in srgb,var(--accent) 25%,transparent);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:all .35s;gap:3px;padding:8px 4px}
         .ed-day-num-box::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at top,color-mix(in srgb,var(--accent) 22%,transparent),transparent 70%);opacity:0;transition:opacity .35s}
         .ed-day.open .ed-day-num-box::before{opacity:1}
         .ed-day.today .ed-day-num-box{box-shadow:0 0 16px color-mix(in srgb,var(--accent) 35%,transparent);animation:edTodayPulse 3s ease-in-out infinite}
         @keyframes edTodayPulse{0%,100%{box-shadow:0 0 16px color-mix(in srgb,var(--accent) 30%,transparent)}50%{box-shadow:0 0 28px color-mix(in srgb,var(--accent) 50%,transparent)}}
-        .ed-day-num-label{font-family:'DM Sans',sans-serif;font-size:.5rem;font-weight:700;color:var(--accent);letter-spacing:1.8px;text-transform:uppercase;position:relative;z-index:1}
-        .ed-day-num{font-family:'Astro','Orbitron','DM Sans',sans-serif;font-size:1.7rem;font-weight:800;color:#fff;line-height:1;position:relative;z-index:1;text-shadow:0 1px 8px color-mix(in srgb,var(--accent) 40%,transparent);letter-spacing:1px}
+        .ed-day-num-label{font-family:'DM Sans',sans-serif;font-size:.55rem;font-weight:700;color:var(--accent);letter-spacing:1.5px;text-transform:uppercase;position:relative;z-index:1;line-height:1}
+        .ed-day-num{font-family:'Astro','Orbitron','DM Sans',sans-serif;font-size:1.4rem;font-weight:800;color:#fff;line-height:1;position:relative;z-index:1;text-shadow:0 1px 8px color-mix(in srgb,var(--accent) 40%,transparent);letter-spacing:1px}
 
         .ed-day-info{flex:1;min-width:0}
-        .ed-day-meta{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+        .ed-day-meta{display:flex;align-items:center;gap:10px;margin-bottom:5px;flex-wrap:wrap}
         .ed-day-date{font-family:'DM Sans',sans-serif;font-size:.66rem;color:rgba(255,255,255,.4);letter-spacing:1.4px;text-transform:uppercase;font-weight:600}
         .ed-day-pill{font-family:'DM Sans',sans-serif;font-size:.55rem;font-weight:700;padding:4px 12px;border-radius:12px;letter-spacing:1.2px;text-transform:uppercase}
         .ed-day-pill.today{background:linear-gradient(135deg,rgba(253,28,0,.15),rgba(238,167,39,.08));color:#fd1c00;border:1px solid rgba(253,28,0,.3);animation:edTodayPulse 2s ease-in-out infinite}
         .ed-day-pill.past{background:rgba(74,222,128,.08);color:#4ade80;border:1px solid rgba(74,222,128,.18)}
         .ed-day-pill.future{background:rgba(255,255,255,.04);color:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.08)}
-        .ed-day-title{font-family:'Astro','Orbitron','DM Sans',sans-serif;font-size:1.15rem;font-weight:800;color:#fff;letter-spacing:1.5px;line-height:1.3;margin-bottom:6px;text-transform:uppercase;word-spacing:4px}
+        .ed-day-title{font-family:'Astro','Orbitron','DM Sans',sans-serif;font-size:0.9rem;font-weight:800;color:#fff;letter-spacing:1.5px;line-height:1.3;margin-bottom:4px;text-transform:uppercase;word-spacing:4px}
         .ed-day-sub{font-family:'DM Sans',sans-serif;font-size:.78rem;color:rgba(255,255,255,.5);line-height:1.6;font-weight:400}
 
         .ed-day-counts{display:flex;gap:12px;flex-shrink:0}
-        .ed-day-count{display:flex;flex-direction:column;align-items:center;padding:9px 16px;border-radius:11px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);min-width:54px}
+        .ed-day-count{display:flex;flex-direction:column;align-items:center;padding:7px 13px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);min-width:48px}
         .ed-day-count-num{font-family:'Astro','Orbitron','DM Sans',sans-serif;font-size:1.05rem;font-weight:800;color:var(--accent);line-height:1;letter-spacing:.5px}
         .ed-day-count-lb{font-family:'DM Sans',sans-serif;font-size:.5rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1.2px;font-weight:700;margin-top:5px}
 
@@ -257,11 +257,11 @@ export default function EventDetails() {
         .ed-day-body-inner{overflow:hidden;min-height:0}
 
         /* Timeline — much roomier */
-        .ed-tl{padding:16px 32px 32px 32px;position:relative;margin-top:8px}
-        .ed-tl::before{content:'';position:absolute;left:46px;top:8px;bottom:16px;width:2px;background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 35%,transparent),rgba(255,255,255,.04));border-radius:1px}
+        .ed-tl{padding:8px 24px 22px 24px;position:relative;margin-top:0}
+        .ed-tl::before{content:'';position:absolute;left:38px;top:4px;bottom:12px;width:2px;background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 35%,transparent),rgba(255,255,255,.04));border-radius:1px}
 
         @keyframes edEvIn{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
-        .ed-ev{position:relative;padding:18px 0 18px 76px;animation:edEvIn .45s cubic-bezier(.16,1,.3,1) both}
+        .ed-ev{position:relative;padding:10px 0 10px 64px;animation:edEvIn .45s cubic-bezier(.16,1,.3,1) both}
         .ed-ev:nth-child(1){animation-delay:.05s}
         .ed-ev:nth-child(2){animation-delay:.1s}
         .ed-ev:nth-child(3){animation-delay:.15s}
@@ -273,30 +273,30 @@ export default function EventDetails() {
         .ed-ev:nth-child(9){animation-delay:.45s}
         .ed-ev:nth-child(10){animation-delay:.5s}
         .ed-ev:nth-child(n+11){animation-delay:.55s}
-        .ed-ev:not(:last-child)::after{content:'';position:absolute;left:46px;top:48px;bottom:-18px;width:2px;background:rgba(255,255,255,.04)}
+        .ed-ev:not(:last-child)::after{content:'';position:absolute;left:38px;top:40px;bottom:-10px;width:2px;background:rgba(255,255,255,.04)}
 
-        .ed-ev-dot{position:absolute;left:32px;top:18px;width:30px;height:30px;border-radius:50%;background:#13101a;border:2px solid var(--ckind);display:flex;align-items:center;justify-content:center;color:var(--ckind);transition:all .3s;z-index:2;box-shadow:0 0 0 5px rgba(19,16,26,1)}
+        .ed-ev-dot{position:absolute;left:24px;top:10px;width:28px;height:28px;border-radius:50%;background:#13101a;border:2px solid var(--ckind);display:flex;align-items:center;justify-content:center;color:var(--ckind);transition:all .3s;z-index:2;box-shadow:0 0 0 5px rgba(19,16,26,1)}
         .ed-ev:hover .ed-ev-dot{transform:scale(1.15);box-shadow:0 0 0 5px rgba(19,16,26,1),0 0 14px color-mix(in srgb,var(--ckind) 40%,transparent)}
 
-        .ed-ev-card{padding:18px 22px;border-radius:13px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);transition:all .25s cubic-bezier(.16,1,.3,1);position:relative;overflow:hidden}
+        .ed-ev-card{padding:12px 16px;border-radius:11px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);transition:all .25s cubic-bezier(.16,1,.3,1);position:relative;overflow:hidden}
         .ed-ev-card::before{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 40%,color-mix(in srgb,var(--ckind) 6%,transparent) 50%,transparent 60%);background-size:200% 100%;background-position:-100% 0;transition:background-position .8s ease;pointer-events:none}
         .ed-ev:hover .ed-ev-card{border-color:color-mix(in srgb,var(--ckind) 25%,transparent);transform:translateX(4px);box-shadow:0 4px 16px color-mix(in srgb,var(--ckind) 10%,transparent)}
         .ed-ev:hover .ed-ev-card::before{background-position:200% 0}
 
-        .ed-ev-row1{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
-        .ed-ev-time{font-family:'DM Sans',sans-serif;font-size:.74rem;font-weight:700;color:var(--ckind);letter-spacing:.4px;display:inline-flex;align-items:center;gap:6px}
+        .ed-ev-row1{display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap}
+        .ed-ev-time{font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:700;color:var(--ckind);letter-spacing:.4px;display:inline-flex;align-items:center;gap:6px}
         .ed-ev-tag{font-family:'DM Sans',sans-serif;font-size:.5rem;font-weight:700;padding:3px 10px;border-radius:7px;letter-spacing:1.2px;background:var(--cbg);color:var(--ckind);border:1px solid var(--cbd)}
-        .ed-ev-label{font-family:'Astro','Orbitron','DM Sans',sans-serif;font-size:1rem;font-weight:700;color:#fff;line-height:1.3;margin-bottom:8px;letter-spacing:.8px;text-transform:uppercase;word-spacing:3px}
-        .ed-ev-desc{font-family:'DM Sans',sans-serif;font-size:.78rem;color:rgba(255,255,255,.55);line-height:1.7;font-weight:400}
+        .ed-ev-label{font-family:'Astro','Orbitron','DM Sans',sans-serif;font-size:0.75rem;font-weight:700;color:#fff;line-height:1.3;margin-bottom:5px;letter-spacing:.8px;text-transform:uppercase;word-spacing:3px}
+        .ed-ev-desc{font-family:'DM Sans',sans-serif;font-size:.74rem;color:rgba(255,255,255,.55);line-height:1.55;font-weight:400}
 
-        .ed-ev-guests{display:flex;flex-direction:column;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.05)}
-        .ed-ev-guest{font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;background:rgba(123,47,190,.05);border:1px solid rgba(123,47,190,.12);font-size:.74rem;color:rgba(255,255,255,.75);line-height:1.5;font-weight:500}
+        .ed-ev-guests{display:flex;flex-direction:column;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.05)}
+        .ed-ev-guest{font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:10px;padding:7px 12px;border-radius:9px;background:rgba(123,47,190,.05);border:1px solid rgba(123,47,190,.12);font-size:.7rem;color:rgba(255,255,255,.75);line-height:1.5;font-weight:500}
         .ed-ev-guest-dot{width:7px;height:7px;border-radius:50%;background:#7B2FBE;flex-shrink:0;box-shadow:0 0 8px rgba(123,47,190,.6)}
 
         /* Mobile */
         @media(max-width:768px){
           .ed-hero{padding:24px 20px;border-radius:16px;margin-bottom:22px}
-          .ed-hero-title{font-size:1.35rem;letter-spacing:1.5px}
+          .ed-hero-title{font-size:0.975rem;letter-spacing:1.5px}
           .ed-hero-sub{font-size:.78rem;line-height:1.6}
           .ed-hero-meta{gap:14px;margin-top:18px}
           .ed-hero-meta-item{font-size:.66rem}
@@ -304,7 +304,7 @@ export default function EventDetails() {
           .ed-day-hdr{padding:18px 18px;gap:14px}
           .ed-day-num-box{width:58px;height:58px}
           .ed-day-num{font-size:1.3rem}
-          .ed-day-title{font-size:.92rem;letter-spacing:1px}
+          .ed-day-title{font-size:.67rem;letter-spacing:1px}
           .ed-day-sub{font-size:.7rem;line-height:1.55}
           .ed-day-counts{display:none}
 
@@ -314,7 +314,7 @@ export default function EventDetails() {
           .ed-ev-dot{left:16px;width:28px;height:28px}
           .ed-ev:not(:last-child)::after{left:30px;top:44px}
           .ed-ev-card{padding:14px 16px}
-          .ed-ev-label{font-size:.88rem;letter-spacing:.5px}
+          .ed-ev-label{font-size:.63rem;letter-spacing:.5px}
           .ed-ev-desc{font-size:.74rem;line-height:1.6}
           .ed-ev-guest{font-size:.7rem;padding:8px 12px}
 
