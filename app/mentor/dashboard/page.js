@@ -241,6 +241,16 @@ Powered by ${toBoldM('Technical Hub')}, led by CEO ${toBoldM('Babji Neelam')} Si
 #${(t.technology || 'Technology').replace(/\s+/g, '')} #ProjectSpace #TechnicalHub #ArtificialIntelligence #Mentorship #Projects #Teamwork`;
   }
 
+  async function refreshReenableRequests() {
+    const teamNums = (data?.teams || []).map(t => t.teamNumber).filter(Boolean)
+    if (teamNums.length === 0) return
+    try {
+      const r = await fetch('/api/linkedin-reenable', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'list-by-team', teamNumbers: teamNums }) })
+      const d = await r.json()
+      if (d.byTeam) setReenableByTeam(d.byTeam)
+    } catch {}
+  }
+
   async function handleReenableApprove(reqId) {
     setReenableProcessing(reqId)
     setReenableFlash(null)
@@ -942,127 +952,6 @@ body.sb-open{overflow:hidden}
               </div>
 
               {/* TEAM × STAGE MATRIX */}
-              {/* ============================================
-                   PENDING REVIEWS LIST  (newly added)
-                  ============================================ */}
-              <style>{`
-.prv-section{margin:18px 0 24px;animation:tsmSectionIn .55s ease both}
-.prv-hdr{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap}
-.prv-hdr-left{font-size:.82rem;font-weight:700;color:rgba(255,255,255,.55);letter-spacing:.6px;display:flex;align-items:center;gap:8px}
-.prv-hdr-left::before{content:'';width:3px;height:14px;background:linear-gradient(180deg,#EEA727,#fd1c00);border-radius:2px;box-shadow:0 0 10px rgba(238,167,39,.5)}
-.prv-cnt{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;background:rgba(238,167,39,.12);border:1px solid rgba(238,167,39,.4);border-radius:100px;font-size:.7rem;color:#EEA727;font-weight:700;letter-spacing:.04em}
-.prv-cnt-dot{width:6px;height:6px;border-radius:50%;background:#EEA727;animation:tsmReviewPulse 1.6s ease-in-out infinite}
- 
-.prv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px}
-.prv-card{padding:16px 18px;background:rgba(13,10,20,.6);border:1px solid rgba(238,167,39,.2);border-left:3px solid #EEA727;border-radius:12px;display:flex;flex-direction:column;gap:12px;transition:border-color .25s,transform .25s;animation:tsmRowIn .4s ease both}
-.prv-card:hover{border-color:rgba(238,167,39,.45);transform:translateY(-2px)}
-.prv-card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
-.prv-team{font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:800;color:#fd1c00;letter-spacing:.6px;text-shadow:0 0 12px rgba(253,28,0,.3)}
-.prv-proj{font-size:.72rem;color:rgba(255,255,255,.55);margin-top:2px;font-weight:500}
-.prv-stage{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:6px;background:rgba(238,167,39,.1);border:1px solid rgba(238,167,39,.3);font-size:.66rem;font-weight:700;color:#EEA727;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;flex-shrink:0}
-.prv-stage strong{color:#fff;font-weight:800}
-.prv-meta{display:flex;justify-content:space-between;font-size:.7rem;color:rgba(255,255,255,.55);gap:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,.04)}
-.prv-meta-l{display:flex;flex-direction:column;gap:2px}
-.prv-meta-lab{font-size:.55rem;letter-spacing:.12em;color:rgba(255,255,255,.35);text-transform:uppercase;font-weight:700}
-.prv-meta-val{color:rgba(255,255,255,.85);font-weight:600}
-.prv-actions{display:flex;gap:8px;margin-top:2px}
-.prv-btn{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 12px;border-radius:8px;font-size:.74rem;font-weight:700;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:transform .15s,box-shadow .15s,opacity .15s}
-.prv-btn:disabled{opacity:.55;cursor:not-allowed}
-.prv-btn svg{width:13px;height:13px}
-.prv-btn.approve{background:linear-gradient(135deg,#4ade80,#22c55e);color:#fff;box-shadow:0 4px 12px rgba(74,222,128,.25)}
-.prv-btn.approve:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 18px rgba(74,222,128,.4)}
-.prv-btn.reject{background:rgba(253,28,0,.08);color:#fd1c00;border:1px solid rgba(253,28,0,.4)}
-.prv-btn.reject:hover:not(:disabled){background:rgba(253,28,0,.15)}
-.prv-btn.spin svg{animation:stpSpin .9s linear infinite}
-@keyframes stpSpin{to{transform:rotate(360deg)}}
-.prv-empty{padding:40px 24px;text-align:center;color:rgba(255,255,255,.45);background:rgba(13,10,20,.4);border:1px dashed rgba(255,255,255,.08);border-radius:12px}
-.prv-empty-icn{width:44px;height:44px;padding:11px;background:rgba(74,222,128,.06);border:1px solid rgba(74,222,128,.2);border-radius:12px;color:#4ade80;margin:0 auto 12px}
-.prv-empty-h{font-size:.84rem;font-weight:700;color:rgba(255,255,255,.75);margin-bottom:4px}
-.prv-empty-p{font-size:.72rem;color:rgba(255,255,255,.45)}
-              `}</style>
-              <div className="prv-section">
-                <div className="prv-hdr">
-                  <div className="prv-hdr-left">PENDING REVIEWS</div>
-                  {reviews.pending?.length>0 && (
-                    <span className="prv-cnt">
-                      <span className="prv-cnt-dot"/>
-                      {reviews.pending.length} awaiting your action
-                    </span>
-                  )}
-                </div>
-                {(!reviews.pending || reviews.pending.length===0) ? (
-                  <div className="prv-empty">
-                    <div className="prv-empty-icn">
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12 4 4L19 7"/></svg>
-                    </div>
-                    <div className="prv-empty-h">All caught up</div>
-                    <div className="prv-empty-p">No pending reviews. New submissions will appear here.</div>
-                  </div>
-                ) : (
-                  <div className="prv-grid">
-                    {[...reviews.pending].sort((a,b)=>new Date(a.submitted_at||0)-new Date(b.submitted_at||0)).map(r=>{
-                      const loadingApprove = actionLoading===`${r.team_number}-${r.stage_number}-approve`;
-                      const loadingReject = actionLoading===`${r.team_number}-${r.stage_number}-reject`;
-                      const submittedAt = r.submitted_at ? new Date(r.submitted_at) : null;
-                      const ago = submittedAt ? (()=>{
-                        const sec=Math.max(0,Math.floor((Date.now()-submittedAt)/1000));
-                        if(sec<60)return `${sec}s ago`;
-                        const m=Math.floor(sec/60);if(m<60)return `${m}m ago`;
-                        const h=Math.floor(m/60);if(h<24)return `${h}h ago`;
-                        return `${Math.floor(h/24)}d ago`;
-                      })() : '—';
-                      return (
-                        <div key={r.id} className="prv-card">
-                          <div className="prv-card-top">
-                            <div>
-                              <div className="prv-team">{r.team_number}</div>
-                              <div className="prv-proj">{r.project_title || '—'} · {r.technology || ''}</div>
-                            </div>
-                            <span className="prv-stage">
-                              <strong>S{r.stage_number}</strong> · {r.stage_name}
-                            </span>
-                          </div>
-                          <div className="prv-meta">
-                            <div className="prv-meta-l">
-                              <span className="prv-meta-lab">Submitted by</span>
-                              <span className="prv-meta-val">{r.submitted_by_name || '—'}</span>
-                            </div>
-                            <div className="prv-meta-l" style={{textAlign:'right'}}>
-                              <span className="prv-meta-lab">When</span>
-                              <span className="prv-meta-val">{ago}</span>
-                            </div>
-                          </div>
-                          <div className="prv-actions">
-                            <button
-                              className={`prv-btn approve ${loadingApprove?'spin':''}`}
-                              disabled={loadingApprove||loadingReject}
-                              onClick={()=>{
-                                setActionLoading(`${r.team_number}-${r.stage_number}-approve`);
-                                handleMilestoneAction(r.team_number, r.stage_number, 'approve', '');
-                              }}
-                            >
-                              {loadingApprove ? (
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-                              ) : (
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12 4 4L19 7"/></svg>
-                              )}
-                              <span>{loadingApprove?'Approving…':'Approve'}</span>
-                            </button>
-                            <button
-                              className="prv-btn reject"
-                              disabled={loadingApprove||loadingReject}
-                              onClick={()=>setRejectModal(r)}
-                            >
-                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                              <span>Reject</span>
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
               {reviews.teams?.length>0&&<>
                 <style>{`
 .tsm-section{margin:18px 0 24px;animation:tsmSectionIn .6s ease both}
@@ -1354,6 +1243,12 @@ body.sb-open{overflow:hidden}
               )}
             </div>
           </div>
+        </div>
+      )}
+
+      {mtToast && (
+        <div style={{position:'fixed',bottom:24,left:'50%',transform:'translateX(-50%)',padding:'12px 20px',borderRadius:10,background:mtToast.isError?'rgba(253,28,0,.95)':'rgba(74,222,128,.95)',color:'#fff',fontWeight:600,fontSize:'.82rem',zIndex:9999999,boxShadow:'0 8px 24px rgba(0,0,0,.4)',fontFamily:'DM Sans,sans-serif'}}>
+          {mtToast.msg}
         </div>
       )}
 
