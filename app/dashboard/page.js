@@ -1611,20 +1611,29 @@ Powered by ${toBold('Technical Hub')}, led by CEO ${toBold('Babji Neelam')} Sir,
   }
 
   function postToLinkedIn() {
-    const showcaseUrl = `https://projectspace.technicalhub.io/showcase/${details.teamNumber}?v=3`;
-    const url = encodeURIComponent(showcaseUrl);
-    // Copy post text to clipboard so user can paste it into LinkedIn compose box
-    try {
+    const showcaseUrl = `https://projectspace.technicalhub.io/showcase/${myTeamNumber}?v=3`;
+    const encodedUrl = encodeURIComponent(showcaseUrl);
+    const encodedText = encodeURIComponent(liPost);
+
+    // Always copy to clipboard as a safety net (LinkedIn often ignores text param)
+    if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(liPost).then(() => {
-        showPsToast('Post copied! Paste it into LinkedIn');
+        showPsToast('✓ Post copied — paste with Ctrl+V if not auto-filled');
       }).catch(() => {
-        showPsToast('Open LinkedIn and paste your post manually', true);
+        showPsToast('Open LinkedIn — your post is in the clipboard', true);
       });
-    } catch(e) {
+    } else {
       showPsToast('Open LinkedIn and paste your post manually', true);
     }
-    // Open LinkedIn share with URL only (text param breaks if too long)
-    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank', 'noopener,noreferrer');
+
+    // Try compose endpoint (sometimes pre-fills text on logged-in desktop web)
+    // Fall back to share-offsite for long posts (URL-only, OG card still works)
+    const composeUrl = `https://www.linkedin.com/feed/?shareActive=true&shareUrl=${encodedUrl}&text=${encodedText}`;
+    const fallbackUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
+    const finalUrl = encodedText.length < 1500 ? composeUrl : fallbackUrl;
+
+    window.open(finalUrl, '_blank', 'noopener,noreferrer');
+  }
     setLiPosted(true);
     setLiConfirm(true);
   }
