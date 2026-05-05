@@ -8,6 +8,7 @@
   import { getSession } from "@/lib/session";
   import TermsGate from "@/app/components/TermsGate";
   import EventInfo from "@/app/dashboard/components/EventInfo";
+import EventDetails from "@/app/dashboard/components/EventDetails";
   import MentorRequest from "@/app/dashboard/components/MentorRequest";
   import {
     User, Users, FolderKanban, Activity, GraduationCap,
@@ -2227,7 +2228,7 @@
       ? NAV_SECTIONS
       : NAV_SECTIONS.map(sec => ({
           ...sec,
-          items: sec.items.filter(i => i.id === 'my-profile' || i.id === 'team-profile' || i.id === 'project-details' || i.id === 'project-status' || i.id === 'event-info')
+          items: sec.items.filter(i => i.id === 'my-profile' || i.id === 'team-profile' || i.id === 'project-details' || i.id === 'project-status' || i.id === 'event-info' || i.id === 'event-details')
         })).filter(sec => sec.items.length > 0);
     const activeItem=VISIBLE_NAV_SECTIONS.flatMap(s=>s.items).find(i=>i.id===active);
     const displayName = profile?.name || user?.name || 'Student';
@@ -2709,6 +2710,7 @@
               active==="project-details"?<ProjectDetails user={user}/>:
               active==="project-status"?<ProjectStatus user={user}/>:
               active==="event-info"?<EventInfo user={user}/>:
+              active==="event-details"?<EventDetails/>:
               active==="mentor-request"?<MentorRequest user={user}/>:(
                 <div className="page-placeholder">
                   <div className="page-icon">{activeItem&&<activeItem.icon size={36}/>}</div>
