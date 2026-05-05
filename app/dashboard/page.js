@@ -1618,12 +1618,15 @@
       // Always copy to clipboard as a safety net (LinkedIn often ignores text param)
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(liPost).then(() => {
-          showPsToast('✓ Post copied — paste with Ctrl+V if not auto-filled');
+          setLiCopiedToast({ msg: '✓ Post copied! Press Ctrl+V (Cmd+V on Mac) in the LinkedIn compose box to paste', isError: false });
+          setTimeout(() => setLiCopiedToast(false), 7000);
         }).catch(() => {
-          showPsToast('Open LinkedIn — your post is in the clipboard', true);
+          setLiCopiedToast({ msg: '⚠ Could not auto-copy. Please copy your post manually before opening LinkedIn', isError: true });
+          setTimeout(() => setLiCopiedToast(false), 7000);
         });
       } else {
-        showPsToast('Open LinkedIn and paste your post manually', true);
+        setLiCopiedToast({ msg: '⚠ Could not auto-copy. Please copy your post manually before opening LinkedIn', isError: true });
+        setTimeout(() => setLiCopiedToast(false), 7000);
       }
 
       // Try compose endpoint (sometimes pre-fills text on logged-in desktop web)
@@ -2050,6 +2053,12 @@
         </div>
         </div>
 
+      {liCopiedToast && liCopiedToast.msg && (
+        <div style={{position:'fixed',bottom:24,left:'50%',transform:'translateX(-50%)',padding:'12px 20px',borderRadius:10,background:liCopiedToast.isError?'rgba(253,28,0,.95)':'rgba(74,222,128,.95)',color:'#fff',fontWeight:600,fontSize:'.82rem',zIndex:9999999,boxShadow:'0 8px 24px rgba(0,0,0,.4)',fontFamily:'DM Sans,sans-serif',maxWidth:'90%',textAlign:'center'}}>
+          {liCopiedToast.msg}
+        </div>
+      )}
+
       {liModal && details && (
         <div style={{position:'fixed',top:0,left:0,width:'100vw',height:'100vh',background:'rgba(5,0,8,.94)',zIndex:999999,display:'flex',alignItems:'center',justifyContent:'center',padding:20,boxSizing:'border-box'}} onClick={() => setLiModal(false)}>
           <div className="pd-li-modal" onClick={e => e.stopPropagation()}>
@@ -2068,6 +2077,13 @@
               </button>
             </div>
             <div className="pd-li-body">
+              <div style={{marginBottom:14,padding:'12px 14px',borderRadius:10,background:'linear-gradient(135deg,rgba(0,119,181,.08),rgba(0,160,220,.04))',border:'1px solid rgba(0,160,220,.2)',display:'flex',alignItems:'flex-start',gap:10}}>
+                <div style={{flexShrink:0,width:28,height:28,borderRadius:8,background:'rgba(0,160,220,.15)',display:'flex',alignItems:'center',justifyContent:'center',color:'#00a0dc',fontSize:'1rem',fontWeight:800}}>i</div>
+                <div style={{flex:1}}>
+                  <div style={{fontFamily:'DM Sans,sans-serif',fontSize:'.78rem',fontWeight:700,color:'#00a0dc',marginBottom:3}}>How posting works</div>
+                  <div style={{fontFamily:'DM Sans,sans-serif',fontSize:'.7rem',color:'rgba(255,255,255,.65)',lineHeight:1.5}}>When you click <b>Post to LinkedIn</b>, your post will be <b>copied to clipboard</b> and LinkedIn will open in a new tab. Then simply <b>press Ctrl+V (or Cmd+V on Mac)</b> in the LinkedIn compose box to paste your post.</div>
+                </div>
+              </div>
               <div className="pd-li-sub-label">Your Post (Editable)</div>
               <textarea className="pd-li-textarea" value={liPost} onChange={e => setLiPost(e.target.value)} placeholder="Your LinkedIn post will appear here..."/>
               <div className="pd-li-sub-label">Add Recommendation or Note</div>
