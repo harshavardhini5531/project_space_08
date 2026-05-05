@@ -351,15 +351,15 @@ Powered by ${toBoldM('Technical Hub')}, led by CEO ${toBoldM('Babji Neelam')} Si
     // Copy post text to clipboard so user can paste it into LinkedIn compose box
     try {
       navigator.clipboard.writeText(liPost).then(() => {
-        setMtToast({ msg: 'Post copied! Paste it into LinkedIn', isError: false });
-        setTimeout(() => setMtToast(null), 4000);
+        setMtToast({ msg: '✓ Post copied! Press Ctrl+V (Cmd+V on Mac) in the LinkedIn compose box to paste', isError: false });
+        setTimeout(() => setMtToast(null), 7000);
       }).catch(() => {
-        setMtToast({ msg: 'Open LinkedIn and paste your post manually', isError: true });
-        setTimeout(() => setMtToast(null), 4000);
+        setMtToast({ msg: '⚠ Could not auto-copy. Please copy your post manually before opening LinkedIn', isError: true });
+        setTimeout(() => setMtToast(null), 7000);
       });
     } catch(e) {
-      setMtToast({ msg: 'Open LinkedIn and paste your post manually', isError: true });
-      setTimeout(() => setMtToast(null), 4000);
+      setMtToast({ msg: '⚠ Could not auto-copy. Please copy your post manually before opening LinkedIn', isError: true });
+      setTimeout(() => setMtToast(null), 7000);
     }
     // Open LinkedIn share with URL only (text param breaks if too long)
     window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank', 'noopener,noreferrer');
@@ -1270,6 +1270,13 @@ body.sb-open{overflow:hidden}
               </button>
             </div>
             <div style={{padding:'20px 22px'}}>
+              <div style={{marginBottom:14,padding:'12px 14px',borderRadius:10,background:'linear-gradient(135deg,rgba(0,119,181,.08),rgba(0,160,220,.04))',border:'1px solid rgba(0,160,220,.2)',display:'flex',alignItems:'flex-start',gap:10}}>
+                <div style={{flexShrink:0,width:28,height:28,borderRadius:8,background:'rgba(0,160,220,.15)',display:'flex',alignItems:'center',justifyContent:'center',color:'#00a0dc',fontSize:'1rem',fontWeight:800}}>i</div>
+                <div style={{flex:1}}>
+                  <div style={{fontFamily:'DM Sans,sans-serif',fontSize:'.78rem',fontWeight:700,color:'#00a0dc',marginBottom:3}}>How posting works</div>
+                  <div style={{fontFamily:'DM Sans,sans-serif',fontSize:'.7rem',color:'rgba(255,255,255,.65)',lineHeight:1.5}}>When you click <b>Post to LinkedIn</b>, your post will be <b>copied to clipboard</b> and LinkedIn will open in a new tab. Then simply <b>press Ctrl+V (or Cmd+V on Mac)</b> in the LinkedIn compose box to paste your post.</div>
+                </div>
+              </div>
               <div style={{fontFamily:'DM Sans,sans-serif',fontSize:'.58rem',color:'rgba(255,255,255,.35)',textTransform:'uppercase',letterSpacing:'1.5px',fontWeight:700,marginBottom:8}}>Your Post (Editable)</div>
               <textarea value={liPost} onChange={e => setLiPost(e.target.value)} style={{width:'100%',minHeight:340,padding:14,borderRadius:10,background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.08)',color:'#fff',fontFamily:'DM Sans,sans-serif',fontSize:'.8rem',lineHeight:1.5,resize:'vertical',outline:'none',boxSizing:'border-box'}} placeholder="Your LinkedIn post will appear here..."/>
               <div style={{fontFamily:'DM Sans,sans-serif',fontSize:'.58rem',color:'rgba(255,255,255,.35)',textTransform:'uppercase',letterSpacing:'1.5px',fontWeight:700,margin:'16px 0 8px'}}>Add Note</div>
