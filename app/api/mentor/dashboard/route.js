@@ -13,14 +13,14 @@ export async function POST(request) {
     // Get teams assigned to this mentor
     const { data: myTeams } = await supabase
       .from('teams')
-      .select('serial_number, technology, leader_roll, registered, team_number, project_title, project_description, problem_statement, ai_usage, mentor_assigned')
+      .select('serial_number, technology, leader_roll, registered, team_number, project_title, project_description, problem_statement, ai_usage, mentor_assigned, project_street_date, project_street_day')
       .eq('mentor_assigned', mentor.name)
       .order('serial_number')
 
     // Get ALL teams of mentor's technology (for tech overview page)
     const { data: techTeams } = await supabase
       .from('teams')
-      .select('serial_number, technology, leader_roll, registered, team_number, project_title, project_description, problem_statement, ai_usage, mentor_assigned')
+      .select('serial_number, technology, leader_roll, registered, team_number, project_title, project_description, problem_statement, ai_usage, mentor_assigned, project_street_date, project_street_day')
       .eq('technology', mentor.technology)
       .order('serial_number')
 
@@ -92,6 +92,8 @@ export async function POST(request) {
           leaderPhone: leader?.phone || studentMap[t.leader_roll]?.phone || '',
           leaderEmail: leader?.email || studentMap[t.leader_roll]?.email || '',
           mentorAssigned: t.mentor_assigned || '',
+          projectStreetDate: t.project_street_date || null,
+          projectStreetDay: t.project_street_day || null,
           members,
           memberCount: members.length
         }

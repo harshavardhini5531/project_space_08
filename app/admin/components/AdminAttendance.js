@@ -16,7 +16,37 @@ export default function AdminAttendance() {
   const [manualMode, setManualMode] = useState('dark')
   const [manualDate, setManualDate] = useState('')
   const [manualResult, setManualResult] = useState(null)
+  const [syncing, setSyncing] = useState(false)
+  const [syncMsg, setSyncMsg] = useState('')
   const fileRef = useRef(null)
+
+  async function handleSync(type = 'both') {
+    setSyncing(true)
+    setSyncMsg('Syncing attendance...')
+    try {
+      const r = await fetch('/api/attendance/manual-sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type }),
+      })
+      const d = await r.json()
+      if (d.success) {
+        const s = d.results.student
+        const m = d.results.mentor
+        const parts = []
+        if (s) parts.push(`Students: +${s.inserted} (${s.api_total} from API)`)
+        if (m) parts.push(`Mentors: +${m.inserted} (${m.mentor_count} matched)`)
+        setSyncMsg('✓ ' + parts.join(' · '))
+        fetchData()
+      } else {
+        setSyncMsg('✗ ' + (d.error || 'Sync failed'))
+      }
+    } catch (e) {
+      setSyncMsg('✗ ' + e.message)
+    }
+    setSyncing(false)
+    setTimeout(() => setSyncMsg(''), 10000)
+  }
 
   useEffect(() => {
     fetchData()
@@ -111,6 +141,7 @@ export default function AdminAttendance() {
       <style>{`
         .aa-wrap{animation:aaIn .5s ease both;font-family:'DM Sans',sans-serif}
         @keyframes aaIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+        @keyframes aa-spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 
         .aa-hdr{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:20px;flex-wrap:wrap}
         .aa-hdr-left h2{font-family:'Astro','Orbitron','DM Sans',sans-serif;font-size:1.2rem;font-weight:800;color:#fff;letter-spacing:1.8px;text-transform:uppercase;margin-bottom:3px}
@@ -256,7 +287,52 @@ export default function AdminAttendance() {
           <h2>Attendance Dashboard</h2>
           <div className="aa-hdr-sub">Mode-wise tracking · Real-time · Project Space 2026</div>
         </div>
-        <div className="aa-hdr-date">{new Date(target_date).toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div>
+        <div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
+          {syncMsg && (
+            <div style={{
+              fontSize:'.68rem',
+              fontWeight:600,
+              padding:'6px 11px',
+              borderRadius:8,
+              background: syncMsg.startsWith('✓') ? 'rgba(74,222,128,.08)' : syncMsg.startsWith('✗') ? 'rgba(253,28,0,.08)' : 'rgba(238,167,39,.08)',
+              border: `1px solid ${syncMsg.startsWith('✓') ? 'rgba(74,222,128,.25)' : syncMsg.startsWith('✗') ? 'rgba(253,28,0,.25)' : 'rgba(238,167,39,.25)'}`,
+              color: syncMsg.startsWith('✓') ? '#4ade80' : syncMsg.startsWith('✗') ? '#fd1c00' : '#EEA727',
+              maxWidth:340,
+              letterSpacing:'.3px',
+            }}>{syncMsg}</div>
+          )}
+          <button
+            onClick={()=>handleSync('both')}
+            disabled={syncing}
+            style={{
+              display:'flex',
+              alignItems:'center',
+              gap:7,
+              padding:'9px 16px',
+              borderRadius:11,
+              background: syncing
+                ? 'rgba(253,28,0,.15)'
+                : 'linear-gradient(135deg,rgba(253,28,0,.12),rgba(238,167,39,.06))',
+              border: '1px solid rgba(253,28,0,.3)',
+              color: syncing ? 'rgba(255,255,255,.5)' : '#fd1c00',
+              fontFamily:"'Astro','Orbitron','DM Sans',sans-serif",
+              fontSize:'.7rem',
+              fontWeight:700,
+              letterSpacing:'1px',
+              textTransform:'uppercase',
+              cursor: syncing ? 'wait' : 'pointer',
+              transition:'all .25s',
+            }}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{animation: syncing ? 'aa-spin 1s linear infinite' : 'none'}}>
+              <polyline points="23 4 23 10 17 10"/>
+              <polyline points="1 20 1 14 7 14"/>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+            </svg>
+            {syncing ? 'Syncing...' : 'Sync Now'}
+          </button>
+          <div className="aa-hdr-date">{new Date(target_date).toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div>
+        </div>
       </div>
 
       {/* View tabs */}

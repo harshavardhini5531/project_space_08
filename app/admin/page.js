@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import AuthBackground from '@/components/AuthBackground'
 import AdminAttendance from '@/app/admin/components/AdminAttendance'
+import AdminProjectStreet from '@/app/admin/components/AdminProjectStreet'
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -199,6 +200,7 @@ export default function AdminDashboard() {
     {id:'mentors',label:'Mentors',icon:IC.users},
     {id:'teams',label:'Teams',icon:IC.group},
     {id:'milestones',label:'Project Status',icon:IC.target},
+    {id:'project-street',label:'Project Street',icon:IC.cal},
     {id:'linkedin-stats',label:'LinkedIn Stats',icon:IC.share},
     {id:'attendance',label:'Attendance',icon:IC.cal},
     {id:'report-card',label:'Report Card',icon:IC.file},
@@ -1513,6 +1515,7 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
 
             {/* ATTENDANCE */}
             {activeTab === 'attendance' && <AdminAttendance/>}
+            {activeTab === 'project-street' && <AdminProjectStreet/>}
 
             {/* PROJECT STATUS */}
             {activeTab === 'milestones' && <div className="adm-lb">
