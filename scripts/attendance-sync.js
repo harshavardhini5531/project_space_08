@@ -25,6 +25,22 @@ function toRollNumber(empCode) {
   return '2' + trimmed
 }
 
+// Continuous mode classification — every punch gets a mode based on IST hour
+// Light:  before 11:00 AM
+// Bright: 11:00 AM – 4:59 PM
+// Dark:   5:00 PM – 7:59 PM
+// Moon:   8:00 PM onwards
+function classifyMode(punchAtIso) {
+  const utc = new Date(punchAtIso)
+  const istMs = utc.getTime() + (5.5 * 60 * 60 * 1000)
+  const istDate = new Date(istMs)
+  const hour = istDate.getUTCHours()
+  if (hour < 11) return 'light'
+  if (hour < 17) return 'bright'
+  if (hour < 20) return 'dark'
+  return 'moon'
+}
+
 async function classifyUserType(rollNumbers) {
   const map = {}
   if (rollNumbers.length === 0) return map
@@ -79,14 +95,16 @@ async function run() {
       const empCode = x.after?.EmployeeCode
       const rollNumber = toRollNumber(empCode)
       const punchAt = new Date(x.after?.timestamp || x.after?.LogDateTime)
+      const punchAtIso = punchAt.toISOString()
       const punchDateIST = new Date(punchAt.getTime() + (5.5 * 60 * 60 * 1000)).toISOString().slice(0, 10)
       return {
         employee_code: empCode,
         roll_number: rollNumber,
         device_serial: x.after?.Serialnumber,
         device_id: String(x.after?.Deviceid || ''),
-        punch_at: punchAt.toISOString(),
+        punch_at: punchAtIso,
         punch_date: punchDateIST,
+        punch_mode: classifyMode(punchAtIso),
         source: 'api',
         user_type: userTypeMap[rollNumber] || 'unknown'
       }
