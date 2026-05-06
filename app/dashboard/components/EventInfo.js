@@ -149,7 +149,7 @@ const CONTACTS = {
   ],
 };
 
-export default function EventInfo({ user }) {
+export default function EventInfo({ user, psDate }) {
   const [openId, setOpenId] = useState(null);
   const [scheduleTab, setScheduleTab] = useState("day1");
   const [search, setSearch] = useState("");
@@ -419,6 +419,153 @@ export default function EventInfo({ user }) {
         }
         .ev-acc.open .ev-acc-chev { transform: rotate(180deg); color: var(--you); }
         .ev-acc-body { padding: 0 16px 22px; animation: evDrop .3s ease both; }
+
+        /* PROJECT STREET CARD */
+        .ev-ps-card {
+          margin-top: 6px;
+          border: 1px solid var(--rule-2);
+          border-radius: 14px;
+          overflow: hidden;
+          background: var(--surface);
+        }
+        .ev-ps-hero {
+          padding: 22px 24px 20px;
+          border-bottom: 1px solid var(--rule);
+          position: relative;
+          overflow: hidden;
+        }
+        .ev-ps-hero::before {
+          content: "";
+          position: absolute;
+          top: -40px; right: -40px;
+          width: 160px; height: 160px;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(255,255,255,.04), transparent 70%);
+          pointer-events: none;
+        }
+        .ev-ps-hero-eye {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          font-size: .55rem;
+          letter-spacing: .22em;
+          text-transform: uppercase;
+          font-weight: 700;
+          margin-bottom: 14px;
+        }
+        .ev-ps-hero-dot {
+          width: 6px; height: 6px;
+          border-radius: 50%;
+          box-shadow: 0 0 8px currentColor;
+          animation: evPulse 2s ease-in-out infinite;
+        }
+        .ev-ps-hero-day {
+          font-family: 'Orbitron', 'DM Sans', sans-serif;
+          font-size: clamp(2rem, 5vw, 2.6rem);
+          font-weight: 800;
+          letter-spacing: -.01em;
+          line-height: 1;
+          margin-bottom: 6px;
+        }
+        .ev-ps-hero-date {
+          font-size: .9rem;
+          color: var(--ink);
+          font-weight: 600;
+          margin-bottom: 14px;
+        }
+        .ev-ps-hero-time {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 7px 14px;
+          border-radius: 100px;
+          background: rgba(255,255,255,.04);
+          border: 1px solid var(--rule-2);
+          font-size: .76rem;
+          font-weight: 700;
+          color: var(--ink);
+          font-variant-numeric: tabular-nums;
+        }
+        .ev-ps-desc {
+          padding: 18px 24px 14px;
+          font-size: .82rem;
+          line-height: 1.6;
+          color: var(--ink-2);
+          border-bottom: 1px solid var(--rule);
+        }
+        .ev-ps-desc strong { color: var(--ink); font-weight: 700; }
+        .ev-ps-bring {
+          padding: 18px 24px 6px;
+        }
+        .ev-ps-bring-title {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: .56rem;
+          letter-spacing: .22em;
+          text-transform: uppercase;
+          font-weight: 700;
+          color: var(--amber);
+          margin-bottom: 14px;
+        }
+        .ev-ps-items {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 10px;
+        }
+        @media (max-width: 600px) {
+          .ev-ps-items { grid-template-columns: 1fr; }
+        }
+        .ev-ps-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+          padding: 14px;
+          border-radius: 12px;
+          background: var(--surface);
+          border: 1px solid var(--rule-2);
+          transition: all .2s;
+        }
+        .ev-ps-item:hover {
+          background: var(--surface-2);
+          transform: translateY(-1px);
+        }
+        .ev-ps-item-icn {
+          width: 36px; height: 36px;
+          border-radius: 10px;
+          border: 1px solid;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+        .ev-ps-item-info { min-width: 0; }
+        .ev-ps-item-name {
+          font-size: .82rem;
+          font-weight: 700;
+          color: var(--ink);
+          margin-bottom: 3px;
+        }
+        .ev-ps-item-desc {
+          font-size: .68rem;
+          color: var(--ink-3);
+          line-height: 1.45;
+        }
+        .ev-ps-tip {
+          margin: 14px 24px 20px;
+          padding: 12px 14px;
+          background: rgba(238,167,39,.06);
+          border-left: 3px solid var(--amber);
+          border-radius: 0 8px 8px 0;
+          display: flex;
+          gap: 10px;
+          align-items: flex-start;
+          font-size: .74rem;
+          line-height: 1.5;
+          color: var(--ink-2);
+        }
+        .ev-ps-tip strong { color: var(--ink); font-weight: 600; }
+        .ev-ps-tip svg { color: var(--amber); flex-shrink: 0; margin-top: 2px; }
 
         /* HALL CARD */
         .ev-hall-card {
@@ -979,6 +1126,92 @@ export default function EventInfo({ user }) {
       )}
 
       <div className="ev-acc-list">
+        {psDate && (() => {
+          const d = new Date(psDate.date + 'T00:00:00');
+          const today = new Date(); today.setHours(0,0,0,0);
+          const diffDays = Math.round((d - today) / 86400000);
+          const isToday = diffDays === 0;
+          const isPast = diffDays < 0;
+          const status = isToday ? 'TODAY' : isPast ? 'Completed' : diffDays === 1 ? 'Tomorrow' : `In ${diffDays} days`;
+          const dateLong = d.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
+          return (
+            <Accordion
+              id="pstreet"
+              num="00"
+              icon={<Icon name="street" />}
+              title="Project Street"
+              sub={`Day ${psDate.day} · ${status}`}
+              open={openId === "pstreet"}
+              onToggle={toggle}
+            >
+              <div className="ev-ps-card" style={{borderColor: isToday ? 'rgba(253,28,0,.35)' : 'rgba(238,167,39,.18)'}}>
+                <div className="ev-ps-hero" style={{background: isToday ? 'linear-gradient(135deg,rgba(253,28,0,.12),rgba(238,167,39,.04))' : isPast ? 'linear-gradient(135deg,rgba(74,222,128,.08),transparent)' : 'linear-gradient(135deg,rgba(238,167,39,.08),rgba(253,28,0,.02))'}}>
+                  <div className="ev-ps-hero-eye" style={{color: isToday ? 'var(--you)' : isPast ? '#4ade80' : 'var(--amber)'}}>
+                    <span className="ev-ps-hero-dot" style={{background: isToday ? 'var(--you)' : isPast ? '#4ade80' : 'var(--amber)'}}/>
+                    {status}
+                  </div>
+                  <div className="ev-ps-hero-day" style={{color: isToday ? 'var(--you)' : isPast ? '#4ade80' : 'var(--amber)'}}>Day {psDate.day}</div>
+                  <div className="ev-ps-hero-date">{dateLong}</div>
+                  <div className="ev-ps-hero-time">
+                    <Icon name="clock" />
+                    <span>4:30 – 6:30 PM</span>
+                  </div>
+                </div>
+                <div className="ev-ps-desc">
+                  Your team's <strong>Project Street</strong> day is when judges, mentors, and other teams visit your desk to see your project. Make your space stand out — present your work clearly, engage visitors, and bring your project to life visually.
+                </div>
+                <div className="ev-ps-bring">
+                  <div className="ev-ps-bring-title">
+                    <Icon name="bag" />
+                    <span>What to Bring</span>
+                  </div>
+                  <div className="ev-ps-items">
+                    <div className="ev-ps-item">
+                      <div className="ev-ps-item-icn" style={{background:'rgba(238,167,39,.08)',borderColor:'rgba(238,167,39,.2)',color:'var(--amber)'}}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                      </div>
+                      <div className="ev-ps-item-info">
+                        <div className="ev-ps-item-name">Charts</div>
+                        <div className="ev-ps-item-desc">Chart paper / posters with project flow, architecture, or key visuals</div>
+                      </div>
+                    </div>
+                    <div className="ev-ps-item">
+                      <div className="ev-ps-item-icn" style={{background:'rgba(168,85,247,.08)',borderColor:'rgba(168,85,247,.2)',color:'#a855f7'}}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+                      </div>
+                      <div className="ev-ps-item-info">
+                        <div className="ev-ps-item-name">Color Sketches</div>
+                        <div className="ev-ps-item-desc">Hand-drawn sketches, wireframes, or illustrations using markers / sketch pens</div>
+                      </div>
+                    </div>
+                    <div className="ev-ps-item">
+                      <div className="ev-ps-item-icn" style={{background:'rgba(34,211,238,.08)',borderColor:'rgba(34,211,238,.2)',color:'#22d3ee'}}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                      </div>
+                      <div className="ev-ps-item-info">
+                        <div className="ev-ps-item-name">Working Demo</div>
+                        <div className="ev-ps-item-desc">Laptop with your project running — be ready to demonstrate live</div>
+                      </div>
+                    </div>
+                    <div className="ev-ps-item">
+                      <div className="ev-ps-item-icn" style={{background:'rgba(74,222,128,.08)',borderColor:'rgba(74,222,128,.2)',color:'#4ade80'}}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                      </div>
+                      <div className="ev-ps-item-info">
+                        <div className="ev-ps-item-name">Pitch Ready</div>
+                        <div className="ev-ps-item-desc">A 60-second clear pitch — problem, solution, and impact</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="ev-ps-tip">
+                  <Icon name="alert" />
+                  <span><strong>Pro Tip:</strong> Decorate your desk creatively. The most engaging spaces attract the most visitors and votes.</span>
+                </div>
+              </div>
+            </Accordion>
+          );
+        })()}
         {myHall && (
           <Accordion
             id="hall"
@@ -995,7 +1228,7 @@ export default function EventInfo({ user }) {
 
         <Accordion
           id="schedule"
-          num={myHall ? "02" : "01"}
+          num={myHall ? "03" : "02"}
           icon={<Icon name="clock" />}
           title="Daily schedule"
           sub="Timings for all 7 days"
@@ -1025,7 +1258,7 @@ export default function EventInfo({ user }) {
 
         <Accordion
           id="dress"
-          num={myHall ? "03" : "02"}
+          num={myHall ? "04" : "03"}
           icon={<Icon name="shirt" />}
           title="Dress code"
           sub="Day-by-day attire"
@@ -1049,7 +1282,7 @@ export default function EventInfo({ user }) {
 
         <Accordion
           id="rules"
-          num={myHall ? "04" : "03"}
+          num={myHall ? "05" : "04"}
           icon={<Icon name="shield" />}
           title="Code of conduct"
           sub="Guidelines & expectations"
@@ -1135,7 +1368,7 @@ export default function EventInfo({ user }) {
 
         <Accordion
           id="ppt"
-          num={myHall ? "05" : "04"}
+          num={myHall ? "06" : "05"}
           icon={<Icon name="presentation" />}
           title="Presentation guide"
           sub="5 slides max · approved palette"
@@ -1211,7 +1444,7 @@ export default function EventInfo({ user }) {
 
         <Accordion
           id="contacts"
-          num={myHall ? "06" : "05"}
+          num={myHall ? "07" : "06"}
           icon={<Icon name="phone" />}
           title="Help & emergency"
           sub="Save these numbers"
@@ -1272,7 +1505,7 @@ export default function EventInfo({ user }) {
 
         <Accordion
           id="search"
-          num={myHall ? "07" : "06"}
+          num={myHall ? "08" : "07"}
           icon={<Icon name="search" />}
           title="Look up any team"
           sub="Find another team's location"
@@ -1447,6 +1680,8 @@ function Icon({ name }) {
     case "phone":        return <svg {...props}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.33 1.85.57 2.81.7A2 2 0 0 1 22 16.92z" /></svg>;
     case "presentation": return <svg {...props}><path d="M3 3h18v12H3z" /><path d="M12 15v4" /><path d="M8 21h8" /><path d="m7 10 3-3 2 2 4-5" /></svg>;
     case "seat":         return <svg {...props}><path d="M5 18h14" /><path d="M6 18v-7a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v7" /><path d="M9 8V6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" /><path d="M5 18v3" /><path d="M19 18v3" /></svg>;
+    case "street":       return <svg {...props}><path d="M3 21h18"/><path d="M5 21V7l4-4h6l4 4v14"/><path d="M9 21v-6h6v6"/><path d="M9 9h2"/><path d="M13 9h2"/><path d="M9 13h2"/><path d="M13 13h2"/></svg>;
+    case "bag":          return <svg {...props}><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>;
     default: return null;
   }
 }
