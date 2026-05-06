@@ -10,6 +10,7 @@
   import EventInfo from "@/app/dashboard/components/EventInfo";
 import EventDetails from "@/app/dashboard/components/EventDetails";
   import MentorRequest from "@/app/dashboard/components/MentorRequest";
+  import StudentAttendance from "@/app/dashboard/components/StudentAttendance";
   import {
     User, Users, FolderKanban, Activity, GraduationCap,
     UtensilsCrossed, Compass, CalendarDays, Megaphone,
@@ -27,6 +28,7 @@ import EventDetails from "@/app/dashboard/components/EventDetails";
       {id:"team-profile",label:"Team Profile",icon:Users},
       {id:"project-details",label:"Project Details",icon:FolderKanban},
       {id:"project-status",label:"Project Status",icon:Activity},
+      {id:"attendance",label:"My Attendance",icon:Activity},
     ]},
     { title:"Services", items:[
       {id:"mentor-request",label:"Mentor Request",icon:GraduationCap},
@@ -40,7 +42,7 @@ import EventDetails from "@/app/dashboard/components/EventDetails";
       {id:"space-jam",label:"Space Jam",icon:Rocket},
     ]},
   ];
-  const PAGE_TITLES={"my-profile":"My Profile","team-profile":"Team Profile","project-details":"Project Details","project-status":"Project Status","mentor-request":"Mentor Request","food-section":"Food Section","explore-teams":"Explore Teams","event-info":"Event Info","event-details":"Event Details","announcements":"Announcements","space-jam":"Space Jam"};
+  const PAGE_TITLES={"my-profile":"My Profile","team-profile":"Team Profile","project-details":"Project Details","project-status":"Project Status","mentor-request":"Mentor Request","food-section":"Food Section","explore-teams":"Explore Teams","event-info":"Event Info","event-details":"Event Details","announcements":"Announcements","space-jam":"Space Jam","attendance":"My Attendance",};
 
   /* ═══ HELPER COMPONENTS ═══ */
   function StatCard({icon:Icon,label,value,color="#ff1d00"}){
@@ -2709,6 +2711,7 @@ import EventDetails from "@/app/dashboard/components/EventDetails";
               active==="team-profile"?<TeamProfile user={user}/>:
               active==="project-details"?<ProjectDetails user={user}/>:
               active==="project-status"?<ProjectStatus user={user}/>:
+              active==="attendance"?<StudentAttendance user={user}/>:
               active==="event-info"?<EventInfo user={user}/>:
               active==="event-details"?<EventDetails/>:
               active==="mentor-request"?<MentorRequest user={user}/>:(
