@@ -3,7 +3,7 @@
 // Returns: filters-aware overview with mentors/teams/students/modes breakdown
 
 import { createClient } from '@supabase/supabase-js'
-import { fetchAll, fetchAllByIn } from '@/lib/supabase-paginate'
+import { fetchAll, fetchAllByIn } from '../../../../lib/supabase-paginate.js'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,

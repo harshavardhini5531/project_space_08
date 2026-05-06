@@ -1,17 +1,12 @@
 // app/api/attendance/mentor-summary/route.js
 // Returns: mentor's self-attendance + per-team summary + combined mentorship score
 
-const mentorPunches = await fetchAll(
-        () => supabase
-          .from('attendance_logs')
-          .select('punch_date, punch_mode')
-          .eq('employee_code', String(mentor.emp_id))
-          .gte('punch_date', startStr)
-          .lte('punch_date', todayStr)
-          .not('punch_mode', 'is', null),
-        { label: 'mentor-self-punches' }
-      )
-      mentorPunches.forEach(p => {
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+)
 
 const MODES = ['light', 'bright', 'dark', 'moon']
 const MODE_META = {
