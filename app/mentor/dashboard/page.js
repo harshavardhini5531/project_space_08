@@ -393,6 +393,43 @@ Powered by ${toBoldM('Technical Hub')}, led by CEO ${toBoldM('Babji Neelam')} Si
           <div className="tc-info">
             <div className="tc-title">{t.projectTitle || 'Untitled Project'}</div>
             <div className="tc-meta">#{t.serialNumber} {t.teamNumber ? `· ${t.teamNumber}` : ''} · {t.memberCount} members {t.mentorAssigned ? `· ${t.mentorAssigned}` : ''}</div>
+            {t.projectStreetDate && (() => {
+              const d = new Date(t.projectStreetDate + 'T00:00:00');
+              const today = new Date(); today.setHours(0,0,0,0);
+              const diffDays = Math.round((d - today) / 86400000);
+              const isToday = diffDays === 0;
+              const isPast = diffDays < 0;
+              const month = d.toLocaleDateString('en-US', { month: 'short' });
+              const dayN = d.getDate();
+              const ord = (n) => { const s=['th','st','nd','rd']; const v=n%100; return n+(s[(v-20)%10]||s[v]||s[0]); };
+              const dateStr = `${month} ${ord(dayN)}`;
+              let label, bg, bd, tc, icon;
+              if (isPast) {
+                label = 'Project Street Done';
+                bg = 'rgba(74,222,128,.1)';
+                bd = 'rgba(74,222,128,.3)';
+                tc = '#4ade80';
+                icon = '✓';
+              } else if (isToday) {
+                label = `LIVE TODAY · ${dateStr}`;
+                bg = 'rgba(253,28,0,.12)';
+                bd = 'rgba(253,28,0,.35)';
+                tc = '#fd1c00';
+                icon = '🔥';
+              } else {
+                label = `Day ${t.projectStreetDay} · ${dateStr} · ${diffDays === 1 ? '1 Day' : diffDays + ' Days'} to Go`;
+                bg = 'rgba(238,167,39,.08)';
+                bd = 'rgba(238,167,39,.25)';
+                tc = '#EEA727';
+                icon = '✦';
+              }
+              return (
+                <div onClick={e => e.stopPropagation()} style={{display:'inline-flex',alignItems:'center',gap:6,marginTop:8,padding:'4px 10px',borderRadius:100,background:bg,border:`1px solid ${bd}`,fontSize:'.62rem',fontWeight:700,letterSpacing:'.3px',color:tc,animation:isToday?'tcPsPulse 2s ease-in-out infinite':'none'}}>
+                  <span style={{fontSize:'.72rem',lineHeight:1}}>{icon}</span>
+                  <span style={{textTransform:'uppercase',letterSpacing:'.5px'}}>{label}</span>
+                </div>
+              );
+            })()}
           </div>
           <div className="tc-right">
             <span className={`tc-badge ${t.registered?'reg':'pen'}`}>{t.registered?'Registered':'Pending'}</span>
