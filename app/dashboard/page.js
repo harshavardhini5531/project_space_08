@@ -2726,8 +2726,11 @@ import EventDetails from "@/app/dashboard/components/EventDetails";
                   const diffDays = Math.round((psD - today) / 86400000);
                   const isToday = diffDays === 0;
                   const isPast = diffDays < 0;
-                  const dayLabel = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                  const status = isToday ? '🔥 TODAY' : isPast ? 'Done' : `in ${diffDays}d`;
+                  const month = d.toLocaleDateString('en-US', { month: 'long' });
+                  const day = d.getDate();
+                  const ord = (n) => { const s=['th','st','nd','rd']; const v=n%100; return n+(s[(v-20)%10]||s[v]||s[0]); };
+                  const dateStr = `${month} ${ord(day)}`;
+                  const status = isToday ? 'TODAY' : isPast ? 'Completed' : diffDays === 1 ? '1 Day to Go' : `${diffDays} Days to Go`;
                   const bg = isToday
                     ? 'linear-gradient(135deg,rgba(253,28,0,.18),rgba(238,167,39,.12))'
                     : isPast
@@ -2737,12 +2740,17 @@ import EventDetails from "@/app/dashboard/components/EventDetails";
                   const tc = isToday ? '#fd1c00' : isPast ? '#4ade80' : '#EEA727';
                   return (
                     <div title={`Project Street: Day ${psDate.day} (${d.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'})})`}
-                      style={{display:'flex',alignItems:'center',gap:8,padding:'8px 14px',borderRadius:10,background:bg,border:`1px solid ${bd}`,fontSize:'.72rem',fontWeight:700,cursor:'default',animation:isToday?'psPulse 2s ease-in-out infinite':'none'}}>
-                      <Sparkles size={13} style={{color:tc}}/>
-                      <span style={{color:tc,fontFamily:"'Orbitron',sans-serif",letterSpacing:'.5px'}}>DAY {psDate.day}</span>
-                      <span style={{color:'rgba(255,255,255,.6)',fontWeight:500}}>·</span>
-                      <span style={{color:'#fff'}}>{dayLabel}</span>
-                      {!isMobile && <span style={{fontSize:'.6rem',padding:'2px 7px',borderRadius:5,background:'rgba(0,0,0,.25)',color:tc,fontWeight:700,letterSpacing:'.3px'}}>{status}</span>}
+                      style={{display:'flex',alignItems:'center',gap:8,padding:'8px 14px',borderRadius:10,background:bg,border:`1px solid ${bd}`,fontSize:'.72rem',fontWeight:600,cursor:'default',animation:isToday?'psPulse 2s ease-in-out infinite':'none',whiteSpace:'nowrap'}}>
+                      <Sparkles size={13} style={{color:tc,flexShrink:0}}/>
+                      {isMobile ? (
+                        <span style={{color:'#fff'}}>
+                          <span style={{color:tc,fontWeight:700}}>Day {psDate.day}</span> · {dateStr}
+                        </span>
+                      ) : (
+                        <span style={{color:'#fff'}}>
+                          <span style={{color:tc,fontWeight:700}}>Project Street</span> on {dateStr} <span style={{color:'rgba(255,255,255,.4)',margin:'0 2px'}}>—</span> <span style={{color:tc,fontWeight:700}}>{status}</span>
+                        </span>
+                      )}
                     </div>
                   );
                 })()}
