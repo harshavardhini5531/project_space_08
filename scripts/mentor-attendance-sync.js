@@ -3,31 +3,20 @@
 // Pulls attendance from office.technicalhub.io and inserts into attendance_logs.
 // Routes records into mentor or student rows based on DB lookup.
 
-const { createClient } = require('@supabase/supabase-js')
+require('dotenv').config({ path: require('path').join(__dirname, '..', '.env.local') })
 
-// Load .env.local manually (no dotenv needed)
-const fs = require('fs')
-const path = require('path')
-try {
-  const envPath = path.join(__dirname, '..', '.env.local')
-  const envContent = fs.readFileSync(envPath, 'utf8')
-  envContent.split('\n').forEach(line => {
-    const trimmed = line.trim()
-    if (!trimmed || trimmed.startsWith('#')) return
-    const eqIdx = trimmed.indexOf('=')
-    if (eqIdx === -1) return
-    const key = trimmed.slice(0, eqIdx).trim()
-    const val = trimmed.slice(eqIdx + 1).trim().replace(/^["']|["']$/g, '')
-    if (!process.env[key]) process.env[key] = val
-  })
-} catch (e) {
-  console.error('[sync] Could not load .env.local:', e.message)
-}
+const { createClient } = require('@supabase/supabase-js')
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+if (!SUPABASE_URL || !SUPABASE_KEY) {
+  console.error('[sync] FATAL: Missing Supabase credentials. URL=', !!SUPABASE_URL, 'KEY=', !!SUPABASE_KEY)
+  process.exit(1)
+}
+
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
 
 // IST hour → mode classification
