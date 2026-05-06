@@ -1,5 +1,6 @@
 // app/api/attendance/mentor-summary/route.js
 // Returns: mentor's self-attendance + per-team summary + combined mentorship score
+// Uses ROLLING FORWARD WINDOW: today + next 6 days
 
 import { createClient } from '@supabase/supabase-js'
 
@@ -26,14 +27,11 @@ const MENTOR_MODE_META = {
 // Convert a punch timestamp to mentor mode
 function mentorModeFromPunchAt(punchAtIso) {
   const d = new Date(punchAtIso)
-  // Use IST hour (UTC + 5:30)
   const istMs = d.getTime() + (5.5 * 60 * 60 * 1000)
   const istHour = new Date(istMs).getUTCHours()
-  // Morning: 5 AM – before 10 PM (anything in working hours)
-  // Night: 10 PM onwards (after 10 PM late evening)
-  if (istHour >= 22) return 'night'   // 10 PM +
-  if (istHour >= 5)  return 'morning' // 5 AM – 10 PM
-  return null  // before 5 AM = ignore
+  if (istHour >= 22) return 'night'
+  if (istHour >= 5)  return 'morning'
+  return null
 }
 
 export async function POST(request) {
@@ -50,16 +48,17 @@ export async function POST(request) {
 
     if (!mentor) return Response.json({ error: 'Mentor not found' }, { status: 404 })
 
-    // Compute date window
+    // ROLLING FORWARD WINDOW: today + next (days-1) days
     const todayIST = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }))
     const todayStr = todayIST.toISOString().split('T')[0]
-    const startDate = new Date(todayIST)
-    startDate.setDate(startDate.getDate() - (days - 1))
-    const startStr = startDate.toISOString().split('T')[0]
+    const startStr = todayStr  // window starts TODAY
+    const endDate = new Date(todayIST)
+    endDate.setDate(endDate.getDate() + (days - 1))
+    const endStr = endDate.toISOString().split('T')[0]
 
-    // 2. Mentor's own attendance — fetch ALL punches with timestamps, classify into morning/night
-    let mentorPunchSet = new Set()  // "date|morning" or "date|night"
-    let mentorTodaySet = new Set()  // morning/night for today
+    // 2. Mentor's own attendance — fetch all punches in window, classify into morning/night
+    let mentorPunchSet = new Set()
+    let mentorTodaySet = new Set()
     if (mentor.emp_id) {
       let mentorPunches = []
       {
@@ -71,7 +70,7 @@ export async function POST(request) {
             .select('punch_date, punch_at')
             .eq('employee_code', String(mentor.emp_id))
             .gte('punch_date', startStr)
-            .lte('punch_date', todayStr)
+            .lte('punch_date', endStr)
             .range(from, from + PAGE - 1)
           if (!data || data.length === 0) break
           mentorPunches = mentorPunches.concat(data)
@@ -87,12 +86,13 @@ export async function POST(request) {
       })
     }
 
-    // Build mentor's 7-day self grid (2 modes: morning + night)
+    // Build mentor's 7-day FORWARD grid: today + next 6 days
     const mentorDayGrid = []
-    for (let i = days - 1; i >= 0; i--) {
+    for (let i = 0; i < days; i++) {
       const d = new Date(todayIST)
-      d.setDate(d.getDate() - i)
+      d.setDate(d.getDate() + i)
       const dStr = d.toISOString().split('T')[0]
+      const isFuture = dStr > todayStr
       const modes = MENTOR_MODES.map(m => ({
         mode: m,
         label: MENTOR_MODE_META[m].label,
@@ -102,6 +102,7 @@ export async function POST(request) {
         date: dStr,
         day_name: d.toLocaleDateString('en-US', { weekday: 'short' }),
         is_today: dStr === todayStr,
+        is_future: isFuture,
         modes,
         present_count: modes.filter(m => m.present).length,
       })
@@ -110,8 +111,8 @@ export async function POST(request) {
     const mentorTodayCount = mentorTodaySet.size
     const mentorTodayPresent = mentorTodayCount > 0
     const mentorTotalPunches = mentorDayGrid.reduce((s, d) => s + d.present_count, 0)
-    // Mentor pct: out of (days × 2 modes) since mentors only have 2 modes
-    const mentorPct = days > 0 ? Math.round((mentorTotalPunches / (days * 2)) * 100) : 0
+    const mentorElapsed = mentorDayGrid.filter(d => !d.is_future).length
+    const mentorPct = mentorElapsed > 0 ? Math.round((mentorTotalPunches / (mentorElapsed * 2)) * 100) : 0
 
     // 3. Get all teams assigned to this mentor
     const { data: teams } = await supabase
@@ -123,14 +124,15 @@ export async function POST(request) {
 
     if (teamNumbers.length === 0) {
       return Response.json({
-        mentor: { ...mentor, today_present: mentorTodayPresent, today_modes: Array.from(mentorTodaySet), today_count: mentorTodayCount, day_grid: mentorDayGrid, attendance_pct: mentorPct },
+        mentor: { ...mentor, today_present: mentorTodayPresent, today_modes: Array.from(mentorTodaySet), today_count: mentorTodayCount, max_modes: 2, day_grid: mentorDayGrid, attendance_pct: mentorPct, total_punches: mentorTotalPunches },
         teams: [],
         combined: { total_students: 0, total_present_today: 0, total_absent_today: 0, attendance_pct: 0, mode_breakdown: {} },
         modes_meta: MODE_META,
+        mentor_modes_meta: MENTOR_MODE_META,
       })
     }
 
-    // 4. Get all team members for these teams — PAGINATED
+    // 4. Get all team members — PAGINATED
     let members = []
     {
       const chunks = []
@@ -152,11 +154,7 @@ export async function POST(request) {
         }
       }
     }
-    // Normalize: use short_name as display name
-    members = members.map(m => ({
-      ...m,
-      name: m.short_name || m.roll_number
-    }))
+    members = members.map(m => ({ ...m, name: m.short_name || m.roll_number }))
 
     const memberRolls = members.map(m => m.roll_number).filter(Boolean)
 
@@ -174,7 +172,7 @@ export async function POST(request) {
             .select('roll_number, punch_date, punch_mode')
             .in('roll_number', chunk)
             .gte('punch_date', startStr)
-            .lte('punch_date', todayStr)
+            .lte('punch_date', endStr)
             .not('punch_mode', 'is', null)
             .range(from, from + PAGE - 1)
           if (!data || data.length === 0) break
@@ -185,7 +183,7 @@ export async function POST(request) {
       }
     }
 
-    // Build punch lookup: rollNumber → { date|mode → true }
+    // Build punch lookup
     const studentPunchMap = {}
     studentPunches.forEach(p => {
       if (!studentPunchMap[p.roll_number]) studentPunchMap[p.roll_number] = { byKey: new Set(), byDate: {} }
@@ -203,31 +201,42 @@ export async function POST(request) {
         const todayModes = Array.from(data.byDate[todayStr] || [])
         const todayCount = todayModes.length
 
-        // Build absent days list (within window)
+        // Absent days — only past + today, NOT future
         const absentDays = []
-        for (let i = days - 1; i >= 0; i--) {
+        for (let i = 0; i < days; i++) {
           const d = new Date(todayIST)
-          d.setDate(d.getDate() - i)
+          d.setDate(d.getDate() + i)
           const dStr = d.toISOString().split('T')[0]
+          if (dStr > todayStr) continue
           const punchedToday = (data.byDate[dStr] || new Set()).size
           if (punchedToday === 0) absentDays.push(dStr)
         }
 
-        // 7-day mode grid
+        // FORWARD 7-day mode grid: today + next 6 days
         const modeGrid = []
-        for (let i = days - 1; i >= 0; i--) {
+        for (let i = 0; i < days; i++) {
           const d = new Date(todayIST)
-          d.setDate(d.getDate() - i)
+          d.setDate(d.getDate() + i)
           const dStr = d.toISOString().split('T')[0]
+          const isFuture = dStr > todayStr
           const modes = MODES.map(mode => ({
             mode,
             present: data.byKey.has(`${dStr}|${mode}`),
           }))
-          modeGrid.push({ date: dStr, modes, count: modes.filter(x => x.present).length })
+          modeGrid.push({
+            date: dStr,
+            day_name: d.toLocaleDateString('en-US', { weekday: 'short' }),
+            is_today: dStr === todayStr,
+            is_future: isFuture,
+            modes,
+            count: modes.filter(x => x.present).length
+          })
         }
 
+        // % only over past + today days
+        const elapsedDays = modeGrid.filter(d => !d.is_future).length
         const totalPunches = modeGrid.reduce((s, d) => s + d.count, 0)
-        const pct = days > 0 ? Math.round((totalPunches / (days * 4)) * 100) : 0
+        const pct = elapsedDays > 0 ? Math.round((totalPunches / (elapsedDays * 4)) * 100) : 0
 
         return {
           roll_number: m.roll_number,
@@ -248,7 +257,6 @@ export async function POST(request) {
         ? Math.round((memberDetails.reduce((s, m) => s + m.attendance_pct, 0) / memberDetails.length))
         : 0
 
-      // Mode-wise breakdown for today
       const modeBreakdown = {}
       MODES.forEach(mode => {
         modeBreakdown[mode] = memberDetails.filter(m => m.today_modes.includes(mode)).length
