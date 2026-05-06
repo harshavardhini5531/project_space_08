@@ -9,7 +9,6 @@ const MODE_META = {
   moon:   { label: 'Moon',   icon: '🌙', color: '#3b82f6', window: '8 PM +' },
 }
 
-// Mentors only have 2 modes (Morning + Night)
 const MENTOR_MODES = ['morning', 'night']
 const MENTOR_MODE_META = {
   morning: { label: 'Morning', icon: '☀', color: '#EEA727', window: 'after 5 AM' },
@@ -61,28 +60,25 @@ export default function MentorAttendance({ mentor }) {
   if (!data?.mentor) return <div className="mp-load">No data available</div>
 
   const { mentor: me, teams, combined } = data
+  const maxModes = me.max_modes || 2
 
-  // Compute combined matrix stats
   const allStudents = teams.flatMap(t => t.members)
   const totalStudents = allStudents.length
   const fullCount = allStudents.filter(s => s.today_count === 4).length
   const partialCount = allStudents.filter(s => s.today_count > 0 && s.today_count < 4).length
   const absentCount = allStudents.filter(s => s.today_count === 0).length
 
-  // Build "students missing" list for alert banner
   const missingStudents = allStudents.filter(s => s.today_count === 0).map(s => ({
     name: s.name, roll: s.roll_number, team: teams.find(t => t.members.some(m => m.roll_number === s.roll_number))?.team_number
   }))
   const partialStudents = allStudents.filter(s => s.today_count > 0 && s.today_count < 4).map(s => ({
-    name: s.name, roll: s.roll_number, team: teams.find(t => t.members.some(m => m.roll_number === s.roll_number))?.team_number,
-    missed: MODES.filter(m => !s.today_modes.includes(m))
+    name: s.name, roll: s.roll_number, team: teams.find(t => t.members.some(m => m.roll_number === s.roll_number))?.team_number
   }))
 
   return (
     <div className="mp-wrap">
       <Styles/>
 
-      {/* Alert Banner — only if there are missing/partial students */}
       {(missingStudents.length > 0 || partialStudents.length > 0) && (
         <div className="mp-alert">
           <div className="mp-alert-icon"><Icon name="alert" size={16}/></div>
@@ -102,12 +98,11 @@ export default function MentorAttendance({ mentor }) {
         </div>
       )}
 
-      {/* Top tabs */}
       <div className="mp-tabs">
         <button className={`mp-tab ${activeTab === 'self' ? 'on' : ''}`} onClick={() => setActiveTab('self')}>
           <Icon name="user" size={14}/>
           <span>My Attendance</span>
-          <span className={`mp-tab-pill ${me.today_present ? 'ok' : 'no'}`}>{me.today_count}/{me.max_modes || 2}</span>
+          <span className={`mp-tab-pill ${me.today_present ? 'ok' : 'no'}`}>{me.today_count}/{maxModes}</span>
         </button>
         <button className={`mp-tab ${activeTab === 'all' ? 'on' : ''}`} onClick={() => setActiveTab('all')}>
           <Icon name="users" size={14}/>
@@ -121,7 +116,6 @@ export default function MentorAttendance({ mentor }) {
         </button>
       </div>
 
-      {/* TAB CONTENT */}
       {activeTab === 'self' && <SelfPane me={me}/>}
       {activeTab === 'all' && <AllTeamsPane teams={teams} combined={combined} totalStudents={totalStudents} fullCount={fullCount} partialCount={partialCount} absentCount={absentCount}/>}
       {activeTab === 'team' && <TeamDetailPane teams={teams} activeTeamId={activeTeamId} setActiveTeamId={setActiveTeamId}/>}
@@ -131,9 +125,9 @@ export default function MentorAttendance({ mentor }) {
 
 /* ─────────────── SELF PANE ─────────────── */
 function SelfPane({ me }) {
+  const maxModes = me.max_modes || 2
   return (
     <div className="self-pane">
-      {/* Today big card */}
       <div className="self-today">
         <div className="self-today-l">
           <div className="self-today-lab">Today's Attendance</div>
@@ -141,7 +135,7 @@ function SelfPane({ me }) {
           <div className="self-today-tech">{me.technology}</div>
         </div>
         <div className="self-today-r">
-          <div className="self-today-num">{me.today_count}<span className="self-today-num-sub">/{me.max_modes || 2}</span></div>
+          <div className="self-today-num">{me.today_count}<span className="self-today-num-sub">/{maxModes}</span></div>
           <div className="self-today-modes">
             {MENTOR_MODES.map(m => {
               const present = me.today_modes.includes(m)
@@ -158,7 +152,6 @@ function SelfPane({ me }) {
         </div>
       </div>
 
-      {/* 7-day grid */}
       <div className="self-7day">
         <div className="self-7day-h">
           <div className="self-7day-t">Last 7 Days</div>
@@ -200,77 +193,8 @@ function SelfPane({ me }) {
     </div>
   )
 }
-  return (
-    <div className="self-pane">
-      {/* Today big card */}
-      <div className="self-today">
-        <div className="self-today-l">
-          <div className="self-today-lab">Today's Attendance</div>
-          <div className="self-today-name">{me.name}</div>
-          <div className="self-today-tech">{me.technology}</div>
-        </div>
-        <div className="self-today-r">
-          <div className="self-today-num">{me.today_count}<span className="self-today-num-sub">/4</span></div>
-          <div className="self-today-modes">
-            {MODES.map(m => {
-              const present = me.today_modes.includes(m)
-              const meta = MODE_META[m]
-              return (
-                <div key={m} className={`self-today-mode ${present ? 'on' : 'off'}`} style={present ? {background:`${meta.color}1f`,color:meta.color,borderColor:`${meta.color}40`} : {}}>
-                  <span className="self-today-mode-icon">{meta.icon}</span>
-                  <span className="self-today-mode-lab">{meta.label}</span>
-                  <span className="self-today-mode-status">{present ? <Icon name="check" size={11}/> : <Icon name="x" size={11}/>}</span>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </div>
 
-      {/* 7-day grid */}
-      <div className="self-7day">
-        <div className="self-7day-h">
-          <div className="self-7day-t">Last 7 Days</div>
-          <div className="self-7day-pct">{me.attendance_pct}% overall · {me.total_punches} total punches</div>
-        </div>
-        <div className="self-7day-grid">
-          <div className="self-7day-row self-7day-row-h">
-            <div className="self-7day-cell self-7day-cell-h">Date</div>
-            {MODES.map(m => (
-              <div key={m} className="self-7day-cell self-7day-cell-h" style={{textAlign:'center'}}>
-                <span style={{color:MODE_META[m].color,fontSize:'.85rem'}}>{MODE_META[m].icon}</span>
-                <div style={{fontSize:'.5rem',marginTop:1}}>{MODE_META[m].label}</div>
-              </div>
-            ))}
-            <div className="self-7day-cell self-7day-cell-h" style={{textAlign:'right'}}>Modes</div>
-          </div>
-          {me.day_grid.slice().reverse().map((d, i) => (
-            <div key={d.date} className={`self-7day-row ${d.is_today ? 'today' : ''}`}>
-              <div className="self-7day-cell">
-                <div className="self-7day-date">
-                  <span className="self-7day-day">{d.day_name}</span>
-                  <span className="self-7day-md">{new Date(d.date).getDate()} {new Date(d.date).toLocaleDateString('en-US',{month:'short'})}</span>
-                  {d.is_today && <span className="self-7day-now">NOW</span>}
-                </div>
-              </div>
-              {d.modes.map(modeData => (
-                <div key={modeData.mode} className="self-7day-cell" style={{textAlign:'center'}}>
-                  <span className="self-7day-dot" style={modeData.present ? {background:MODE_META[modeData.mode].color,boxShadow:`0 0 8px ${MODE_META[modeData.mode].color}80`} : {}}/>
-                </div>
-              ))}
-              <div className="self-7day-cell self-7day-modes-count" style={{textAlign:'right'}}>
-                <span style={{color:d.present_count===4?'#4ade80':d.present_count>0?'#EEA727':'#fd1c00',fontWeight:700}}>{d.present_count}</span>
-                <span style={{color:'rgba(255,255,255,.3)'}}>/4</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-/* ─────────────── ALL TEAMS PANE (flat list grouped by team) ─────────────── */
+/* ─────────────── ALL TEAMS PANE ─────────────── */
 function AllTeamsPane({ teams, combined, totalStudents, fullCount, partialCount, absentCount }) {
   const [searchQ, setSearchQ] = useState('')
   const [filter, setFilter] = useState('all')
@@ -301,7 +225,6 @@ function AllTeamsPane({ teams, combined, totalStudents, fullCount, partialCount,
 
   return (
     <div className="all-pane">
-      {/* Stats bar */}
       <div className="all-stats">
         <div className="all-stat total">
           <div className="all-stat-l">My Students</div>
@@ -325,19 +248,17 @@ function AllTeamsPane({ teams, combined, totalStudents, fullCount, partialCount,
         </div>
       </div>
 
-      {/* Filters */}
       <div className="all-fil">
         <div className="all-search">
           <Icon name="search" size={13}/>
           <input placeholder="Search student or team..." value={searchQ} onChange={e => setSearchQ(e.target.value)}/>
         </div>
         <span className={`all-pill ${filter==='all'?'on':''}`} onClick={() => setFilter('all')}>All</span>
-        <span className={`all-pill ${filter==='full'?'on':''}`} onClick={() => setFilter('full')} style={{color:filter==='full'?'#4ade80':''}}>Full</span>
-        <span className={`all-pill ${filter==='partial'?'on':''}`} onClick={() => setFilter('partial')} style={{color:filter==='partial'?'#EEA727':''}}>Partial</span>
-        <span className={`all-pill ${filter==='absent'?'on':''}`} onClick={() => setFilter('absent')} style={{color:filter==='absent'?'#fd1c00':''}}>Absent</span>
+        <span className={`all-pill ${filter==='full'?'on':''}`} onClick={() => setFilter('full')}>Full</span>
+        <span className={`all-pill ${filter==='partial'?'on':''}`} onClick={() => setFilter('partial')}>Partial</span>
+        <span className={`all-pill ${filter==='absent'?'on':''}`} onClick={() => setFilter('absent')}>Absent</span>
       </div>
 
-      {/* Team list */}
       {filtered.length === 0 ? (
         <div className="all-empty">No students match your filter</div>
       ) : (
@@ -372,7 +293,6 @@ function AllTeamsPane({ teams, combined, totalStudents, fullCount, partialCount,
         ))
       )}
 
-      {/* Legend */}
       <div className="all-leg">
         <span style={{fontWeight:700,color:'rgba(255,255,255,.7)'}}>Pattern:</span>
         {MODES.map(m => (<span key={m}><span className="all-leg-c" style={{background:MODE_META[m].color}}/>{MODE_META[m].label}</span>))}
@@ -390,7 +310,6 @@ function TeamDetailPane({ teams, activeTeamId, setActiveTeamId }) {
 
   return (
     <div className="td-pane">
-      {/* Team selector */}
       <div className="td-sel">
         {teams.map(t => (
           <button key={t.team_number} className={`td-sel-btn ${t.team_number === activeTeamId ? 'on' : ''}`} onClick={() => setActiveTeamId(t.team_number)}>
@@ -401,7 +320,6 @@ function TeamDetailPane({ teams, activeTeamId, setActiveTeamId }) {
         ))}
       </div>
 
-      {/* Team header */}
       <div className="td-h">
         <div className="td-h-l">
           <div className="td-h-tn">{team.team_number}</div>
@@ -424,7 +342,6 @@ function TeamDetailPane({ teams, activeTeamId, setActiveTeamId }) {
         </div>
       </div>
 
-      {/* Mode breakdown */}
       <div className="td-modes">
         {MODES.map(m => {
           const cnt = team.mode_breakdown[m] || 0
@@ -443,7 +360,6 @@ function TeamDetailPane({ teams, activeTeamId, setActiveTeamId }) {
         })}
       </div>
 
-      {/* Members list with 7-day grid */}
       <div className="td-h-sub">Members · 7-day attendance</div>
       <div className="td-mems">
         {team.members.map(m => {
@@ -466,7 +382,7 @@ function TeamDetailPane({ teams, activeTeamId, setActiveTeamId }) {
                 </div>
               </div>
               <div className="td-mem-week">
-                {m.mode_grid.slice().reverse().map((d, i) => (
+                {m.mode_grid.slice().reverse().map((d) => (
                   <div key={d.date} className="td-mem-day" title={`${d.date}: ${d.count}/4`}>
                     <div className="td-mem-day-cells">
                       {d.modes.map(modeData => (
@@ -497,7 +413,6 @@ function Styles() {
       .mp-load{padding:80px 20px;text-align:center;color:rgba(255,255,255,.3);font-size:.85rem;font-family:'DM Sans',sans-serif}
       @keyframes mpIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 
-      /* Alert banner */
       .mp-alert{display:flex;align-items:center;gap:11px;padding:11px 14px;border-radius:11px;background:linear-gradient(135deg,rgba(253,28,0,.1),rgba(238,167,39,.04));border:1px solid rgba(253,28,0,.25);margin-bottom:14px}
       .mp-alert-icon{width:32px;height:32px;border-radius:9px;background:rgba(253,28,0,.18);display:flex;align-items:center;justify-content:center;color:#fd1c00;flex-shrink:0}
       .mp-alert-content{flex:1;min-width:0}
@@ -505,7 +420,6 @@ function Styles() {
       .mp-alert-sep{color:rgba(255,255,255,.3);margin:0 4px}
       .mp-alert-s{font-size:.62rem;color:rgba(255,255,255,.55);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-      /* Tabs */
       .mp-tabs{display:flex;gap:4px;padding:4px;border-radius:11px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);margin-bottom:14px;overflow-x:auto}
       .mp-tabs::-webkit-scrollbar{display:none}
       .mp-tab{padding:8px 14px;border-radius:8px;border:none;background:transparent;color:rgba(255,255,255,.5);font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;transition:all .15s}
@@ -516,7 +430,6 @@ function Styles() {
       .mp-tab-pill.ok{background:rgba(74,222,128,.18);color:#4ade80}
       .mp-tab-pill.no{background:rgba(253,28,0,.18);color:#fd1c00}
 
-      /* SELF PANE */
       .self-pane{animation:mpIn .35s ease both}
       .self-today{display:flex;align-items:stretch;gap:18px;padding:20px 22px;border-radius:14px;background:linear-gradient(135deg,rgba(238,167,39,.08),rgba(253,28,0,.03));border:1px solid rgba(238,167,39,.22);margin-bottom:14px;flex-wrap:wrap}
       .self-today-l{flex:1;min-width:200px}
@@ -533,13 +446,12 @@ function Styles() {
       .self-today-mode-lab{flex:1}
       .self-today-mode-status{display:flex;align-items:center}
 
-      /* 7-day grid */
       .self-7day{padding:14px 18px;border-radius:12px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07)}
       .self-7day-h{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:11px;flex-wrap:wrap;gap:8px}
       .self-7day-t{font-size:.85rem;font-weight:700;color:#fff}
       .self-7day-pct{font-size:.66rem;color:rgba(255,255,255,.5)}
       .self-7day-grid{background:rgba(0,0,0,.18);border-radius:9px;overflow:hidden;border:1px solid rgba(255,255,255,.05)}
-      .self-7day-row{display:grid;grid-template-columns:140px 1fr 1fr 1fr 1fr 80px;gap:8px;padding:7px 12px;border-bottom:1px solid rgba(255,255,255,.04);align-items:center;transition:background .12s}
+      .self-7day-row{display:grid;gap:8px;padding:7px 12px;border-bottom:1px solid rgba(255,255,255,.04);align-items:center;transition:background .12s}
       .self-7day-row:last-child{border-bottom:none}
       .self-7day-row.today{background:rgba(238,167,39,.04)}
       .self-7day-row-h{background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.08)}
@@ -552,7 +464,6 @@ function Styles() {
       .self-7day-dot{width:14px;height:14px;border-radius:4px;display:inline-block;border:1px solid rgba(255,255,255,.12);background:transparent}
       .self-7day-modes-count{font-size:.7rem;font-weight:700}
 
-      /* ALL TEAMS PANE */
       .all-pane{animation:mpIn .35s ease both}
       .all-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
       .all-stat{padding:11px 13px;border-radius:10px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07)}
@@ -600,7 +511,6 @@ function Styles() {
       .all-leg-c{width:8px;height:8px;border-radius:2px;display:inline-block;margin-right:4px}
       .all-empty{padding:50px 16px;text-align:center;color:rgba(255,255,255,.3);font-size:.78rem}
 
-      /* TEAM DETAIL PANE */
       .td-pane{animation:mpIn .35s ease both}
       .td-sel{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px}
       .td-sel::-webkit-scrollbar{height:4px}
@@ -657,11 +567,10 @@ function Styles() {
       .td-mem-pct{font-family:'Orbitron','DM Sans',sans-serif;font-size:.85rem;font-weight:800;line-height:1}
       .td-mem-pct-l{font-size:.45rem;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-top:2px}
 
-      /* RESPONSIVE */
       @media(max-width:780px){
         .self-today{flex-direction:column;align-items:stretch}
         .self-today-r{flex-direction:column;align-items:flex-start;gap:10px}
-        .self-7day-row{grid-template-columns:90px 1fr 1fr 1fr 1fr 50px;gap:5px;padding:6px 10px}
+        .self-7day-row{gap:5px;padding:6px 10px}
         .all-stats{grid-template-columns:1fr 1fr}
         .td-h{flex-direction:column;align-items:flex-start}
         .td-h-stats{width:100%;justify-content:space-around}
