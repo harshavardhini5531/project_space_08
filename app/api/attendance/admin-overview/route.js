@@ -3,6 +3,7 @@
 // Returns: filters-aware overview with mentors/teams/students/modes breakdown
 
 import { createClient } from '@supabase/supabase-js'
+import { fetchAll, fetchAllByIn } from '@/lib/supabase-paginate'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -15,22 +16,6 @@ const MODE_META = {
   bright: { label: 'Bright', window: '11 AM – 5 PM' },
   dark:   { label: 'Dark',   window: '5 – 8 PM'  },
   moon:   { label: 'Moon',   window: '8 PM +' },
-}
-
-// Helper: paginate any query that might exceed Supabase's default cap
-async function fetchAll(buildQuery) {
-  let all = []
-  let from = 0
-  const PAGE = 1000
-  while (true) {
-    const { data, error } = await buildQuery().range(from, from + PAGE - 1)
-    if (error) { console.error('fetchAll error:', error.message); break }
-    if (!data || data.length === 0) break
-    all = all.concat(data)
-    if (data.length < PAGE) break
-    from += PAGE
-  }
-  return all
 }
 
 export async function POST(request) {
@@ -53,17 +38,24 @@ export async function POST(request) {
 
     // 2. Fetch ALL team_members (paginated)
     const members = teamNums.length > 0
-      ? await fetchAll(() => supabase.from('team_members').select('team_number, roll_number, short_name, is_leader').in('team_number', teamNums))
+      ? await fetchAllByIn(
+          () => supabase.from('team_members').select('team_number, roll_number, short_name, is_leader'),
+          'team_number', teamNums,
+          { label: 'team-members' }
+        )
       : []
     const memberRolls = members.map(m => m.roll_number).filter(Boolean)
 
     // 3. Fetch ALL student punches for target date (PAGINATED — was the bug)
     const studentPunches = memberRolls.length > 0
-      ? await fetchAll(() => supabase.from('attendance_logs')
-          .select('roll_number, punch_mode, punch_at')
-          .eq('punch_date', targetDate)
-          .in('roll_number', memberRolls)
-          .not('punch_mode', 'is', null))
+      ? await fetchAllByIn(
+          () => supabase.from('attendance_logs')
+            .select('roll_number, punch_mode, punch_at')
+            .eq('punch_date', targetDate)
+            .not('punch_mode', 'is', null),
+          'roll_number', memberRolls,
+          { label: 'student-punches' }
+        )
       : []
 
     // Build punch lookup
@@ -84,11 +76,14 @@ export async function POST(request) {
     // 5. Fetch mentor punches (paginated)
     const mentorEmpIds = mentors.map(m => String(m.emp_id)).filter(Boolean)
     const mentorPunches = mentorEmpIds.length > 0
-      ? await fetchAll(() => supabase.from('attendance_logs')
-          .select('employee_code, punch_mode, punch_at')
-          .eq('punch_date', targetDate)
-          .in('employee_code', mentorEmpIds)
-          .not('punch_mode', 'is', null))
+      ? await fetchAllByIn(
+          () => supabase.from('attendance_logs')
+            .select('employee_code, punch_mode, punch_at')
+            .eq('punch_date', targetDate)
+            .not('punch_mode', 'is', null),
+          'employee_code', mentorEmpIds,
+          { label: 'mentor-punches' }
+        )
       : []
 
     const mentorPunchMap = {}

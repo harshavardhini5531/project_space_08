@@ -1,12 +1,17 @@
 // app/api/attendance/mentor-summary/route.js
 // Returns: mentor's self-attendance + per-team summary + combined mentorship score
 
-import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-)
+const mentorPunches = await fetchAll(
+        () => supabase
+          .from('attendance_logs')
+          .select('punch_date, punch_mode')
+          .eq('employee_code', String(mentor.emp_id))
+          .gte('punch_date', startStr)
+          .lte('punch_date', todayStr)
+          .not('punch_mode', 'is', null),
+        { label: 'mentor-self-punches' }
+      )
+      mentorPunches.forEach(p => {
 
 const MODES = ['light', 'bright', 'dark', 'moon']
 const MODE_META = {
@@ -108,38 +113,59 @@ export async function POST(request) {
       })
     }
 
-    // 4. Get all team members for these teams
-    const { data: members } = await supabase
-      .from('team_members')
-      .select('team_number, roll_number, name, is_leader')
-      .in('team_number', teamNumbers)
+    // 4. Get all team members for these teams — PAGINATED
+    let members = []
+    {
+      const chunks = []
+      for (let i = 0; i < teamNumbers.length; i += 500) chunks.push(teamNumbers.slice(i, i + 500))
+      for (const chunk of chunks) {
+        let from = 0
+        const PAGE = 1000
+        while (true) {
+          const { data } = await supabase
+            .from('team_members')
+            .select('team_number, roll_number, name, is_leader')
+            .in('team_number', chunk)
+            .range(from, from + PAGE - 1)
+          if (!data || data.length === 0) break
+          members = members.concat(data)
+          if (data.length < PAGE) break
+          from += PAGE
+        }
+      }
+    }
 
-    const memberRolls = (members || []).map(m => m.roll_number).filter(Boolean)
+    const memberRolls = members.map(m => m.roll_number).filter(Boolean)
 
     // 5. Get all student punches in window — PAGINATED
+    // 5. Get all student punches in window — PAGINATED + chunked .in()
     let studentPunches = []
     {
-      let from = 0
-      const PAGE = 1000
-      while (true) {
-        const { data } = await supabase
-          .from('attendance_logs')
-          .select('roll_number, punch_date, punch_mode')
-          .in('roll_number', memberRolls)
-          .gte('punch_date', startStr)
-          .lte('punch_date', todayStr)
-          .not('punch_mode', 'is', null)
-          .range(from, from + PAGE - 1)
-        if (!data || data.length === 0) break
-        studentPunches = studentPunches.concat(data)
-        if (data.length < PAGE) break
-        from += PAGE
+      const chunks = []
+      for (let i = 0; i < memberRolls.length; i += 500) chunks.push(memberRolls.slice(i, i + 500))
+      for (const chunk of chunks) {
+        let from = 0
+        const PAGE = 1000
+        while (true) {
+          const { data } = await supabase
+            .from('attendance_logs')
+            .select('roll_number, punch_date, punch_mode')
+            .in('roll_number', chunk)
+            .gte('punch_date', startStr)
+            .lte('punch_date', todayStr)
+            .not('punch_mode', 'is', null)
+            .range(from, from + PAGE - 1)
+          if (!data || data.length === 0) break
+          studentPunches = studentPunches.concat(data)
+          if (data.length < PAGE) break
+          from += PAGE
+        }
       }
     }
 
     // Build punch lookup: rollNumber → { date|mode → true }
     const studentPunchMap = {}
-    ;(studentPunches || []).forEach(p => {
+    studentPunches.forEach(p => {
       if (!studentPunchMap[p.roll_number]) studentPunchMap[p.roll_number] = { byKey: new Set(), byDate: {} }
       studentPunchMap[p.roll_number].byKey.add(`${p.punch_date}|${p.punch_mode}`)
       if (!studentPunchMap[p.roll_number].byDate[p.punch_date]) studentPunchMap[p.roll_number].byDate[p.punch_date] = new Set()
@@ -148,7 +174,7 @@ export async function POST(request) {
 
     // 6. Build per-team summary
     const teamSummaries = (teams || []).map(team => {
-      const teamMembers = (members || []).filter(m => m.team_number === team.team_number)
+      const teamMembers = members.filter(m => m.team_number === team.team_number)
 
       const memberDetails = teamMembers.map(m => {
         const data = studentPunchMap[m.roll_number] || { byKey: new Set(), byDate: {} }
