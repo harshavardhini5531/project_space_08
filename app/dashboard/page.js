@@ -836,7 +836,7 @@ import EventDetails from "@/app/dashboard/components/EventDetails";
   }
 
   /* ═══ TEAM PROFILE ═══ */
-  function TeamProfile({ user }){
+  function TeamProfile({ user, psDate }){
     const [team, setTeam] = useState(null);
     const [members, setMembers] = useState([]);
     useEffect(()=>{
@@ -847,13 +847,78 @@ import EventDetails from "@/app/dashboard/components/EventDetails";
     if(!team) return <div style={{color:'rgba(255,255,255,.3)',textAlign:'center',padding:'60px 0'}}>Loading team data...</div>;
     
     const myRoll = user?.rollNumber || '';
-    
+
+    // Project Street status calculation
+    const psBadge = (() => {
+      if (!psDate) return null;
+      const d = new Date(psDate.date + 'T00:00:00');
+      const today = new Date(); today.setHours(0,0,0,0);
+      const diffDays = Math.round((d - today) / 86400000);
+      const isToday = diffDays === 0;
+      const isPast = diffDays < 0;
+      const month = d.toLocaleDateString('en-US', { month: 'short' });
+      const dayNum = d.getDate();
+      const ord = (n) => { const s=['th','st','nd','rd']; const v=n%100; return n+(s[(v-20)%10]||s[v]||s[0]); };
+      const dateStr = `${month} ${ord(dayNum)}`;
+      let label, status, bg, bd, tc, icon;
+      if (isPast) {
+        label = 'Project Street';
+        status = 'Done ✓';
+        bg = 'linear-gradient(135deg,rgba(74,222,128,.18),rgba(34,197,94,.08))';
+        bd = 'rgba(74,222,128,.4)';
+        tc = '#4ade80';
+        icon = '✓';
+      } else if (isToday) {
+        label = 'Project Street';
+        status = 'TODAY';
+        bg = 'linear-gradient(135deg,rgba(253,28,0,.22),rgba(238,167,39,.12))';
+        bd = 'rgba(253,28,0,.45)';
+        tc = '#fd1c00';
+        icon = '🔥';
+      } else {
+        label = 'Project Street';
+        status = `${dateStr} · ${diffDays === 1 ? '1 Day' : diffDays + ' Days'} to Go`;
+        bg = 'linear-gradient(135deg,rgba(238,167,39,.18),rgba(253,28,0,.06))';
+        bd = 'rgba(238,167,39,.4)';
+        tc = '#EEA727';
+        icon = '✦';
+      }
+      return { label, status, bg, bd, tc, icon, isToday, isPast };
+    })();
+
     return(
       <div className="tp">
         <div className="tp-header">
           <div className="tp-header-left">
             <div className="tp-team-badge">{team.teamNumber}</div>
-            <div><div className="tp-team-title">{team.projectTitle||"Untitled Project"}</div><div className="tp-team-sub">{team.technology} · {team.college||''}</div></div>
+            <div>
+              <div className="tp-team-title">{team.projectTitle||"Untitled Project"}</div>
+              <div className="tp-team-sub">{team.technology} · {team.college||''}</div>
+              {psBadge && (
+                <div style={{
+                  display:'inline-flex',
+                  alignItems:'center',
+                  gap:8,
+                  marginTop:10,
+                  padding:'7px 14px',
+                  borderRadius:100,
+                  background:psBadge.bg,
+                  border:`1.5px solid ${psBadge.bd}`,
+                  backdropFilter:'blur(8px)',
+                  fontSize:'.7rem',
+                  fontWeight:700,
+                  color:'#fff',
+                  letterSpacing:'.3px',
+                  animation:psBadge.isToday?'psPulse 2s ease-in-out infinite':'none',
+                  boxShadow:psBadge.isToday?`0 0 12px ${psBadge.bd}`:'0 2px 8px rgba(0,0,0,.15)'
+                }}>
+                  <span style={{fontSize:'.85rem',lineHeight:1}}>{psBadge.icon}</span>
+                  <span style={{color:psBadge.tc,fontWeight:800,letterSpacing:'.5px',textTransform:'uppercase',fontSize:'.62rem'}}>{psBadge.label}</span>
+                  <span style={{color:'rgba(255,255,255,.5)',fontWeight:500}}>·</span>
+                  <span style={{color:'#fff',fontWeight:700}}>{psBadge.status}</span>
+                </div>
+              )}
+            </div>
           </div>
           <div className="tp-header-right">
             <div className="tp-header-stat"><div className="tp-header-stat-val">{members.length}</div><div className="tp-header-stat-lb">Members</div></div>
@@ -2760,7 +2825,7 @@ import EventDetails from "@/app/dashboard/components/EventDetails";
             </div>
             <div className="main-content">
               {active==="my-profile"?<MyProfile user={user} hootData={hootData} videoRatings={videoRatings} videoLoading={videoLoading}/>:
-              active==="team-profile"?<TeamProfile user={user}/>:
+              active==="team-profile"?<TeamProfile user={user} psDate={psDate}/>:
               active==="project-details"?<ProjectDetails user={user}/>:
               active==="project-status"?<ProjectStatus user={user}/>:
               active==="attendance"?<StudentAttendance user={user}/>:
