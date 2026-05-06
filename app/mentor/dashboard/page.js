@@ -490,6 +490,7 @@ html,body{background:#050008;overflow:hidden}
 body{font-family:'DM Sans',sans-serif;color:#fff}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 @keyframes glowPulse{0%,100%{box-shadow:0 0 15px rgba(var(--glow),.08),inset 0 0 15px rgba(var(--glow),.03)}50%{box-shadow:0 0 25px rgba(var(--glow),.15),inset 0 0 20px rgba(var(--glow),.06)}}
+@keyframes tcPsPulse{0%,100%{box-shadow:0 0 0 transparent}50%{box-shadow:0 0 14px rgba(253,28,0,.3)}}
 
 .md-layout{display:flex;height:100vh}
 
