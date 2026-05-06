@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // scripts/attendance-sync.js
-// Standalone attendance sync — runs from cron without HTTP overhead
+// Standalone attendance sync — pulls all event days from new POST API
 
 require('dotenv').config({ path: '/var/www/project_space_08/.env.local' })
 const { createClient } = require('@supabase/supabase-js')
@@ -17,6 +17,17 @@ const ALLOWED_SERIALS = new Set([
   'CQIK222660344'
 ])
 
+// All 7 event dates (Project Space May 6–12, 2026)
+const EVENT_DATES = [
+  '06-05-2026',
+  '07-05-2026',
+  '08-05-2026',
+  '09-05-2026',
+  '10-05-2026',
+  '11-05-2026',
+  '12-05-2026'
+]
+
 function toRollNumber(empCode) {
   if (!empCode) return null
   const trimmed = String(empCode).trim().toUpperCase()
@@ -25,16 +36,11 @@ function toRollNumber(empCode) {
   return '2' + trimmed
 }
 
-// Continuous mode classification — every punch gets a mode based on IST hour
-// Light:  before 11:00 AM
-// Bright: 11:00 AM – 4:59 PM
-// Dark:   5:00 PM – 7:59 PM
-// Moon:   8:00 PM onwards
+// Continuous mode classification
 function classifyMode(punchAtIso) {
   const utc = new Date(punchAtIso)
   const istMs = utc.getTime() + (5.5 * 60 * 60 * 1000)
-  const istDate = new Date(istMs)
-  const hour = istDate.getUTCHours()
+  const hour = new Date(istMs).getUTCHours()
   if (hour < 11) return 'light'
   if (hour < 17) return 'bright'
   if (hour < 20) return 'dark'
@@ -58,6 +64,31 @@ async function classifyUserType(rollNumbers) {
   return map
 }
 
+// Pick the date dimension only of an event date in YYYY-MM-DD form (IST)
+function dateOnlyIST(punchAt) {
+  return new Date(punchAt.getTime() + (5.5 * 60 * 60 * 1000)).toISOString().slice(0, 10)
+}
+
+// Fetch from POST API for a specific date
+async function fetchForDate(dateStr) {
+  try {
+    const r = await fetch('https://maya.technicalhub.io/node/api/get-attendance', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ date: [dateStr] })
+    })
+    if (!r.ok) {
+      console.error(`[${dateStr}] API ${r.status}`)
+      return []
+    }
+    const data = await r.json()
+    return Array.isArray(data) ? data : (data.data || [])
+  } catch (e) {
+    console.error(`[${dateStr}] fetch failed:`, e.message)
+    return []
+  }
+}
+
 async function run() {
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
   const startedAt = new Date()
@@ -69,53 +100,70 @@ async function run() {
   const logId = logEntry?.id
 
   let apiTotal = 0, filtered = 0, inserted = 0, skipped = 0, failed = 0, errMsg = null
+  let perDayBreakdown = {}
 
   try {
-    const r = await fetch('https://maya.technicalhub.io/node/api/get-attendancelogs')
-    if (!r.ok) throw new Error(`Maya API ${r.status}`)
-    const data = await r.json()
-    const arr = Array.isArray(data) ? data : (data.data || [])
-    apiTotal = arr.length
+    // Today (IST) date
+    const todayIST = dateOnlyIST(new Date())
 
-    const filteredArr = arr.filter(x => ALLOWED_SERIALS.has(x.after?.Serialnumber))
-    filtered = filteredArr.length
+    // Sync TODAY every run + historical days only if behind
+    const datesToSync = [todayIST.split('-').reverse().join('-')] // DD-MM-YYYY
 
-    if (filtered === 0) {
-      await supabase.from('attendance_sync_log').update({
-        finished_at: new Date().toISOString(), api_total: apiTotal, filtered: 0, inserted: 0
-      }).eq('id', logId)
-      console.log(`[${new Date().toISOString()}] Sync OK: no event-device punches (${apiTotal} total in API)`)
-      return
-    }
+    // Add prior event dates (run once daily — every cron run is fine since DB upserts ignore dupes)
+    const prior = EVENT_DATES.filter(d => {
+      const [dd, mm, yyyy] = d.split('-')
+      const dateIso = `${yyyy}-${mm}-${dd}`
+      return dateIso < todayIST
+    })
+    datesToSync.push(...prior)
 
-    const rolls = [...new Set(filteredArr.map(x => toRollNumber(x.after?.EmployeeCode)).filter(Boolean))]
-    const userTypeMap = await classifyUserType(rolls)
+    for (const dateStr of datesToSync) {
+      const arr = await fetchForDate(dateStr)
+      apiTotal += arr.length
 
-    const rows = filteredArr.map(x => {
-      const empCode = x.after?.EmployeeCode
-      const rollNumber = toRollNumber(empCode)
-      const punchAt = new Date(x.after?.timestamp || x.after?.LogDateTime)
-      const punchAtIso = punchAt.toISOString()
-      const punchDateIST = new Date(punchAt.getTime() + (5.5 * 60 * 60 * 1000)).toISOString().slice(0, 10)
-      return {
-        employee_code: empCode,
-        roll_number: rollNumber,
-        device_serial: x.after?.Serialnumber,
-        device_id: String(x.after?.Deviceid || ''),
-        punch_at: punchAtIso,
-        punch_date: punchDateIST,
-        punch_mode: classifyMode(punchAtIso),
-        source: 'api',
-        user_type: userTypeMap[rollNumber] || 'unknown'
+      const filteredArr = arr.filter(x => ALLOWED_SERIALS.has(x.after?.Serialnumber))
+      filtered += filteredArr.length
+
+      if (filteredArr.length === 0) {
+        perDayBreakdown[dateStr] = { api: arr.length, filtered: 0, inserted: 0 }
+        continue
       }
-    }).filter(r => r.employee_code && r.punch_at)
 
-    for (let i = 0; i < rows.length; i += 500) {
-      const batch = rows.slice(i, i + 500)
-      const { error } = await supabase.from('attendance_logs').upsert(batch, { onConflict: 'employee_code,punch_at', ignoreDuplicates: true })
-      if (error) { failed += batch.length; console.error('Batch error:', error.message) }
-      else inserted += batch.length
+      const rolls = [...new Set(filteredArr.map(x => toRollNumber(x.after?.EmployeeCode)).filter(Boolean))]
+      const userTypeMap = await classifyUserType(rolls)
+
+      const rows = filteredArr.map(x => {
+        const empCode = x.after?.EmployeeCode
+        const rollNumber = toRollNumber(empCode)
+        const punchAt = new Date(x.after?.timestamp || x.after?.LogDateTime)
+        const punchAtIso = punchAt.toISOString()
+        return {
+          employee_code: empCode,
+          roll_number: rollNumber,
+          device_serial: x.after?.Serialnumber,
+          device_id: String(x.after?.Deviceid || ''),
+          punch_at: punchAtIso,
+          punch_date: dateOnlyIST(punchAt),
+          punch_mode: classifyMode(punchAtIso),
+          source: 'api',
+          user_type: userTypeMap[rollNumber] || 'unknown'
+        }
+      }).filter(r => r.employee_code && r.punch_at)
+
+      let dayInserted = 0, dayFailed = 0
+      for (let i = 0; i < rows.length; i += 500) {
+        const batch = rows.slice(i, i + 500)
+        const { error } = await supabase.from('attendance_logs').upsert(batch, { onConflict: 'employee_code,punch_at', ignoreDuplicates: true })
+        if (error) { dayFailed += batch.length; console.error(`[${dateStr}] Batch error:`, error.message) }
+        else dayInserted += batch.length
+      }
+
+      inserted += dayInserted
+      failed += dayFailed
+      perDayBreakdown[dateStr] = { api: arr.length, filtered: filteredArr.length, inserted: dayInserted }
+      console.log(`[${dateStr}] api=${arr.length} filtered=${filteredArr.length} inserted=${dayInserted}`)
     }
+
     skipped = Math.max(0, filtered - inserted - failed)
 
   } catch (err) {
@@ -130,7 +178,8 @@ async function run() {
     }).eq('id', logId)
   }
 
-  console.log(`[${new Date().toISOString()}] Sync done: api=${apiTotal} filtered=${filtered} inserted=${inserted} skipped=${skipped} failed=${failed} ${errMsg ? 'ERROR: '+errMsg : ''}`)
+  console.log(`[${new Date().toISOString()}] Sync done: api=${apiTotal} filtered=${filtered} inserted=${inserted} skipped=${skipped} failed=${failed} ${errMsg ? 'ERROR: ' + errMsg : ''}`)
+  console.log('Per-day:', JSON.stringify(perDayBreakdown))
 }
 
 run().then(() => process.exit(0)).catch(e => { console.error(e); process.exit(1) })
