@@ -9,6 +9,13 @@ const MODE_META = {
   moon:   { label: 'Moon',   icon: '🌙', color: '#3b82f6', window: '8 PM +' },
 }
 
+// Mentors only have 2 modes (Morning + Night)
+const MENTOR_MODES = ['morning', 'night']
+const MENTOR_MODE_META = {
+  morning: { label: 'Morning', icon: '☀', color: '#EEA727', window: 'after 5 AM' },
+  night:   { label: 'Night',   icon: '🌙', color: '#3b82f6', window: 'after 10 PM' },
+}
+
 function Icon({ name, size = 14 }) {
   const p = { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round', strokeLinejoin: 'round' }
   switch (name) {
@@ -100,7 +107,7 @@ export default function MentorAttendance({ mentor }) {
         <button className={`mp-tab ${activeTab === 'self' ? 'on' : ''}`} onClick={() => setActiveTab('self')}>
           <Icon name="user" size={14}/>
           <span>My Attendance</span>
-          <span className={`mp-tab-pill ${me.today_present ? 'ok' : 'no'}`}>{me.today_count}/4</span>
+          <span className={`mp-tab-pill ${me.today_present ? 'ok' : 'no'}`}>{me.today_count}/{me.max_modes || 2}</span>
         </button>
         <button className={`mp-tab ${activeTab === 'all' ? 'on' : ''}`} onClick={() => setActiveTab('all')}>
           <Icon name="users" size={14}/>
@@ -124,6 +131,75 @@ export default function MentorAttendance({ mentor }) {
 
 /* ─────────────── SELF PANE ─────────────── */
 function SelfPane({ me }) {
+  return (
+    <div className="self-pane">
+      {/* Today big card */}
+      <div className="self-today">
+        <div className="self-today-l">
+          <div className="self-today-lab">Today's Attendance</div>
+          <div className="self-today-name">{me.name}</div>
+          <div className="self-today-tech">{me.technology}</div>
+        </div>
+        <div className="self-today-r">
+          <div className="self-today-num">{me.today_count}<span className="self-today-num-sub">/{me.max_modes || 2}</span></div>
+          <div className="self-today-modes">
+            {MENTOR_MODES.map(m => {
+              const present = me.today_modes.includes(m)
+              const meta = MENTOR_MODE_META[m]
+              return (
+                <div key={m} className={`self-today-mode ${present ? 'on' : 'off'}`} style={present ? {background:`${meta.color}1f`,color:meta.color,borderColor:`${meta.color}40`} : {}}>
+                  <span className="self-today-mode-icon">{meta.icon}</span>
+                  <span className="self-today-mode-lab">{meta.label}</span>
+                  <span className="self-today-mode-status">{present ? <Icon name="check" size={11}/> : <Icon name="x" size={11}/>}</span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* 7-day grid */}
+      <div className="self-7day">
+        <div className="self-7day-h">
+          <div className="self-7day-t">Last 7 Days</div>
+          <div className="self-7day-pct">{me.attendance_pct}% overall · {me.total_punches} total punches</div>
+        </div>
+        <div className="self-7day-grid">
+          <div className="self-7day-row self-7day-row-h" style={{gridTemplateColumns:'140px 1fr 1fr 80px'}}>
+            <div className="self-7day-cell self-7day-cell-h">Date</div>
+            {MENTOR_MODES.map(m => (
+              <div key={m} className="self-7day-cell self-7day-cell-h" style={{textAlign:'center'}}>
+                <span style={{color:MENTOR_MODE_META[m].color,fontSize:'.85rem'}}>{MENTOR_MODE_META[m].icon}</span>
+                <div style={{fontSize:'.5rem',marginTop:1}}>{MENTOR_MODE_META[m].label}</div>
+              </div>
+            ))}
+            <div className="self-7day-cell self-7day-cell-h" style={{textAlign:'right'}}>Punches</div>
+          </div>
+          {me.day_grid.slice().reverse().map((d) => (
+            <div key={d.date} className={`self-7day-row ${d.is_today ? 'today' : ''}`} style={{gridTemplateColumns:'140px 1fr 1fr 80px'}}>
+              <div className="self-7day-cell">
+                <div className="self-7day-date">
+                  <span className="self-7day-day">{d.day_name}</span>
+                  <span className="self-7day-md">{new Date(d.date).getDate()} {new Date(d.date).toLocaleDateString('en-US',{month:'short'})}</span>
+                  {d.is_today && <span className="self-7day-now">NOW</span>}
+                </div>
+              </div>
+              {d.modes.map(modeData => (
+                <div key={modeData.mode} className="self-7day-cell" style={{textAlign:'center'}}>
+                  <span className="self-7day-dot" style={modeData.present ? {background:MENTOR_MODE_META[modeData.mode].color,boxShadow:`0 0 8px ${MENTOR_MODE_META[modeData.mode].color}80`} : {}}/>
+                </div>
+              ))}
+              <div className="self-7day-cell self-7day-modes-count" style={{textAlign:'right'}}>
+                <span style={{color:d.present_count===2?'#4ade80':d.present_count===1?'#EEA727':'#fd1c00',fontWeight:700}}>{d.present_count}</span>
+                <span style={{color:'rgba(255,255,255,.3)'}}>/2</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
   return (
     <div className="self-pane">
       {/* Today big card */}

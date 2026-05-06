@@ -10,10 +10,30 @@ const supabase = createClient(
 
 const MODES = ['light', 'bright', 'dark', 'moon']
 const MODE_META = {
-  light:  { label: 'Light',  window: '9:00 – 11:00 AM' },
-  bright: { label: 'Bright', window: '1:00 – 3:00 PM'  },
-  dark:   { label: 'Dark',   window: '5:30 – 6:30 PM'  },
-  moon:   { label: 'Moon',   window: '8:00 – 10:00 PM' },
+  light:  { label: 'Light',  window: 'before 11 AM' },
+  bright: { label: 'Bright', window: '11 AM – 5 PM' },
+  dark:   { label: 'Dark',   window: '5 – 8 PM'  },
+  moon:   { label: 'Moon',   window: '8 PM +' },
+}
+
+// Mentors only have 2 modes: Morning + Night
+const MENTOR_MODES = ['morning', 'night']
+const MENTOR_MODE_META = {
+  morning: { label: 'Morning', window: 'after 5 AM' },
+  night:   { label: 'Night',   window: 'after 10 PM' },
+}
+
+// Convert a punch timestamp to mentor mode
+function mentorModeFromPunchAt(punchAtIso) {
+  const d = new Date(punchAtIso)
+  // Use IST hour (UTC + 5:30)
+  const istMs = d.getTime() + (5.5 * 60 * 60 * 1000)
+  const istHour = new Date(istMs).getUTCHours()
+  // Morning: 5 AM – before 10 PM (anything in working hours)
+  // Night: 10 PM onwards (after 10 PM late evening)
+  if (istHour >= 22) return 'night'   // 10 PM +
+  if (istHour >= 5)  return 'morning' // 5 AM – 10 PM
+  return null  // before 5 AM = ignore
 }
 
 export async function POST(request) {
@@ -37,9 +57,9 @@ export async function POST(request) {
     startDate.setDate(startDate.getDate() - (days - 1))
     const startStr = startDate.toISOString().split('T')[0]
 
-    // 2. Mentor's own attendance — match by emp_id
-    let mentorPunchSet = new Set()
-    let mentorTodaySet = new Set()
+    // 2. Mentor's own attendance — fetch ALL punches with timestamps, classify into morning/night
+    let mentorPunchSet = new Set()  // "date|morning" or "date|night"
+    let mentorTodaySet = new Set()  // morning/night for today
     if (mentor.emp_id) {
       let mentorPunches = []
       {
@@ -48,11 +68,10 @@ export async function POST(request) {
         while (true) {
           const { data } = await supabase
             .from('attendance_logs')
-            .select('punch_date, punch_mode')
+            .select('punch_date, punch_at')
             .eq('employee_code', String(mentor.emp_id))
             .gte('punch_date', startStr)
             .lte('punch_date', todayStr)
-            .not('punch_mode', 'is', null)
             .range(from, from + PAGE - 1)
           if (!data || data.length === 0) break
           mentorPunches = mentorPunches.concat(data)
@@ -61,20 +80,22 @@ export async function POST(request) {
         }
       }
       mentorPunches.forEach(p => {
-        mentorPunchSet.add(`${p.punch_date}|${p.punch_mode}`)
-        if (p.punch_date === todayStr) mentorTodaySet.add(p.punch_mode)
+        const mMode = mentorModeFromPunchAt(p.punch_at)
+        if (!mMode) return
+        mentorPunchSet.add(`${p.punch_date}|${mMode}`)
+        if (p.punch_date === todayStr) mentorTodaySet.add(mMode)
       })
     }
 
-    // Build mentor's 7-day self grid
+    // Build mentor's 7-day self grid (2 modes: morning + night)
     const mentorDayGrid = []
     for (let i = days - 1; i >= 0; i--) {
       const d = new Date(todayIST)
       d.setDate(d.getDate() - i)
       const dStr = d.toISOString().split('T')[0]
-      const modes = MODES.map(m => ({
+      const modes = MENTOR_MODES.map(m => ({
         mode: m,
-        label: MODE_META[m].label,
+        label: MENTOR_MODE_META[m].label,
         present: mentorPunchSet.has(`${dStr}|${m}`),
       }))
       mentorDayGrid.push({
@@ -89,7 +110,8 @@ export async function POST(request) {
     const mentorTodayCount = mentorTodaySet.size
     const mentorTodayPresent = mentorTodayCount > 0
     const mentorTotalPunches = mentorDayGrid.reduce((s, d) => s + d.present_count, 0)
-    const mentorPct = days > 0 ? Math.round((mentorTotalPunches / (days * 4)) * 100) : 0
+    // Mentor pct: out of (days × 2 modes) since mentors only have 2 modes
+    const mentorPct = days > 0 ? Math.round((mentorTotalPunches / (days * 2)) * 100) : 0
 
     // 3. Get all teams assigned to this mentor
     const { data: teams } = await supabase
@@ -108,7 +130,7 @@ export async function POST(request) {
       })
     }
 
-    // 4. Get all team members for these teams — PAGINATED
+    // 4. Get all team members for these teams — PAGINATED (use short_name OR name)
     let members = []
     {
       const chunks = []
@@ -119,7 +141,7 @@ export async function POST(request) {
         while (true) {
           const { data } = await supabase
             .from('team_members')
-            .select('team_number, roll_number, name, is_leader')
+            .select('team_number, roll_number, name, short_name, is_leader')
             .in('team_number', chunk)
             .range(from, from + PAGE - 1)
           if (!data || data.length === 0) break
@@ -129,6 +151,11 @@ export async function POST(request) {
         }
       }
     }
+    // Normalize: each member should have a usable display name
+    members = members.map(m => ({
+      ...m,
+      name: m.short_name || m.name || m.roll_number
+    }))
 
     const memberRolls = members.map(m => m.roll_number).filter(Boolean)
 
@@ -258,6 +285,7 @@ export async function POST(request) {
         today_present: mentorTodayPresent,
         today_modes: Array.from(mentorTodaySet),
         today_count: mentorTodayCount,
+        max_modes: 2,
         day_grid: mentorDayGrid,
         attendance_pct: mentorPct,
         total_punches: mentorTotalPunches,
@@ -271,6 +299,7 @@ export async function POST(request) {
         mode_breakdown: combinedModeBreakdown,
       },
       modes_meta: MODE_META,
+      mentor_modes_meta: MENTOR_MODE_META,
       window_days: days,
       today_date: todayStr,
     })
