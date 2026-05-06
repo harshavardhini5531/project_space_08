@@ -146,8 +146,8 @@ export async function POST(request) {
     const teamRows = (teams || []).map(team => {
       const teamMembers = members.filter(m => m.team_number === team.team_number)
       const present = teamMembers.filter(m => (studentPunchMap[m.roll_number] || new Set()).size > 0)
-      const presenteeNames = present.map(m => ({ name: m.name, roll: m.roll_number, modes: Array.from(studentPunchMap[m.roll_number] || []) }))
-      const absenteeNames = teamMembers.filter(m => (studentPunchMap[m.roll_number] || new Set()).size === 0).map(m => ({ name: m.name, roll: m.roll_number }))
+      const presenteeNames = present.map(m => ({ name: m.short_name, roll: m.roll_number, modes: Array.from(studentPunchMap[m.roll_number] || []) }))
+      const absenteeNames = teamMembers.filter(m => (studentPunchMap[m.roll_number] || new Set()).size === 0).map(m => ({ name: m.short_name, roll: m.roll_number }))
       return {
         team_number: team.team_number,
         project_title: team.project_title,
