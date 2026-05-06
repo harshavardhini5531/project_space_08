@@ -130,7 +130,7 @@ export async function POST(request) {
       })
     }
 
-    // 4. Get all team members for these teams — PAGINATED (use short_name OR name)
+    // 4. Get all team members for these teams — PAGINATED
     let members = []
     {
       const chunks = []
@@ -139,11 +139,12 @@ export async function POST(request) {
         let from = 0
         const PAGE = 1000
         while (true) {
-          const { data } = await supabase
+          const { data, error } = await supabase
             .from('team_members')
-            .select('team_number, roll_number, name, short_name, is_leader')
+            .select('team_number, roll_number, short_name, is_leader')
             .in('team_number', chunk)
             .range(from, from + PAGE - 1)
+          if (error) { console.error('team_members fetch error:', error.message); break }
           if (!data || data.length === 0) break
           members = members.concat(data)
           if (data.length < PAGE) break
@@ -151,15 +152,14 @@ export async function POST(request) {
         }
       }
     }
-    // Normalize: each member should have a usable display name
+    // Normalize: use short_name as display name
     members = members.map(m => ({
       ...m,
-      name: m.short_name || m.name || m.roll_number
+      name: m.short_name || m.roll_number
     }))
 
     const memberRolls = members.map(m => m.roll_number).filter(Boolean)
 
-    // 5. Get all student punches in window — PAGINATED
     // 5. Get all student punches in window — PAGINATED + chunked .in()
     let studentPunches = []
     {
