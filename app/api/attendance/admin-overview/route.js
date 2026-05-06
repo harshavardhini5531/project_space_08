@@ -1,60 +1,70 @@
 // app/api/attendance/admin-overview/route.js
-// Returns: filters-aware overview with mentors/teams/students/modes breakdown for admin
+// FIXED: Paginates ALL queries to avoid Supabase 2000-row silent cap
+// Returns: filters-aware overview with mentors/teams/students/modes breakdown
 
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 )
 
 const MODES = ['light', 'bright', 'dark', 'moon']
 const MODE_META = {
-  light:  { label: 'Light',  window: '9:00 – 11:00 AM' },
-  bright: { label: 'Bright', window: '1:00 – 3:00 PM'  },
-  dark:   { label: 'Dark',   window: '5:30 – 6:30 PM'  },
-  moon:   { label: 'Moon',   window: '8:00 – 10:00 PM' },
+  light:  { label: 'Light',  window: 'before 11 AM' },
+  bright: { label: 'Bright', window: '11 AM – 5 PM' },
+  dark:   { label: 'Dark',   window: '5 – 8 PM'  },
+  moon:   { label: 'Moon',   window: '8 PM +' },
+}
+
+// Helper: paginate any query that might exceed Supabase's default cap
+async function fetchAll(buildQuery) {
+  let all = []
+  let from = 0
+  const PAGE = 1000
+  while (true) {
+    const { data, error } = await buildQuery().range(from, from + PAGE - 1)
+    if (error) { console.error('fetchAll error:', error.message); break }
+    if (!data || data.length === 0) break
+    all = all.concat(data)
+    if (data.length < PAGE) break
+    from += PAGE
+  }
+  return all
 }
 
 export async function POST(request) {
   try {
     const body = await request.json()
-    const { date, technology, mentor, teamNumber, mode, view = 'overview' } = body
+    const { date, technology, mentor, teamNumber, mode } = body
 
-    // Resolve target date (default: today IST)
     const todayIST = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }))
     const targetDate = date || todayIST.toISOString().split('T')[0]
 
-    // 1. Fetch all teams (filtered if provided)
-    let teamQuery = supabase.from('teams').select('team_number, project_title, technology, mentor_assigned')
-    if (technology) teamQuery = teamQuery.eq('technology', technology)
-    if (mentor) teamQuery = teamQuery.eq('mentor_assigned', mentor)
-    if (teamNumber) teamQuery = teamQuery.eq('team_number', teamNumber)
-    const { data: teams } = await teamQuery
-    const teamNums = (teams || []).map(t => t.team_number).filter(Boolean)
+    // 1. Fetch teams (filtered)
+    const teams = await fetchAll(() => {
+      let q = supabase.from('teams').select('team_number, project_title, technology, mentor_assigned')
+      if (technology) q = q.eq('technology', technology)
+      if (mentor) q = q.eq('mentor_assigned', mentor)
+      if (teamNumber) q = q.eq('team_number', teamNumber)
+      return q
+    })
+    const teamNums = teams.map(t => t.team_number).filter(Boolean)
 
-    // 2. Fetch all members of these teams
-    let members = []
-    if (teamNums.length > 0) {
-      const { data: m } = await supabase
-        .from('team_members')
-        .select('team_number, roll_number, short_name, is_leader')
-        .in('team_number', teamNums)
-      members = m || []
-    }
+    // 2. Fetch ALL team_members (paginated)
+    const members = teamNums.length > 0
+      ? await fetchAll(() => supabase.from('team_members').select('team_number, roll_number, short_name, is_leader').in('team_number', teamNums))
+      : []
     const memberRolls = members.map(m => m.roll_number).filter(Boolean)
 
-    // 3. Fetch student punches for target date
-    let studentPunches = []
-    if (memberRolls.length > 0) {
-      const { data: sp } = await supabase
-        .from('attendance_logs')
-        .select('roll_number, punch_mode, punch_at')
-        .eq('punch_date', targetDate)
-        .in('roll_number', memberRolls)
-        .not('punch_mode', 'is', null)
-      studentPunches = sp || []
-    }
+    // 3. Fetch ALL student punches for target date (PAGINATED — was the bug)
+    const studentPunches = memberRolls.length > 0
+      ? await fetchAll(() => supabase.from('attendance_logs')
+          .select('roll_number, punch_mode, punch_at')
+          .eq('punch_date', targetDate)
+          .in('roll_number', memberRolls)
+          .not('punch_mode', 'is', null))
+      : []
 
     // Build punch lookup
     const studentPunchMap = {}
@@ -63,24 +73,23 @@ export async function POST(request) {
       studentPunchMap[p.roll_number].add(p.punch_mode)
     })
 
-    // 4. Fetch all mentors (or filtered)
-    let mentorQuery = supabase.from('mentors').select('id, name, email, technology, emp_id, image_url')
-    if (technology) mentorQuery = mentorQuery.eq('technology', technology)
-    if (mentor) mentorQuery = mentorQuery.eq('name', mentor)
-    const { data: mentors } = await mentorQuery
+    // 4. Fetch mentors
+    const mentors = await fetchAll(() => {
+      let q = supabase.from('mentors').select('id, name, email, technology, emp_id, image_url')
+      if (technology) q = q.eq('technology', technology)
+      if (mentor) q = q.eq('name', mentor)
+      return q
+    })
 
-    // 5. Fetch mentor punches for target date (by emp_id)
-    const mentorEmpIds = (mentors || []).map(m => String(m.emp_id)).filter(Boolean)
-    let mentorPunches = []
-    if (mentorEmpIds.length > 0) {
-      const { data: mp } = await supabase
-        .from('attendance_logs')
-        .select('employee_code, punch_mode, punch_at')
-        .eq('punch_date', targetDate)
-        .in('employee_code', mentorEmpIds)
-        .not('punch_mode', 'is', null)
-      mentorPunches = mp || []
-    }
+    // 5. Fetch mentor punches (paginated)
+    const mentorEmpIds = mentors.map(m => String(m.emp_id)).filter(Boolean)
+    const mentorPunches = mentorEmpIds.length > 0
+      ? await fetchAll(() => supabase.from('attendance_logs')
+          .select('employee_code, punch_mode, punch_at')
+          .eq('punch_date', targetDate)
+          .in('employee_code', mentorEmpIds)
+          .not('punch_mode', 'is', null))
+      : []
 
     const mentorPunchMap = {}
     mentorPunches.forEach(p => {
@@ -88,15 +97,14 @@ export async function POST(request) {
       mentorPunchMap[p.employee_code].add(p.punch_mode)
     })
 
-    // 6. Build student rows with team & mentor info
+    // 6. Build student rows
     const teamLookup = {}
-    ;(teams || []).forEach(t => { teamLookup[t.team_number] = t })
+    teams.forEach(t => { teamLookup[t.team_number] = t })
 
     let studentRows = members.map(m => {
       const team = teamLookup[m.team_number] || {}
       const punches = Array.from(studentPunchMap[m.roll_number] || [])
-      const filteredPunches = mode ? punches.filter(p => p === mode) : punches
-      const present = mode ? filteredPunches.length > 0 : punches.length > 0
+      const present = mode ? punches.includes(mode) : punches.length > 0
       const missedModes = MODES.filter(modeEl => !punches.includes(modeEl))
       return {
         roll_number: m.roll_number,
@@ -116,8 +124,8 @@ export async function POST(request) {
     if (mode) studentRows = studentRows.filter(s => s.present_modes.includes(mode))
 
     // 7. Build mentor rows
-    const mentorRows = (mentors || []).map(m => {
-      const teamsForMentor = (teams || []).filter(t => t.mentor_assigned === m.name)
+    const mentorRows = mentors.map(m => {
+      const teamsForMentor = teams.filter(t => t.mentor_assigned === m.name)
       const teamMembers = members.filter(mem => teamsForMentor.some(t => t.team_number === mem.team_number))
       const presentStudents = teamMembers.filter(mem => (studentPunchMap[mem.roll_number] || new Set()).size > 0)
       const mentorPunchesToday = Array.from(mentorPunchMap[String(m.emp_id)] || [])
@@ -143,7 +151,7 @@ export async function POST(request) {
     })
 
     // 8. Team rows
-    const teamRows = (teams || []).map(team => {
+    const teamRows = teams.map(team => {
       const teamMembers = members.filter(m => m.team_number === team.team_number)
       const present = teamMembers.filter(m => (studentPunchMap[m.roll_number] || new Set()).size > 0)
       const presenteeNames = present.map(m => ({ name: m.short_name, roll: m.roll_number, modes: Array.from(studentPunchMap[m.roll_number] || []) }))
@@ -176,24 +184,18 @@ export async function POST(request) {
       }
     })
 
-    // 10. Top-level stats
+    // 10. Top stats
     const totalStudents = studentRows.length
     const presentStudents = studentRows.filter(s => s.is_present).length
     const totalMentors = mentorRows.length
     const presentMentors = mentorRows.filter(m => m.self_present).length
 
-    // 11. Get filter options (distinct values)
-    const { data: allTechs } = await supabase
-      .from('teams')
-      .select('technology')
-      .not('technology', 'is', null)
-    const technologies = Array.from(new Set((allTechs || []).map(t => t.technology))).sort()
+    // 11. Filter options
+    const allTechs = await fetchAll(() => supabase.from('teams').select('technology').not('technology', 'is', null))
+    const technologies = Array.from(new Set(allTechs.map(t => t.technology))).sort()
 
-    const { data: allMentorList } = await supabase
-      .from('mentors')
-      .select('name')
-      .order('name')
-    const mentorList = Array.from(new Set((allMentorList || []).map(m => m.name)))
+    const allMentorList = await fetchAll(() => supabase.from('mentors').select('name').order('name'))
+    const mentorList = Array.from(new Set(allMentorList.map(m => m.name)))
 
     return Response.json({
       target_date: targetDate,
@@ -206,7 +208,7 @@ export async function POST(request) {
         present_mentors: presentMentors,
         absent_mentors: totalMentors - presentMentors,
         mentor_pct: totalMentors > 0 ? Math.round((presentMentors / totalMentors) * 100) : 0,
-        total_teams: (teams || []).length,
+        total_teams: teams.length,
       },
       mode_stats: modeStats,
       modes_meta: MODE_META,

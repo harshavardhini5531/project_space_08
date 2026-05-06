@@ -41,14 +41,26 @@ export async function POST(request) {
     let mentorPunchSet = new Set()
     let mentorTodaySet = new Set()
     if (mentor.emp_id) {
-      const { data: mentorPunches } = await supabase
-        .from('attendance_logs')
-        .select('punch_date, punch_mode')
-        .eq('employee_code', String(mentor.emp_id))
-        .gte('punch_date', startStr)
-        .lte('punch_date', todayStr)
-        .not('punch_mode', 'is', null)
-      ;(mentorPunches || []).forEach(p => {
+      let mentorPunches = []
+      {
+        let from = 0
+        const PAGE = 1000
+        while (true) {
+          const { data } = await supabase
+            .from('attendance_logs')
+            .select('punch_date, punch_mode')
+            .eq('employee_code', String(mentor.emp_id))
+            .gte('punch_date', startStr)
+            .lte('punch_date', todayStr)
+            .not('punch_mode', 'is', null)
+            .range(from, from + PAGE - 1)
+          if (!data || data.length === 0) break
+          mentorPunches = mentorPunches.concat(data)
+          if (data.length < PAGE) break
+          from += PAGE
+        }
+      }
+      mentorPunches.forEach(p => {
         mentorPunchSet.add(`${p.punch_date}|${p.punch_mode}`)
         if (p.punch_date === todayStr) mentorTodaySet.add(p.punch_mode)
       })
@@ -104,14 +116,26 @@ export async function POST(request) {
 
     const memberRolls = (members || []).map(m => m.roll_number).filter(Boolean)
 
-    // 5. Get all student punches in window
-    const { data: studentPunches } = await supabase
-      .from('attendance_logs')
-      .select('roll_number, punch_date, punch_mode')
-      .in('roll_number', memberRolls)
-      .gte('punch_date', startStr)
-      .lte('punch_date', todayStr)
-      .not('punch_mode', 'is', null)
+    // 5. Get all student punches in window — PAGINATED
+    let studentPunches = []
+    {
+      let from = 0
+      const PAGE = 1000
+      while (true) {
+        const { data } = await supabase
+          .from('attendance_logs')
+          .select('roll_number, punch_date, punch_mode')
+          .in('roll_number', memberRolls)
+          .gte('punch_date', startStr)
+          .lte('punch_date', todayStr)
+          .not('punch_mode', 'is', null)
+          .range(from, from + PAGE - 1)
+        if (!data || data.length === 0) break
+        studentPunches = studentPunches.concat(data)
+        if (data.length < PAGE) break
+        from += PAGE
+      }
+    }
 
     // Build punch lookup: rollNumber → { date|mode → true }
     const studentPunchMap = {}
