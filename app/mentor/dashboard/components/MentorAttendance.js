@@ -3,16 +3,27 @@ import { useState, useEffect, useMemo } from 'react'
 
 const MODES = ['light', 'bright', 'dark', 'moon']
 const MODE_META = {
-  light:  { label: 'Light',  icon: '☀', color: '#EEA727', window: 'before 11 AM' },
-  bright: { label: 'Bright', icon: '🔆', color: '#fd1c00', window: '11 AM – 5 PM' },
-  dark:   { label: 'Dark',   icon: '🌆', color: '#a855f7', window: '5 – 8 PM' },
-  moon:   { label: 'Moon',   icon: '🌙', color: '#3b82f6', window: '8 PM +' },
+  light:  { label: 'Light',  iconKey: 'sun',     color: '#fcd34d', window: 'before 11 AM' },
+  bright: { label: 'Bright', iconKey: 'sunBig',  color: '#fdba74', window: '11 AM – 5 PM' },
+  dark:   { label: 'Dark',   iconKey: 'sunset',  color: '#d8b4fe', window: '5 – 8 PM' },
+  moon:   { label: 'Moon',   iconKey: 'moon',    color: '#93c5fd', window: '8 PM +' },
 }
 
 const MENTOR_MODES = ['morning', 'night']
 const MENTOR_MODE_META = {
-  morning: { label: 'Morning', icon: '☀', color: '#EEA727', window: 'after 5 AM' },
-  night:   { label: 'Night',   icon: '🌙', color: '#3b82f6', window: 'after 10 PM' },
+  morning: { label: 'Morning', iconKey: 'sun',  color: '#fcd34d', window: 'after 5 AM' },
+  night:   { label: 'Night',   iconKey: 'moon', color: '#93c5fd', window: 'after 10 PM' },
+}
+
+function ModeIcon({ which, size = 14 }) {
+  const p = { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round', strokeLinejoin: 'round' }
+  switch (which) {
+    case 'sun': return <svg {...p}><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="5" y1="12" x2="2" y2="12"/><line x1="22" y1="12" x2="19" y2="12"/><line x1="6.34" y1="6.34" x2="4.22" y2="4.22"/><line x1="19.78" y1="4.22" x2="17.66" y2="6.34"/><line x1="6.34" y1="17.66" x2="4.22" y2="19.78"/><line x1="19.78" y1="19.78" x2="17.66" y2="17.66"/></svg>
+    case 'sunBig': return <svg {...p}><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    case 'sunset': return <svg {...p}><path d="M17 18a5 5 0 0 0-10 0"/><line x1="12" y1="2" x2="12" y2="9"/><line x1="4.22" y1="10.22" x2="5.64" y2="11.64"/><line x1="1" y1="18" x2="3" y2="18"/><line x1="21" y1="18" x2="23" y2="18"/><line x1="18.36" y1="11.64" x2="19.78" y2="10.22"/><line x1="23" y1="22" x2="1" y2="22"/><polyline points="8 6 12 2 16 6"/></svg>
+    case 'moon': return <svg {...p}><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    default: return null
+  }
 }
 
 function Icon({ name, size = 14 }) {
@@ -123,7 +134,6 @@ export default function MentorAttendance({ mentor }) {
   )
 }
 
-/* ─────────────── SELF PANE ─────────────── */
 function SelfPane({ me }) {
   const maxModes = me.max_modes || 2
   return (
@@ -142,7 +152,7 @@ function SelfPane({ me }) {
               const meta = MENTOR_MODE_META[m]
               return (
                 <div key={m} className={`self-today-mode ${present ? 'on' : 'off'}`} style={present ? {background:`${meta.color}1f`,color:meta.color,borderColor:`${meta.color}40`} : {}}>
-                  <span className="self-today-mode-icon">{meta.icon}</span>
+                  <span className="self-today-mode-icon"><ModeIcon which={meta.iconKey} size={14}/></span>
                   <span className="self-today-mode-lab">{meta.label}</span>
                   <span className="self-today-mode-status">{present ? <Icon name="check" size={11}/> : <Icon name="x" size={11}/>}</span>
                 </div>
@@ -161,9 +171,9 @@ function SelfPane({ me }) {
           <div className="self-7day-row self-7day-row-h" style={{gridTemplateColumns:'140px 1fr 1fr 80px'}}>
             <div className="self-7day-cell self-7day-cell-h">Date</div>
             {MENTOR_MODES.map(m => (
-              <div key={m} className="self-7day-cell self-7day-cell-h" style={{textAlign:'center'}}>
-                <span style={{color:MENTOR_MODE_META[m].color,fontSize:'.85rem'}}>{MENTOR_MODE_META[m].icon}</span>
-                <div style={{fontSize:'.5rem',marginTop:1}}>{MENTOR_MODE_META[m].label}</div>
+              <div key={m} className="self-7day-cell self-7day-cell-h" style={{textAlign:'center',display:'flex',flexDirection:'column',alignItems:'center',gap:2}}>
+                <span style={{color:MENTOR_MODE_META[m].color}}><ModeIcon which={MENTOR_MODE_META[m].iconKey} size={13}/></span>
+                <span style={{fontSize:'.5rem'}}>{MENTOR_MODE_META[m].label}</span>
               </div>
             ))}
             <div className="self-7day-cell self-7day-cell-h" style={{textAlign:'right'}}>Punches</div>
@@ -183,7 +193,7 @@ function SelfPane({ me }) {
                 </div>
               ))}
               <div className="self-7day-cell self-7day-modes-count" style={{textAlign:'right'}}>
-                <span style={{color:d.present_count===2?'#4ade80':d.present_count===1?'#EEA727':'#fd1c00',fontWeight:700}}>{d.present_count}</span>
+                <span style={{color:d.present_count===2?'#86efac':d.present_count===1?'#fcd34d':'#fda4af',fontWeight:700}}>{d.present_count}</span>
                 <span style={{color:'rgba(255,255,255,.3)'}}>/2</span>
               </div>
             </div>
@@ -349,7 +359,7 @@ function TeamDetailPane({ teams, activeTeamId, setActiveTeamId }) {
           const pct = team.total_members > 0 ? Math.round((cnt / team.total_members) * 100) : 0
           return (
             <div key={m} className="td-mode" style={cnt > 0 ? {background:`${meta.color}10`,borderColor:`${meta.color}30`} : {}}>
-              <div className="td-mode-icon" style={{color:meta.color}}>{meta.icon}</div>
+              <div className="td-mode-icon" style={{color:meta.color}}><ModeIcon which={meta.iconKey} size={18}/></div>
               <div className="td-mode-info">
                 <div className="td-mode-lab">{meta.label}</div>
                 <div className="td-mode-num"><span style={{color:cnt>0?meta.color:'rgba(255,255,255,.3)'}}>{cnt}</span><span style={{color:'rgba(255,255,255,.3)'}}>/{team.total_members}</span></div>
@@ -362,6 +372,19 @@ function TeamDetailPane({ teams, activeTeamId, setActiveTeamId }) {
 
       <div className="td-h-sub">Members · 7-day attendance</div>
       <div className="td-mems">
+        <div className="td-mem-h">
+          <div style={{textAlign:'left'}}>Member</div>
+          <div style={{textAlign:'center'}}>Today
+            <span className="td-mem-h-icons">
+              <span style={{color:MODE_META.light.color}}><ModeIcon which="sun" size={11}/></span>
+              <span style={{color:MODE_META.bright.color}}><ModeIcon which="sunBig" size={11}/></span>
+              <span style={{color:MODE_META.dark.color}}><ModeIcon which="sunset" size={11}/></span>
+              <span style={{color:MODE_META.moon.color}}><ModeIcon which="moon" size={11}/></span>
+            </span>
+          </div>
+          <div style={{textAlign:'center'}}>Last 7 Days</div>
+          <div style={{textAlign:'right'}}>7-Day %</div>
+        </div>
         {team.members.map(m => {
           const cls = m.today_count === 4 ? 'full' : m.today_count === 0 ? 'absent' : 'partial'
           return (
@@ -374,36 +397,38 @@ function TeamDetailPane({ teams, activeTeamId, setActiveTeamId }) {
                 <div className="td-mem-roll">{m.roll_number}</div>
               </div>
               <div className="td-mem-today">
-                <div className="td-mem-today-lab">TODAY</div>
                 <div className="td-mem-today-pat">
                   {MODES.map(mode => (
-                    <span key={mode} className="td-mem-today-c" style={m.today_modes.includes(mode) ? {background:MODE_META[mode].color,borderColor:'transparent'} : {}} title={MODE_META[mode].label}/>
+                    <span key={mode} className={`td-dot ${m.today_modes.includes(mode) ? `on ${mode}` : ''}`} title={MODE_META[mode].label}/>
                   ))}
+                </div>
+                <div className="td-mem-today-cnt">
+                  <span style={{color: m.today_count===4?'#86efac':m.today_count===0?'#fda4af':'#fcd34d', fontWeight:800}}>{m.today_count}</span>
+                  <span style={{color:'rgba(255,255,255,.4)'}}>/4 {m.today_count===4?'full':m.today_count===0?'absent':'modes'}</span>
                 </div>
               </div>
               <div className="td-mem-week">
-                {m.mode_grid.slice().reverse().map((d) => (
-                  <div key={d.date} className="td-mem-day" title={`${d.date}: ${d.count}/4`}>
-                    <div className="td-mem-day-cells">
-                      {d.modes.map(modeData => (
-                        <span key={modeData.mode} className="td-mem-day-c" style={modeData.present ? {background:MODE_META[modeData.mode].color} : {}}/>
-                      ))}
+                {m.mode_grid.slice().reverse().map((d) => {
+                  const c = d.count
+                  return (
+                    <div key={d.date} className="td-mem-day">
+                      <div className={`td-circle c${c} ${d.date === team.members[0]?.mode_grid?.slice().reverse()[m.mode_grid.length-1]?.date ? '' : ''}`}>{c}</div>
+                      <div className="td-mem-day-lab">{new Date(d.date).getDate()}</div>
                     </div>
-                    <div className="td-mem-day-lab">{new Date(d.date).getDate()}</div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
               <div className="td-mem-r">
-                <div className="td-mem-pct" style={{color:m.attendance_pct>=80?'#4ade80':m.attendance_pct>=50?'#EEA727':'#fd1c00'}}>{m.attendance_pct}%</div>
+                <div className="td-mem-pct" style={{color:m.attendance_pct>=80?'#86efac':m.attendance_pct>=50?'#fcd34d':'#fda4af'}}>{m.attendance_pct}%</div>
                 <div className="td-mem-pct-l">7-day</div>
               </div>
             </div>
           )
         })}
       </div>
-    </div>
-  )
-}
+    </div>      
+  )            
+}             
 
 /* ─────────────── STYLES ─────────────── */
 function Styles() {
@@ -545,27 +570,48 @@ function Styles() {
 
       .td-h-sub{font-size:.65rem;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;color:rgba(255,255,255,.5);margin-bottom:8px;padding:0 4px}
       .td-mems{background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.06);border-radius:11px;overflow:hidden}
-      .td-mem{display:grid;grid-template-columns:160px 100px 1fr 60px;gap:10px;padding:10px 13px;border-bottom:1px solid rgba(255,255,255,.04);align-items:center;transition:background .12s}
+      .td-mem-h{display:grid;grid-template-columns:200px 180px 1fr 80px;gap:14px;padding:11px 16px;background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.08);font-size:.5rem;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:1.2px;text-transform:uppercase}
+      .td-mem-h>div{display:flex;align-items:center;justify-content:center;gap:6px}
+      .td-mem-h-icons{display:inline-flex;gap:4px;margin-left:5px;align-items:center}
+      .td-mem{display:grid;grid-template-columns:200px 180px 1fr 80px;gap:14px;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.04);align-items:center;transition:background .15s}
       .td-mem:last-child{border-bottom:none}
-      .td-mem:hover{background:rgba(255,255,255,.025)}
+      .td-mem:hover{background:rgba(255,255,255,.02)}
       .td-mem.absent{background:rgba(253,28,0,.025)}
       .td-mem.partial{background:rgba(238,167,39,.02)}
-      .td-mem-l{display:flex;flex-direction:column;gap:1px;min-width:0}
-      .td-mem-name{font-size:.72rem;font-weight:600;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-      .td-mem-star{color:#EEA727;margin-right:4px}
-      .td-mem-roll{font-size:.58rem;color:rgba(255,255,255,.4)}
-      .td-mem-today{display:flex;flex-direction:column;align-items:center;gap:2px}
-      .td-mem-today-lab{font-size:.45rem;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:rgba(255,255,255,.4)}
-      .td-mem-today-pat{display:flex;gap:2px}
-      .td-mem-today-c{width:11px;height:11px;border-radius:2px;border:1px solid rgba(255,255,255,.12)}
-      .td-mem-week{display:flex;gap:3px;justify-content:center}
-      .td-mem-day{display:flex;flex-direction:column;align-items:center;gap:2px}
-      .td-mem-day-cells{display:grid;grid-template-columns:1fr 1fr;gap:1px}
-      .td-mem-day-c{width:5px;height:5px;border-radius:1px;background:rgba(255,255,255,.06)}
-      .td-mem-day-lab{font-size:.45rem;color:rgba(255,255,255,.35);font-weight:700}
-      .td-mem-r{text-align:right}
-      .td-mem-pct{font-family:'Orbitron','DM Sans',sans-serif;font-size:.85rem;font-weight:800;line-height:1}
-      .td-mem-pct-l{font-size:.45rem;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-top:2px}
+      .td-mem-l{display:flex;flex-direction:column;gap:2px;min-width:0}
+      .td-mem-name{font-size:.78rem;font-weight:700;color:#fff;display:flex;align-items:center;gap:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      .td-mem-star{color:#fcd34d;font-size:.7rem}
+      .td-mem-roll{font-size:.6rem;color:rgba(255,255,255,.4)}
+
+      /* Today column — big animated circles */
+      .td-mem-today{display:flex;flex-direction:column;align-items:center;gap:5px}
+      .td-mem-today-pat{display:flex;gap:7px;align-items:center;justify-content:center}
+      .td-dot{width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.12);transition:all .3s}
+      .td-dot.on{border-color:transparent}
+      .td-dot.on.light{background:#fcd34d;box-shadow:0 0 12px rgba(252,211,77,.55),0 0 24px rgba(252,211,77,.25);animation:tdL 2s ease-in-out infinite}
+      .td-dot.on.bright{background:#fdba74;box-shadow:0 0 12px rgba(253,186,116,.55),0 0 24px rgba(253,186,116,.25);animation:tdB 2s ease-in-out infinite .15s}
+      .td-dot.on.dark{background:#d8b4fe;box-shadow:0 0 12px rgba(216,180,254,.55),0 0 24px rgba(216,180,254,.25);animation:tdD 2s ease-in-out infinite .3s}
+      .td-dot.on.moon{background:#93c5fd;box-shadow:0 0 12px rgba(147,197,253,.55),0 0 24px rgba(147,197,253,.25);animation:tdM 2s ease-in-out infinite .45s}
+      @keyframes tdL{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+      @keyframes tdB{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+      @keyframes tdD{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+      @keyframes tdM{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+      .td-mem-today-cnt{font-size:.55rem;color:rgba(255,255,255,.5);font-weight:600}
+
+      /* 7-day circles */
+      .td-mem-week{display:flex;justify-content:space-around;gap:6px;align-items:center}
+      .td-mem-day{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1}
+      .td-circle{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:800;background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.1);color:rgba(255,255,255,.4);transition:all .15s;font-family:'DM Sans',sans-serif}
+      .td-circle.c0{background:rgba(253,164,175,.08);color:rgba(253,164,175,.6);border-color:rgba(253,164,175,.2)}
+      .td-circle.c1{background:rgba(252,211,77,.1);color:#fcd34d;border-color:rgba(252,211,77,.3)}
+      .td-circle.c2{background:rgba(252,211,77,.18);color:#fcd34d;border-color:rgba(252,211,77,.4);font-size:.66rem}
+      .td-circle.c3{background:rgba(134,239,172,.15);color:#86efac;border-color:rgba(134,239,172,.4);font-size:.66rem}
+      .td-circle.c4{background:rgba(134,239,172,.25);color:#4ade80;border-color:rgba(134,239,172,.55);box-shadow:0 0 10px rgba(74,222,128,.3);font-size:.7rem}
+      .td-mem-day-lab{font-size:.5rem;color:rgba(255,255,255,.35);font-weight:700;letter-spacing:.5px}
+
+      .td-mem-r{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+      .td-mem-pct{font-family:'Orbitron','DM Sans',sans-serif;font-size:1.05rem;font-weight:800;line-height:1}
+      .td-mem-pct-l{font-size:.5rem;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.4);font-weight:700}
 
       @media(max-width:780px){
         .self-today{flex-direction:column;align-items:stretch}
