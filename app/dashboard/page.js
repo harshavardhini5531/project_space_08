@@ -2207,22 +2207,6 @@ import EventDetails from "@/app/dashboard/components/EventDetails";
           .catch(() => {});
       }
 
-      // Fetch Project Street date for this user's team
-      const tn = u.teamNumber || u.team_number;
-      if (tn) {
-        fetch('/api/team/project-street', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ teamNumber: tn })
-        })
-          .then(r => r.json())
-          .then(d => {
-            if (d.projectStreetDay && d.projectStreetDate) {
-              setPsDate({ day: d.projectStreetDay, date: d.projectStreetDate });
-            }
-          })
-          .catch(() => {});
-      }
-
       if (roll) {
         // Fetch profile for sidebar display
         fetch('/api/auth/student-profile', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({rollNumber:roll}) })
