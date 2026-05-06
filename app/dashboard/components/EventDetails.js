@@ -4,7 +4,7 @@ import { useState } from 'react'
 // ═══ EVENT SCHEDULE DATA — 7 days ═══
 const SCHEDULE = [
   {
-    day: 1, date: '06 May 2026', dateLong: 'Tuesday, 6th May 2026',
+    day: 1, date: '06 May 2026', dateLong: 'Wednesday, 6th May 2026',
     title: 'Inauguration & Welcome',
     subtitle: 'The journey begins — check in, meet your team, and dive into Project Space.',
     accent: '#fd1c00',
@@ -23,7 +23,7 @@ const SCHEDULE = [
     ]
   },
   {
-    day: 2, date: '07 May 2026', dateLong: 'Wednesday, 7th May 2026',
+    day: 2, date: '07 May 2026', dateLong: 'Thursday, 7th May 2026',
     title: 'Build Day · Robotics Insights',
     subtitle: 'Industry guest from Japan joins us — start building your prototypes.',
     accent: '#EEA727',
@@ -42,7 +42,7 @@ const SCHEDULE = [
     ]
   },
   {
-    day: 3, date: '08 May 2026', dateLong: 'Thursday, 8th May 2026',
+    day: 3, date: '08 May 2026', dateLong: 'Friday, 8th May 2026',
     title: 'Industry Stories Day',
     subtitle: 'ZOHO, ServiceNow, and global robotics — three perspectives in one day.',
     accent: '#10b981',
@@ -60,7 +60,7 @@ const SCHEDULE = [
     ]
   },
   {
-    day: 4, date: '09 May 2026', dateLong: 'Friday, 9th May 2026',
+    day: 4, date: '09 May 2026', dateLong: 'Saturday, 9th May 2026',
     title: 'Power Day · Industry Marathon',
     subtitle: 'Six guests, two sessions — Qualcomm, Dentsu, AWS, ServiceNow, SOTI, and Oracle.',
     accent: '#7B2FBE',
@@ -78,7 +78,7 @@ const SCHEDULE = [
     ]
   },
   {
-    day: 5, date: '10 May 2026', dateLong: 'Saturday, 10th May 2026',
+    day: 5, date: '10 May 2026', dateLong: 'Sunday, 10th May 2026',
     title: 'Showcase Eve',
     subtitle: 'Final touches on your project, then the first round of presentations at the gallery.',
     accent: '#3b82f6',
@@ -98,7 +98,7 @@ const SCHEDULE = [
     ]
   },
   {
-    day: 6, date: '11 May 2026', dateLong: 'Sunday, 11th May 2026',
+    day: 6, date: '11 May 2026', dateLong: 'Monday, 11th May 2026',
     title: 'Showcase Day · Round 2',
     subtitle: 'Second round of project presentations at the gallery.',
     accent: '#ec4899',
@@ -116,7 +116,7 @@ const SCHEDULE = [
     ]
   },
   {
-    day: 7, date: '12 May 2026', dateLong: 'Monday, 12th May 2026',
+    day: 7, date: '12 May 2026', dateLong: 'Tuesday, 12th May 2026',
     title: 'Grand Finale',
     subtitle: 'Final day — last presentations and the closing of Project Space 2026.',
     accent: '#22d3ee',
