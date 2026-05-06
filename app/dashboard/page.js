@@ -2165,6 +2165,7 @@ import EventDetails from "@/app/dashboard/components/EventDetails";
     const [collapsed,setCollapsed]=useState(false);
     const [hovered,setHovered]=useState(null);
     const [user,setUser]=useState(null);
+    const [psDate,setPsDate]=useState(null); // {day, date} for Project Street
     const [profile,setProfile]=useState(null);
     const [videoRatings,setVideoRatings]=useState(null);
     const [videoLoading,setVideoLoading]=useState(false);
@@ -2190,6 +2191,22 @@ import EventDetails from "@/app/dashboard/components/EventDetails";
       const role = u.role || 'member';
       setUser({ ...u, rollNumber: roll, name: u.name || '', role });
       if (roll) { import('@/lib/pushNotifications').then(m => m.registerPushNotifications(roll, 'student')).catch(() => {}) }
+
+      // Fetch Project Street date for this user's team
+      const tn = u.teamNumber || u.team_number;
+      if (tn) {
+        fetch('/api/team/project-street', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ teamNumber: tn })
+        })
+          .then(r => r.json())
+          .then(d => {
+            if (d.projectStreetDay && d.projectStreetDate) {
+              setPsDate({ day: d.projectStreetDay, date: d.projectStreetDate });
+            }
+          })
+          .catch(() => {});
+      }
 
       if (roll) {
         // Fetch profile for sidebar display
@@ -2313,6 +2330,7 @@ import EventDetails from "@/app/dashboard/components/EventDetails";
   /* ═══ MY PROFILE ═══ */
   .mp{display:flex;flex-direction:column;gap:20px;animation:mpIn .5s ease both;}
   @keyframes mpIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+  @keyframes psPulse{0%,100%{box-shadow:0 0 0 rgba(253,28,0,0)}50%{box-shadow:0 0 18px rgba(253,28,0,.25)}}
   .mp-hero-row{display:flex;align-items:center;gap:24px;}
   .mp-hero{flex:1;display:flex;align-items:center;padding:16px 24px;border-radius:16px;background:linear-gradient(to right,#fd1c00 0%,#ff4e50 50%,#EEA727 100%);position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(253,28,0,.12),0 2px 8px rgba(238,167,39,.1);}
   .mp-hero::before{content:'';position:absolute;top:-80px;right:-80px;width:350px;height:350px;background:radial-gradient(circle,rgba(255,255,255,.08),transparent 55%);pointer-events:none;}
@@ -2702,6 +2720,33 @@ import EventDetails from "@/app/dashboard/components/EventDetails";
               </div>
               <div className="topbar-right">
                 {!isMobile&&<div className="topbar-search"><Search size={15}/><input placeholder="Search..."/></div>}
+                {psDate && (() => {
+                  const d = new Date(psDate.date + 'T00:00:00');
+                  const today = new Date(); today.setHours(0,0,0,0);
+                  const psD = new Date(psDate.date + 'T00:00:00');
+                  const diffDays = Math.round((psD - today) / 86400000);
+                  const isToday = diffDays === 0;
+                  const isPast = diffDays < 0;
+                  const dayLabel = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                  const status = isToday ? '🔥 TODAY' : isPast ? 'Done' : `in ${diffDays}d`;
+                  const bg = isToday
+                    ? 'linear-gradient(135deg,rgba(253,28,0,.18),rgba(238,167,39,.12))'
+                    : isPast
+                    ? 'rgba(74,222,128,.06)'
+                    : 'linear-gradient(135deg,rgba(238,167,39,.08),rgba(253,28,0,.04))';
+                  const bd = isToday ? 'rgba(253,28,0,.35)' : isPast ? 'rgba(74,222,128,.18)' : 'rgba(238,167,39,.18)';
+                  const tc = isToday ? '#fd1c00' : isPast ? '#4ade80' : '#EEA727';
+                  return (
+                    <div title={`Project Street: Day ${psDate.day} (${d.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'})})`}
+                      style={{display:'flex',alignItems:'center',gap:8,padding:'8px 14px',borderRadius:10,background:bg,border:`1px solid ${bd}`,fontSize:'.72rem',fontWeight:700,cursor:'default',animation:isToday?'psPulse 2s ease-in-out infinite':'none'}}>
+                      <Sparkles size={13} style={{color:tc}}/>
+                      <span style={{color:tc,fontFamily:"'Orbitron',sans-serif",letterSpacing:'.5px'}}>DAY {psDate.day}</span>
+                      <span style={{color:'rgba(255,255,255,.6)',fontWeight:500}}>·</span>
+                      <span style={{color:'#fff'}}>{dayLabel}</span>
+                      {!isMobile && <span style={{fontSize:'.6rem',padding:'2px 7px',borderRadius:5,background:'rgba(0,0,0,.25)',color:tc,fontWeight:700,letterSpacing:'.3px'}}>{status}</span>}
+                    </div>
+                  );
+                })()}
                 <div className="topbar-icon"><Bell size={17}/><div className="topbar-notif"/></div>
                 {!isMobile&&<div className="topbar-credits"><Award size={15}/> <span>20</span> Credits</div>}
               </div>
