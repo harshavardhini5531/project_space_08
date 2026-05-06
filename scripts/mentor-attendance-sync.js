@@ -10,7 +10,7 @@ const { createClient } = require('@supabase/supabase-js')
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 if (!SUPABASE_URL || !SUPABASE_KEY) {
   console.error('[sync] FATAL: Missing Supabase credentials. URL=', !!SUPABASE_URL, 'KEY=', !!SUPABASE_KEY)
