@@ -30,58 +30,6 @@ export default function AdminDashboard() {
   const [expandedMentor, setExpandedMentor] = useState(null)
   const [mentorSubTab, setMentorSubTab] = useState('registration')
   const [teamSubExpand, setTeamSubExpand] = useState('details')
-  // ── Attendance fetch ──
-  async function fetchAttendance(date = attDate) {
-    if (!token) return
-    setAttLoading(true)
-    try {
-      const r = await fetch(`/api/admin/attendance?date=${date}`, { headers: { 'x-admin-token': token } })
-      const d = await r.json()
-      if (!d.error) setAttData(d)
-    } catch {} finally { setAttLoading(false) }
-  }
-  useEffect(() => { if (activeTab === 'attendance' && token) fetchAttendance() }, [activeTab, attDate, token])
-
-  async function handleSyncNow() {
-    if (!token) return
-    setAttSyncing(true); setAttSyncMsg('')
-    try {
-      const r = await fetch('/api/admin/attendance-sync', { method: 'POST', headers: { 'x-admin-token': token } })
-      const d = await r.json()
-      if (d.success) {
-        setAttSyncMsg(`✓ Synced: ${d.inserted} inserted, ${d.skipped} skipped, ${d.api_total} API total`)
-        fetchAttendance()
-      } else {
-        setAttSyncMsg(`✗ Failed: ${d.error}`)
-      }
-    } catch (e) { setAttSyncMsg(`✗ Error: ${e.message}`) }
-    setAttSyncing(false)
-    setTimeout(() => setAttSyncMsg(''), 5000)
-  }
-
-  async function handleManualUpload() {
-    if (!token) return
-    const rolls = manualUploadRolls.split(/[\n,\s]+/).map(r => r.trim()).filter(Boolean)
-    if (rolls.length === 0) { setManualUploadMsg('✗ No roll numbers provided'); return }
-    setManualUploading(true); setManualUploadMsg('')
-    try {
-      const r = await fetch('/api/admin/attendance-manual', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
-        body: JSON.stringify({ date: attDate, punchType: manualUploadType, rolls })
-      })
-      const d = await r.json()
-      if (d.success) {
-        setManualUploadMsg(`✓ Uploaded ${d.total} punches (${d.matched} matched, ${d.unmatched} unmatched)`)
-        setManualUploadRolls('')
-        fetchAttendance()
-      } else {
-        setManualUploadMsg(`✗ Failed: ${d.error}`)
-      }
-    } catch (e) { setManualUploadMsg(`✗ Error: ${e.message}`) }
-    setManualUploading(false)
-    setTimeout(() => setManualUploadMsg(''), 8000)
-  }
   const [reminding, setReminding] = useState(false)
   const [reminderMsg, setReminderMsg] = useState('')
   const [adLeaderboard, setAdLeaderboard] = useState({ leaderboard: [], stats: {} })
@@ -166,59 +114,7 @@ export default function AdminDashboard() {
 
   useEffect(() => { if (phase==='dashboard') { fetchAdLeaderboard(); fetchAdNotifs(); const iv=setInterval(()=>{fetchAdLeaderboard();fetchAdNotifs()},120000); return ()=>clearInterval(iv) } }, [phase])
 
-  // ── Attendance fetch ──
-  async function fetchAttendance(date = attDate) {
-    if (!token) return
-    setAttLoading(true)
-    try {
-      const r = await fetch(`/api/admin/attendance?date=${date}`, { headers: { 'x-admin-token': token } })
-      const d = await r.json()
-      if (!d.error) setAttData(d)
-    } catch {} finally { setAttLoading(false) }
-  }
-  useEffect(() => { if (activeTab === 'attendance' && token) fetchAttendance() }, [activeTab, attDate, token])
-
-  async function handleSyncNow() {
-    if (!token) return
-    setAttSyncing(true); setAttSyncMsg('')
-    try {
-      const r = await fetch('/api/admin/attendance-sync', { method: 'POST', headers: { 'x-admin-token': token } })
-      const d = await r.json()
-      if (d.success) {
-        setAttSyncMsg(`✓ Synced: ${d.inserted} inserted, ${d.skipped} skipped, ${d.api_total} API total`)
-        fetchAttendance()
-      } else {
-        setAttSyncMsg(`✗ Failed: ${d.error}`)
-      }
-    } catch (e) { setAttSyncMsg(`✗ Error: ${e.message}`) }
-    setAttSyncing(false)
-    setTimeout(() => setAttSyncMsg(''), 5000)
-  }
-
-  async function handleManualUpload() {
-    if (!token) return
-    const rolls = manualUploadRolls.split(/[\n,\s]+/).map(r => r.trim()).filter(Boolean)
-    if (rolls.length === 0) { setManualUploadMsg('✗ No roll numbers provided'); return }
-    setManualUploading(true); setManualUploadMsg('')
-    try {
-      const r = await fetch('/api/admin/attendance-manual', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
-        body: JSON.stringify({ date: attDate, punchType: manualUploadType, rolls })
-      })
-      const d = await r.json()
-      if (d.success) {
-        setManualUploadMsg(`✓ Uploaded ${d.total} punches (${d.matched} matched, ${d.unmatched} unmatched)`)
-        setManualUploadRolls('')
-        fetchAttendance()
-      } else {
-        setManualUploadMsg(`✗ Failed: ${d.error}`)
-      }
-    } catch (e) { setManualUploadMsg(`✗ Error: ${e.message}`) }
-    setManualUploading(false)
-    setTimeout(() => setManualUploadMsg(''), 8000)
-  }
-
+  
   // Fetch admin insights (cross-functional data)
   useEffect(() => {
     if (phase !== 'dashboard' || !token) return
