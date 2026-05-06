@@ -2192,6 +2192,21 @@ import EventDetails from "@/app/dashboard/components/EventDetails";
       setUser({ ...u, rollNumber: roll, name: u.name || '', role });
       if (roll) { import('@/lib/pushNotifications').then(m => m.registerPushNotifications(roll, 'student')).catch(() => {}) }
 
+      const tn = u.teamNumber || u.team_number;
+      if (tn) {
+        fetch('/api/team/project-street', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ teamNumber: tn })
+        })
+          .then(r => r.json())
+          .then(d => {
+            if (d.projectStreetDay && d.projectStreetDate) {
+              setPsDate({ day: d.projectStreetDay, date: d.projectStreetDate });
+            }
+          })
+          .catch(() => {});
+      }
+
       // Fetch Project Street date for this user's team
       const tn = u.teamNumber || u.team_number;
       if (tn) {
@@ -2757,7 +2772,7 @@ import EventDetails from "@/app/dashboard/components/EventDetails";
               active==="project-details"?<ProjectDetails user={user}/>:
               active==="project-status"?<ProjectStatus user={user}/>:
               active==="attendance"?<StudentAttendance user={user}/>:
-              active==="event-info"?<EventInfo user={user}/>:
+              active==="event-info"?<EventInfo user={user} psDate={psDate}/>:
               active==="event-details"?<EventDetails/>:
               active==="mentor-request"?<MentorRequest user={user}/>:(
                 <div className="page-placeholder">
