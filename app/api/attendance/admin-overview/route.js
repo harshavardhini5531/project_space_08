@@ -38,7 +38,7 @@ export async function POST(request) {
     if (teamNums.length > 0) {
       const { data: m } = await supabase
         .from('team_members')
-        .select('team_number, roll_number, name, is_leader')
+        .select('team_number, roll_number, short_name, is_leader')
         .in('team_number', teamNums)
       members = m || []
     }
@@ -100,7 +100,7 @@ export async function POST(request) {
       const missedModes = MODES.filter(modeEl => !punches.includes(modeEl))
       return {
         roll_number: m.roll_number,
-        name: m.name,
+        name: m.short_name,
         team_number: m.team_number,
         is_leader: m.is_leader,
         project_title: team.project_title || '',
