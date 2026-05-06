@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import MentorHelpRequests from '@/app/mentor/dashboard/components/MentorHelpRequests'
+import MentorAttendance from '@/app/mentor/dashboard/components/MentorAttendance'
 
 // ── LINE SVG ICONS ──
 const I = {
@@ -186,7 +187,8 @@ export default function MentorDashboard() {
     {id:'linkedin', label:'LinkedIn Stats', icon:I.share},
     {id:'leaderboard', label:'Leaderboard', icon:I.award},
     {id:'settings', label:'Settings', icon:I.settings},
-    { id: "help-requests", label: "Mentor Requests", icon: I.lifebuoy }
+    {id: "help-requests", label: "Mentor Requests", icon: I.lifebuoy },
+        {id:'attendance', label:'Attendance', icon:I.check}
   ]
 
   const myTeams = data?.teams || []
@@ -1218,6 +1220,9 @@ body.sb-open{overflow:hidden}
               {lbLoading&&<div style={{textAlign:'center',padding:30,color:'hsla(0, 0%, 100%, 0.20)'}}>Loading...</div>}
               {!lbLoading&&<table className="lb-table"><thead><tr><th>Rank</th><th>Team</th><th>Project</th><th>Tech</th><th>Progress</th><th>Credits</th></tr></thead><tbody>{(leaderboard.leaderboard||[]).map(t=><tr key={t.team_number}><td><span className={`lb-rank ${t.rank===1?'gold':t.rank===2?'silver':t.rank===3?'bronze':''}`}>#{t.rank}</span></td><td style={{fontWeight:700,color:'#fd1c00'}}>{t.team_number}</td><td style={{maxWidth:180,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{t.project_title||'—'}</td><td><span style={{fontSize:'.62rem',padding:'2px 8px',borderRadius:5,background:'rgba(255,255,255,.04)',color:'rgba(255,255,255,.5)'}}>{t.technology}</span></td><td><div className="lb-bar"><div className="lb-bar-fill" style={{width:`${t.percent}%`}}/></div><span style={{fontSize:'.72rem',fontWeight:700,color:t.percent>=70?'#4ade80':t.percent>=40?'#EEA727':'rgba(255,255,255,.3)'}}>{t.completed_stages}/7</span></td><td style={{fontWeight:700,color:'#EEA727'}}>{t.total_credits}</td></tr>)}</tbody></table>}
             </div>)}
+            {/* ATTENDANCE */}
+            {activePage==='attendance' && <MentorAttendance mentor={mentor}/>}
+
             {/* SETTINGS */}
             {activePage==='settings' && (<>
               <div className="md-page-title">SETTINGS</div>
