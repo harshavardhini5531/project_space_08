@@ -14,7 +14,7 @@ import EventDetails from "@/app/dashboard/components/EventDetails";
   import MentorVoteSection from "./MentorVoteSection";
   import {
     User, Users, FolderKanban, Activity, GraduationCap,
-    UtensilsCrossed, Compass, CalendarDays, Megaphone,
+    UtensilsCrossed, Compass, CalendarDays, Megaphone, Heart,
     Rocket, ChevronLeft, ChevronRight, LogOut, Settings, Search, Bell,
     Phone, Award, Code, BookOpen, Star, CreditCard, Shield, Trophy,
     Target, Layers, CheckCircle, XCircle, Briefcase, Hash,
