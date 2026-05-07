@@ -2306,14 +2306,14 @@ import EventDetails from "@/app/dashboard/components/EventDetails";
       } else { setLoading(false); }
     },[]);
 
-    // Only admin roll sees all sections; others see only My Profile + Team Profile
+    // Only admin roll sees all sections; others see core tabs + mentor-request, mentor-vote, attendance
     const ADMIN_ROLL = '23A91A61G9';
     const isAdmin = ((user?.rollNumber) || '').toUpperCase() === ADMIN_ROLL;
     const VISIBLE_NAV_SECTIONS = isAdmin
       ? NAV_SECTIONS
       : NAV_SECTIONS.map(sec => ({
           ...sec,
-          items: sec.items.filter(i => i.id === 'my-profile' || i.id === 'team-profile' || i.id === 'project-details' || i.id === 'project-status' || i.id === 'event-info' || i.id === 'event-details')
+          items: sec.items.filter(i => i.id === 'my-profile' || i.id === 'team-profile' || i.id === 'project-details' || i.id === 'project-status' || i.id === 'attendance' || i.id === 'mentor-request' || i.id === 'mentor-vote' || i.id === 'event-info' || i.id === 'event-details')
         })).filter(sec => sec.items.length > 0);
     const activeItem=VISIBLE_NAV_SECTIONS.flatMap(s=>s.items).find(i=>i.id===active);
     const displayName = profile?.name || user?.name || 'Student';
