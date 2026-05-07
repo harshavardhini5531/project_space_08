@@ -178,17 +178,17 @@ function SelfPane({ me }) {
             ))}
             <div className="self-7day-cell self-7day-cell-h" style={{textAlign:'right'}}>Punches</div>
           </div>
-          {me.day_grid.slice().reverse().map((d) => (
+          {me.day_grid.map((d) => (
             <div key={d.date} className={`self-7day-row ${d.is_today ? 'today' : ''}`} style={{gridTemplateColumns:'140px 1fr 1fr 80px'}}>
               <div className="self-7day-cell">
                 <div className="self-7day-date">
-                  <span className="self-7day-day">{d.day_name}</span>
+                  <span className="self-7day-day">{d.day_name}{d.is_future ? ' · upcoming' : ''}</span>
                   <span className="self-7day-md">{new Date(d.date).getDate()} {new Date(d.date).toLocaleDateString('en-US',{month:'short'})}</span>
                   {d.is_today && <span className="self-7day-now">NOW</span>}
                 </div>
               </div>
               {d.modes.map(modeData => (
-                <div key={modeData.mode} className="self-7day-cell" style={{textAlign:'center'}}>
+                <div key={modeData.mode} className="self-7day-cell" style={{textAlign:'center',opacity:d.is_future ? 0.35 : 1}}>
                   <span className="self-7day-dot" style={modeData.present ? {background:MENTOR_MODE_META[modeData.mode].color,boxShadow:`0 0 8px ${MENTOR_MODE_META[modeData.mode].color}80`} : {}}/>
                 </div>
               ))}
@@ -408,12 +408,16 @@ function TeamDetailPane({ teams, activeTeamId, setActiveTeamId }) {
                 </div>
               </div>
               <div className="td-mem-week">
-                {m.mode_grid.slice().reverse().map((d) => {
+                {m.mode_grid.map((d) => {
                   const c = d.count
                   return (
-                    <div key={d.date} className="td-mem-day">
-                      <div className={`td-circle c${c} ${d.date === team.members[0]?.mode_grid?.slice().reverse()[m.mode_grid.length-1]?.date ? '' : ''}`}>{c}</div>
-                      <div className="td-mem-day-lab">{new Date(d.date).getDate()}</div>
+                    <div key={d.date} className={`td-mem-day ${d.is_future ? 'fut' : ''} ${d.is_today ? 'now' : ''}`}>
+                      <div className={`td-circle c${c}`}>{d.is_future ? '·' : c}</div>
+                      <div className="td-mem-day-lab">
+                        {d.is_today && <span className="td-mem-day-now">NOW</span>}
+                        {!d.is_today && <span className="td-mem-day-dn">{d.day_name?.slice(0,3)}</span>}
+                        <span className="td-mem-day-num">{new Date(d.date).getDate()}</span>
+                      </div>
                     </div>
                   )
                 })}
@@ -607,7 +611,14 @@ function Styles() {
       .td-circle.c2{background:rgba(252,211,77,.18);color:#fcd34d;border-color:rgba(252,211,77,.4);font-size:.66rem}
       .td-circle.c3{background:rgba(134,239,172,.15);color:#86efac;border-color:rgba(134,239,172,.4);font-size:.66rem}
       .td-circle.c4{background:rgba(134,239,172,.25);color:#4ade80;border-color:rgba(134,239,172,.55);box-shadow:0 0 10px rgba(74,222,128,.3);font-size:.7rem}
-      .td-mem-day-lab{font-size:.5rem;color:rgba(255,255,255,.35);font-weight:700;letter-spacing:.5px}
+      .td-mem-day-lab{font-size:.5rem;color:rgba(255,255,255,.35);font-weight:700;letter-spacing:.5px;display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1.1}
+      .td-mem-day-dn{font-size:.5rem;color:rgba(255,255,255,.4);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+      .td-mem-day-num{font-size:.6rem;color:rgba(255,255,255,.55);font-weight:700}
+      .td-mem-day-now{font-size:.45rem;background:rgba(252,211,77,.2);color:#fcd34d;padding:1px 5px;border-radius:4px;font-weight:800;letter-spacing:.5px}
+      .td-mem-day.fut .td-circle{opacity:.3;background:rgba(255,255,255,.02);color:rgba(255,255,255,.25);border-color:rgba(255,255,255,.06)}
+      .td-mem-day.fut .td-mem-day-num{color:rgba(255,255,255,.3)}
+      .td-mem-day.fut .td-mem-day-dn{color:rgba(255,255,255,.25)}
+      .td-mem-day.now .td-circle{outline:2px solid rgba(252,211,77,.5);outline-offset:2px}
 
       .td-mem-r{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:2px}
       .td-mem-pct{font-family:'Orbitron','DM Sans',sans-serif;font-size:1.05rem;font-weight:800;line-height:1}

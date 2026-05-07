@@ -1,6 +1,5 @@
 // app/api/attendance/mentor-summary/route.js
-// Returns: mentor's self-attendance + per-team summary + combined mentorship score
-// Uses ROLLING FORWARD WINDOW: today + next 6 days
+// FIXED EVENT WINDOW: May 6 – May 12, 2026 (always shows all 7 days)
 
 import { createClient } from '@supabase/supabase-js'
 
@@ -17,14 +16,25 @@ const MODE_META = {
   moon:   { label: 'Moon',   window: '8 PM +' },
 }
 
-// Mentors only have 2 modes: Morning + Night
 const MENTOR_MODES = ['morning', 'night']
 const MENTOR_MODE_META = {
   morning: { label: 'Morning', window: 'after 5 AM' },
   night:   { label: 'Night',   window: 'after 10 PM' },
 }
 
-// Convert a punch timestamp to mentor mode
+// ═══ EVENT WINDOW: May 6 – May 12, 2026 (fixed) ═══
+const EVENT_DAYS = [
+  { day: 1, date: '2026-05-06', day_name: 'Wed' },
+  { day: 2, date: '2026-05-07', day_name: 'Thu' },
+  { day: 3, date: '2026-05-08', day_name: 'Fri' },
+  { day: 4, date: '2026-05-09', day_name: 'Sat' },
+  { day: 5, date: '2026-05-10', day_name: 'Sun' },
+  { day: 6, date: '2026-05-11', day_name: 'Mon' },
+  { day: 7, date: '2026-05-12', day_name: 'Tue' },
+]
+const EVENT_START = EVENT_DAYS[0].date
+const EVENT_END = EVENT_DAYS[EVENT_DAYS.length - 1].date
+
 function mentorModeFromPunchAt(punchAtIso) {
   const d = new Date(punchAtIso)
   const istMs = d.getTime() + (5.5 * 60 * 60 * 1000)
@@ -36,7 +46,7 @@ function mentorModeFromPunchAt(punchAtIso) {
 
 export async function POST(request) {
   try {
-    const { mentorEmail, days = 7 } = await request.json()
+    const { mentorEmail } = await request.json()
     if (!mentorEmail) return Response.json({ error: 'mentorEmail required' }, { status: 400 })
 
     // 1. Get mentor record
@@ -48,35 +58,29 @@ export async function POST(request) {
 
     if (!mentor) return Response.json({ error: 'Mentor not found' }, { status: 404 })
 
-    // ROLLING FORWARD WINDOW: today + next (days-1) days
+    // Today (IST) for is_today / is_future flags
     const todayIST = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }))
     const todayStr = todayIST.toISOString().split('T')[0]
-    const startStr = todayStr  // window starts TODAY
-    const endDate = new Date(todayIST)
-    endDate.setDate(endDate.getDate() + (days - 1))
-    const endStr = endDate.toISOString().split('T')[0]
 
-    // 2. Mentor's own attendance — fetch all punches in window, classify into morning/night
+    // 2. Mentor's own attendance — fetch all punches in EVENT WINDOW (May 6 – May 12)
     let mentorPunchSet = new Set()
     let mentorTodaySet = new Set()
     if (mentor.emp_id) {
       let mentorPunches = []
-      {
-        let from = 0
-        const PAGE = 1000
-        while (true) {
-          const { data } = await supabase
-            .from('attendance_logs')
-            .select('punch_date, punch_at')
-            .eq('employee_code', String(mentor.emp_id))
-            .gte('punch_date', startStr)
-            .lte('punch_date', endStr)
-            .range(from, from + PAGE - 1)
-          if (!data || data.length === 0) break
-          mentorPunches = mentorPunches.concat(data)
-          if (data.length < PAGE) break
-          from += PAGE
-        }
+      let from = 0
+      const PAGE = 1000
+      while (true) {
+        const { data } = await supabase
+          .from('attendance_logs')
+          .select('punch_date, punch_at')
+          .eq('employee_code', String(mentor.emp_id))
+          .gte('punch_date', EVENT_START)
+          .lte('punch_date', EVENT_END)
+          .range(from, from + PAGE - 1)
+        if (!data || data.length === 0) break
+        mentorPunches = mentorPunches.concat(data)
+        if (data.length < PAGE) break
+        from += PAGE
       }
       mentorPunches.forEach(p => {
         const mMode = mentorModeFromPunchAt(p.punch_at)
@@ -86,31 +90,32 @@ export async function POST(request) {
       })
     }
 
-    // Build mentor's 7-day FORWARD grid: today + next 6 days
-    const mentorDayGrid = []
-    for (let i = 0; i < days; i++) {
-      const d = new Date(todayIST)
-      d.setDate(d.getDate() + i)
-      const dStr = d.toISOString().split('T')[0]
-      const isFuture = dStr > todayStr
+    // Build mentor's day grid — always shows all 7 event days in order
+    const mentorDayGrid = EVENT_DAYS.map(ev => {
+      const isToday = ev.date === todayStr
+      const isFuture = ev.date > todayStr
+      const isPast = ev.date < todayStr
       const modes = MENTOR_MODES.map(m => ({
         mode: m,
         label: MENTOR_MODE_META[m].label,
-        present: mentorPunchSet.has(`${dStr}|${m}`),
+        present: mentorPunchSet.has(`${ev.date}|${m}`),
       }))
-      mentorDayGrid.push({
-        date: dStr,
-        day_name: d.toLocaleDateString('en-US', { weekday: 'short' }),
-        is_today: dStr === todayStr,
+      return {
+        date: ev.date,
+        day: ev.day,
+        day_name: ev.day_name,
+        is_today: isToday,
         is_future: isFuture,
+        is_past: isPast,
         modes,
         present_count: modes.filter(m => m.present).length,
-      })
-    }
+      }
+    })
 
     const mentorTodayCount = mentorTodaySet.size
     const mentorTodayPresent = mentorTodayCount > 0
     const mentorTotalPunches = mentorDayGrid.reduce((s, d) => s + d.present_count, 0)
+    // % over elapsed days (past + today)
     const mentorElapsed = mentorDayGrid.filter(d => !d.is_future).length
     const mentorPct = mentorElapsed > 0 ? Math.round((mentorTotalPunches / (mentorElapsed * 2)) * 100) : 0
 
@@ -129,6 +134,8 @@ export async function POST(request) {
         combined: { total_students: 0, total_present_today: 0, total_absent_today: 0, attendance_pct: 0, mode_breakdown: {} },
         modes_meta: MODE_META,
         mentor_modes_meta: MENTOR_MODE_META,
+        event_days: EVENT_DAYS,
+        today_date: todayStr,
       })
     }
 
@@ -155,10 +162,9 @@ export async function POST(request) {
       }
     }
     members = members.map(m => ({ ...m, name: m.short_name || m.roll_number }))
-
     const memberRolls = members.map(m => m.roll_number).filter(Boolean)
 
-    // 5. Get all student punches in window — PAGINATED + chunked .in()
+    // 5. Get all student punches in EVENT WINDOW — PAGINATED + chunked .in()
     let studentPunches = []
     {
       const chunks = []
@@ -171,8 +177,8 @@ export async function POST(request) {
             .from('attendance_logs')
             .select('roll_number, punch_date, punch_mode')
             .in('roll_number', chunk)
-            .gte('punch_date', startStr)
-            .lte('punch_date', endStr)
+            .gte('punch_date', EVENT_START)
+            .lte('punch_date', EVENT_END)
             .not('punch_mode', 'is', null)
             .range(from, from + PAGE - 1)
           if (!data || data.length === 0) break
@@ -201,39 +207,36 @@ export async function POST(request) {
         const todayModes = Array.from(data.byDate[todayStr] || [])
         const todayCount = todayModes.length
 
-        // Absent days — only past + today, NOT future
+        // Absent days = days in event window where they had no punch (past + today only)
         const absentDays = []
-        for (let i = 0; i < days; i++) {
-          const d = new Date(todayIST)
-          d.setDate(d.getDate() + i)
-          const dStr = d.toISOString().split('T')[0]
-          if (dStr > todayStr) continue
-          const punchedToday = (data.byDate[dStr] || new Set()).size
-          if (punchedToday === 0) absentDays.push(dStr)
-        }
+        EVENT_DAYS.forEach(ev => {
+          if (ev.date > todayStr) return  // skip future
+          const punchedThatDay = (data.byDate[ev.date] || new Set()).size
+          if (punchedThatDay === 0) absentDays.push(ev.date)
+        })
 
-        // FORWARD 7-day mode grid: today + next 6 days
-        const modeGrid = []
-        for (let i = 0; i < days; i++) {
-          const d = new Date(todayIST)
-          d.setDate(d.getDate() + i)
-          const dStr = d.toISOString().split('T')[0]
-          const isFuture = dStr > todayStr
+        // 7-day mode grid — always shows all event days in order
+        const modeGrid = EVENT_DAYS.map(ev => {
+          const isToday = ev.date === todayStr
+          const isFuture = ev.date > todayStr
+          const isPast = ev.date < todayStr
           const modes = MODES.map(mode => ({
             mode,
-            present: data.byKey.has(`${dStr}|${mode}`),
+            present: data.byKey.has(`${ev.date}|${mode}`),
           }))
-          modeGrid.push({
-            date: dStr,
-            day_name: d.toLocaleDateString('en-US', { weekday: 'short' }),
-            is_today: dStr === todayStr,
+          return {
+            date: ev.date,
+            day: ev.day,
+            day_name: ev.day_name,
+            is_today: isToday,
             is_future: isFuture,
+            is_past: isPast,
             modes,
             count: modes.filter(x => x.present).length
-          })
-        }
+          }
+        })
 
-        // % only over past + today days
+        // % only over elapsed days (past + today)
         const elapsedDays = modeGrid.filter(d => !d.is_future).length
         const totalPunches = modeGrid.reduce((s, d) => s + d.count, 0)
         const pct = elapsedDays > 0 ? Math.round((totalPunches / (elapsedDays * 4)) * 100) : 0
@@ -308,7 +311,7 @@ export async function POST(request) {
       },
       modes_meta: MODE_META,
       mentor_modes_meta: MENTOR_MODE_META,
-      window_days: days,
+      event_days: EVENT_DAYS,
       today_date: todayStr,
     })
   } catch (err) {
