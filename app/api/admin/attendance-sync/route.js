@@ -69,7 +69,14 @@ export async function POST(request) {
   try {
     // Allow self-signed cert for Maya API
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
-    const r = await fetch(MAYA_API)
+    const ctrl = new AbortController()
+    const timer = setTimeout(() => ctrl.abort(), 8000)
+    let r
+    try {
+      r = await fetch(MAYA_API, { signal: ctrl.signal })
+    } finally {
+      clearTimeout(timer)
+    }
     if (!r.ok) throw new Error(`Maya API returned ${r.status}`)
     const data = await r.json()
     const arr = Array.isArray(data) ? data : (data.data || [])

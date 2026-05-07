@@ -24,24 +24,31 @@ export async function POST(request) {
     const APPS = "https://apps.technicalhub.io/old/techpanel2/api";
 
     const getJSON = async (url) => {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 5000);
       try {
-        const r = await fetch(url, { cache: "no-store" });
+        const r = await fetch(url, { cache: "no-store", signal: ctrl.signal });
         if (!r.ok) return null;
         return await r.json();
       } catch { return null; }
+      finally { clearTimeout(timer); }
     };
 
     const postJSON = async (url, body) => {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 5000);
       try {
         const r = await fetch(url, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
           cache: "no-store",
+          signal: ctrl.signal,
         });
         if (!r.ok) return null;
         return await r.json();
       } catch { return null; }
+      finally { clearTimeout(timer); }
     };
 
     // ═══ PHASE 1: All non-dependent API calls + Supabase ═══

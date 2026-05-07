@@ -20,8 +20,8 @@ export async function POST(request) {
     const MAYA = "https://maya.technicalhub.io/node/api";
     const APPS = "https://apps.technicalhub.io/old/techpanel2/api";
 
-    const getJSON = async (url) => { try { const r = await fetch(url, { cache: "no-store" }); if (!r.ok) return null; return await r.json(); } catch { return null; } };
-    const postJSON = async (url, body) => { try { const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), cache: "no-store" }); if (!r.ok) return null; return await r.json(); } catch { return null; } };
+    const getJSON = async (url) => { const ctrl = new AbortController(); const timer = setTimeout(() => ctrl.abort(), 5000); try { const r = await fetch(url, { cache: "no-store", signal: ctrl.signal }); if (!r.ok) return null; return await r.json(); } catch { return null; } finally { clearTimeout(timer); } };
+    const postJSON = async (url, body) => { const ctrl = new AbortController(); const timer = setTimeout(() => ctrl.abort(), 5000); try { const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), cache: "no-store", signal: ctrl.signal }); if (!r.ok) return null; return await r.json(); } catch { return null; } finally { clearTimeout(timer); } };
 
     // Fetch all data in parallel
     const [userByRoll, academicDetails, codingDetails, violations, studentDetailApps, certCounts, attendanceStats, courses, hackerrank, leetcode, codechef, gfg, placement, aptMandatoryData, supabaseProfile] = await Promise.all([

@@ -71,7 +71,14 @@ async function run() {
   let apiTotal = 0, filtered = 0, inserted = 0, skipped = 0, failed = 0, errMsg = null
 
   try {
-    const r = await fetch('https://maya.technicalhub.io/node/api/get-attendancelogs')
+    const ctrl = new AbortController()
+    const timer = setTimeout(() => ctrl.abort(), 10000)
+    let r
+    try {
+      r = await fetch('https://maya.technicalhub.io/node/api/get-attendancelogs', { signal: ctrl.signal })
+    } finally {
+      clearTimeout(timer)
+    }
     if (!r.ok) throw new Error(`Maya API ${r.status}`)
     const data = await r.json()
     const arr = Array.isArray(data) ? data : (data.data || [])
