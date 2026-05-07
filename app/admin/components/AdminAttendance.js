@@ -3,10 +3,21 @@ import { useState, useEffect, useMemo } from 'react'
 
 const MODES = ['light', 'bright', 'dark', 'moon']
 const MODE_META = {
-  light:  { label: 'Light',  icon: '☀', color: '#EEA727', window: '< 11 AM' },
-  bright: { label: 'Bright', icon: '🔆', color: '#fd1c00', window: '11 AM – 5 PM' },
-  dark:   { label: 'Dark',   icon: '🌆', color: '#a855f7', window: '5 – 8 PM' },
-  moon:   { label: 'Moon',   icon: '🌙', color: '#3b82f6', window: '8 PM +' },
+  light:  { label: 'Light',  iconKey: 'sun',    color: '#fcd34d', window: '< 11 AM' },
+  bright: { label: 'Bright', iconKey: 'sunBig', color: '#fdba74', window: '11 AM – 5 PM' },
+  dark:   { label: 'Dark',   iconKey: 'sunset', color: '#d8b4fe', window: '5 – 8 PM' },
+  moon:   { label: 'Moon',   iconKey: 'moon',   color: '#93c5fd', window: '8 PM +' },
+}
+
+function ModeIcon({ which, size = 14 }) {
+  const p = { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round', strokeLinejoin: 'round' }
+  switch (which) {
+    case 'sun': return <svg {...p}><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="5" y1="12" x2="2" y2="12"/><line x1="22" y1="12" x2="19" y2="12"/><line x1="6.34" y1="6.34" x2="4.22" y2="4.22"/><line x1="19.78" y1="4.22" x2="17.66" y2="6.34"/><line x1="6.34" y1="17.66" x2="4.22" y2="19.78"/><line x1="19.78" y1="19.78" x2="17.66" y2="17.66"/></svg>
+    case 'sunBig': return <svg {...p}><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    case 'sunset': return <svg {...p}><path d="M17 18a5 5 0 0 0-10 0"/><line x1="12" y1="2" x2="12" y2="9"/><line x1="4.22" y1="10.22" x2="5.64" y2="11.64"/><line x1="1" y1="18" x2="3" y2="18"/><line x1="21" y1="18" x2="23" y2="18"/><line x1="18.36" y1="11.64" x2="19.78" y2="10.22"/><line x1="23" y1="22" x2="1" y2="22"/><polyline points="8 6 12 2 16 6"/></svg>
+    case 'moon': return <svg {...p}><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    default: return null
+  }
 }
 const TECH_COLORS = {
   'AWS Development': '#ff9900',
@@ -136,7 +147,7 @@ export default function AdminAttendance() {
           const pct = stats.total_students > 0 ? Math.round((ms.students_present / stats.total_students) * 100) : 0
           return (
             <div key={m} className={`aa-mode ${inactive ? 'inactive' : ''}`}>
-              <div className="aa-mode-icn" style={{background:`${meta.color}1a`,color:meta.color}}>{meta.icon}</div>
+              <div className="aa-mode-icn" style={{background:`${meta.color}1a`,color:meta.color}}><ModeIcon which={meta.iconKey} size={16}/></div>
               <div className="aa-mode-info">
                 <div className="aa-mode-lab">{meta.label}<span className="aa-mode-win">· {meta.window}</span></div>
                 <div className="aa-mode-row">

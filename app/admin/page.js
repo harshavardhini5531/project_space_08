@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import AuthBackground from '@/components/AuthBackground'
 import AdminAttendance from '@/app/admin/components/AdminAttendance'
 import AdminProjectStreet from '@/app/admin/components/AdminProjectStreet'
+import MentorVoteLeaderboard from './MentorVoteLeaderboard';
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -202,6 +203,7 @@ export default function AdminDashboard() {
     {id:'milestones',label:'Project Status',icon:IC.target},
     {id:'project-street',label:'Project Street',icon:IC.cal},
     {id:'linkedin-stats',label:'LinkedIn Stats',icon:IC.share},
+    {id:'mentor-vote',label:'Mentor Vote',icon:IC.share},
     {id:'attendance',label:'Attendance',icon:IC.cal},
     {id:'report-card',label:'Report Card',icon:IC.file},
   ]
@@ -2092,6 +2094,7 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
               </div>
             )}
             {/* REPORT CARD */}
+            {activeTab === 'mentor-vote' && <MentorVoteLeaderboard />}
             {activeTab === 'report-card' && <ReportCard />}
           </div>
         </div>
