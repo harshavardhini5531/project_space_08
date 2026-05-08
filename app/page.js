@@ -18,41 +18,7 @@ export default function LandingPage() {
     return () => window.removeEventListener('resize', check)
   }, [])
 
-  /* ═══ COUNTDOWN ═══ */
-  useEffect(() => {
-    const target = new Date(HACKATHON_START).getTime()
-    const prev = { d:'', h:'', m:'', s:'' }
-    const pad = n => n < 10 ? '0'+n : ''+n
-
-    function flip(el) {
-      el.classList.remove('flip')
-      void el.offsetWidth
-      el.classList.add('flip')
-    }
-
-    function tick() {
-      const diff = Math.max(0, target - Date.now())
-      const d = pad(Math.floor(diff/(1000*60*60*24)))
-      const h = pad(Math.floor((diff%(1000*60*60*24))/(1000*60*60)))
-      const m = pad(Math.floor((diff%(1000*60*60))/(1000*60)))
-      const s = pad(Math.floor((diff%(1000*60))/1000))
-
-      const dE = document.getElementById('cd-days')
-      const hE = document.getElementById('cd-hours')
-      const mE = document.getElementById('cd-mins')
-      const sE = document.getElementById('cd-secs')
-      if (!dE) return
-
-      if (d !== prev.d) { dE.textContent = d; flip(dE); prev.d = d }
-      if (h !== prev.h) { hE.textContent = h; flip(hE); prev.h = h }
-      if (m !== prev.m) { mE.textContent = m; flip(mE); prev.m = m }
-      if (s !== prev.s) { sE.textContent = s; flip(sE); prev.s = s }
-    }
-    // Small delay to ensure DOM elements exist after layout switch
-    const startId = setTimeout(() => { tick() }, 100)
-    const id = setInterval(tick, 1000)
-    return () => { clearTimeout(startId); clearInterval(id) }
-  }, [isMobile])
+  
 
   /* ═══ TITLE GLOW TRIGGER ═══ */
   useEffect(() => {
@@ -729,17 +695,6 @@ html,body{width:100%;height:100%;background:#050008;overflow:hidden;font-family:
 
           {/* BOTTOM: countdown */}
           <div className="ml-bot">
-            <div className="ml-cd">
-              <div className="ml-cd-row">
-                <div className="ml-cd-u"><div className="ml-cd-n" id="cd-days">00</div><div className="ml-cd-lb">Days</div></div>
-                <div className="ml-cd-c">:</div>
-                <div className="ml-cd-u"><div className="ml-cd-n" id="cd-hours">00</div><div className="ml-cd-lb">Hrs</div></div>
-                <div className="ml-cd-c">:</div>
-                <div className="ml-cd-u"><div className="ml-cd-n" id="cd-mins">00</div><div className="ml-cd-lb">Min</div></div>
-                <div className="ml-cd-c">:</div>
-                <div className="ml-cd-u"><div className="ml-cd-n" id="cd-secs">00</div><div className="ml-cd-lb">Sec</div></div>
-              </div>
-            </div>
             <div className="ml-bot-deco">
               <div className="ml-bot-line"/>
               <div className="ml-bot-dot"/>
@@ -1188,16 +1143,7 @@ html,body{width:100%;height:100%;background:#050008;overflow:hidden;font-family:
         </div>
       </div>
 
-      {/* COUNTDOWN — bottom bar */}
-      <div className="countdown-bar">
-        <div className="cd-block"><div className="cd-num" id="cd-days">00</div><div className="cd-label">Days</div></div>
-        <div className="cd-colon">:</div>
-        <div className="cd-block"><div className="cd-num" id="cd-hours">00</div><div className="cd-label">Hours</div></div>
-        <div className="cd-colon">:</div>
-        <div className="cd-block"><div className="cd-num" id="cd-mins">00</div><div className="cd-label">Minutes</div></div>
-        <div className="cd-colon">:</div>
-        <div className="cd-block"><div className="cd-num" id="cd-secs">00</div><div className="cd-label">Seconds</div></div>
-      </div>
+      
     </>
   )
 }
