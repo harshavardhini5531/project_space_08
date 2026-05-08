@@ -12,6 +12,8 @@ import EventDetails from "@/app/dashboard/components/EventDetails";
   import MentorRequest from "@/app/dashboard/components/MentorRequest";
   import StudentAttendance from "@/app/dashboard/components/StudentAttendance";
   import MentorVoteSection from "./MentorVoteSection";
+  import ProjectReview from "@/app/dashboard/components/ProjectReview";
+  import AdminProjectReview from "@/app/dashboard/components/AdminProjectReview";
   import {
     User, Users, FolderKanban, Activity, GraduationCap,
     UtensilsCrossed, Compass, CalendarDays, Megaphone, Heart,
@@ -41,10 +43,12 @@ import EventDetails from "@/app/dashboard/components/EventDetails";
       {id:"event-details",label:"Event Details",icon:CalendarDays},
       {id:"announcements",label:"Announcements",icon:Megaphone},
       {id:"mentor-vote",label:"Mentor Vote",icon:Heart},
+      {id:"project-review",label:"Project Review",icon:Sparkles},
+      {id:"project-review-admin",label:"Project Review (Admin)",icon:Shield},
       {id:"space-jam",label:"Space Jam",icon:Rocket},
     ]},
   ];
-  const PAGE_TITLES={"my-profile":"My Profile","team-profile":"Team Profile","project-details":"Project Details","project-status":"Project Status","mentor-request":"Mentor Request","food-section":"Food Section","explore-teams":"Explore Teams","event-info":"Event Info","event-details":"Event Details","announcements":"Announcements","mentor-vote":"Mentor Vote","space-jam":"Space Jam","attendance":"My Attendance",};
+  const PAGE_TITLES={"my-profile":"My Profile","team-profile":"Team Profile","project-details":"Project Details","project-status":"Project Status","mentor-request":"Mentor Request","food-section":"Food Section","explore-teams":"Explore Teams","event-info":"Event Info","event-details":"Event Details","announcements":"Announcements","mentor-vote":"Mentor Vote","project-review":"Project Review","project-review-admin":"Project Review (Admin)","space-jam":"Space Jam","attendance":"My Attendance",};
 
   /* ═══ HELPER COMPONENTS ═══ */
   function StatCard({icon:Icon,label,value,color="#ff1d00"}){
@@ -2313,7 +2317,7 @@ import EventDetails from "@/app/dashboard/components/EventDetails";
       ? NAV_SECTIONS
       : NAV_SECTIONS.map(sec => ({
           ...sec,
-          items: sec.items.filter(i => i.id === 'my-profile' || i.id === 'team-profile' || i.id === 'project-details' || i.id === 'project-status' || i.id === 'attendance' || i.id === 'mentor-request' || i.id === 'mentor-vote' || i.id === 'event-info' || i.id === 'event-details')
+          items: sec.items.filter(i => i.id === 'my-profile' || i.id === 'team-profile' || i.id === 'project-details' || i.id === 'project-status' || i.id === 'attendance' || i.id === 'mentor-request' || i.id === 'mentor-vote' || i.id === 'project-review' || i.id === 'event-info' || i.id === 'event-details')
         })).filter(sec => sec.items.length > 0);
     const activeItem=VISIBLE_NAV_SECTIONS.flatMap(s=>s.items).find(i=>i.id===active);
     const displayName = profile?.name || user?.name || 'Student';
@@ -2834,7 +2838,9 @@ import EventDetails from "@/app/dashboard/components/EventDetails";
               active==="event-info"?<EventInfo user={user} psDate={psDate}/>:
               active==="event-details"?<EventDetails/>:
               active==="mentor-request"?<MentorRequest user={user}/>:
-              active==="mentor-vote"?<MentorVoteSection user={user}/>:(
+              active==="mentor-vote"?<MentorVoteSection user={user}/>:
+              active==="project-review"?<ProjectReview user={user}/>:
+              active==="project-review-admin"?<AdminProjectReview user={user}/>:(
                 <div className="page-placeholder">
                   <div className="page-icon">{activeItem&&<activeItem.icon size={36}/>}</div>
                   <div className="page-label">{PAGE_TITLES[active]}</div>
