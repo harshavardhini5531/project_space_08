@@ -10,6 +10,7 @@
 
 import { supabase } from '@/lib/supabase';
 import { validateRepoUrl } from '@/lib/github-fetch';
+import { syncSubmissionToDevApi } from '@/lib/dev-api-sync';
 
 // ─────────────────────────────────────────────────────────────────
 // Required form fields (must match developer's MongoDB schema)
@@ -305,7 +306,29 @@ export async function POST(request) {
       );
     }
 
-    // ───── 11. Success — return submission details + repo metadata ─────
+    // ───── 11. Fire-and-forget: sync to developer's API (non-blocking) ─────
+    // We don't await this — student response is fast.
+    // If it fails, retry cron will handle it.
+    const fullSubmissionForSync = {
+      id: result.data.id,
+      team_number: teamNumber,
+      ...submissionPayload,
+    };
+    syncSubmissionToDevApi(fullSubmissionForSync)
+      .then((syncResult) => {
+        if (syncResult.ok) {
+          console.log(`[submit] Dev API sync OK for ${teamNumber}: ${syncResult.dev_api_id}`);
+        } else {
+          console.warn(`[submit] Dev API sync FAILED for ${teamNumber}: ${syncResult.error} (will retry)`);
+        }
+      })
+      .catch((err) => {
+        // This shouldn't happen because syncSubmissionToDevApi never throws,
+        // but just in case — log it.
+        console.error(`[submit] Dev API sync THREW for ${teamNumber}:`, err.message);
+      });
+
+    // ───── 12. Success — return submission details + repo metadata ─────
     return Response.json({
       ok: true,
       message: 'Project submitted successfully! Your AI review will be ready when admin runs the batch.',
