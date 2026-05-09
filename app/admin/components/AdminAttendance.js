@@ -648,33 +648,143 @@ function StudentsPane({ students }) {
 
 function UploadPane({ onUploaded }) {
   const [file, setFile] = useState(null)
+  const [mode, setMode] = useState('dark')
+  const [date, setDate] = useState(() => new Date().toISOString().split('T')[0])
   const [uploading, setUploading] = useState(false)
-  const [msg, setMsg] = useState(null)
+  const [result, setResult] = useState(null)
+
+  const MODE_OPTIONS = [
+    { value: 'bright', label: 'Bright Mode (Morning · 9:30 AM)', color: '#EEA727' },
+    { value: 'light',  label: 'Light Mode (Afternoon · 1:30 PM)', color: '#fd1c00' },
+    { value: 'dark',   label: 'Dark Mode (Evening · 5:30 PM)',   color: '#7B2FBE' },
+    { value: 'project-street', label: 'Project Street (Special Event)', color: '#10b981' },
+  ]
 
   async function handleUpload() {
-    if (!file) return
-    setUploading(true); setMsg(null)
+    if (!file) { setResult({ ok: false, error: 'Please select a file first' }); return }
+    if (!mode) { setResult({ ok: false, error: 'Please select a mode' }); return }
+    if (!date) { setResult({ ok: false, error: 'Please select a date' }); return }
+
+    setUploading(true); setResult(null)
     try {
       const fd = new FormData()
       fd.append('file', file)
-      const r = await fetch('/api/attendance/upload-dark-mode', { method: 'POST', body: fd })
+      fd.append('mode', mode)
+      fd.append('date', date)
+      const r = await fetch('/api/attendance/manual-upload', { method: 'POST', body: fd })
       const d = await r.json()
-      setMsg({ ok: r.ok, text: d.message || (r.ok ? 'Uploaded successfully' : d.error || 'Upload failed') })
-      if (r.ok && onUploaded) onUploaded()
-    } catch { setMsg({ ok: false, text: 'Network error' }) }
-    finally { setUploading(false) }
+      setResult(d)
+      if (d.ok && onUploaded) onUploaded()
+    } catch (e) {
+      setResult({ ok: false, error: 'Network error: ' + e.message })
+    } finally {
+      setUploading(false)
+    }
   }
+
+  function downloadSample() {
+    window.open('/api/attendance/manual-upload', '_blank')
+  }
+
+  const selectedMode = MODE_OPTIONS.find(m => m.value === mode)
 
   return (
     <div className="up-pane">
       <div className="up-card">
-        <div className="up-h">Manual Dark Mode Upload</div>
-        <div className="up-sub">Upload Excel/CSV with roll numbers to mark attendance for dark mode (5–8 PM window).</div>
-        <input type="file" accept=".xlsx,.xls,.csv" onChange={e => setFile(e.target.files[0])} className="up-input"/>
-        <button className="up-btn" onClick={handleUpload} disabled={!file || uploading}>
-          {uploading ? 'Uploading...' : 'Upload & Process'}
+        <div className="up-h">Manual Attendance Upload</div>
+        <div className="up-sub">Upload Excel/CSV with roll numbers to mark attendance. Pick mode + date below.</div>
+
+        {/* Mode + Date controls */}
+        <div className="up-controls">
+          <div className="up-ctrl">
+            <label className="up-lbl">Mode</label>
+            <select className="up-select" value={mode} onChange={e => setMode(e.target.value)} disabled={uploading}>
+              {MODE_OPTIONS.map(o => (
+                <option key={o.value} value={o.value} style={{ background: '#13101a' }}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+            {selectedMode && (
+              <span className="up-mode-dot" style={{ background: selectedMode.color }} />
+            )}
+          </div>
+
+          <div className="up-ctrl">
+            <label className="up-lbl">Date</label>
+            <input
+              type="date"
+              className="up-date"
+              value={date}
+              onChange={e => setDate(e.target.value)}
+              disabled={uploading}
+              max={new Date().toISOString().split('T')[0]}
+            />
+          </div>
+        </div>
+
+        {/* Sample download */}
+        <div className="up-sample">
+          <div className="up-sample-text">
+            <strong>File format:</strong> Single column "roll_number" (header optional). Examples: 23A91A61G9, 24P3A0501.
+          </div>
+          <button type="button" className="up-sample-btn" onClick={downloadSample}>
+            ↓ Download Sample
+          </button>
+        </div>
+
+        {/* File picker */}
+        <label className="up-file-wrap">
+          <span className="up-lbl">Upload File (.csv, .xlsx, .xls)</span>
+          <input
+            type="file"
+            accept=".xlsx,.xls,.csv"
+            onChange={e => { setFile(e.target.files[0]); setResult(null) }}
+            className="up-input"
+            disabled={uploading}
+          />
+          {file && <div className="up-file-info">Selected: {file.name} ({(file.size / 1024).toFixed(1)} KB)</div>}
+        </label>
+
+        {/* Upload button */}
+        <button className="up-btn" onClick={handleUpload} disabled={!file || !mode || !date || uploading}>
+          {uploading ? '⏳ Processing...' : `Upload & Mark ${selectedMode?.label.split(' (')[0] || 'Attendance'}`}
         </button>
-        {msg && <div className={`up-msg ${msg.ok ? 'ok' : 'err'}`}>{msg.text}</div>}
+
+        {/* Result */}
+        {result && (
+          <div className={`up-result ${result.ok ? 'ok' : 'err'}`}>
+            {result.ok ? (
+              <>
+                <div className="up-result-h">✓ Upload Successful</div>
+                <div className="up-result-stats">
+                  <div className="up-stat"><span className="up-stat-v" style={{ color: '#4ade80' }}>{result.inserted ?? 0}</span><span className="up-stat-l">Marked Present</span></div>
+                  <div className="up-stat"><span className="up-stat-v" style={{ color: '#EEA727' }}>{result.skipped_duplicate ?? 0}</span><span className="up-stat-l">Already Marked</span></div>
+                  <div className="up-stat"><span className="up-stat-v" style={{ color: '#fd1c00' }}>{result.skipped_invalid ?? 0}</span><span className="up-stat-l">Invalid Roll</span></div>
+                  <div className="up-stat"><span className="up-stat-v" style={{ color: 'rgba(255,255,255,.7)' }}>{result.total_in_file ?? 0}</span><span className="up-stat-l">Total in File</span></div>
+                </div>
+                {result.message && <div className="up-result-msg">{result.message}</div>}
+                {result.invalid_rolls_preview?.length > 0 && (
+                  <div className="up-invalid">
+                    <strong>Invalid rolls (preview):</strong> {result.invalid_rolls_preview.join(', ')}
+                    {result.skipped_invalid > result.invalid_rolls_preview.length && ` ...and ${result.skipped_invalid - result.invalid_rolls_preview.length} more`}
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <div className="up-result-h">✗ Upload Failed</div>
+                <div className="up-result-msg">{result.error || 'Unknown error'}</div>
+                {result.detail && <div className="up-result-detail">{result.detail}</div>}
+                {result.invalid_rolls?.length > 0 && (
+                  <div className="up-invalid">
+                    <strong>Invalid rolls:</strong> {result.invalid_rolls.join(', ')}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -717,7 +827,42 @@ function Styles({ syncing }) {
       .aa-sync:disabled{opacity:.5;cursor:wait}
 
       .aa-toast{padding:7px 13px;margin-bottom:12px;border-radius:8px;font-size:.7rem;font-weight:600}
-      .aa-toast.ok{background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.2);color:#4ade80}
+      .up-msg.ok{color:#4ade80;background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.3)}
+      .up-msg.err{color:#fd1c00;background:rgba(253,28,0,.08);border-color:rgba(253,28,0,.3)}
+
+      /* Manual Upload Pane v2 */
+      .up-controls{display:flex;gap:14px;margin:14px 0;flex-wrap:wrap}
+      .up-ctrl{flex:1;min-width:200px;display:flex;flex-direction:column;gap:5px;position:relative}
+      .up-lbl{font-size:.62rem;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1.2px;font-weight:700}
+      .up-select{padding:9px 12px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:#fff;font-family:'DM Sans',sans-serif;font-size:.78rem;outline:none;cursor:pointer;appearance:auto}
+      .up-select:focus{border-color:rgba(238,167,39,.4);background:rgba(255,255,255,.06)}
+      .up-mode-dot{position:absolute;right:30px;top:32px;width:8px;height:8px;border-radius:50%;pointer-events:none;box-shadow:0 0 6px currentColor}
+      .up-date{padding:9px 12px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:#fff;font-family:'DM Sans',sans-serif;font-size:.78rem;outline:none;cursor:pointer;color-scheme:dark}
+      .up-date:focus{border-color:rgba(238,167,39,.4);background:rgba(255,255,255,.06)}
+
+      .up-sample{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:11px 14px;border-radius:9px;background:rgba(238,167,39,.05);border:1px solid rgba(238,167,39,.15);margin-bottom:12px;flex-wrap:wrap}
+      .up-sample-text{font-size:.7rem;color:rgba(255,255,255,.7);line-height:1.5;flex:1;min-width:200px}
+      .up-sample-text strong{color:#EEA727}
+      .up-sample-btn{padding:7px 14px;border-radius:7px;background:rgba(238,167,39,.12);border:1px solid rgba(238,167,39,.4);color:#EEA727;font-family:'DM Sans',sans-serif;font-size:.7rem;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap}
+      .up-sample-btn:hover{background:rgba(238,167,39,.2)}
+
+      .up-file-wrap{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+      .up-file-info{font-size:.7rem;color:rgba(255,255,255,.5);margin-top:4px}
+
+      .up-result{margin-top:14px;padding:14px 16px;border-radius:10px;border:1px solid;animation:aaIn .25s ease both}
+      .up-result.ok{background:rgba(74,222,128,.05);border-color:rgba(74,222,128,.25)}
+      .up-result.err{background:rgba(253,28,0,.05);border-color:rgba(253,28,0,.25)}
+      .up-result-h{font-size:.85rem;font-weight:700;margin-bottom:8px}
+      .up-result.ok .up-result-h{color:#4ade80}
+      .up-result.err .up-result-h{color:#fd1c00}
+      .up-result-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin:10px 0}
+      .up-stat{display:flex;flex-direction:column;gap:2px;padding:8px 10px;border-radius:7px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06)}
+      .up-stat-v{font-family:'Astro','Orbitron','DM Sans',sans-serif;font-size:1.2rem;font-weight:800;letter-spacing:.5px;line-height:1}
+      .up-stat-l{font-size:.6rem;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1.1px;font-weight:600}
+      .up-result-msg{font-size:.78rem;color:rgba(255,255,255,.75);margin-top:6px;line-height:1.5}
+      .up-result-detail{font-size:.7rem;color:rgba(255,255,255,.5);margin-top:4px;font-family:monospace}
+      .up-invalid{margin-top:10px;padding:9px 12px;border-radius:7px;background:rgba(253,28,0,.04);border:1px solid rgba(253,28,0,.15);font-size:.7rem;color:rgba(255,255,255,.65);line-height:1.6;word-break:break-word}
+      .up-invalid strong{color:#fd1c00}
       .aa-toast.err{background:rgba(253,28,0,.08);border:1px solid rgba(253,28,0,.2);color:#ff6040}
 
       /* Major cards */
