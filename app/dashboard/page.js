@@ -35,17 +35,13 @@ import EventDetails from "@/app/dashboard/components/EventDetails";
     ]},
     { title:"Services", items:[
       {id:"mentor-request",label:"Mentor Request",icon:GraduationCap},
-      {id:"food-section",label:"Food Section",icon:UtensilsCrossed},
-      {id:"explore-teams",label:"Explore Teams",icon:Compass},
     ]},
     { title:"Updates", items:[
       {id:"event-info",label:"Event Info",icon:MapPin},
       {id:"event-details",label:"Event Details",icon:CalendarDays},
-      {id:"announcements",label:"Announcements",icon:Megaphone},
       {id:"mentor-vote",label:"Mentor Vote",icon:Heart},
       {id:"project-review",label:"Project Review",icon:Sparkles},
       {id:"review-report",label:"Review Report",icon:FileText},
-      {id:"space-jam",label:"Space Jam",icon:Rocket},
     ]},
   ];
   const PAGE_TITLES={"my-profile":"My Profile","team-profile":"Team Profile","project-details":"Project Details","project-status":"Project Status","mentor-request":"Mentor Request","food-section":"Food Section","explore-teams":"Explore Teams","event-info":"Event Info","event-details":"Event Details","announcements":"Announcements","mentor-vote":"Mentor Vote","project-review":"Project Review","review-report":"Review Report","space-jam":"Space Jam","attendance":"My Attendance",};
@@ -2310,15 +2306,8 @@ import EventDetails from "@/app/dashboard/components/EventDetails";
       } else { setLoading(false); }
     },[]);
 
-    // Only admin roll sees all sections; others see core tabs + mentor-request, mentor-vote, attendance
-    const ADMIN_ROLL = '23A91A61G9';
-    const isAdmin = ((user?.rollNumber) || '').toUpperCase() === ADMIN_ROLL;
-    const VISIBLE_NAV_SECTIONS = isAdmin
-      ? NAV_SECTIONS
-      : NAV_SECTIONS.map(sec => ({
-          ...sec,
-          items: sec.items.filter(i => i.id === 'my-profile' || i.id === 'team-profile' || i.id === 'project-details' || i.id === 'project-status' || i.id === 'attendance' || i.id === 'mentor-request' || i.id === 'mentor-vote' || i.id === 'project-review' || i.id === 'event-info' || i.id === 'event-details')
-        })).filter(sec => sec.items.length > 0);
+    // All students see the same sidebar — no admin filter
+    const VISIBLE_NAV_SECTIONS = NAV_SECTIONS;
     const activeItem=VISIBLE_NAV_SECTIONS.flatMap(s=>s.items).find(i=>i.id===active);
     const displayName = profile?.name || user?.name || 'Student';
     const displayTeam = user?.teamNumber || user?.team_number || profile?.roll_number || '';
