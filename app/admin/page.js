@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import AuthBackground from '@/components/AuthBackground'
 import AdminAttendance from '@/app/admin/components/AdminAttendance'
+import AdminReviewScores from '@/app/admin/components/AdminReviewScores'
 import AdminProjectStreet from '@/app/admin/components/AdminProjectStreet'
    import AdminProjectReview from '@/app/dashboard/components/AdminProjectReview'
 import MentorVoteLeaderboard from './MentorVoteLeaderboard';
@@ -206,6 +207,7 @@ export default function AdminDashboard() {
     {id:'linkedin-stats',label:'LinkedIn Stats',icon:IC.share},
     {id:'mentor-vote',label:'Mentor Vote',icon:IC.share},
     {id:'project-review',label:'Project Review',icon:IC.target},
+    {id:'review-scores',label:'Review Scores',icon:IC.target},
     {id:'attendance',label:'Attendance',icon:IC.cal},
     {id:'report-card',label:'Report Card',icon:IC.file},
   ]
@@ -1519,6 +1521,7 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
 
             {/* ATTENDANCE */}
             {activeTab === 'attendance' && <AdminAttendance/>}
+            {activeTab === 'review-scores' && <AdminReviewScores adminEmail={email}/>}
             {activeTab === 'project-street' && <AdminProjectStreet/>}
             {activeTab === 'project-review' && <AdminProjectReview user={{ email: email, rollNumber: 'admin' }}/>}
 

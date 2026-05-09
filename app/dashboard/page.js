@@ -13,6 +13,7 @@ import EventDetails from "@/app/dashboard/components/EventDetails";
   import StudentAttendance from "@/app/dashboard/components/StudentAttendance";
   import MentorVoteSection from "./MentorVoteSection";
   import ProjectReview from "@/app/dashboard/components/ProjectReview";
+  import StudentReviewReport from "@/app/dashboard/components/StudentReviewReport";
   import {
     User, Users, FolderKanban, Activity, GraduationCap,
     UtensilsCrossed, Compass, CalendarDays, Megaphone, Heart,
@@ -43,10 +44,11 @@ import EventDetails from "@/app/dashboard/components/EventDetails";
       {id:"announcements",label:"Announcements",icon:Megaphone},
       {id:"mentor-vote",label:"Mentor Vote",icon:Heart},
       {id:"project-review",label:"Project Review",icon:Sparkles},
+      {id:"review-report",label:"Review Report",icon:FileText},
       {id:"space-jam",label:"Space Jam",icon:Rocket},
     ]},
   ];
-  const PAGE_TITLES={"my-profile":"My Profile","team-profile":"Team Profile","project-details":"Project Details","project-status":"Project Status","mentor-request":"Mentor Request","food-section":"Food Section","explore-teams":"Explore Teams","event-info":"Event Info","event-details":"Event Details","announcements":"Announcements","mentor-vote":"Mentor Vote","project-review":"Project Review","space-jam":"Space Jam","attendance":"My Attendance",};
+  const PAGE_TITLES={"my-profile":"My Profile","team-profile":"Team Profile","project-details":"Project Details","project-status":"Project Status","mentor-request":"Mentor Request","food-section":"Food Section","explore-teams":"Explore Teams","event-info":"Event Info","event-details":"Event Details","announcements":"Announcements","mentor-vote":"Mentor Vote","project-review":"Project Review","review-report":"Review Report","space-jam":"Space Jam","attendance":"My Attendance",};
 
   /* ═══ HELPER COMPONENTS ═══ */
   function StatCard({icon:Icon,label,value,color="#ff1d00"}){
@@ -2837,7 +2839,8 @@ import EventDetails from "@/app/dashboard/components/EventDetails";
               active==="event-details"?<EventDetails/>:
               active==="mentor-request"?<MentorRequest user={user}/>:
               active==="mentor-vote"?<MentorVoteSection user={user}/>:
-              active==="project-review"?<ProjectReview user={user}/>:(
+              active==="project-review"?<ProjectReview user={user}/>:
+              active==="review-report"?<StudentReviewReport user={user}/>:(
                 <div className="page-placeholder">
                   <div className="page-icon">{activeItem&&<activeItem.icon size={36}/>}</div>
                   <div className="page-label">{PAGE_TITLES[active]}</div>
