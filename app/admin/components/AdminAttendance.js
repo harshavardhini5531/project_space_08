@@ -690,6 +690,7 @@ function UploadPane({ onUploaded }) {
 
   return (
     <div className="up-pane">
+      <div className="up-cards-row">
       <div className="up-card">
         <div className="up-h">Manual Attendance Upload</div>
         <div className="up-sub">Upload Excel/CSV with roll numbers to mark attendance. Pick mode + date below.</div>
@@ -786,11 +787,97 @@ function UploadPane({ onUploaded }) {
           </div>
         )}
       </div>
+
+      {/* Download Attendance card */}
+      <DownloadPane />
+
+      </div>
     </div>
   )
 }
 
-/* ─────────────────────────────────────── HELPERS ─────────────────────────────────────── */
+function DownloadPane() {
+  const [mode, setMode] = useState('light')
+  const [date, setDate] = useState(() => new Date().toISOString().split('T')[0])
+  const [downloading, setDownloading] = useState(false)
+  const [msg, setMsg] = useState(null)
+
+  const MODE_OPTIONS = [
+    { value: 'light',  label: 'Light Mode (Morning · 7 AM – 12 PM)', color: '#fcd34d' },
+    { value: 'bright', label: 'Bright Mode (Afternoon · 12 PM – 4 PM)', color: '#fdba74' },
+    { value: 'dark',   label: 'Dark Mode / Project Street (4 PM – 7:30 PM)', color: '#d8b4fe' },
+    { value: 'moon',   label: 'Moon Mode (Night · 7:30 PM – 12 AM)', color: '#93c5fd' },
+  ]
+
+  async function handleDownload() {
+    if (!mode || !date) { setMsg({ ok: false, text: 'Pick mode and date first' }); return }
+    setDownloading(true); setMsg(null)
+    try {
+      const url = `/api/attendance/download?mode=${encodeURIComponent(mode)}&date=${encodeURIComponent(date)}`
+      const r = await fetch(url)
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}))
+        setMsg({ ok: false, text: err.error || `Download failed (HTTP ${r.status})` })
+        return
+      }
+      const total = r.headers.get('X-Total-Count') || '?'
+      const blob = await r.blob()
+      const downloadUrl = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = downloadUrl
+      a.download = `attendance_${mode}_${date}.xlsx`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      window.URL.revokeObjectURL(downloadUrl)
+      setMsg({ ok: true, text: `Downloaded ${total} roll number${total !== '1' ? 's' : ''} for ${mode} mode on ${date}` })
+    } catch (e) {
+      setMsg({ ok: false, text: 'Download error: ' + e.message })
+    } finally {
+      setDownloading(false)
+    }
+  }
+
+  const selectedMode = MODE_OPTIONS.find(m => m.value === mode)
+
+  return (
+    <div className="up-card">
+      <div className="up-h">Download Attendance</div>
+      <div className="up-sub">Download roll numbers of students present for a specific mode + date.</div>
+
+      <div className="up-controls">
+        <div className="up-ctrl">
+          <label className="up-lbl">Mode</label>
+          <select className="up-select" value={mode} onChange={e => { setMode(e.target.value); setMsg(null) }} disabled={downloading}>
+            {MODE_OPTIONS.map(o => (
+              <option key={o.value} value={o.value} style={{ background: '#13101a' }}>{o.label}</option>
+            ))}
+          </select>
+          {selectedMode && <span className="up-mode-dot" style={{ background: selectedMode.color }} />}
+        </div>
+        <div className="up-ctrl">
+          <label className="up-lbl">Date</label>
+          <input
+            type="date"
+            className="up-date"
+            value={date}
+            onChange={e => { setDate(e.target.value); setMsg(null) }}
+            disabled={downloading}
+            max={new Date().toISOString().split('T')[0]}
+          />
+        </div>
+      </div>
+
+      <button className="up-btn up-btn-dl" onClick={handleDownload} disabled={!mode || !date || downloading}>
+        {downloading ? '⏳ Preparing...' : `↓ Download ${selectedMode?.label.split(' (')[0] || ''} (${date})`}
+      </button>
+
+      {msg && (
+        <div className={`up-msg ${msg.ok ? 'ok' : 'err'}`}>{msg.text}</div>
+      )}
+    </div>
+  )
+}
 
 function Card({ label, value, sub, variant }) {
   return (
@@ -831,6 +918,9 @@ function Styles({ syncing }) {
       .up-msg.err{color:#fd1c00;background:rgba(253,28,0,.08);border-color:rgba(253,28,0,.3)}
 
       /* Manual Upload Pane v2 */
+      .up-cards-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:14px;align-items:start}
+      .up-btn-dl{background:linear-gradient(135deg,rgba(74,222,128,.15),rgba(34,197,94,.08));border-color:rgba(74,222,128,.35);color:#4ade80}
+      .up-btn-dl:hover:not(:disabled){background:rgba(74,222,128,.22)}
       .up-controls{display:flex;gap:14px;margin:14px 0;flex-wrap:wrap}
       .up-ctrl{flex:1;min-width:200px;display:flex;flex-direction:column;gap:5px;position:relative}
       .up-lbl{font-size:.62rem;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1.2px;font-weight:700}
