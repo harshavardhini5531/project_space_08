@@ -648,16 +648,16 @@ function StudentsPane({ students }) {
 
 function UploadPane({ onUploaded }) {
   const [file, setFile] = useState(null)
-  const [mode, setMode] = useState('dark')
+  const [mode, setMode] = useState('light')
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0])
   const [uploading, setUploading] = useState(false)
   const [result, setResult] = useState(null)
 
   const MODE_OPTIONS = [
-    { value: 'bright', label: 'Bright Mode (Morning · 9:30 AM)', color: '#EEA727' },
-    { value: 'light',  label: 'Light Mode (Afternoon · 1:30 PM)', color: '#fd1c00' },
-    { value: 'dark',   label: 'Dark Mode (Evening · 5:30 PM)',   color: '#7B2FBE' },
-    { value: 'project-street', label: 'Project Street (Special Event)', color: '#10b981' },
+    { value: 'light',  label: 'Light Mode (Morning · 7 AM – 12 PM)', color: '#fcd34d' },
+    { value: 'bright', label: 'Bright Mode (Afternoon · 12 PM – 4 PM)', color: '#fdba74' },
+    { value: 'dark',   label: 'Dark Mode / Project Street (4 PM – 7:30 PM)', color: '#d8b4fe' },
+    { value: 'moon',   label: 'Moon Mode (Night · 7:30 PM – 12 AM)', color: '#93c5fd' },
   ]
 
   async function handleUpload() {

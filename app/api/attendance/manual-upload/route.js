@@ -25,33 +25,33 @@ const supabase = createClient(
 // All modes use device_serial='MANUAL' to distinguish from real device punches
 // ─────────────────────────────────────────────────────────────
 const MODE_CONFIG = {
-  bright: {
-    punch_mode: 'bright',
-    punch_label: 'Bright Mode (Manual)',
-    // Bright = morning slot, 9:30 AM IST = 04:00 UTC
-    utc_time: '04:00:00.000Z',
-    display: 'Bright Mode',
-  },
   light: {
     punch_mode: 'light',
     punch_label: 'Light Mode (Manual)',
-    // Light = afternoon slot, 1:30 PM IST = 08:00 UTC
-    utc_time: '08:00:00.000Z',
+    // Light = morning slot (7 AM - 12 PM IST), midpoint 9:30 AM IST = 04:00 UTC
+    utc_time: '04:00:00.000Z',
     display: 'Light Mode',
+  },
+  bright: {
+    punch_mode: 'bright',
+    punch_label: 'Bright Mode (Manual)',
+    // Bright = afternoon slot (12 PM - 4 PM IST), midpoint 2:00 PM IST = 08:30 UTC
+    utc_time: '08:30:00.000Z',
+    display: 'Bright Mode',
   },
   dark: {
     punch_mode: 'dark',
-    punch_label: 'Dark Mode (Manual)',
-    // Dark = evening slot, 5:30 PM IST = 12:00 UTC
-    utc_time: '12:00:00.000Z',
-    display: 'Dark Mode',
+    punch_label: 'Dark Mode / Project Street (Manual)',
+    // Dark = evening slot (4 PM - 7:30 PM IST), Project Street same. Midpoint 5:45 PM IST = 12:15 UTC
+    utc_time: '12:15:00.000Z',
+    display: 'Dark Mode / Project Street',
   },
-  'project-street': {
-    punch_mode: 'dark', // Same DB value as dark per existing convention
-    punch_label: 'Project Street (Manual)',
-    // Project Street = special evening slot
-    utc_time: '12:30:00.000Z',
-    display: 'Project Street',
+  moon: {
+    punch_mode: 'moon',
+    punch_label: 'Moon Mode (Manual)',
+    // Moon = night slot (7:30 PM - 12 AM IST), midpoint 9:45 PM IST = 16:15 UTC
+    utc_time: '16:15:00.000Z',
+    display: 'Moon Mode',
   },
 }
 
