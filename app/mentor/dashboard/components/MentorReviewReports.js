@@ -319,16 +319,27 @@ function ReportView({ mentor, teamNumber, onBack }) {
           <div>Score breakdown</div>
           <span className="mrr-hint">Δ vs previous</span>
         </div>
-        <div className="mrr-bars">
+        <div className="mrr-donuts">
           {CRITERIA_KEYS.map(key => {
             const score = latest.scores?.[key]
             const d = delta_from_previous?.breakdown?.[key]
+            const cls = scoreClass(score)
+            const colorMap = { 'mrr-s-green':'#4ade80', 'mrr-s-amber':'#EEA727', 'mrr-s-orange':'#ff5349', 'mrr-s-red':'#fd1c00', 'mrr-s-na':'rgba(255,255,255,0.3)' }
+            const stroke = colorMap[cls] || colorMap['mrr-s-na']
+            const C = 2 * Math.PI * 32
+            const pct = Math.max(0, Math.min(100, score || 0))
+            const offset = C - (pct / 100) * C
             return (
-              <div key={key} className="mrr-bar-row">
-                <div className="mrr-bar-l">{CRITERIA_LABELS[key]}</div>
-                <div className="mrr-bar-track"><div className={`mrr-bar-fill ${scoreClass(score)}`} style={{ width: `${Math.max(0, Math.min(100, score || 0))}%` }}/></div>
-                <div className="mrr-bar-v">{score ?? '—'}</div>
-                <div className={`mrr-bar-d ${deltaClass(d)}`}>{d == null ? '—' : (d > 0 ? '+' : '') + d}</div>
+              <div key={key} className="mrr-donut-cell">
+                <svg viewBox="0 0 80 80" className="mrr-donut">
+                  <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="6"/>
+                  <circle cx="40" cy="40" r="32" fill="none" stroke={stroke} strokeWidth="6" strokeDasharray={C} strokeDashoffset={offset} strokeLinecap="round" transform="rotate(-90 40 40)"/>
+                  <text x="40" y="46" textAnchor="middle" fill={stroke} fontSize="22" fontWeight="700" fontFamily="'DM Sans',sans-serif">{score ?? '—'}</text>
+                </svg>
+                <div className="mrr-donut-label">{CRITERIA_LABELS[key]}</div>
+                <div className={`mrr-donut-delta ${deltaClass(d)}`}>
+                  {d == null ? <span>First run</span> : d === 0 ? <span>No change</span> : <><span>{d > 0 ? '+' : ''}{d}</span> <span className="mrr-donut-arrow">{d > 0 ? '↑' : '↓'}</span></>}
+                </div>
               </div>
             )
           })}
@@ -602,13 +613,14 @@ function Styles() {
       .mrr-d-down,.mrr-d-down *{color:#fd1c00}
       .mrr-d-neutral{color:rgba(255,255,255,.4)}
 
-      .mrr-bars{display:flex;flex-direction:column;gap:9px}
-      .mrr-bar-row{display:grid;grid-template-columns:170px 1fr 50px 50px;gap:10px;align-items:center}
-      .mrr-bar-l{font-size:.78rem;color:rgba(255,255,255,.85)}
-      .mrr-bar-track{background:rgba(255,255,255,.04);height:8px;border-radius:999px;overflow:hidden}
-      .mrr-bar-fill{height:100%;border-radius:999px;transition:width .4s ease}
-      .mrr-bar-v{font-size:.85rem;font-weight:700;text-align:right}
-      .mrr-bar-d{font-size:.7rem;text-align:right;font-weight:700}
+      .mrr-donuts{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+      .mrr-donut-cell{display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 4px;border-radius:10px;transition:background .2s}
+      .mrr-donut-cell:hover{background:rgba(255,255,255,.02)}
+      .mrr-donut{width:88px;height:88px;display:block}
+      .mrr-donut circle{transition:stroke-dashoffset .6s ease}
+      .mrr-donut-label{font-size:.72rem;color:rgba(255,255,255,.85);text-align:center;line-height:1.3;min-height:30px;display:flex;align-items:center;justify-content:center}
+      .mrr-donut-delta{font-size:.7rem;font-weight:700;text-align:center;display:flex;align-items:center;gap:3px;justify-content:center}
+      .mrr-donut-arrow{font-size:.85rem}
 
       .mrr-s-green,.mrr-bar-fill.mrr-s-green{background:#4ade80;color:#4ade80}
       .mrr-s-amber,.mrr-bar-fill.mrr-s-amber{background:#EEA727;color:#EEA727}
@@ -654,8 +666,13 @@ function Styles() {
 
       @media (max-width: 768px) {
         .mrr-row-2{grid-template-columns:1fr}
-        .mrr-bar-row{grid-template-columns:130px 1fr 40px 40px;gap:6px}
-        .mrr-bar-l{font-size:.7rem}
+        .mrr-donuts{grid-template-columns:repeat(3,1fr);gap:6px}
+        .mrr-donut{width:72px;height:72px}
+        .mrr-donut-label{font-size:.65rem;min-height:26px}
+        .mrr-donut-delta{font-size:.62rem}
+      }
+      @media (max-width: 480px) {
+        .mrr-donuts{grid-template-columns:repeat(2,1fr)}
       }
     `}</style>
   )

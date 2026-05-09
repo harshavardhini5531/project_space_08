@@ -145,16 +145,27 @@ export default function StudentReviewReport({ user }) {
           <div>Score breakdown</div>
           <span className="rr-hint">Δ vs previous</span>
         </div>
-        <div className="rr-bars">
+        <div className="rr-donuts">
           {CRITERIA_KEYS.map(key => {
             const score = latest.scores?.[key]
             const d = delta_from_previous?.breakdown?.[key]
+            const cls = scoreColorClass(score)
+            const colorMap = { 'rr-score-green':'#4ade80', 'rr-score-amber':'#EEA727', 'rr-score-orange':'#ff5349', 'rr-score-red':'#fd1c00', 'rr-score-na':'rgba(255,255,255,0.3)' }
+            const stroke = colorMap[cls] || colorMap['rr-score-na']
+            const C = 2 * Math.PI * 32
+            const pct = Math.max(0, Math.min(100, score || 0))
+            const offset = C - (pct / 100) * C
             return (
-              <div key={key} className="rr-bar-row">
-                <div className="rr-bar-l">{CRITERIA_LABELS[key]}</div>
-                <div className="rr-bar-track"><div className={`rr-bar-fill ${scoreColorClass(score)}`} style={{ width: `${Math.max(0, Math.min(100, score || 0))}%` }}/></div>
-                <div className="rr-bar-v">{score ?? '—'}</div>
-                <div className={`rr-bar-d ${deltaClass(d)}`}>{d == null ? '—' : (d > 0 ? '+' : '') + d}</div>
+              <div key={key} className="rr-donut-cell">
+                <svg viewBox="0 0 80 80" className="rr-donut">
+                  <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="6"/>
+                  <circle cx="40" cy="40" r="32" fill="none" stroke={stroke} strokeWidth="6" strokeDasharray={C} strokeDashoffset={offset} strokeLinecap="round" transform="rotate(-90 40 40)"/>
+                  <text x="40" y="46" textAnchor="middle" fill={stroke} fontSize="22" fontWeight="700" fontFamily="'DM Sans',sans-serif">{score ?? '—'}</text>
+                </svg>
+                <div className="rr-donut-label">{CRITERIA_LABELS[key]}</div>
+                <div className={`rr-donut-delta ${deltaClass(d)}`}>
+                  {d == null ? <span>First run</span> : d === 0 ? <span>No change</span> : <><span>{d > 0 ? '+' : ''}{d}</span> <span className="rr-donut-arrow">{d > 0 ? '↑' : '↓'}</span></>}
+                </div>
               </div>
             )
           })}
@@ -369,13 +380,14 @@ function Styles() {
       .rr-section-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font-size:.9rem;font-weight:700}
       .rr-hint{font-size:.65rem;color:rgba(255,255,255,.4);font-weight:500}
 
-      .rr-bars{display:flex;flex-direction:column;gap:9px}
-      .rr-bar-row{display:grid;grid-template-columns:160px 1fr 50px 50px;gap:10px;align-items:center}
-      .rr-bar-l{font-size:.78rem;color:rgba(255,255,255,.85)}
-      .rr-bar-track{background:rgba(255,255,255,.04);height:8px;border-radius:999px;overflow:hidden}
-      .rr-bar-fill{height:100%;border-radius:999px;transition:width .4s ease}
-      .rr-bar-v{font-size:.85rem;font-weight:700;text-align:right}
-      .rr-bar-d{font-size:.7rem;text-align:right;font-weight:700}
+      .rr-donuts{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+      .rr-donut-cell{display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 4px;border-radius:10px;transition:background .2s}
+      .rr-donut-cell:hover{background:rgba(255,255,255,.02)}
+      .rr-donut{width:88px;height:88px;display:block}
+      .rr-donut circle{transition:stroke-dashoffset .6s ease}
+      .rr-donut-label{font-size:.72rem;color:rgba(255,255,255,.85);text-align:center;line-height:1.3;min-height:30px;display:flex;align-items:center;justify-content:center}
+      .rr-donut-delta{font-size:.7rem;font-weight:700;text-align:center;display:flex;align-items:center;gap:3px;justify-content:center}
+      .rr-donut-arrow{font-size:.85rem}
 
       .rr-score-green,.rr-bar-fill.rr-score-green{background:#4ade80;color:#4ade80}
       .rr-score-amber,.rr-bar-fill.rr-score-amber{background:#EEA727;color:#EEA727}
@@ -413,9 +425,14 @@ function Styles() {
 
       @media (max-width: 768px) {
         .rr-row-2{grid-template-columns:1fr}
-        .rr-bar-row{grid-template-columns:120px 1fr 40px 40px;gap:6px}
-        .rr-bar-l{font-size:.7rem}
+        .rr-donuts{grid-template-columns:repeat(3,1fr);gap:6px}
+        .rr-donut{width:72px;height:72px}
+        .rr-donut-label{font-size:.65rem;min-height:26px}
+        .rr-donut-delta{font-size:.62rem}
         .rr-card{padding:14px 16px}
+      }
+      @media (max-width: 480px) {
+        .rr-donuts{grid-template-columns:repeat(2,1fr)}
       }
     `}</style>
   )
