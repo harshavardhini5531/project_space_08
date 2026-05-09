@@ -74,7 +74,7 @@ export default function AdminDashboard() {
     // Combined auth check on mount — prevents white flash on reload
     const s = sessionStorage.getItem('admin_token');
     const se = sessionStorage.getItem('adminEmail');
-    if (se) { setEmail(se); sessionStorage.removeItem('adminEmail') }
+    if (se) { setEmail(se) }
     if (s) { setToken(s); setPhase('dashboard') }
     return () => window.removeEventListener('resize', c)
   }, [])
