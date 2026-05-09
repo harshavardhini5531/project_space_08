@@ -102,7 +102,7 @@ export default function AdminDashboard() {
   }
   async function handlePasswordLogin() {
     setError(''); setLoading(true)
-    try { const r = await fetch('/api/admin/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'password-login', email, password }) }); const d = await r.json(); if (!r.ok) { setError(d.error); return }; setToken(d.token); sessionStorage.setItem('admin_token', d.token); setPhase('dashboard'); import('@/lib/pushNotifications').then(mod => mod.registerPushNotifications(email, 'admin')).catch(() => {}) } catch { setError('Network error') } finally { setLoading(false) }
+    try { const r = await fetch('/api/admin/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'password-login', email, password }) }); const d = await r.json(); if (!r.ok) { setError(d.error); return }; setToken(d.token); sessionStorage.setItem('admin_token', d.token); sessionStorage.setItem('adminEmail', email); setPhase('dashboard'); import('@/lib/pushNotifications').then(mod => mod.registerPushNotifications(email, 'admin')).catch(() => {}) } catch { setError('Network error') } finally { setLoading(false) }
   }
   async function handleForgotSendOTP() {
     setError(''); setLoading(true)
@@ -114,7 +114,7 @@ export default function AdminDashboard() {
   }
   async function handleExport(type) { const r = await fetch(`/api/admin/export?type=${type}`, { headers: { 'x-admin-token': token } }); const b = await r.blob(); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = `project-space-${type}.csv`; a.click(); URL.revokeObjectURL(u) }
   async function handleRemind() { setReminding(true); setReminderMsg(''); try { const r = await fetch('/api/admin/remind', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-token': token }, body: JSON.stringify({ type: 'all-pending' }) }); const d = await r.json(); setReminderMsg(d.message || `Sent ${d.sent} reminders`) } catch { setReminderMsg('Failed') } finally { setReminding(false) } }
-  function handleLogout() { sessionStorage.removeItem('admin_token'); setToken(''); setPhase('auth'); setData(null) }
+  function handleLogout() { sessionStorage.removeItem('admin_token'); sessionStorage.removeItem('adminEmail'); setToken(''); setEmail(''); setPhase('auth'); setData(null) }
 
   useEffect(() => { if (phase==='dashboard') { fetchAdLeaderboard(); fetchAdNotifs(); const iv=setInterval(()=>{fetchAdLeaderboard();fetchAdNotifs()},120000); return ()=>clearInterval(iv) } }, [phase])
 
