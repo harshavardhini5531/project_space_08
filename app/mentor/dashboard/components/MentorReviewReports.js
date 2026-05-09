@@ -599,13 +599,13 @@ function Styles() {
       .mrr-hint{font-size:.65rem;color:rgba(255,255,255,.4);font-weight:500}
 
       .mrr-overall{display:flex;align-items:baseline;gap:4px}
-      .mrr-overall-num{font-family:'Astro','Orbitron','DM Sans',sans-serif;font-size:2.5rem;font-weight:800;line-height:1}
+      .mrr-overall-num{font-family:'DM Sans',sans-serif;font-size:2.5rem;font-weight:800;line-height:1}
       .mrr-overall-suf{font-size:.9rem;color:rgba(255,255,255,.4)}
       .mrr-overall-sub{font-size:.65rem;color:rgba(255,255,255,.4);margin-top:6px}
 
       .mrr-delta.mrr-d-up{background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.25)}
       .mrr-delta.mrr-d-down{background:rgba(253,28,0,.05);border-color:rgba(253,28,0,.2)}
-      .mrr-delta-v{display:flex;align-items:baseline;gap:6px;font-family:'Astro','Orbitron','DM Sans',sans-serif;font-size:1.8rem;font-weight:800;line-height:1}
+      .mrr-delta-v{display:flex;align-items:baseline;gap:6px;font-family:'DM Sans',sans-serif;font-size:1.8rem;font-weight:800;line-height:1}
       .mrr-delta-arr{font-size:1.5rem}
       .mrr-delta-na{font-size:.78rem;font-weight:600;color:rgba(255,255,255,.5);font-family:'DM Sans',sans-serif}
 
@@ -622,10 +622,14 @@ function Styles() {
       .mrr-donut-delta{font-size:.7rem;font-weight:700;text-align:center;display:flex;align-items:center;gap:3px;justify-content:center}
       .mrr-donut-arrow{font-size:.85rem}
 
-      .mrr-s-green,.mrr-bar-fill.mrr-s-green{background:#4ade80;color:#4ade80}
-      .mrr-s-amber,.mrr-bar-fill.mrr-s-amber{background:#EEA727;color:#EEA727}
-      .mrr-s-orange,.mrr-bar-fill.mrr-s-orange{background:#fd7000;color:#ff5349}
-      .mrr-s-red,.mrr-bar-fill.mrr-s-red{background:#fd1c00;color:#fd1c00}
+      .mrr-bar-fill.mrr-s-green{background:#4ade80}
+      .mrr-bar-fill.mrr-s-amber{background:#EEA727}
+      .mrr-bar-fill.mrr-s-orange{background:#fd7000}
+      .mrr-bar-fill.mrr-s-red{background:#fd1c00}
+      .mrr-s-green{color:#4ade80;background:transparent}
+      .mrr-s-amber{color:#EEA727;background:transparent}
+      .mrr-s-orange{color:#ff5349;background:transparent}
+      .mrr-s-red{color:#fd1c00;background:transparent}
       .mrr-s-na{color:rgba(255,255,255,.3)}
 
       .mrr-trend{width:100%;height:auto;display:block}

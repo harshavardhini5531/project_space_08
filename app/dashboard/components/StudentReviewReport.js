@@ -361,14 +361,14 @@ function Styles() {
 
       .rr-score-l,.rr-delta-l{font-size:.65rem;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1.1px;font-weight:700;margin-bottom:8px}
       .rr-score-v{display:flex;align-items:baseline;gap:4px}
-      .rr-score-num{font-family:'Astro','Orbitron','DM Sans',sans-serif;font-size:2.5rem;font-weight:800;line-height:1}
+      .rr-score-num{font-family:'DM Sans',sans-serif;font-size:2.5rem;font-weight:800;line-height:1}
       .rr-score-suffix{font-size:.9rem;color:rgba(255,255,255,.4)}
       .rr-score-sub{font-size:.65rem;color:rgba(255,255,255,.4);margin-top:6px}
 
       .rr-delta{}
       .rr-delta.rr-d-up{background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.25)}
       .rr-delta.rr-d-down{background:rgba(253,28,0,.05);border-color:rgba(253,28,0,.2)}
-      .rr-delta-v{display:flex;align-items:baseline;gap:6px;font-family:'Astro','Orbitron','DM Sans',sans-serif;font-size:1.8rem;font-weight:800;line-height:1}
+      .rr-delta-v{display:flex;align-items:baseline;gap:6px;font-family:'DM Sans',sans-serif;font-size:1.8rem;font-weight:800;line-height:1}
       .rr-delta-arrow{font-size:1.5rem}
       .rr-delta-empty{font-size:.78rem;font-weight:600;color:rgba(255,255,255,.5);font-family:'DM Sans',sans-serif}
       .rr-delta-sub{font-size:.65rem;color:rgba(255,255,255,.55);margin-top:6px;font-weight:600}
@@ -389,10 +389,14 @@ function Styles() {
       .rr-donut-delta{font-size:.7rem;font-weight:700;text-align:center;display:flex;align-items:center;gap:3px;justify-content:center}
       .rr-donut-arrow{font-size:.85rem}
 
-      .rr-score-green,.rr-bar-fill.rr-score-green{background:#4ade80;color:#4ade80}
-      .rr-score-amber,.rr-bar-fill.rr-score-amber{background:#EEA727;color:#EEA727}
-      .rr-score-orange,.rr-bar-fill.rr-score-orange{background:#fd7000;color:#ff5349}
-      .rr-score-red,.rr-bar-fill.rr-score-red{background:#fd1c00;color:#fd1c00}
+      .rr-bar-fill.rr-score-green{background:#4ade80}
+      .rr-bar-fill.rr-score-amber{background:#EEA727}
+      .rr-bar-fill.rr-score-orange{background:#fd7000}
+      .rr-bar-fill.rr-score-red{background:#fd1c00}
+      .rr-score-green{color:#4ade80}
+      .rr-score-amber{color:#EEA727}
+      .rr-score-orange{color:#ff5349}
+      .rr-score-red{color:#fd1c00}
       .rr-score-na{color:rgba(255,255,255,.3)}
 
       .rr-trend{width:100%;height:auto;display:block}
