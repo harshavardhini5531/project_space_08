@@ -58,7 +58,7 @@ export default function MentorEvaluation({ mentor }) {
   async function fetchList() {
     setListLoading(true); setListError(null)
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('mentorToken') : null
+      const token = typeof window !== 'undefined' ? sessionStorage.getItem('mentor_token') : null
       const r = await fetch('/api/mentor/evaluations/teams', {
         method: 'POST',
         headers: {
@@ -216,7 +216,7 @@ function FormView({ mentor, teamNumber, onBack, onSubmitted }) {
     ;(async () => {
       setLoading(true); setError(null)
       try {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('mentorToken') : null
+        const token = typeof window !== 'undefined' ? sessionStorage.getItem('mentor_token') : null
         const r = await fetch('/api/mentor/evaluations/team', {
           method: 'POST',
           headers: {
@@ -265,7 +265,7 @@ function FormView({ mentor, teamNumber, onBack, onSubmitted }) {
   async function handleSubmit() {
     setSubmitting(true); setSubmitMsg(null)
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('mentorToken') : null
+      const token = typeof window !== 'undefined' ? sessionStorage.getItem('mentor_token') : null
       const r = await fetch('/api/mentor/evaluations/submit', {
         method: 'POST',
         headers: {
