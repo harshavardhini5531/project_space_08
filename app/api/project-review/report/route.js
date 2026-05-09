@@ -186,13 +186,14 @@ export async function POST(request) {
     }
 
     // ── 1. Look up the team and its dev_api_id ──
-    const { data: submission } = await supabase
+    // Prefer rows that have dev_api_id (synced to dev), fall back to newest by id
+    const { data: candidates } = await supabase
       .from('project_review_submissions')
-      .select('id, team_number, technology, name, github_url, dev_api_id, project_type')
+      .select('id, team_number, technology, name, github_url, dev_api_id, project_type, submitted_at, dev_api_synced_at')
       .eq('team_number', teamNumber)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
+      .order('id', { ascending: false })
+
+    const submission = (candidates || []).find(c => c.dev_api_id) || (candidates || [])[0] || null
 
     // Always try to fetch team meta from teams table for context
     const { data: teamRow } = await supabase
