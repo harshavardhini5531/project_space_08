@@ -59,6 +59,17 @@ export async function POST(request) {
 
     const teamNumbers = teams.map(t => t.team_number)
 
+    // Pending edit requests per team
+    const { data: pendingEdits } = await supabase
+      .from('project_review_edit_requests')
+      .select('team_number')
+      .in('team_number', teamNumbers)
+      .eq('status', 'pending')
+    const pendingEditMap = {}
+    ;(pendingEdits || []).forEach(r => {
+      pendingEditMap[r.team_number] = (pendingEditMap[r.team_number] || 0) + 1
+    })
+
     // Mentor's own evaluations
     const { data: evaluations } = await supabase
       .from('mentor_evaluations')
@@ -127,6 +138,7 @@ export async function POST(request) {
         evaluated: !!ev,
         average_score: ev?.average_score ?? null,
         evaluated_at: ev?.updated_at ?? ev?.created_at ?? null,
+        pending_edit_requests: pendingEditMap[t.team_number] || 0,
         // Project review submission (null if team hasn't submitted)
         submission: sub ? {
           name: sub.name,

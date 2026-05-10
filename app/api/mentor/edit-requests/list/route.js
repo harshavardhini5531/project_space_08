@@ -1,4 +1,4 @@
-// Mentor fetches all edit requests for their assigned teams (or for one team)
+// Mentor fetches all edit requests for their assigned teams.
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
@@ -23,18 +23,18 @@ export async function POST(request) {
       .maybeSingle()
     if (!mentor) return Response.json({ ok: false, error: 'Mentor not found' }, { status: 404 })
 
-    // Get all team_numbers assigned to this mentor
     const { data: teams } = await supabase
       .from('teams')
-      .select('team_number')
+      .select('team_number, project_title')
       .eq('mentor_assigned', mentor.name)
     const teamNumbers = (teams || []).map(t => t.team_number).filter(Boolean)
+    const teamTitleMap = {}
+    ;(teams || []).forEach(t => { teamTitleMap[t.team_number] = t.project_title })
 
     if (teamNumbers.length === 0) {
-      return Response.json({ ok: true, requests: [], counts: { pending: 0, approved: 0, rejected: 0 } })
+      return Response.json({ ok: true, requests: [], counts: { pending: 0, approved: 0, rejected: 0 }, by_team: {} })
     }
 
-    // Build query
     let query = supabase
       .from('project_review_edit_requests')
       .select('*')
@@ -45,11 +45,18 @@ export async function POST(request) {
     if (statusFilter) query = query.eq('status', statusFilter)
 
     const { data: requests } = await query
+    const enriched = (requests || []).map(r => ({ ...r, project_title: teamTitleMap[r.team_number] || '' }))
 
     const counts = { pending: 0, approved: 0, rejected: 0 }
-    ;(requests || []).forEach(r => { counts[r.status] = (counts[r.status] || 0) + 1 })
+    const byTeam = {}
+    enriched.forEach(r => {
+      counts[r.status] = (counts[r.status] || 0) + 1
+      if (!byTeam[r.team_number]) byTeam[r.team_number] = { pending: 0, total: 0 }
+      byTeam[r.team_number].total++
+      if (r.status === 'pending') byTeam[r.team_number].pending++
+    })
 
-    return Response.json({ ok: true, requests: requests || [], counts })
+    return Response.json({ ok: true, requests: enriched, counts, by_team: byTeam })
   } catch (err) {
     console.error('[mentor edit-requests/list] error:', err)
     return Response.json({ ok: false, error: 'Server error', detail: err.message }, { status: 500 })

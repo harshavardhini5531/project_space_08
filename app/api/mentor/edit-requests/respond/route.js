@@ -1,5 +1,5 @@
-// Mentor approves or rejects an edit request
-// On approval: updates project_review_submissions + queues Dev API sync
+// Mentor approves or rejects an edit request.
+// On approval: updates project_review_submissions, resets review state, syncs to Dev API.
 import { createClient } from '@supabase/supabase-js'
 import { syncSubmissionToDevApi } from '@/lib/dev-api-sync'
 
@@ -40,7 +40,6 @@ export async function POST(request) {
       return Response.json({ ok: false, error: `Request already ${req.status}` }, { status: 409 })
     }
 
-    // Verify mentor is assigned to this team
     const { data: team } = await supabase
       .from('teams')
       .select('team_number, mentor_assigned, project_title')
@@ -62,7 +61,7 @@ export async function POST(request) {
         })
         .eq('id', requestId)
 
-      // Notify student
+      // Notify student (non-blocking)
       try {
         const { data: studentRow } = await supabase
           .from('students').select('email').eq('roll_number', req.requested_by_roll).maybeSingle()
@@ -71,8 +70,8 @@ export async function POST(request) {
           await sendPushNotification({
             recipientEmail: studentRow.email, recipientType: 'student',
             title: 'Edit Request Rejected',
-            body: `Your edit request for ${team.project_title || req.team_number} was rejected by your mentor.`,
-            url: '/dashboard?tab=project-review', type: 'edit-request-rejected', teamNumber: req.team_number,
+            body: `Your edit request for ${team.project_title || req.team_number} was rejected.`,
+            url: '/dashboard', type: 'edit-request-rejected', teamNumber: req.team_number,
           }).catch(() => {})
         }
       } catch {}
@@ -81,15 +80,12 @@ export async function POST(request) {
     }
 
     // ─── APPROVE ───
-    // Build update payload from field_changes
     const updatePayload = {}
     for (const ch of (req.field_changes || [])) {
       updatePayload[ch.field] = ch.new_value
     }
-    // Reset Dev API sync state so it picks up the changes
     updatePayload.dev_api_synced_at = null
     updatePayload.dev_api_sync_status = 'pending'
-    // Also reset reviewing state so AI re-reviews on next batch run
     updatePayload.status = 'pending'
     updatePayload.reviewing_started_at = null
     updatePayload.reviewed_at = null
@@ -108,7 +104,6 @@ export async function POST(request) {
       return Response.json({ ok: false, error: 'Failed to update submission', detail: updateErr.message }, { status: 500 })
     }
 
-    // Mark request approved
     await supabase
       .from('project_review_edit_requests')
       .update({
@@ -120,11 +115,11 @@ export async function POST(request) {
       })
       .eq('id', requestId)
 
-    // Sync to Dev API (non-blocking — if it fails, cron picks it up later)
+    // Sync to Dev API (non-blocking — cron retries if it fails)
+    let devSyncStatus = 'queued'
     try {
-      await syncSubmissionToDevApi(updatedSub).catch(e => {
-        console.error('[edit-requests/respond] dev sync (non-blocking) failed:', e?.message)
-      })
+      const result = await syncSubmissionToDevApi(updatedSub).catch(() => null)
+      if (result?.ok) devSyncStatus = 'synced'
     } catch (e) {
       console.error('[edit-requests/respond] dev sync threw:', e?.message)
     }
@@ -138,15 +133,16 @@ export async function POST(request) {
         await sendPushNotification({
           recipientEmail: studentRow.email, recipientType: 'student',
           title: 'Edit Request Approved ✓',
-          body: `Your edit request for ${team.project_title || req.team_number} was approved. Updates will reflect in the next AI review run.`,
-          url: '/dashboard?tab=project-review', type: 'edit-request-approved', teamNumber: req.team_number,
+          body: `Your edit request for ${team.project_title || req.team_number} was approved. Updates take effect on the next AI review.`,
+          url: '/dashboard', type: 'edit-request-approved', teamNumber: req.team_number,
         }).catch(() => {})
       }
     } catch {}
 
     return Response.json({
       ok: true,
-      message: 'Request approved. Submission updated and queued for Dev API sync.',
+      message: 'Request approved. Submission updated and queued for the next AI run.',
+      dev_sync: devSyncStatus,
     })
   } catch (err) {
     console.error('[mentor edit-requests/respond] error:', err)

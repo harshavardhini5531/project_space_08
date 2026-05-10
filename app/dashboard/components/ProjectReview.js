@@ -152,6 +152,7 @@ export default function ProjectReview({ user }) {
           teamInfo={data.team_info}
           state={state}
           isLeader={data.is_leader}
+          user={user}
         />
       )
     }
@@ -172,6 +173,7 @@ export default function ProjectReview({ user }) {
               state={state}
               isLeader={data.is_leader}
               compact={true}
+              user={user}
             />
           </div>
         </>
@@ -197,6 +199,7 @@ export default function ProjectReview({ user }) {
           state={state}
           isLeader={data.is_leader}
           failureReason={data.submission?.failure_reason}
+          user={user}
         />
       )
     }
@@ -216,7 +219,7 @@ export default function ProjectReview({ user }) {
 // READ-ONLY SUBMISSION VIEW (NEW in 5.5c)
 // Shows all 13 fields the leader submitted, locked.
 // ─────────────────────────────────────────────────────────
-function SubmittedReadOnlyView({ submission, teamInfo, state, isLeader, compact = false, failureReason = null }) {
+function SubmittedReadOnlyView({ submission, teamInfo, state, isLeader, compact = false, failureReason = null, user = null }) {
   if (!submission) return null
 
   const submittedDate = submission.submitted_at
@@ -320,6 +323,9 @@ function SubmittedReadOnlyView({ submission, teamInfo, state, isLeader, compact 
           )}
         </div>
       </div>
+
+      {/* ═══ EDIT REQUEST PANEL ═══ */}
+      {!compact && <EditRequestPanel submission={submission} user={user} />}
     </div>
   )
 }
@@ -577,3 +583,268 @@ const COMPONENT_STYLES = `
   .prv-ro-card-head{padding:14px 18px}
 }
 `
+// ─────────────────────────────────────────────────────────
+// EDIT REQUEST PANEL — leader can submit, members see history only
+// ─────────────────────────────────────────────────────────
+function EditRequestPanel({ submission, user }) {
+  const [open, setOpen] = useState(false)
+  const [selectedFields, setSelectedFields] = useState({})
+  const [newValues, setNewValues] = useState({})
+  const [reason, setReason] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [msg, setMsg] = useState(null)
+  const [history, setHistory] = useState([])
+  const [pendingCount, setPendingCount] = useState(0)
+  const [limit, setLimit] = useState(3)
+  const [isLeader, setIsLeader] = useState(false)
+  const [historyLoading, setHistoryLoading] = useState(true)
+
+  const FIELDS = [
+    { key: 'name', label: 'Project Name', type: 'text' },
+    { key: 'github_url', label: 'GitHub URL', type: 'text' },
+    { key: 'description', label: 'Description', type: 'textarea' },
+    { key: 'requirements', label: 'Requirements', type: 'textarea' },
+    { key: 'problem_statement', label: 'Problem Statement', type: 'textarea' },
+    { key: 'proposed_solution', label: 'Proposed Solution', type: 'textarea' },
+    { key: 'technologies_used', label: 'Technologies (comma-separated)', type: 'text' },
+    { key: 'system_architecture', label: 'System Architecture', type: 'textarea' },
+    { key: 'in_scope', label: 'In Scope', type: 'textarea' },
+    { key: 'out_scope', label: 'Out of Scope', type: 'textarea' },
+    { key: 'future_enhancements', label: 'Future Enhancements', type: 'textarea' },
+    { key: 'conclusion', label: 'Conclusion', type: 'textarea' },
+  ]
+
+  const roll = user?.rollNumber || user?.roll_number || ''
+
+  async function loadHistory() {
+    setHistoryLoading(true)
+    try {
+      if (!roll) { setHistory([]); return }
+      const r = await fetch('/api/project-review/edit-request/list', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rollNumber: roll }),
+      })
+      const d = await r.json()
+      if (r.ok && d.ok) {
+        setHistory(d.requests || [])
+        setPendingCount(d.pending_count || 0)
+        setLimit(d.limit || 3)
+        setIsLeader(!!d.is_leader)
+      }
+    } catch {} finally { setHistoryLoading(false) }
+  }
+
+  useEffect(() => { loadHistory() }, [roll])
+
+  function toggleField(key) {
+    if (!isLeader) return
+    setSelectedFields(prev => {
+      const next = { ...prev, [key]: !prev[key] }
+      if (!next[key]) setNewValues(p => { const n = { ...p }; delete n[key]; return n })
+      else if (newValues[key] === undefined) {
+        const cur = submission[key]
+        setNewValues(p => ({ ...p, [key]: Array.isArray(cur) ? cur.join(', ') : (cur || '') }))
+      }
+      return next
+    })
+  }
+
+  async function handleSubmit() {
+    setMsg(null)
+    if (!isLeader) {
+      setMsg({ ok: false, text: 'Only the team leader can submit edit requests.' })
+      return
+    }
+    if (pendingCount >= limit) {
+      setMsg({ ok: false, text: `Your team has ${pendingCount} pending requests (max ${limit}). Wait for mentor response.` })
+      return
+    }
+    const changes = Object.keys(selectedFields).filter(k => selectedFields[k]).map(k => ({
+      field: k, new_value: newValues[k] ?? '',
+    }))
+    if (changes.length === 0) { setMsg({ ok: false, text: 'Select at least one field to change.' }); return }
+    for (const c of changes) {
+      if (typeof c.new_value === 'string' && !c.new_value.trim()) {
+        setMsg({ ok: false, text: `New value for "${c.field}" cannot be empty.` }); return
+      }
+    }
+    setSubmitting(true)
+    try {
+      const r = await fetch('/api/project-review/edit-request/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rollNumber: roll, fieldChanges: changes, reason: reason.trim() }),
+      })
+      const d = await r.json()
+      if (!r.ok || !d.ok) { setMsg({ ok: false, text: d.error || 'Failed to submit' }); return }
+      setMsg({ ok: true, text: d.message || 'Submitted to mentor!' })
+      setSelectedFields({}); setNewValues({}); setReason('')
+      loadHistory()
+      setTimeout(() => setOpen(false), 1500)
+    } catch (e) { setMsg({ ok: false, text: 'Network error: ' + e.message }) }
+    finally { setSubmitting(false) }
+  }
+
+  function fmtVal(v) {
+    if (v == null) return '(empty)'
+    if (Array.isArray(v)) return v.join(', ')
+    return String(v)
+  }
+
+  function fmtDate(iso) {
+    if (!iso) return '—'
+    try { return new Date(iso).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) }
+    catch { return iso }
+  }
+
+  const selectedCount = Object.values(selectedFields).filter(Boolean).length
+  const atLimit = pendingCount >= limit
+  const submitDisabled = submitting || selectedCount === 0 || atLimit
+
+  return (
+    <div className="prv-er-panel">
+      <style>{`
+        .prv-er-panel{margin-top:14px;border-radius:14px;background:rgba(236,72,153,.04);border:1px solid rgba(236,72,153,.2);overflow:hidden}
+        .prv-er-head{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;cursor:pointer;gap:12px;flex-wrap:wrap}
+        .prv-er-head:hover{background:rgba(236,72,153,.06)}
+        .prv-er-h-l{display:flex;align-items:center;gap:10px;flex:1;min-width:200px}
+        .prv-er-h-icon{width:32px;height:32px;border-radius:9px;background:rgba(236,72,153,.12);color:#ec4899;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+        .prv-er-h-text{display:flex;flex-direction:column}
+        .prv-er-h-title{font-family:'Astro','Orbitron','DM Sans',sans-serif;font-size:.85rem;font-weight:800;color:#fff;letter-spacing:1.2px;text-transform:uppercase}
+        .prv-er-h-sub{font-size:.7rem;color:rgba(255,255,255,.55);margin-top:2px}
+        .prv-er-h-r{display:flex;align-items:center;gap:10px}
+        .prv-er-pending-pill{padding:4px 10px;border-radius:6px;font-size:.62rem;font-weight:700;letter-spacing:.5px;background:rgba(238,167,39,.12);color:#EEA727;border:1px solid rgba(238,167,39,.3)}
+        .prv-er-pending-pill.full{background:rgba(253,28,0,.1);color:#fd1c00;border-color:rgba(253,28,0,.3)}
+        .prv-er-h-toggle{font-size:.7rem;color:#ec4899;font-weight:700}
+        .prv-er-body{padding:18px 20px;border-top:1px solid rgba(236,72,153,.15);animation:prvErIn .3s ease}
+        @keyframes prvErIn{from{opacity:0}to{opacity:1}}
+        .prv-er-section-l{font-size:.62rem;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1.2px;font-weight:700;margin-bottom:10px}
+        .prv-er-not-leader{padding:14px 16px;border-radius:10px;background:rgba(123,47,190,.06);border:1px solid rgba(123,47,190,.2);color:rgba(255,255,255,.75);font-size:.78rem;line-height:1.55}
+        .prv-er-not-leader strong{color:#a78bfa}
+        .prv-er-fields{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px}
+        .prv-er-fld{padding:10px 12px;border-radius:9px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);cursor:pointer;display:flex;align-items:center;gap:9px;transition:all .15s}
+        .prv-er-fld:hover{background:rgba(255,255,255,.04)}
+        .prv-er-fld.selected{background:rgba(236,72,153,.08);border-color:rgba(236,72,153,.4)}
+        .prv-er-cb{width:16px;height:16px;border-radius:4px;border:2px solid rgba(255,255,255,.3);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.65rem;color:#fff;font-weight:800}
+        .prv-er-fld.selected .prv-er-cb{background:#ec4899;border-color:#ec4899}
+        .prv-er-fld-l{font-size:.74rem;color:rgba(255,255,255,.85);font-weight:600}
+        .prv-er-edit-card{padding:12px 14px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(236,72,153,.25);margin-bottom:10px}
+        .prv-er-edit-l{font-size:.7rem;font-weight:700;color:#ec4899;margin-bottom:6px}
+        .prv-er-edit-cur{font-size:.7rem;color:rgba(255,255,255,.45);padding:6px 9px;background:rgba(255,255,255,.02);border-radius:6px;margin-bottom:6px;line-height:1.5;max-height:80px;overflow:auto;white-space:pre-wrap}
+        .prv-er-input,.prv-er-textarea{width:100%;padding:10px 12px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);color:#fff;font-family:inherit;font-size:.78rem;outline:none;line-height:1.5;box-sizing:border-box}
+        .prv-er-textarea{min-height:80px;resize:vertical}
+        .prv-er-input:focus,.prv-er-textarea:focus{border-color:rgba(236,72,153,.5)}
+        .prv-er-reason-wrap{margin-top:14px}
+        .prv-er-submit{margin-top:14px;padding:12px 22px;border-radius:9px;background:linear-gradient(135deg,#ec4899,#d946ef);border:none;color:#fff;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .15s;width:100%}
+        .prv-er-submit:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 18px rgba(236,72,153,.35)}
+        .prv-er-submit:disabled{opacity:.6;cursor:not-allowed}
+        .prv-er-msg{margin-top:10px;padding:9px 12px;border-radius:8px;font-size:.74rem;font-weight:600}
+        .prv-er-msg.ok{background:rgba(74,222,128,.1);color:#4ade80}
+        .prv-er-msg.err{background:rgba(253,28,0,.08);color:#fd1c00}
+        .prv-er-history{margin-top:18px;border-top:1px solid rgba(255,255,255,.05);padding-top:14px}
+        .prv-er-h-item{padding:10px 12px;border-radius:9px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+        .prv-er-h-item-l{flex:1;min-width:200px;font-size:.72rem;color:rgba(255,255,255,.75)}
+        .prv-er-h-item-l strong{color:#fff}
+        .prv-er-h-item-time{font-size:.62rem;color:rgba(255,255,255,.4);margin-top:3px}
+        .prv-er-h-status{padding:3px 10px;border-radius:6px;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:1px}
+        .prv-er-h-status.pending{background:rgba(238,167,39,.12);color:#EEA727;border:1px solid rgba(238,167,39,.3)}
+        .prv-er-h-status.approved{background:rgba(74,222,128,.12);color:#4ade80;border:1px solid rgba(74,222,128,.3)}
+        .prv-er-h-status.rejected{background:rgba(253,28,0,.1);color:#fd1c00;border:1px solid rgba(253,28,0,.3)}
+        .prv-er-h-notes{font-size:.62rem;color:rgba(255,255,255,.55);margin-top:5px;font-style:italic;width:100%}
+        @media(max-width:640px){.prv-er-fields{grid-template-columns:1fr}}
+      `}</style>
+      <div className="prv-er-head" onClick={() => setOpen(!open)}>
+        <div className="prv-er-h-l">
+          <div className="prv-er-h-icon">✎</div>
+          <div className="prv-er-h-text">
+            <div className="prv-er-h-title">{isLeader ? 'Request Edit' : 'Edit Request History'}</div>
+            <div className="prv-er-h-sub">
+              {isLeader
+                ? 'Need to change something? Send a request to your mentor.'
+                : 'Only your team leader can submit edit requests. You can view the history below.'}
+            </div>
+          </div>
+        </div>
+        <div className="prv-er-h-r">
+          {pendingCount > 0 && (
+            <span className={`prv-er-pending-pill ${atLimit ? 'full' : ''}`}>
+              {pendingCount}/{limit} pending
+            </span>
+          )}
+          <span className="prv-er-h-toggle">{open ? '✕ Close' : '＋ Open'}</span>
+        </div>
+      </div>
+      {open && (
+        <div className="prv-er-body">
+          {!isLeader && (
+            <div className="prv-er-not-leader">
+              <strong>Only the team leader can submit edit requests.</strong> If you'd like changes to the project review, please ask your team leader. The history below shows all past requests for your team.
+            </div>
+          )}
+
+          {isLeader && atLimit && (
+            <div className="prv-er-msg err" style={{ marginBottom: 12 }}>
+              Your team has reached the limit of {limit} pending requests. Wait for your mentor to respond before submitting more.
+            </div>
+          )}
+
+          {isLeader && !atLimit && (
+            <>
+              <div className="prv-er-section-l">1. Select fields to change</div>
+              <div className="prv-er-fields">
+                {FIELDS.map(f => (
+                  <div key={f.key} className={`prv-er-fld ${selectedFields[f.key] ? 'selected' : ''}`} onClick={() => toggleField(f.key)}>
+                    <div className="prv-er-cb">{selectedFields[f.key] ? '✓' : ''}</div>
+                    <div className="prv-er-fld-l">{f.label}</div>
+                  </div>
+                ))}
+              </div>
+              {selectedCount > 0 && <div className="prv-er-section-l">2. Provide new content for each selected field</div>}
+              {FIELDS.filter(f => selectedFields[f.key]).map(f => (
+                <div key={f.key} className="prv-er-edit-card">
+                  <div className="prv-er-edit-l">{f.label}</div>
+                  <div className="prv-er-edit-cur">Current: {fmtVal(submission[f.key])}</div>
+                  {f.type === 'textarea' ? (
+                    <textarea className="prv-er-textarea" value={newValues[f.key] ?? ''} onChange={e => setNewValues(p => ({ ...p, [f.key]: e.target.value }))} placeholder="New content..."/>
+                  ) : (
+                    <input className="prv-er-input" value={newValues[f.key] ?? ''} onChange={e => setNewValues(p => ({ ...p, [f.key]: e.target.value }))} placeholder="New value..."/>
+                  )}
+                </div>
+              ))}
+              {selectedCount > 0 && (
+                <div className="prv-er-reason-wrap">
+                  <div className="prv-er-section-l">3. Reason for the request (optional)</div>
+                  <textarea className="prv-er-textarea" value={reason} onChange={e => setReason(e.target.value)} placeholder="Why are you requesting these changes?" maxLength={1000}/>
+                </div>
+              )}
+              <button className="prv-er-submit" onClick={handleSubmit} disabled={submitDisabled}>
+                {submitting ? '⏳ Submitting…' : selectedCount > 0 ? `Submit ${selectedCount} change${selectedCount === 1 ? '' : 's'} to mentor` : 'Select fields above first'}
+              </button>
+              {msg && <div className={`prv-er-msg ${msg.ok ? 'ok' : 'err'}`}>{msg.text}</div>}
+            </>
+          )}
+
+          <div className="prv-er-history">
+            <div className="prv-er-section-l">Edit request history for your team</div>
+            {historyLoading ? <div style={{fontSize:'.72rem',color:'rgba(255,255,255,.4)'}}>Loading…</div> :
+             history.length === 0 ? <div style={{fontSize:'.72rem',color:'rgba(255,255,255,.4)'}}>No previous requests.</div> :
+             history.map(h => (
+               <div key={h.id} className="prv-er-h-item">
+                 <div className="prv-er-h-item-l">
+                   <strong>{(h.field_changes || []).length} field change{(h.field_changes || []).length === 1 ? '' : 's'}:</strong>{' '}
+                   {(h.field_changes || []).map(c => c.field).join(', ')}
+                   <div className="prv-er-h-item-time">By {h.requested_by_name || h.requested_by_roll} · {fmtDate(h.created_at)}</div>
+                   {h.reason && <div className="prv-er-h-notes">"{h.reason}"</div>}
+                   {h.mentor_notes && <div className="prv-er-h-notes">Mentor: "{h.mentor_notes}"</div>}
+                 </div>
+                 <span className={`prv-er-h-status ${h.status}`}>{h.status}</span>
+               </div>
+             ))
+            }
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
