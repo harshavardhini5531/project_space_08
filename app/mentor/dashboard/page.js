@@ -4,6 +4,9 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import MentorHelpRequests from '@/app/mentor/dashboard/components/MentorHelpRequests'
 import MentorAttendance from '@/app/mentor/dashboard/components/MentorAttendance'
 import MentorEvaluation from '@/app/mentor/dashboard/components/MentorEvaluation'
+import MentorSubmissions from '@/app/mentor/dashboard/components/MentorSubmissions'
+import MentorSubmissions from '@/app/mentor/dashboard/components/MentorSubmissions'
+import MentorSubmissions from './components/MentorSubmissions'
 // ── LINE SVG ICONS ──
 const I = {
   grid: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>,
@@ -180,13 +183,14 @@ export default function MentorDashboard() {
   const solidColors = { 'Data Specialist':'#3b82f6', 'AWS Development':'#f59e0b', 'Full Stack':'#10b981', 'Google Flutter':'#06b6d4', 'ServiceNow':'#8b5cf6', 'VLSI':'#ef4444' }
 
   const navItems = [
-    {id:'overview', label:'Overview', icon:I.grid},
+    {id:'submissions', label:'Submissions', icon:I.upload},
     {id:'allteams', label:'My Teams', icon:I.users},
     {id:'techprojects', label:'Tech Teams', icon:I.code},
     {id:'reviews', label:'Project Status', icon:I.target},
     {id:'evaluation', label:'Project Evaluation', icon:I.award},
     {id:'linkedin', label:'LinkedIn Stats', icon:I.share},
     {id:'leaderboard', label:'Leaderboard', icon:I.award},
+    {id:'submissions', label:'Submissions', icon:I.share},
     {id:'settings', label:'Settings', icon:I.settings},
     {id: "help-requests", label: "Mentor Requests", icon: I.lifebuoy },
         {id:'attendance', label:'Attendance', icon:I.check}
@@ -1262,6 +1266,7 @@ body.sb-open{overflow:hidden}
             {/* ATTENDANCE */}
             {activePage==='evaluation' && <MentorEvaluation mentor={mentor}/>}
             {activePage==='attendance' && <MentorAttendance mentor={mentor}/>}
+            {activePage==='submissions' && <MentorSubmissions mentor={mentor}/>}
 
             {/* SETTINGS */}
             {activePage==='settings' && (<>
