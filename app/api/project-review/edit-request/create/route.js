@@ -29,10 +29,10 @@ export async function POST(request) {
       return Response.json({ ok: false, error: 'At least one field change is required' }, { status: 400 })
     }
 
-    // Verify user
+    // Verify user (user_passwords has only: id, roll_number, password_hash, created_at, last_login)
     const { data: userRow } = await supabase
       .from('user_passwords')
-      .select('roll_number, short_name')
+      .select('roll_number')
       .eq('roll_number', rollNumber)
       .maybeSingle()
     if (!userRow) {
@@ -129,7 +129,7 @@ export async function POST(request) {
         team_number: teamNumber,
         submission_id: submission.id,
         requested_by_roll: rollNumber,
-        requested_by_name: userRow.short_name || tm?.short_name || rollNumber,
+        requested_by_name: tm?.short_name || rollNumber,
         status: 'pending',
         field_changes: cleanedChanges,
         reason: reason || null,
