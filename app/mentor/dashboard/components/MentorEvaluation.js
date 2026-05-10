@@ -460,7 +460,7 @@ function Styles() {
       .ev-stat-l{font-size:.58rem;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1.1px;font-weight:600;margin-top:3px}
 
       .ev-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
-      .ev-card{padding:16px 18px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);text-align:left;cursor:pointer;font-family:inherit;color:inherit;transition:all .2s;display:flex;flex-direction:column;gap:8px}
+      .ev-card{padding:16px 18px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);text-align:left;font-family:inherit;color:inherit;transition:all .2s;display:flex;flex-direction:column;gap:8px}
       .ev-card:hover{background:rgba(255,255,255,.06);border-color:rgba(238,167,39,.3);transform:translateY(-2px)}
       .ev-card.evaluated{border-color:rgba(74,222,128,.25);background:rgba(74,222,128,.03)}
       .ev-card.pending{border-color:rgba(238,167,39,.18)}
@@ -473,7 +473,6 @@ function Styles() {
       .ev-card-title{font-size:.92rem;font-weight:700;line-height:1.4;margin:4px 0}
       .ev-card-meta{display:flex;gap:8px;font-size:.65rem;color:rgba(255,255,255,.55);flex-wrap:wrap}
       .ev-card-tech,.ev-card-leader{padding:2px 8px;border-radius:5px;background:rgba(255,255,255,.04);white-space:nowrap}
-      .ev-card-action{margin-top:6px;font-size:.7rem;color:#EEA727;font-weight:700}
       .ev-card-buttons{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
       .ev-btn-doc,.ev-btn-eval{flex:1;min-width:120px;padding:8px 12px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.7rem;font-weight:700;cursor:pointer;text-align:center;border:1px solid;transition:all .15s;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:5px}
       .ev-btn-doc{background:rgba(59,130,246,.08);border-color:rgba(59,130,246,.25);color:#60a5fa}
