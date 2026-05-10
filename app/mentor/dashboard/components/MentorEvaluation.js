@@ -167,10 +167,9 @@ function ListView({ loading, error, data, onSelectTeam, onRefresh }) {
       {teams.length > 0 && (
         <div className="ev-grid">
           {teams.map(t => (
-            <button
+            <div
               key={t.team_number}
               className={`ev-card ${t.evaluated ? 'evaluated' : 'pending'}`}
-              onClick={() => onSelectTeam(t.team_number)}
             >
               <div className="ev-card-top">
                 <span className="ev-team-num">{t.team_number}</span>
@@ -185,10 +184,31 @@ function ListView({ loading, error, data, onSelectTeam, onRefresh }) {
                 <span className="ev-card-tech">{t.technology}</span>
                 <span className="ev-card-leader">★ {t.leader_name}</span>
               </div>
-              <div className="ev-card-action">
-                {t.evaluated ? 'Edit Evaluation →' : 'Evaluate Now →'}
+              <div className="ev-card-buttons">
+                {t.github_url ? (
+                  
+                    className="ev-btn-doc"
+                    href={t.github_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={e => e.stopPropagation()}
+                    title={t.submitted_name ? `Submitted as: ${t.submitted_name}` : 'View submitted documentation'}
+                  >
+                    📄 View Documentation
+                  </a>
+                ) : (
+                  <span className="ev-btn-doc disabled" title="Team has not submitted project review yet">
+                    📄 No submission yet
+                  </span>
+                )}
+                <button
+                  className="ev-btn-eval"
+                  onClick={() => onSelectTeam(t.team_number)}
+                >
+                  {t.evaluated ? 'Edit Evaluation →' : 'Evaluate Now →'}
+                </button>
               </div>
-            </button>
+            </div>
           ))}
         </div>
       )}
@@ -454,6 +474,15 @@ function Styles() {
       .ev-card-meta{display:flex;gap:8px;font-size:.65rem;color:rgba(255,255,255,.55);flex-wrap:wrap}
       .ev-card-tech,.ev-card-leader{padding:2px 8px;border-radius:5px;background:rgba(255,255,255,.04);white-space:nowrap}
       .ev-card-action{margin-top:6px;font-size:.7rem;color:#EEA727;font-weight:700}
+      .ev-card-buttons{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+      .ev-btn-doc,.ev-btn-eval{flex:1;min-width:120px;padding:8px 12px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.7rem;font-weight:700;cursor:pointer;text-align:center;border:1px solid;transition:all .15s;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:5px}
+      .ev-btn-doc{background:rgba(59,130,246,.08);border-color:rgba(59,130,246,.25);color:#60a5fa}
+      .ev-btn-doc:hover{background:rgba(59,130,246,.15);border-color:rgba(59,130,246,.4)}
+      .ev-btn-doc.disabled{background:rgba(255,255,255,.02);border-color:rgba(255,255,255,.06);color:rgba(255,255,255,.3);cursor:not-allowed}
+      .ev-btn-eval{background:rgba(238,167,39,.08);border-color:rgba(238,167,39,.3);color:#EEA727}
+      .ev-btn-eval:hover{background:rgba(238,167,39,.15);border-color:rgba(238,167,39,.5)}
+      .ev-card.evaluated .ev-btn-eval{background:rgba(74,222,128,.06);border-color:rgba(74,222,128,.3);color:#4ade80}
+      .ev-card.evaluated .ev-btn-eval:hover{background:rgba(74,222,128,.12)}
 
       /* Form view */
       .ev-form{display:flex;flex-direction:column;gap:18px}

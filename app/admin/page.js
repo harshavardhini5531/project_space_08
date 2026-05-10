@@ -53,6 +53,7 @@ export default function AdminDashboard() {
   const [liTechFilter, setLiTechFilter] = useState('all')
   const [insights, setInsights] = useState(null)
   const [insightsLoading, setInsightsLoading] = useState(false)
+  const [attData, setAttData] = useState(null)
   const [psSearch, setPsSearch] = useState('')
   const [psStatusFilter, setPsStatusFilter] = useState('all')
   const [psSubTab, setPsSubTab] = useState('reviews')
@@ -109,8 +110,27 @@ export default function AdminDashboard() {
     try { const r = await fetch('/api/admin/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'send-otp', email }) }); const d = await r.json(); if (!r.ok) { setError(d.error); return }; setAdminName(d.name); setStep(2) } catch { setError('Network error') } finally { setLoading(false) }
   }
   async function fetchDashboard() {
-    setLoading(true)
-    try { const r = await fetch('/api/admin/dashboard', { headers: { 'x-admin-token': token } }); const d = await r.json(); if (!r.ok) { setError(d.error); setPhase('auth'); sessionStorage.removeItem('admin_token'); return }; setData(d) } catch { setError('Failed to load') } finally { setLoading(false) }
+    if (!data) setLoading(true)
+    try {
+      const r = await fetch('/api/admin/dashboard', { headers: { 'x-admin-token': token } })
+      const d = await r.json()
+      if (!r.ok) {
+        if (r.status === 401 || r.status === 403) {
+          setError(d.error || 'Session expired')
+          setPhase('auth')
+          sessionStorage.removeItem('admin_token')
+          sessionStorage.removeItem('adminEmail')
+          return
+        }
+        console.error('[fetchDashboard] non-auth error:', d.error)
+        return
+      }
+      setData(d)
+    } catch (e) {
+      console.error('[fetchDashboard] network:', e)
+    } finally {
+      setLoading(false)
+    }
   }
   async function handleExport(type) { const r = await fetch(`/api/admin/export?type=${type}`, { headers: { 'x-admin-token': token } }); const b = await r.blob(); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = `project-space-${type}.csv`; a.click(); URL.revokeObjectURL(u) }
   async function handleRemind() { setReminding(true); setReminderMsg(''); try { const r = await fetch('/api/admin/remind', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-token': token }, body: JSON.stringify({ type: 'all-pending' }) }); const d = await r.json(); setReminderMsg(d.message || `Sent ${d.sent} reminders`) } catch { setReminderMsg('Failed') } finally { setReminding(false) } }
@@ -1040,9 +1060,9 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
                   </div>
                   <div className="ov-stat" style={{'--gw':'rgba(59,130,246,.08)'}}>
                     <div className="ov-stat-ico">{IC.cal}</div>
-                    <div className="ov-stat-v" style={{color:'#3b82f6'}}>—</div>
-                    <div className="ov-stat-l">Attendance</div>
-                    <div className="ov-stat-sub" style={{cursor:'pointer'}} onClick={()=>setActiveTab('attendance')}>View attendance dashboard →</div>
+                    <div className="ov-stat-v" style={{color:'#3b82f6'}}><AnimNum value={attData?.stats?.present_students||0} color="#3b82f6"/><span style={{fontSize:'.55em',opacity:.45,fontWeight:400,marginLeft:4}}>/ {attData?.stats?.total_students||0}</span></div>
+                    <div className="ov-stat-l">Attendance · {attData?.stats?.student_pct||0}%</div>
+                    <div className="ov-stat-sub" style={{cursor:'pointer'}} onClick={()=>setActiveTab('attendance')}>{attData?.stats?.present_mentors||0}/{attData?.stats?.total_mentors||0} mentors · View →</div>
                   </div>
                   <div className="ov-stat" style={{'--gw':'rgba(253,28,0,.08)'}}>
                     <div className="ov-stat-ico">{IC.bolt}</div>

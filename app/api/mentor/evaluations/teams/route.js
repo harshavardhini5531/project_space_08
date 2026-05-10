@@ -89,6 +89,20 @@ export async function POST(request) {
       evalMap[e.team_number] = e
     })
 
+    // ── 5b. Fetch project review submissions (for github_url + name) ──
+    const { data: submissions } = await supabase
+      .from('project_review_submissions')
+      .select('team_number, github_url, name, submitted_at')
+      .in('team_number', teamNumbers)
+
+    const submissionMap = {}
+    ;(submissions || []).forEach(s => {
+      // Keep latest per team if multiple
+      if (!submissionMap[s.team_number] || new Date(s.submitted_at) > new Date(submissionMap[s.team_number].submitted_at)) {
+        submissionMap[s.team_number] = s
+      }
+    })
+
     // ── 6. Fetch leader names ──
     const leaderRolls = teams.map(t => t.leader_roll).filter(Boolean)
     const studentMap = {}
@@ -105,6 +119,7 @@ export async function POST(request) {
     // ── 7. Build response ──
     const enrichedTeams = teams.map(t => {
       const ev = evalMap[t.team_number]
+      const sub = submissionMap[t.team_number]
       return {
         team_number: t.team_number,
         project_title: t.project_title || '(Untitled)',
@@ -116,6 +131,9 @@ export async function POST(request) {
         evaluated: !!ev,
         average_score: ev?.average_score ?? null,
         evaluated_at: ev?.updated_at ?? ev?.created_at ?? null,
+        github_url: sub?.github_url || null,
+        submitted_name: sub?.name || null,
+        submitted_at: sub?.submitted_at || null,
       }
     })
 
