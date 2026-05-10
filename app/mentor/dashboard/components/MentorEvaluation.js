@@ -369,7 +369,7 @@ function FormView({ mentor, teamNumber, onBack, onSubmitted }) {
   const [error, setError] = useState(null)
   const [team, setTeam] = useState(null)
   const [scores, setScores] = useState({
-    innovation: 5, technical: 5, uiux: 5, relevance: 5, demo: 5, documentation: 5,
+    innovation: 0, technical: 0, uiux: 0, relevance: 0, demo: 0, documentation: 0,
   })
   const [comments, setComments] = useState('')
   const [submitting, setSubmitting] = useState(false)
