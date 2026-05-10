@@ -248,8 +248,22 @@ function SubmittedReadOnlyView({ submission, teamInfo, state, isLeader, compact 
 
   return (
     <div className="prv-readonly">
-      {/* Status banner */}
-      {!compact && (
+      {/* Report Ready banner — shows when AI review complete, replaces orange banner */}
+      {!compact && state === 'reviewed' && (
+        <div className="prv-ro-status" style={{ background: 'rgba(74,222,128,.1)', borderColor: 'rgba(74,222,128,.4)', color: '#4ade80' }}>
+          <div className="prv-ro-status-icon" style={{ color: '#4ade80', background: 'rgba(74,222,128,.15)' }}><CheckCircleIcon /></div>
+          <div className="prv-ro-status-text" style={{ flex: 1 }}>
+            <div className="prv-ro-status-title">✓ AI Review Complete — Report Ready</div>
+            <div className="prv-ro-status-msg">Your AI-generated review report is ready. Switch to the <strong>Review Report</strong> tab in the sidebar to view detailed scores, feedback, strengths, and improvements.</div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ EDIT REQUEST PANEL — placed at TOP for visibility ═══ */}
+      {!compact && <EditRequestPanel submission={submission} user={user} />}
+
+      {/* Status banner — only when NOT reviewed (reviewed shows green banner instead) */}
+      {!compact && state !== 'reviewed' && (
         <div
           className="prv-ro-status"
           style={{
@@ -324,9 +338,7 @@ function SubmittedReadOnlyView({ submission, teamInfo, state, isLeader, compact 
         </div>
       </div>
 
-      {/* ═══ EDIT REQUEST PANEL ═══ */}
-      {!compact && <EditRequestPanel submission={submission} user={user} />}
-    </div>
+      </div>
   )
 }
 
@@ -649,7 +661,25 @@ function EditRequestPanel({ submission, user }) {
       return next
     })
   }
-
+async function handleDelete(requestId) {
+    if (!confirm('Delete this pending edit request? This cannot be undone.')) return
+    try {
+      const r = await fetch('/api/project-review/edit-request/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rollNumber: roll, requestId }),
+      })
+      const d = await r.json()
+      if (!r.ok || !d.ok) {
+        setMsg({ ok: false, text: d.error || 'Delete failed' })
+        return
+      }
+      setMsg({ ok: true, text: 'Request deleted.' })
+      loadHistory()
+    } catch (e) {
+      setMsg({ ok: false, text: 'Network error: ' + e.message })
+    }
+  }
   async function handleSubmit() {
     setMsg(null)
     if (!isLeader) {
@@ -751,6 +781,8 @@ function EditRequestPanel({ submission, user }) {
         .prv-er-h-status.pending{background:rgba(238,167,39,.12);color:#EEA727;border:1px solid rgba(238,167,39,.3)}
         .prv-er-h-status.approved{background:rgba(74,222,128,.12);color:#4ade80;border:1px solid rgba(74,222,128,.3)}
         .prv-er-h-status.rejected{background:rgba(253,28,0,.1);color:#fd1c00;border:1px solid rgba(253,28,0,.3)}
+        .prv-er-del-btn{padding:3px 9px;border-radius:6px;font-size:.6rem;font-weight:700;background:rgba(253,28,0,.08);color:#fd1c00;border:1px solid rgba(253,28,0,.25);cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.5px}
+        .prv-er-del-btn:hover{background:rgba(253,28,0,.18)}
         .prv-er-h-notes{font-size:.62rem;color:rgba(255,255,255,.55);margin-top:5px;font-style:italic;width:100%}
         @media(max-width:640px){.prv-er-fields{grid-template-columns:1fr}}
       `}</style>
@@ -829,18 +861,28 @@ function EditRequestPanel({ submission, user }) {
             <div className="prv-er-section-l">Edit request history for your team</div>
             {historyLoading ? <div style={{fontSize:'.72rem',color:'rgba(255,255,255,.4)'}}>Loading…</div> :
              history.length === 0 ? <div style={{fontSize:'.72rem',color:'rgba(255,255,255,.4)'}}>No previous requests.</div> :
-             history.map(h => (
-               <div key={h.id} className="prv-er-h-item">
-                 <div className="prv-er-h-item-l">
-                   <strong>{(h.field_changes || []).length} field change{(h.field_changes || []).length === 1 ? '' : 's'}:</strong>{' '}
-                   {(h.field_changes || []).map(c => c.field).join(', ')}
-                   <div className="prv-er-h-item-time">By {h.requested_by_name || h.requested_by_roll} · {fmtDate(h.created_at)}</div>
-                   {h.reason && <div className="prv-er-h-notes">"{h.reason}"</div>}
-                   {h.mentor_notes && <div className="prv-er-h-notes">Mentor: "{h.mentor_notes}"</div>}
+             history.map(h => {
+               const canDelete = h.status === 'pending' && (h.requested_by_roll || '').toUpperCase() === roll.toUpperCase()
+               return (
+                 <div key={h.id} className="prv-er-h-item">
+                   <div className="prv-er-h-item-l">
+                     <strong>{(h.field_changes || []).length} field change{(h.field_changes || []).length === 1 ? '' : 's'}:</strong>{' '}
+                     {(h.field_changes || []).map(c => c.field).join(', ')}
+                     <div className="prv-er-h-item-time">By {h.requested_by_name || h.requested_by_roll} · {fmtDate(h.created_at)}</div>
+                     {h.reason && <div className="prv-er-h-notes">"{h.reason}"</div>}
+                     {h.mentor_notes && <div className="prv-er-h-notes">Mentor: "{h.mentor_notes}"</div>}
+                   </div>
+                   <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap'}}>
+                     <span className={`prv-er-h-status ${h.status}`}>{h.status}</span>
+                     {canDelete && (
+                       <button className="prv-er-del-btn" onClick={() => handleDelete(h.id)} title="Delete this pending request">
+                         ✕ Delete
+                       </button>
+                     )}
+                   </div>
                  </div>
-                 <span className={`prv-er-h-status ${h.status}`}>{h.status}</span>
-               </div>
-             ))
+               )
+             })
             }
           </div>
         </div>
