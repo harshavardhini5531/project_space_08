@@ -16,6 +16,7 @@
   import ProjectReview from "@/app/dashboard/components/ProjectReview";
   import MyCertificates from "@/app/dashboard/components/MyCertificates";
   import ProjectPPT from "@/app/dashboard/components/ProjectPPT";
+  import StudentReviewReport from './components/StudentReviewReport';
   import {
     User, Users, FolderKanban, Activity, GraduationCap,
     UtensilsCrossed, Compass, CalendarDays, Megaphone, Heart,
