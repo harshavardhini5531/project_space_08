@@ -2,15 +2,18 @@
 // Also returns pending count + leader-status for the requesting user.
 import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-)
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  )
+}
 
 const MAX_PENDING_PER_TEAM = 3
 
 export async function POST(request) {
   try {
+    const supabase = getSupabase()
     const { rollNumber } = await request.json().catch(() => ({}))
     const roll = (rollNumber || '').trim().toUpperCase()
     if (!roll) return Response.json({ ok: false, error: 'rollNumber required' }, { status: 400 })

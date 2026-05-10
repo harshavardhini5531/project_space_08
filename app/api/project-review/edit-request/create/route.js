@@ -2,10 +2,12 @@
 // LEADER ONLY. Max 3 pending requests per team.
 import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-)
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  )
+}
 
 const VALID_FIELDS = [
   'name','github_url','description','requirements','problem_statement',
@@ -17,6 +19,7 @@ const MAX_PENDING_PER_TEAM = 3
 
 export async function POST(request) {
   try {
+    const supabase = getSupabase()
     const body = await request.json().catch(() => ({}))
     const rollNumber = (body.rollNumber || '').trim().toUpperCase()
     const fieldChanges = Array.isArray(body.fieldChanges) ? body.fieldChanges : []

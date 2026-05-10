@@ -2,13 +2,16 @@
 // Only the original requester can delete, and only if status is still 'pending'.
 import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-)
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  )
+}
 
 export async function POST(request) {
   try {
+    const supabase = getSupabase()
     const { rollNumber, requestId } = await request.json().catch(() => ({}))
     const roll = (rollNumber || '').trim().toUpperCase()
     if (!roll || !requestId) {
