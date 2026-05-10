@@ -42,6 +42,7 @@ export default function MentorEvaluation({ mentor }) {
   const [expandedReportTeam, setExpandedReportTeam] = useState(null)
   const [docModalTeam, setDocModalTeam] = useState(null)
   const [editRequestsTeam, setEditRequestsTeam] = useState(null)
+  const [historyOpen, setHistoryOpen] = useState(false)
 
   async function fetchList() {
     setListLoading(true); setListError(null)
@@ -83,6 +84,7 @@ export default function MentorEvaluation({ mentor }) {
           onToggleReport={(tn) => setExpandedReportTeam(prev => prev === tn ? null : tn)}
           onOpenDoc={setDocModalTeam}
           onOpenEditRequests={setEditRequestsTeam}
+          onOpenHistory={() => setHistoryOpen(true)}
         />
       )}
 
@@ -105,12 +107,16 @@ export default function MentorEvaluation({ mentor }) {
           onActed={() => { fetchList(); setEditRequestsTeam(null) }}
         />
       )}
+
+      {historyOpen && (
+        <HistoryModal mentor={mentor} onClose={() => setHistoryOpen(false)} />
+      )}
     </div>
   )
 }
 
 // LIST VIEW
-function ListView({ loading, error, data, onEvaluate, onRefresh, expandedReportTeam, onToggleReport, onOpenDoc, onOpenEditRequests }) {
+function ListView({ loading, error, data, onEvaluate, onRefresh, expandedReportTeam, onToggleReport, onOpenDoc, onOpenEditRequests, onOpenHistory }) {
   if (loading) return <div className="ev-loading">Loading your teams…</div>
   if (error) {
     return (
@@ -140,6 +146,10 @@ function ListView({ loading, error, data, onEvaluate, onRefresh, expandedReportT
           {totalPendingEdits > 0 && (
             <div className="ev-stat ev-stat-edit"><span className="ev-stat-v" style={{ color: '#ec4899' }}>{totalPendingEdits}</span><span className="ev-stat-l">Edit Reqs</span></div>
           )}
+          <button className="ev-history-btn" onClick={() => onOpenHistory && onOpenHistory()}>
+            <span style={{fontSize:'.95rem'}}>📋</span>
+            <span>View History</span>
+          </button>
         </div>
       </div>
 
@@ -346,7 +356,7 @@ function EditRequestsModal({ team, mentor, onClose, onActed }) {
   const [loading, setLoading] = useState(true)
   const [requests, setRequests] = useState([])
   const [actingId, setActingId] = useState(null)
-  const [actionState, setActionState] = useState({}) // { reqId: { notes: '', mode: 'approve'|'reject' } }
+  const [actionState, setActionState] = useState({})
   const [msg, setMsg] = useState(null)
 
   useEffect(() => {
@@ -485,6 +495,109 @@ function EditRequestsModal({ team, mentor, onClose, onActed }) {
           {msg && (
             <div className={`ev-msg ${msg.ok ? 'ok' : 'err'}`}>{msg.text}</div>
           )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// HISTORY MODAL — shows mentor's past approvals & rejections
+function HistoryModal({ mentor, onClose }) {
+  const [loading, setLoading] = useState(true)
+  const [requests, setRequests] = useState([])
+  const [tab, setTab] = useState('all')
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      setLoading(true)
+      try {
+        const token = typeof window !== 'undefined' ? sessionStorage.getItem('mentor_token') : null
+        const r = await fetch('/api/mentor/edit-requests/list', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mentor-token': token || '' },
+          body: JSON.stringify({ mentorEmail: mentor?.email }),
+        })
+        const d = await r.json()
+        if (cancelled) return
+        if (r.ok && d.ok) {
+          const reviewed = (d.requests || []).filter(req => req.status !== 'pending')
+          setRequests(reviewed)
+        }
+      } catch {} finally { if (!cancelled) setLoading(false) }
+    })()
+    return () => { cancelled = true }
+  }, [mentor?.email])
+
+  const filtered = tab === 'all' ? requests : requests.filter(r => r.status === tab)
+  const counts = {
+    all: requests.length,
+    approved: requests.filter(r => r.status === 'approved').length,
+    rejected: requests.filter(r => r.status === 'rejected').length,
+  }
+
+  return (
+    <div className="ev-modal-overlay" onClick={onClose}>
+      <div className="ev-modal ev-modal-wide" onClick={e => e.stopPropagation()}>
+        <div className="ev-modal-hdr">
+          <div>
+            <div className="ev-modal-tag">📋 Edit Request History</div>
+            <div className="ev-modal-title">Your Approvals & Rejections</div>
+            <div className="ev-modal-sub">{counts.all} total · {counts.approved} approved · {counts.rejected} rejected</div>
+          </div>
+          <button className="ev-modal-close" onClick={onClose}>×</button>
+        </div>
+
+        <div className="ev-modal-body">
+          <div className="hm-tabs">
+            <button className={`hm-tab ${tab === 'all' ? 'active' : ''}`} onClick={() => setTab('all')}>
+              All <span className="hm-tab-count">{counts.all}</span>
+            </button>
+            <button className={`hm-tab ${tab === 'approved' ? 'active' : ''}`} onClick={() => setTab('approved')}>
+              Approved <span className="hm-tab-count">{counts.approved}</span>
+            </button>
+            <button className={`hm-tab ${tab === 'rejected' ? 'active' : ''}`} onClick={() => setTab('rejected')}>
+              Rejected <span className="hm-tab-count">{counts.rejected}</span>
+            </button>
+          </div>
+
+          {loading && <div className="ev-loading">Loading history…</div>}
+
+          {!loading && filtered.length === 0 && (
+            <div className="hm-empty">
+              {tab === 'all' ? 'No approvals or rejections yet.' :
+               tab === 'approved' ? 'No approved requests yet.' :
+               'No rejected requests yet.'}
+            </div>
+          )}
+
+          {!loading && filtered.map(req => {
+            const fields = (req.field_changes || []).map(c => c.field).join(', ')
+            return (
+              <div key={req.id} className={`hm-item ${req.status}`}>
+                <div className="hm-item-top">
+                  <div className="hm-item-team">
+                    <strong>{req.team_number}</strong>
+                    {req.project_title && <span className="hm-item-team-title">· {req.project_title}</span>}
+                  </div>
+                  <span className={`hm-item-status ${req.status}`}>{req.status}</span>
+                </div>
+                <div className="hm-item-by">
+                  Requested by <strong style={{color:'#EEA727'}}>{req.requested_by_name || req.requested_by_roll}</strong>
+                </div>
+                {fields && <div className="hm-item-fields"><strong>Fields:</strong> {fields}</div>}
+                {req.reason && <div className="hm-item-notes">Student: "{req.reason}"</div>}
+                {req.mentor_notes && (
+                  <div className="hm-item-notes" style={{marginTop:6}}>
+                    Your notes: "{req.mentor_notes}"
+                  </div>
+                )}
+                <div className="hm-item-time">
+                  Submitted {fmtDate(req.created_at)} · Reviewed {fmtDate(req.reviewed_at)}
+                </div>
+              </div>
+            )
+          })}
         </div>
       </div>
     </div>
@@ -662,12 +775,14 @@ function Styles() {
       .ev-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:14px}
       .ev-title{font-size:1.3rem;font-weight:800;letter-spacing:-.01em}
       .ev-sub{font-size:.72rem;color:rgba(255,255,255,.45);margin-top:3px}
-      .ev-stats{display:flex;gap:8px;flex-wrap:wrap}
+      .ev-stats{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
       .ev-stat{display:flex;flex-direction:column;align-items:center;padding:8px 14px;border-radius:9px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);min-width:75px}
       .ev-stat-edit{border-color:rgba(236,72,153,.3);background:rgba(236,72,153,.05);animation:edPulse 2s ease-in-out infinite}
       @keyframes edPulse{0%,100%{box-shadow:0 0 0 0 rgba(236,72,153,0)}50%{box-shadow:0 0 14px rgba(236,72,153,.3)}}
       .ev-stat-v{font-family:'DM Sans',sans-serif;font-size:1.3rem;font-weight:800;line-height:1}
       .ev-stat-l{font-size:.58rem;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1.1px;font-weight:600;margin-top:3px}
+      .ev-history-btn{display:flex;align-items:center;gap:7px;padding:10px 16px;border-radius:9px;background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.3);color:#c084fc;font-family:'DM Sans',sans-serif;font-size:.7rem;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.5px;transition:all .15s}
+      .ev-history-btn:hover{background:rgba(168,85,247,.15);transform:translateY(-1px);box-shadow:0 4px 14px rgba(168,85,247,.2)}
 
       .ev-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
       .ev-card-wrap{display:flex;flex-direction:column;gap:0}
@@ -684,7 +799,6 @@ function Styles() {
       .ev-card-meta{display:flex;gap:8px;font-size:.65rem;color:rgba(255,255,255,.55);flex-wrap:wrap}
       .ev-card-tech,.ev-card-leader{padding:3px 9px;border-radius:5px;background:rgba(255,255,255,.04);white-space:nowrap}
 
-      /* Action grid: 2 columns first 4, full-width 5th button */
       .ev-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:6px}
       .ev-act{padding:10px 12px;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:700;cursor:pointer;text-align:left;border:1px solid;transition:all .15s;text-decoration:none;display:flex;align-items:center;gap:7px;background:transparent}
       .ev-act-ico{font-size:.95rem;flex-shrink:0;width:18px;text-align:center}
@@ -753,7 +867,6 @@ function Styles() {
       .ev-modal-tags{display:flex;gap:6px;flex-wrap:wrap}
       .ev-modal-tag-pill{padding:4px 10px;background:rgba(238,167,39,.08);color:#EEA727;border-radius:5px;font-size:.68rem;font-weight:600}
 
-      /* Edit request items */
       .ev-er{padding:14px 16px;border-radius:11px;background:rgba(236,72,153,.04);border:1px solid rgba(236,72,153,.18);margin-bottom:12px}
       .ev-er:last-child{margin-bottom:0}
       .ev-er-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px;flex-wrap:wrap}
@@ -787,6 +900,28 @@ function Styles() {
       .ev-er-approve{background:linear-gradient(135deg,#4ade80,#22c55e);border-color:transparent;color:#0a0612;font-weight:800}
       .ev-er-approve:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 14px rgba(74,222,128,.3)}
       .ev-er-btn:disabled{opacity:.6;cursor:not-allowed}
+
+      .hm-tabs{display:flex;gap:6px;margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,.06);padding-bottom:0}
+      .hm-tab{padding:8px 14px;border-radius:7px 7px 0 0;background:transparent;border:none;color:rgba(255,255,255,.5);font-family:'DM Sans',sans-serif;font-size:.74rem;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid transparent}
+      .hm-tab:hover{background:rgba(255,255,255,.04);color:#fff}
+      .hm-tab.active{color:#fff;border-bottom-color:#fd1c00;background:rgba(253,28,0,.06)}
+      .hm-tab-count{padding:1px 7px;background:rgba(255,255,255,.08);border-radius:5px;font-size:.6rem;margin-left:6px}
+      .hm-empty{padding:30px;text-align:center;color:rgba(255,255,255,.5);font-size:.78rem}
+      .hm-item{padding:13px 15px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid;margin-bottom:8px}
+      .hm-item.approved{border-color:rgba(74,222,128,.25);background:rgba(74,222,128,.04)}
+      .hm-item.rejected{border-color:rgba(253,28,0,.25);background:rgba(253,28,0,.04)}
+      .hm-item-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+      .hm-item-team{font-size:.78rem;color:#fff}
+      .hm-item-team strong{color:#fd1c00;font-family:'Astro','Orbitron','DM Sans',sans-serif;letter-spacing:.5px}
+      .hm-item-team-title{color:rgba(255,255,255,.7);margin-left:8px;font-size:.74rem}
+      .hm-item-status{padding:3px 10px;border-radius:6px;font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:1px}
+      .hm-item-status.approved{background:rgba(74,222,128,.15);color:#4ade80}
+      .hm-item-status.rejected{background:rgba(253,28,0,.12);color:#fd1c00}
+      .hm-item-by{font-size:.7rem;color:rgba(255,255,255,.55);margin-bottom:6px}
+      .hm-item-fields{font-size:.7rem;color:rgba(255,255,255,.85);margin-bottom:6px}
+      .hm-item-fields strong{color:rgba(255,255,255,.5);font-weight:700}
+      .hm-item-notes{padding:7px 10px;background:rgba(255,255,255,.03);border-radius:6px;font-size:.7rem;color:rgba(255,255,255,.85);font-style:italic;line-height:1.5}
+      .hm-item-time{margin-top:6px;font-size:.62rem;color:rgba(255,255,255,.4)}
 
       .ev-form{display:flex;flex-direction:column;gap:14px}
       .ev-back{align-self:flex-start;padding:7px 14px;border-radius:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#fff;font-family:inherit;font-size:.72rem;font-weight:600;cursor:pointer}
@@ -845,6 +980,7 @@ function Styles() {
         .ev-submit{align-self:stretch}
         .ev-er-btns{flex-direction:column}
         .ev-er-btn{width:100%}
+        .ev-history-btn{width:100%;justify-content:center}
       }
     `}</style>
   )

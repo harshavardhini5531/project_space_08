@@ -12,7 +12,7 @@ import EventDetails from "@/app/dashboard/components/EventDetails";
   import MentorRequest from "@/app/dashboard/components/MentorRequest";
   import StudentAttendance from "@/app/dashboard/components/StudentAttendance";
   import MentorVoteSection from "./MentorVoteSection";
-  import ProjectReview from "@/app/dashboard/components/ProjectReview";
+  import EditRequestToast from "@/app/dashboard/components/EditRequestToast";
   import StudentReviewReport from "@/app/dashboard/components/StudentReviewReport";
   import {
     User, Users, FolderKanban, Activity, GraduationCap,
@@ -2730,7 +2730,7 @@ import EventDetails from "@/app/dashboard/components/EventDetails";
   }
         `}</style>
 
-        <TermsGate user={user}>
+        <EditRequestToast user={user} />
         <div className="dash">
           {isMobile && mobileMenuOpen && <div className="mob-overlay" onClick={()=>setMobileMenuOpen(false)}/>}
 
