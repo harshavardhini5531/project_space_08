@@ -32,7 +32,7 @@ export async function POST(request) {
       .select('leader_roll')
       .eq('team_number', tm.team_number)
       .maybeSingle()
-    const isLeader = team?.leader_roll === roll
+    const isLeader = !!team?.leader_roll && team.leader_roll.toUpperCase() === roll
 
     const { data: requests } = await supabase
       .from('project_review_edit_requests')
