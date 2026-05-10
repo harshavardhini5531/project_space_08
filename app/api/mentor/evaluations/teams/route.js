@@ -1,22 +1,7 @@
 // app/api/mentor/evaluations/teams/route.js
 //
 // Returns list of teams assigned to the authenticated mentor,
-// each annotated with their evaluation status (submitted or pending).
-//
-// Method: POST (follows existing mentor API pattern)
-// Auth: x-mentor-token header + body.mentorEmail
-// Body: { mentorEmail: string }
-//
-// Response:
-//   {
-//     ok: true,
-//     mentor: { id, name, email, technology },
-//     stats: { total, evaluated, pending },
-//     teams: [
-//       { team_number, project_title, leader_roll, leader_name,
-//         technology, evaluated, average_score, evaluated_at }
-//     ]
-//   }
+// each annotated with their evaluation status + project review submission data.
 
 import { createClient } from '@supabase/supabase-js'
 
@@ -27,19 +12,16 @@ const supabase = createClient(
 
 export async function POST(request) {
   try {
-    // ── 1. Auth ──
     const token = request.headers.get('x-mentor-token')
     if (!token || !token.startsWith('mentor_')) {
       return Response.json({ ok: false, error: 'Unauthorized' }, { status: 401 })
     }
 
-    // ── 2. Parse body ──
     const { mentorEmail } = await request.json()
     if (!mentorEmail) {
       return Response.json({ ok: false, error: 'mentorEmail required' }, { status: 400 })
     }
 
-    // ── 3. Lookup mentor ──
     const { data: mentor, error: mentorErr } = await supabase
       .from('mentors')
       .select('id, name, email, technology')
@@ -50,7 +32,6 @@ export async function POST(request) {
       return Response.json({ ok: false, error: 'Mentor not found' }, { status: 404 })
     }
 
-    // ── 4. Fetch assigned teams ──
     const { data: teamsData, error: teamsErr } = await supabase
       .from('teams')
       .select('team_number, technology, leader_roll, project_title, project_description, registered')
@@ -76,8 +57,9 @@ export async function POST(request) {
       })
     }
 
-    // ── 5. Fetch existing evaluations by this mentor for these teams ──
     const teamNumbers = teams.map(t => t.team_number)
+
+    // Mentor's own evaluations
     const { data: evaluations } = await supabase
       .from('mentor_evaluations')
       .select('team_number, average_score, created_at, updated_at')
@@ -85,25 +67,42 @@ export async function POST(request) {
       .in('team_number', teamNumbers)
 
     const evalMap = {}
-    ;(evaluations || []).forEach(e => {
-      evalMap[e.team_number] = e
-    })
+    ;(evaluations || []).forEach(e => { evalMap[e.team_number] = e })
 
-    // ── 5b. Fetch project review submissions (for github_url + name) ──
+    // Project review submissions — ALL fields needed for "View Documentation" modal
     const { data: submissions } = await supabase
       .from('project_review_submissions')
-      .select('team_number, github_url, name, submitted_at')
+      .select(`
+        team_number,
+        name,
+        github_url,
+        description,
+        requirements,
+        problem_statement,
+        proposed_solution,
+        technologies_used,
+        system_architecture,
+        in_scope,
+        out_scope,
+        future_enhancements,
+        conclusion,
+        project_type,
+        status,
+        submitted_at,
+        submitted_by_name
+      `)
       .in('team_number', teamNumbers)
 
     const submissionMap = {}
     ;(submissions || []).forEach(s => {
-      // Keep latest per team if multiple
-      if (!submissionMap[s.team_number] || new Date(s.submitted_at) > new Date(submissionMap[s.team_number].submitted_at)) {
+      // Keep latest per team if duplicates
+      if (!submissionMap[s.team_number] ||
+          new Date(s.submitted_at) > new Date(submissionMap[s.team_number].submitted_at)) {
         submissionMap[s.team_number] = s
       }
     })
 
-    // ── 6. Fetch leader names ──
+    // Leader names
     const leaderRolls = teams.map(t => t.leader_roll).filter(Boolean)
     const studentMap = {}
     if (leaderRolls.length > 0) {
@@ -111,12 +110,9 @@ export async function POST(request) {
         .from('students')
         .select('roll_number, name')
         .in('roll_number', leaderRolls)
-      ;(students || []).forEach(s => {
-        studentMap[s.roll_number] = s.name
-      })
+      ;(students || []).forEach(s => { studentMap[s.roll_number] = s.name })
     }
 
-    // ── 7. Build response ──
     const enrichedTeams = teams.map(t => {
       const ev = evalMap[t.team_number]
       const sub = submissionMap[t.team_number]
@@ -131,9 +127,25 @@ export async function POST(request) {
         evaluated: !!ev,
         average_score: ev?.average_score ?? null,
         evaluated_at: ev?.updated_at ?? ev?.created_at ?? null,
-        github_url: sub?.github_url || null,
-        submitted_name: sub?.name || null,
-        submitted_at: sub?.submitted_at || null,
+        // Project review submission (null if team hasn't submitted)
+        submission: sub ? {
+          name: sub.name,
+          github_url: sub.github_url,
+          description: sub.description,
+          requirements: sub.requirements,
+          problem_statement: sub.problem_statement,
+          proposed_solution: sub.proposed_solution,
+          technologies_used: sub.technologies_used || [],
+          system_architecture: sub.system_architecture,
+          in_scope: sub.in_scope,
+          out_scope: sub.out_scope,
+          future_enhancements: sub.future_enhancements,
+          conclusion: sub.conclusion,
+          project_type: sub.project_type,
+          status: sub.status,
+          submitted_at: sub.submitted_at,
+          submitted_by_name: sub.submitted_by_name,
+        } : null,
       }
     })
 

@@ -4,8 +4,6 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import MentorHelpRequests from '@/app/mentor/dashboard/components/MentorHelpRequests'
 import MentorAttendance from '@/app/mentor/dashboard/components/MentorAttendance'
 import MentorEvaluation from '@/app/mentor/dashboard/components/MentorEvaluation'
-import MentorReviewReports from '@/app/mentor/dashboard/components/MentorReviewReports'
-
 // ── LINE SVG ICONS ──
 const I = {
   grid: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>,
@@ -187,7 +185,6 @@ export default function MentorDashboard() {
     {id:'techprojects', label:'Tech Teams', icon:I.code},
     {id:'reviews', label:'Project Status', icon:I.target},
     {id:'evaluation', label:'Project Evaluation', icon:I.award},
-    {id:'review-report', label:'Review Reports', icon:I.target},
     {id:'linkedin', label:'LinkedIn Stats', icon:I.share},
     {id:'leaderboard', label:'Leaderboard', icon:I.award},
     {id:'settings', label:'Settings', icon:I.settings},
@@ -1264,9 +1261,6 @@ body.sb-open{overflow:hidden}
             </div>)}
             {/* ATTENDANCE */}
             {activePage==='evaluation' && <MentorEvaluation mentor={mentor}/>}
-
-            {activePage==='review-report' && <MentorReviewReports mentor={mentor}/>}
-
             {activePage==='attendance' && <MentorAttendance mentor={mentor}/>}
 
             {/* SETTINGS */}
