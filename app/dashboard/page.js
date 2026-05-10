@@ -2730,6 +2730,7 @@ import EventDetails from "@/app/dashboard/components/EventDetails";
   }
         `}</style>
 
+        <TermsGate user={user}>
         <EditRequestToast user={user} />
         <div className="dash">
           {isMobile && mobileMenuOpen && <div className="mob-overlay" onClick={()=>setMobileMenuOpen(false)}/>}
