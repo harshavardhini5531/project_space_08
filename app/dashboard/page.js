@@ -22,7 +22,7 @@
     Rocket, ChevronLeft, ChevronRight, LogOut, Settings, Search, Bell,
     Phone, Award, Code, BookOpen, Star, CreditCard, Shield, Trophy,
     Target, Layers, CheckCircle, XCircle, Briefcase, Hash,
-    Lightbulb, PenTool, Wrench, Bug, CloudUpload, FileText, Lock, FileBadge2, Presentation,
+    Lightbulb, PenTool, Wrench, Bug, CloudUpload, FileText, Lock, Award as Cert, Presentation,
     AlertCircle, Send, X, Clock, MessageSquare, Zap, ChevronDown,
     MapPin, Bus, Home, Calendar, TrendingUp, BarChart3, Eye, Mail, Sparkles, Cpu
   } from "lucide-react";
@@ -46,8 +46,8 @@
       {id:"review-report",label:"Review Report",icon:FileText},
     ]},
     { title:"Submissions", items:[
-      {id:"my-certificates",label:"My Certificates",icon:Cert},
-      {id:"project-ppt",label:"Project PPT",icon:Presentation},
+      {id:"my-certificates",label:"My Certificates",icon:Award},
+      {id:"project-ppt",label:"Project PPT",icon:FileText},
     ]},
   ];
   const PAGE_TITLES={"my-profile":"My Profile","team-profile":"Team Profile","project-details":"Project Details","project-status":"Project Status","mentor-request":"Mentor Request","food-section":"Food Section","explore-teams":"Explore Teams","event-info":"Event Info","event-details":"Event Details","announcements":"Announcements","mentor-vote":"Mentor Vote","project-review":"Project Review","review-report":"Review Report","space-jam":"Space Jam","attendance":"My Attendance","my-certificates":"My Certificates","project-ppt":"Project PPT",};
