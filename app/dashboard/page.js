@@ -8,19 +8,21 @@
   import { getSession } from "@/lib/session";
   import TermsGate from "@/app/components/TermsGate";
   import EventInfo from "@/app/dashboard/components/EventInfo";
-import EventDetails from "@/app/dashboard/components/EventDetails";
+  import EventDetails from "@/app/dashboard/components/EventDetails";
   import MentorRequest from "@/app/dashboard/components/MentorRequest";
   import StudentAttendance from "@/app/dashboard/components/StudentAttendance";
   import MentorVoteSection from "./MentorVoteSection";
   import EditRequestToast from "@/app/dashboard/components/EditRequestToast";
-  import StudentReviewReport from "@/app/dashboard/components/StudentReviewReport";
+  import ProjectReview from "@/app/dashboard/components/ProjectReview";
+  import MyCertificates from "@/app/dashboard/components/MyCertificates";
+  import ProjectPPT from "@/app/dashboard/components/ProjectPPT";
   import {
     User, Users, FolderKanban, Activity, GraduationCap,
     UtensilsCrossed, Compass, CalendarDays, Megaphone, Heart,
     Rocket, ChevronLeft, ChevronRight, LogOut, Settings, Search, Bell,
     Phone, Award, Code, BookOpen, Star, CreditCard, Shield, Trophy,
     Target, Layers, CheckCircle, XCircle, Briefcase, Hash,
-    Lightbulb, PenTool, Wrench, Bug, CloudUpload, FileText, Lock,
+    Lightbulb, PenTool, Wrench, Bug, CloudUpload, FileText, Lock, FileBadge2, Presentation,
     AlertCircle, Send, X, Clock, MessageSquare, Zap, ChevronDown,
     MapPin, Bus, Home, Calendar, TrendingUp, BarChart3, Eye, Mail, Sparkles, Cpu
   } from "lucide-react";
@@ -43,8 +45,12 @@ import EventDetails from "@/app/dashboard/components/EventDetails";
       {id:"project-review",label:"Project Review",icon:Sparkles},
       {id:"review-report",label:"Review Report",icon:FileText},
     ]},
+    { title:"Submissions", items:[
+      {id:"my-certificates",label:"My Certificates",icon:Cert},
+      {id:"project-ppt",label:"Project PPT",icon:Presentation},
+    ]},
   ];
-  const PAGE_TITLES={"my-profile":"My Profile","team-profile":"Team Profile","project-details":"Project Details","project-status":"Project Status","mentor-request":"Mentor Request","food-section":"Food Section","explore-teams":"Explore Teams","event-info":"Event Info","event-details":"Event Details","announcements":"Announcements","mentor-vote":"Mentor Vote","project-review":"Project Review","review-report":"Review Report","space-jam":"Space Jam","attendance":"My Attendance",};
+  const PAGE_TITLES={"my-profile":"My Profile","team-profile":"Team Profile","project-details":"Project Details","project-status":"Project Status","mentor-request":"Mentor Request","food-section":"Food Section","explore-teams":"Explore Teams","event-info":"Event Info","event-details":"Event Details","announcements":"Announcements","mentor-vote":"Mentor Vote","project-review":"Project Review","review-report":"Review Report","space-jam":"Space Jam","attendance":"My Attendance","my-certificates":"My Certificates","project-ppt":"Project PPT",};
 
   /* ═══ HELPER COMPONENTS ═══ */
   function StatCard({icon:Icon,label,value,color="#ff1d00"}){
@@ -2830,7 +2836,9 @@ import EventDetails from "@/app/dashboard/components/EventDetails";
               active==="mentor-request"?<MentorRequest user={user}/>:
               active==="mentor-vote"?<MentorVoteSection user={user}/>:
               active==="project-review"?<ProjectReview user={user}/>:
-              active==="review-report"?<StudentReviewReport user={user}/>:(
+              active==="review-report"?<StudentReviewReport user={user}/>:
+              active==="my-certificates"?<MyCertificates user={user}/>:
+              active==="project-ppt"?<ProjectPPT user={user}/>:(
                 <div className="page-placeholder">
                   <div className="page-icon">{activeItem&&<activeItem.icon size={36}/>}</div>
                   <div className="page-label">{PAGE_TITLES[active]}</div>
