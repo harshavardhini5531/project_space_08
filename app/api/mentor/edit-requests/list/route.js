@@ -1,10 +1,5 @@
 // Mentor fetches all edit requests for their assigned teams.
-import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-)
+import { supabase } from '@/lib/supabase'
 
 export async function POST(request) {
   try {
@@ -17,16 +12,11 @@ export async function POST(request) {
     if (!mentorEmail) return Response.json({ ok: false, error: 'mentorEmail required' }, { status: 400 })
 
     const { data: mentor } = await supabase
-      .from('mentors')
-      .select('id, name, email')
-      .eq('email', mentorEmail)
-      .maybeSingle()
+      .from('mentors').select('id, name, email').eq('email', mentorEmail).maybeSingle()
     if (!mentor) return Response.json({ ok: false, error: 'Mentor not found' }, { status: 404 })
 
     const { data: teams } = await supabase
-      .from('teams')
-      .select('team_number, project_title')
-      .eq('mentor_assigned', mentor.name)
+      .from('teams').select('team_number, project_title').eq('mentor_assigned', mentor.name)
     const teamNumbers = (teams || []).map(t => t.team_number).filter(Boolean)
     const teamTitleMap = {}
     ;(teams || []).forEach(t => { teamTitleMap[t.team_number] = t.project_title })
@@ -36,11 +26,8 @@ export async function POST(request) {
     }
 
     let query = supabase
-      .from('project_review_edit_requests')
-      .select('*')
-      .in('team_number', teamNumbers)
-      .order('created_at', { ascending: false })
-
+      .from('project_review_edit_requests').select('*')
+      .in('team_number', teamNumbers).order('created_at', { ascending: false })
     if (teamNumber) query = query.eq('team_number', teamNumber)
     if (statusFilter) query = query.eq('status', statusFilter)
 

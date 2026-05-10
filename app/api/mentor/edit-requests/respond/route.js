@@ -1,12 +1,7 @@
 // Mentor approves or rejects an edit request.
 // On approval: updates project_review_submissions, resets review state, syncs to Dev API.
-import { createClient } from '@supabase/supabase-js'
+import { supabase } from '@/lib/supabase'
 import { syncSubmissionToDevApi } from '@/lib/dev-api-sync'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-)
 
 export async function POST(request) {
   try {
@@ -24,33 +19,25 @@ export async function POST(request) {
     }
 
     const { data: mentor } = await supabase
-      .from('mentors')
-      .select('id, name, email')
-      .eq('email', mentorEmail)
-      .maybeSingle()
+      .from('mentors').select('id, name, email').eq('email', mentorEmail).maybeSingle()
     if (!mentor) return Response.json({ ok: false, error: 'Mentor not found' }, { status: 404 })
 
     const { data: req } = await supabase
-      .from('project_review_edit_requests')
-      .select('*')
-      .eq('id', requestId)
-      .maybeSingle()
+      .from('project_review_edit_requests').select('*').eq('id', requestId).maybeSingle()
     if (!req) return Response.json({ ok: false, error: 'Request not found' }, { status: 404 })
     if (req.status !== 'pending') {
       return Response.json({ ok: false, error: `Request already ${req.status}` }, { status: 409 })
     }
 
     const { data: team } = await supabase
-      .from('teams')
-      .select('team_number, mentor_assigned, project_title')
-      .eq('team_number', req.team_number)
-      .maybeSingle()
+      .from('teams').select('team_number, mentor_assigned, project_title').eq('team_number', req.team_number).maybeSingle()
     if (!team || team.mentor_assigned !== mentor.name) {
       return Response.json({ ok: false, error: 'Not authorized for this team' }, { status: 403 })
     }
 
+    // ─── REJECT PATH ───
     if (action === 'reject') {
-      await supabase
+      const { error: rejErr } = await supabase
         .from('project_review_edit_requests')
         .update({
           status: 'rejected',
@@ -60,6 +47,11 @@ export async function POST(request) {
           mentor_notes: (notes || '').trim() || null,
         })
         .eq('id', requestId)
+
+      if (rejErr) {
+        console.error('[edit-requests/respond] reject error:', rejErr)
+        return Response.json({ ok: false, error: 'Failed to reject', detail: rejErr.message }, { status: 500 })
+      }
 
       // Notify student (non-blocking)
       try {
@@ -76,16 +68,18 @@ export async function POST(request) {
         }
       } catch {}
 
-      return Response.json({ ok: true, message: 'Request rejected' })
+      return Response.json({ ok: true, message: 'Request rejected', status: 'rejected' })
     }
 
-    // ─── APPROVE ───
+    // ─── APPROVE PATH ───
+    // Build update payload from field_changes (NO dev_api_sync_status — column doesn't exist)
     const updatePayload = {}
     for (const ch of (req.field_changes || [])) {
       updatePayload[ch.field] = ch.new_value
     }
+    // Reset Dev API sync state (only the column that exists)
     updatePayload.dev_api_synced_at = null
-    updatePayload.dev_api_sync_status = 'pending'
+    // Reset review state so AI re-reviews on next batch run
     updatePayload.status = 'pending'
     updatePayload.reviewing_started_at = null
     updatePayload.reviewed_at = null
@@ -104,6 +98,7 @@ export async function POST(request) {
       return Response.json({ ok: false, error: 'Failed to update submission', detail: updateErr.message }, { status: 500 })
     }
 
+    // Mark request approved
     await supabase
       .from('project_review_edit_requests')
       .update({
@@ -115,7 +110,7 @@ export async function POST(request) {
       })
       .eq('id', requestId)
 
-    // Sync to Dev API (non-blocking — cron retries if it fails)
+    // Sync to Dev API (non-blocking)
     let devSyncStatus = 'queued'
     try {
       const result = await syncSubmissionToDevApi(updatedSub).catch(() => null)
@@ -142,6 +137,7 @@ export async function POST(request) {
     return Response.json({
       ok: true,
       message: 'Request approved. Submission updated and queued for the next AI run.',
+      status: 'approved',
       dev_sync: devSyncStatus,
     })
   } catch (err) {
