@@ -5,6 +5,7 @@ import MentorHelpRequests from '@/app/mentor/dashboard/components/MentorHelpRequ
 import MentorAttendance from '@/app/mentor/dashboard/components/MentorAttendance'
 import MentorEvaluation from '@/app/mentor/dashboard/components/MentorEvaluation'
 import MentorSubmissions from '@/app/mentor/dashboard/components/MentorSubmissions'
+import MentorProjectSubmission from '@/app/mentor/dashboard/components/MentorProjectSubmission'
 // ── LINE SVG ICONS ──
 const I = {
   grid: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>,
@@ -189,6 +190,7 @@ export default function MentorDashboard() {
     {id:'linkedin', label:'LinkedIn Stats', icon:I.share},
     {id:'leaderboard', label:'Leaderboard', icon:I.award},
     {id:'submissions', label:'Submissions', icon:I.share},
+    {id:'my-project', label:'My Project', icon:I.target},
     {id:'settings', label:'Settings', icon:I.settings},
     {id: "help-requests", label: "Mentor Requests", icon: I.lifebuoy },
         {id:'attendance', label:'Attendance', icon:I.check}
@@ -1265,6 +1267,7 @@ body.sb-open{overflow:hidden}
             {activePage==='evaluation' && <MentorEvaluation mentor={mentor}/>}
             {activePage==='attendance' && <MentorAttendance mentor={mentor}/>}
             {activePage==='submissions' && <MentorSubmissions mentor={mentor}/>}
+            {activePage==='my-project' && <MentorProjectSubmission mentor={mentor}/>}
 
             {/* SETTINGS */}
             {activePage==='settings' && (<>
