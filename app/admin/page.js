@@ -8,7 +8,7 @@ import AdminProjectStreet from '@/app/admin/components/AdminProjectStreet'
 import AdminSubmissionsTracker from '@/app/admin/components/AdminSubmissionsTracker'
 import AdminMentorSubmissions from '@/app/admin/components/AdminMentorSubmissions'
 import AdminProjectReview from '@/app/dashboard/components/AdminProjectReview'
-import MentorVoteLeaderboard from '@/app/admin/components/MentorVoteLeaderboard'
+import MentorVoteLeaderboard from '@/app/admin/MentorVoteLeaderboard'
 
 export default function AdminDashboard() {
   const router = useRouter()
