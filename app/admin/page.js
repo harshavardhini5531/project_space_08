@@ -1544,8 +1544,10 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
 })()}</React.Fragment>)}</tbody></table></>}
 
             {/* ATTENDANCE */}
+            {activeTab === 'review-scores' && email && <AdminReviewScores adminEmail={email}/>}
+            {activeTab === 'attendance' && <AdminAttendance/>}
             {activeTab === 'submissions' && <AdminSubmissionsTracker adminEmail={email}/>}
-{activeTab === 'mentor-projects' && <AdminMentorSubmissions adminEmail={email}/>}
+            {activeTab === 'mentor-projects' && <AdminMentorSubmissions adminEmail={email}/>}
             {activeTab === 'project-street' && <AdminProjectStreet/>}
             {activeTab === 'project-review' && <AdminProjectReview user={{ email: email, rollNumber: 'admin' }}/>}
 
