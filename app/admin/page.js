@@ -635,7 +635,11 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
 .ad-sb-sub{font-size:.52rem;color:rgba(255,255,255,.25);margin-top:2px}
 
 /* Nav items — spacious with big gaps */
-.ad-sb-nav{flex:1;display:flex;flex-direction:column;gap:6px;padding:0 4px}
+.ad-sb-nav{flex:1;display:flex;flex-direction:column;gap:6px;padding:0 4px;overflow-y:auto;min-height:0;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.1) transparent}
+.ad-sb-nav::-webkit-scrollbar{width:5px}
+.ad-sb-nav::-webkit-scrollbar-track{background:transparent}
+.ad-sb-nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:3px}
+.ad-sb-nav::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.15)}
 .ad-sb-item{display:flex;align-items:center;gap:12px;padding:9px 16px;margin:2px 10px;border-radius:10px;border:none;cursor:pointer;background:none;color:rgba(255,255,255,.45);font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:500;transition:all .25s;width:calc(100% - 20px);text-align:left;animation:navIn .4s ease both;position:relative;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .ad-sb-item span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
 .ad-sb-item svg{flex-shrink:0;width:34px;height:34px;padding:8px;border-radius:9px;transition:all .25s}
