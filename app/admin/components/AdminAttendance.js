@@ -102,7 +102,8 @@ export default function AdminAttendance() {
   }
 
   const { stats, mode_stats, teams: teamRows, students, mentors, target_date } = data
-
+  // Show clear empty state when no attendance data for the date
+  const hasAnyAttendance = students.some(s => s.present_count > 0) || mentors.some(m => m.present_count > 0)
   const fullAttend = students.filter(s => s.present_count === 4).length
   const partialAttend = students.filter(s => s.present_count > 0 && s.present_count < 4).length
   const totallyAbsent = students.filter(s => s.present_count === 0).length
@@ -137,6 +138,18 @@ export default function AdminAttendance() {
         <Card label="Partial" value={partialAttend} sub="missed some" variant="partial"/>
         <Card label="Absent" value={totallyAbsent} sub="no punch" variant="absent"/>
       </div>
+      {!hasAnyAttendance && (
+        <div style={{padding:'18px 22px',marginBottom:14,borderRadius:13,background:'rgba(238,167,39,.06)',border:'1px solid rgba(238,167,39,.25)',display:'flex',alignItems:'center',gap:14}}>
+          <div style={{fontSize:'1.5rem'}}>⚠️</div>
+          <div>
+            <div style={{fontSize:'.85rem',fontWeight:700,color:'#EEA727',marginBottom:3}}>No attendance recorded for {target_date}</div>
+            <div style={{fontSize:'.72rem',color:'rgba(255,255,255,.6)'}}>
+              Either the attendance sync hasn't run for today yet, or no one has punched in.
+              Click <strong style={{color:'#fff'}}>Sync Now</strong> above to pull the latest data from the device.
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Mode strip */}
       <div className="aa-modes">
