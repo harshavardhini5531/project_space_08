@@ -8,7 +8,7 @@ import AdminProjectStreet from '@/app/admin/components/AdminProjectStreet'
 import AdminSubmissionsTracker from '@/app/admin/components/AdminSubmissionsTracker'
 import AdminMentorSubmissions from '@/app/admin/components/AdminMentorSubmissions'
 import AdminProjectReview from '@/app/dashboard/components/AdminProjectReview'
-import MentorVoteLeaderboard from '@/app/admin/MentorVoteLeaderboard'
+import AdminLeaderboard from '@/app/admin/components/AdminLeaderboard'
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -222,6 +222,7 @@ export default function AdminDashboard() {
   }
   const NAV=[
     {id:'overview',label:'Overview',icon:IC.grid},
+    {id:'leaderboard',label:'Leaderboard',icon:IC.award},
     {id:'mentors',label:'Mentors',icon:IC.users},
     {id:'teams',label:'Teams',icon:IC.group},
     {id:'submissions',label:'Submissions',icon:IC.file},
@@ -1553,6 +1554,7 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
 
             {/* ATTENDANCE */}
             {activeTab === 'review-scores' && email && <AdminReviewScores adminEmail={email}/>}
+            {activeTab === 'leaderboard' && email && <AdminLeaderboard adminEmail={email}/>}
             {activeTab === 'attendance' && <AdminAttendance/>}
             {activeTab === 'submissions' && <AdminSubmissionsTracker adminEmail={email}/>}
             {activeTab === 'mentor-projects' && <AdminMentorSubmissions adminEmail={email}/>}
