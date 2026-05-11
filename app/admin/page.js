@@ -6,6 +6,7 @@ import AdminAttendance from '@/app/admin/components/AdminAttendance'
 import AdminReviewScores from '@/app/admin/components/AdminReviewScores'
 import AdminProjectStreet from '@/app/admin/components/AdminProjectStreet'
 import AdminSubmissionsTracker from '@/app/admin/components/AdminSubmissionsTracker'
+import AdminMentorSubmissions from '@/app/admin/components/AdminMentorSubmissions'
 import AdminProjectReview from '@/app/dashboard/components/AdminProjectReview'
 import MentorVoteLeaderboard from './MentorVoteLeaderboard';
 
@@ -224,6 +225,7 @@ export default function AdminDashboard() {
     {id:'mentors',label:'Mentors',icon:IC.users},
     {id:'teams',label:'Teams',icon:IC.group},
     {id:'submissions',label:'Submissions',icon:IC.file},
+{id:'mentor-projects',label:'Mentor Projects',icon:IC.file},
     {id:'milestones',label:'Project Status',icon:IC.target},
     {id:'project-street',label:'Project Street',icon:IC.cal},
     {id:'linkedin-stats',label:'LinkedIn Stats',icon:IC.share},
@@ -1543,6 +1545,7 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
 
             {/* ATTENDANCE */}
             {activeTab === 'submissions' && <AdminSubmissionsTracker adminEmail={email}/>}
+{activeTab === 'mentor-projects' && <AdminMentorSubmissions adminEmail={email}/>}
             {activeTab === 'project-street' && <AdminProjectStreet/>}
             {activeTab === 'project-review' && <AdminProjectReview user={{ email: email, rollNumber: 'admin' }}/>}
 
