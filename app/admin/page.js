@@ -635,7 +635,11 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
 .ad-sb-sub{font-size:.52rem;color:rgba(255,255,255,.25);margin-top:2px}
 
 /* Nav items — spacious with big gaps */
-.ad-sb-nav{flex:1;display:flex;flex-direction:column;gap:6px;padding:0 4px;overflow-y:auto;min-height:0;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.1) transparent}
+.ad-sb-nav{flex:1 1 0;display:flex;flex-direction:column;gap:6px;padding:0 4px;overflow-y:auto;overflow-x:hidden;min-height:0;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.18) transparent}
+.ad-sb-nav::-webkit-scrollbar{width:6px}
+.ad-sb-nav::-webkit-scrollbar-track{background:transparent;margin:4px 0}
+.ad-sb-nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:3px;transition:background .2s}
+.ad-sb-nav::-webkit-scrollbar-thumb:hover{background:rgba(253,28,0,.35)}
 .ad-sb-nav::-webkit-scrollbar{width:5px}
 .ad-sb-nav::-webkit-scrollbar-track{background:transparent}
 .ad-sb-nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:3px}
