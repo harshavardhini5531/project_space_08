@@ -10,3 +10,5 @@ public/exports/
 .env.local.bak
 .env*.backup
 .env*.bak
+
+sync-check.ps1
