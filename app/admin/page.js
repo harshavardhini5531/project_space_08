@@ -9,7 +9,7 @@ import AdminSubmissionsTracker from '@/app/admin/components/AdminSubmissionsTrac
 import AdminMentorSubmissions from '@/app/admin/components/AdminMentorSubmissions'
 import AdminProjectReview from '@/app/dashboard/components/AdminProjectReview'
 import AdminLeaderboard from '@/app/admin/components/AdminLeaderboard'
-
+import AdminProjectLeaders from '@/app/admin/components/AdminProjectLeaders'
 export default function AdminDashboard() {
   const router = useRouter()
   const [phase, setPhase] = useState('auth')
@@ -223,6 +223,7 @@ export default function AdminDashboard() {
   const NAV=[
     {id:'overview',label:'Overview',icon:IC.grid},
     {id:'leaderboard',label:'Leaderboard',icon:IC.award},
+    {id:'project-leaders',label:'Project Leaders',icon:IC.award},
     {id:'mentors',label:'Mentors',icon:IC.users},
     {id:'teams',label:'Teams',icon:IC.group},
     {id:'submissions',label:'Submissions',icon:IC.file},
@@ -1560,6 +1561,7 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
             {activeTab === 'mentor-projects' && <AdminMentorSubmissions adminEmail={email}/>}
             {activeTab === 'project-street' && <AdminProjectStreet/>}
             {activeTab === 'project-review' && <AdminProjectReview user={{ email: email, rollNumber: 'admin' }}/>}
+            {activeTab === 'project-leaders' && email && <AdminProjectLeaders adminEmail={email}/>}
 
             {/* PROJECT STATUS */}
             {activeTab === 'milestones' && <div className="adm-lb">
@@ -1758,7 +1760,7 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
                 </>
               })()}
             </div>}
-                        
+
             {/* LINKEDIN STATS */}
             {activeTab === 'linkedin-stats' && (
               <div className="li-stats-wrap">
