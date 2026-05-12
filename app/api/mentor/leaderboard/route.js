@@ -79,7 +79,7 @@ export async function POST(request) {
     ] = await Promise.all([
       supabase.from('teams')
         .select('team_number, project_title, technology, batch, mentor_assigned, leader_roll')
-        .eq('technology', tech), // ← FILTER BY MENTOR'S TECH
+        .eq('technology', tech),
       supabase.from('team_members').select('team_number, roll_number'),
       supabase.from('team_certificates').select('team_number, roll_number'),
       supabase.from('team_ppts').select('team_number, uploaded_at'),
@@ -150,13 +150,15 @@ export async function POST(request) {
       if (!modesByRollDate[r][d]) modesByRollDate[r][d] = new Set()
       modesByRollDate[r][d].add(a.punch_mode)
     })
-    const fullDaysByRoll = {}
+
+    // OPTION B — proportional: count distinct modes hit per day per student
+    const modesHitByRoll = {}
     for (const roll of Object.keys(modesByRollDate)) {
-      let fullDays = 0
+      let totalModes = 0
       for (const date of Object.keys(modesByRollDate[roll])) {
-        if (modesByRollDate[roll][date].size >= 4) fullDays++
+        totalModes += modesByRollDate[roll][date].size
       }
-      fullDaysByRoll[roll] = fullDays
+      modesHitByRoll[roll] = totalModes
     }
 
     const devById = {}
@@ -194,9 +196,10 @@ export async function POST(request) {
       const stagesApproved = stagesApprovedByTeam[t.team_number] || 0
       const stagePoints = round1((stagesApproved / TOTAL_STAGES) * MAX_STAGES)
 
-      const teamFullDays = members.reduce((sum, r) => sum + (fullDaysByRoll[r.toUpperCase()] || 0), 0)
-      const maxFullDays = memberCount * EVENT_DAYS
-      const attPct = maxFullDays > 0 ? (teamFullDays / maxFullDays) : 0
+      // OPTION B: sum modes hit across members, divide by max possible (members × 7 × 4)
+      const teamModesHit = members.reduce((sum, r) => sum + (modesHitByRoll[r.toUpperCase()] || 0), 0)
+      const maxModes = memberCount * EVENT_DAYS * 4
+      const attPct = maxModes > 0 ? (teamModesHit / maxModes) : 0
       const attendancePoints = round1(attPct * MAX_ATT)
 
       const certsUploaded = certsByTeam[t.team_number] || 0
@@ -220,8 +223,8 @@ export async function POST(request) {
         member_count: memberCount,
         certs_uploaded: certsUploaded,
         certs_expected: certsExpected,
-        attendance_full_days: teamFullDays,
-        attendance_max_days: maxFullDays,
+        attendance_full_days: teamModesHit,
+        attendance_max_days: maxModes,
         review_score_raw: reviewScore != null ? round1(reviewScore) : null,
         mentor_score_raw: mentorScore != null ? round1(mentorScore) : null,
         stages_approved: stagesApproved,
@@ -282,8 +285,8 @@ function getRules() {
     },
     {
       id: 'attendance', label: 'Attendance', max: 6, weight: '6%',
-      formula: '(full-days ÷ (members × 7)) × 6',
-      explainer: '"Full day" = member hit all 4 modes. Normalized fairly by team size.',
+      formula: '(modes hit ÷ (members × 7 × 4)) × 6',
+      explainer: 'Each mode punched counts proportionally. A day where the member hit 2 of 4 modes = 2 mode-points (not zero). Max = members × 7 days × 4 modes.',
     },
     {
       id: 'cert', label: 'Claude Certificates', max: 4, weight: '4%',
