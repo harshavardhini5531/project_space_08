@@ -1758,16 +1758,7 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
                 </>
               })()}
             </div>}
-            {/* LEADERBOARD */}
-            {activeTab === 'leaderboard' && <div className="adm-lb">
-              <div style={{fontSize:'1.1rem',fontWeight:700,color:'#fff',marginBottom:4}}>Leaderboard</div>
-              <div style={{fontSize:'.72rem',color:'rgba(255,255,255,.3)',marginBottom:20}}>All teams ranked by project completion progress</div>
-              <div className="adm-lb-stats"><div className="adm-lb-stat"><div className="adm-lb-sv" style={{color:'#fd1c00'}}>{adLeaderboard.stats?.total_teams||0}</div><div className="adm-lb-sl">Total Teams</div></div><div className="adm-lb-stat"><div className="adm-lb-sv" style={{color:'#4ade80'}}>{adLeaderboard.stats?.teams_all_done||0}</div><div className="adm-lb-sl">All Complete</div></div><div className="adm-lb-stat"><div className="adm-lb-sv" style={{color:'#EEA727'}}>{adLeaderboard.stats?.avg_progress||0}%</div><div className="adm-lb-sl">Avg Progress</div></div><div className="adm-lb-stat"><div className="adm-lb-sv" style={{color:'#3b82f6'}}>{adLeaderboard.stats?.total_completed_stages||0}</div><div className="adm-lb-sl">Stages Done</div></div></div>
-              {adLbLoading&&<div style={{textAlign:'center',padding:30,color:'rgba(255,255,255,.2)'}}>Loading...</div>}
-              {!adLbLoading&&<table className="adm-lb-tbl"><thead><tr><th>Rank</th><th>Team</th><th>Project</th><th>Technology</th><th>Mentor</th><th>Progress</th><th>Credits</th></tr></thead><tbody>{(adLeaderboard.leaderboard||[]).map(t=><tr key={t.team_number}><td><span className={`adm-lb-rank ${t.rank===1?'gold':t.rank===2?'silver':t.rank===3?'bronze':''}`}>#{t.rank}</span></td><td style={{fontWeight:700,color:'#fd1c00'}}>{t.team_number}</td><td style={{maxWidth:160,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{t.project_title||'—'}</td><td><span style={{fontSize:'.6rem',padding:'2px 8px',borderRadius:5,background:'rgba(255,255,255,.04)',color:'rgba(255,255,255,.45)'}}>{t.technology}</span></td><td style={{fontSize:'.7rem',color:'rgba(255,255,255,.35)'}}>{t.mentor||'—'}</td><td><div className="adm-lb-bar"><div className="adm-lb-bar-fill" style={{width:`${t.percent}%`}}/></div><span style={{fontSize:'.72rem',fontWeight:700,color:t.percent>=70?'#4ade80':t.percent>=40?'#EEA727':'rgba(255,255,255,.3)'}}>{t.completed_stages}/7</span></td><td style={{fontWeight:700,color:'#EEA727'}}>{t.total_credits}</td></tr>)}</tbody></table>}
-            </div>}
-            
-
+                        
             {/* LINKEDIN STATS */}
             {activeTab === 'linkedin-stats' && (
               <div className="li-stats-wrap">

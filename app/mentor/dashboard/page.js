@@ -1256,14 +1256,6 @@ body.sb-open{overflow:hidden}
               })()}
             </div>)}
 
-            {/* LEADERBOARD */}
-            {activePage==='leaderboard' && (<div className="lb-section">
-              <div className="md-page-title">LEADERBOARD</div>
-              <div className="md-page-sub">All teams ranked by project completion</div>
-              <div className="lb-stats"><div className="lb-stat"><div className="lb-stat-val" style={{color:'#fd1c00'}}>{leaderboard.stats?.total_teams||0}</div><div className="lb-stat-lb">Teams</div></div><div className="lb-stat"><div className="lb-stat-val" style={{color:'#4ade80'}}>{leaderboard.stats?.teams_all_done||0}</div><div className="lb-stat-lb">All Done</div></div><div className="lb-stat"><div className="lb-stat-val" style={{color:'#EEA727'}}>{leaderboard.stats?.avg_progress||0}%</div><div className="lb-stat-lb">Avg Progress</div></div><div className="lb-stat"><div className="lb-stat-val" style={{color:'#3b82f6'}}>{leaderboard.stats?.total_completed_stages||0}</div><div className="lb-stat-lb">Stages Done</div></div></div>
-              {lbLoading&&<div style={{textAlign:'center',padding:30,color:'hsla(0, 0%, 100%, 0.20)'}}>Loading...</div>}
-              {!lbLoading&&<table className="lb-table"><thead><tr><th>Rank</th><th>Team</th><th>Project</th><th>Tech</th><th>Progress</th><th>Credits</th></tr></thead><tbody>{(leaderboard.leaderboard||[]).map(t=><tr key={t.team_number}><td><span className={`lb-rank ${t.rank===1?'gold':t.rank===2?'silver':t.rank===3?'bronze':''}`}>#{t.rank}</span></td><td style={{fontWeight:700,color:'#fd1c00'}}>{t.team_number}</td><td style={{maxWidth:180,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{t.project_title||'—'}</td><td><span style={{fontSize:'.62rem',padding:'2px 8px',borderRadius:5,background:'rgba(255,255,255,.04)',color:'rgba(255,255,255,.5)'}}>{t.technology}</span></td><td><div className="lb-bar"><div className="lb-bar-fill" style={{width:`${t.percent}%`}}/></div><span style={{fontSize:'.72rem',fontWeight:700,color:t.percent>=70?'#4ade80':t.percent>=40?'#EEA727':'rgba(255,255,255,.3)'}}>{t.completed_stages}/7</span></td><td style={{fontWeight:700,color:'#EEA727'}}>{t.total_credits}</td></tr>)}</tbody></table>}
-            </div>)}
             {/* ATTENDANCE */}
             {activePage==='evaluation' && <MentorEvaluation mentor={mentor}/>}
             {activePage==='attendance' && <MentorAttendance mentor={mentor}/>}
