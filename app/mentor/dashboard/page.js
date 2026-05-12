@@ -193,7 +193,7 @@ export default function MentorDashboard() {
     {id:'linkedin', label:'LinkedIn Stats', icon:I.share},
     {id:'leaderboard', label:'Leaderboard', icon:I.award},
     {id:'panel-scoring', label:'Panel Scoring', icon:I.award},
-    {id:'panel-view', label:'Panel View', icon:I.briefcase},
+    {id:'panel-view', label:'Panel View', icon:I.target},
     {id:'submissions', label:'Submissions', icon:I.share},
     {id:'my-project', label:'My Project', icon:I.target},
     {id:'settings', label:'Settings', icon:I.settings},
