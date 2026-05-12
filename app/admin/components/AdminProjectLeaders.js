@@ -201,6 +201,11 @@ export default function AdminProjectLeaders({ adminEmail }) {
 .pl-assign-form input,.pl-assign-form select{padding:9px 12px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:#fff;font-family:'Inter',sans-serif;font-size:.74rem;font-weight:500;outline:none;min-width:160px}
 .pl-assign-form input:focus,.pl-assign-form select:focus{border-color:rgba(167,139,250,.4)}
 
+.pl-tabs{display:flex;gap:4px;margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,.07);padding:0 2px}.pl-tab{background:none;border:none;padding:11px 18px;color:rgba(255,255,255,.45);font-family:'Inter','DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;letter-spacing:-0.005em}
+.pl-tab:hover{color:rgba(255,255,255,.75)}
+.pl-tab.on{color:#a78bfa;border-bottom-color:#a78bfa}
+.pl-tab-cnt{font-variant-numeric:tabular-nums;font-size:.7rem;padding:2px 8px;border-radius:8px;background:rgba(255,255,255,.06);color:rgba(255,255,255,.6);font-weight:700;letter-spacing:0}
+.pl-tab.on .pl-tab-cnt{background:rgba(167,139,250,.15);color:#a78bfa}
 .pl-controls{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
 .pl-search{flex:1;min-width:200px;padding:10px 14px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:#fff;font-family:'Inter',sans-serif;font-size:.78rem;font-weight:500;outline:none}
 .pl-search:focus{border-color:rgba(253,28,0,.3)}
@@ -255,6 +260,16 @@ export default function AdminProjectLeaders({ adminEmail }) {
 .pl-detail-total-l{font-size:.66rem;color:rgba(255,255,255,.5);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
 .pl-detail-total-v{font-family:'Inter',sans-serif;font-variant-numeric:tabular-nums;font-size:.95rem;font-weight:800;color:#a78bfa}
 .pl-detail-empty{padding:14px;color:rgba(255,255,255,.4);font-size:.74rem;font-style:italic}
+
+.pl-auto-section{padding:14px 16px;border-radius:11px;background:rgba(74,222,128,.04);border:1px solid rgba(74,222,128,.15);margin-bottom:8px}
+.pl-auto-hdr{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;flex-wrap:wrap;gap:6px}
+.pl-auto-hdr-l{font-size:.72rem;font-weight:700;color:#4ade80;text-transform:uppercase;letter-spacing:0.08em}
+.pl-auto-hdr-v{font-family:'Inter',sans-serif;font-variant-numeric:tabular-nums;font-size:1.05rem;font-weight:800;color:#4ade80}
+.pl-auto-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.pl-auto-cell{padding:9px 11px;border-radius:8px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.04)}
+.pl-auto-cell-l{font-size:.56rem;font-weight:700;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl-auto-cell-v{font-family:'Inter',sans-serif;font-variant-numeric:tabular-nums;font-size:.92rem;font-weight:800;color:#fff;line-height:1}
+.pl-auto-cell-max{font-size:.66rem;font-weight:500;color:rgba(255,255,255,.35);margin-left:3px}
 
 .pl-empty{padding:40px;text-align:center;color:rgba(255,255,255,.3);font-size:.78rem}
       `}</style>
@@ -356,20 +371,31 @@ export default function AdminProjectLeaders({ adminEmail }) {
         </div>
       )}
 
+      {/* TABS */}
+      <div className="pl-tabs">
+        <button
+          className={`pl-tab ${!showAllTeams ? 'on' : ''}`}
+          onClick={() => setShowAllTeams(false)}
+        >
+          <span>Scored Teams</span>
+          <span className="pl-tab-cnt">{(data?.teams || []).filter(t => (t.panel_count || 0) > 0).length}</span>
+        </button>
+        <button
+          className={`pl-tab ${showAllTeams ? 'on' : ''}`}
+          onClick={() => setShowAllTeams(true)}
+        >
+          <span>All Teams</span>
+          <span className="pl-tab-cnt">{(data?.teams || []).length}</span>
+        </button>
+      </div>
+
       {/* CONTROLS */}
       <div className="pl-controls">
         <input className="pl-search" placeholder="Search team, project, mentor…" value={search} onChange={e => setSearch(e.target.value)} />
         <select className="pl-sel" value={techFilter} onChange={e => setTechFilter(e.target.value)}>
           {technologies.map(t => <option key={t} value={t} style={{background:'#13101a'}}>{t === 'all' ? 'All Technologies' : t}</option>)}
         </select>
-        <button
-          onClick={() => setShowAllTeams(v => !v)}
-          style={{padding:'7px 14px',borderRadius:8,background:showAllTeams?'rgba(255,255,255,.06)':'rgba(167,139,250,.12)',border:`1px solid ${showAllTeams?'rgba(255,255,255,.1)':'rgba(167,139,250,.3)'}`,color:showAllTeams?'rgba(255,255,255,.65)':'#a78bfa',fontFamily:'Inter,DM Sans,sans-serif',fontSize:'.72rem',fontWeight:600,cursor:'pointer',whiteSpace:'nowrap'}}
-          title={showAllTeams ? 'Click to show only scored teams' : 'Click to show all 160 teams'}
-        >
-          {showAllTeams ? '👁 Showing all teams' : '✓ Only scored teams'}
-        </button>
-        <div style={{fontSize:'.7rem',color:'rgba(255,255,255,.35)',marginLeft:'auto',fontWeight:500}}>{filteredTeams.length} teams</div>
+<div style={{fontSize:'.7rem',color:'rgba(255,255,255,.35)',marginLeft:'auto',fontWeight:500}}>{filteredTeams.length} teams</div>
       </div>
 
       {/* TABLE */}
@@ -392,8 +418,7 @@ export default function AdminProjectLeaders({ adminEmail }) {
                 <SortableTh field="technology" label="Tech" sortBy={sortBy} sortDir={sortDir} onClick={handleSort}/>
                 <th>Mentor</th>
                 <SortableTh field="auto_score" label="Auto/100" sortBy={sortBy} sortDir={sortDir} onClick={handleSort} className="num"/>
-                <SortableTh field="panel_count" label="Panels" sortBy={sortBy} sortDir={sortDir} onClick={handleSort} className="num"/>
-                <SortableTh field="panel_avg" label="Panel/50" sortBy={sortBy} sortDir={sortDir} onClick={handleSort} className="num"/>
+                <SortableTh field="panel_avg" label="Panel Avg/50" sortBy={sortBy} sortDir={sortDir} onClick={handleSort} className="num"/>
                 <SortableTh field="grand_total" label="Total/150" sortBy={sortBy} sortDir={sortDir} onClick={handleSort} className="num"/>
               </tr>
             </thead>
@@ -413,15 +438,37 @@ export default function AdminProjectLeaders({ adminEmail }) {
                       </td>
                       <td style={{color:'rgba(255,255,255,.48)',fontSize:'.7rem',maxWidth:140,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{t.mentor}</td>
                       <td className="num"><span className="pl-pt auto">{t.auto_score}</span></td>
-                      <td className="num">{t.panel_count > 0 ? <span className="pl-panel-count">{t.panel_count}</span> : <span style={{color:'rgba(255,255,255,.25)',fontSize:'.7rem'}}>0</span>}</td>
                       <td className="num">{t.panel_count > 0 ? <span className="pl-pt panel">{t.panel_avg}</span> : <span className="pl-pt zero">—</span>}</td>
                       <td className="pl-grand"><span className="pl-grand-num">{t.grand_total ?? 0}</span><span className="pl-grand-out">/150</span></td>
                     </tr>
                     {isExp && (
                       <tr className="pl-detail-row">
-                        <td colSpan={9}>
+                        <td colSpan={8}>
                           <div className="pl-detail">
-                            <div className="pl-detail-title">Panel scores for {t.team_number} ({t.panel_count} panel{t.panel_count === 1 ? '' : 's'})</div>
+                            <div className="pl-detail-title">
+                              Score breakdown · {t.team_number} ·
+                              <span style={{marginLeft:8,padding:'2px 9px',borderRadius:6,background:'rgba(74,222,128,.1)',color:'#4ade80',fontSize:'.62rem',fontWeight:700,letterSpacing:'.06em'}}>Auto: {t.auto_score}/100</span>
+                              <span style={{marginLeft:6,padding:'2px 9px',borderRadius:6,background:'rgba(167,139,250,.15)',color:'#a78bfa',fontSize:'.62rem',fontWeight:700,letterSpacing:'.06em'}}>Panel Avg: {t.panel_avg}/50</span>
+                              <span style={{marginLeft:6,padding:'2px 9px',borderRadius:6,background:'rgba(253,28,0,.12)',color:'#fd1c00',fontSize:'.62rem',fontWeight:700,letterSpacing:'.06em'}}>Total: {t.grand_total}/150</span>
+                            </div>
+                            {/* AUTO SCORE BREAKDOWN */}
+                            <div className="pl-auto-section">
+                              <div className="pl-auto-hdr">
+                                <span className="pl-auto-hdr-l">Auto Score Breakdown</span>
+                                <span className="pl-auto-hdr-v">{t.auto_score}<span style={{color:'rgba(255,255,255,.35)',fontWeight:500,fontSize:'.72rem',marginLeft:3}}>/100</span></span>
+                              </div>
+                              <div className="pl-auto-grid">
+                                <div className="pl-auto-cell"><div className="pl-auto-cell-l">Project Review</div><div className="pl-auto-cell-v">{t.review_points}<span className="pl-auto-cell-max">/60</span></div></div>
+                                <div className="pl-auto-cell"><div className="pl-auto-cell-l">Mentor Evaluation</div><div className="pl-auto-cell-v">{t.mentor_eval_points}<span className="pl-auto-cell-max">/20</span></div></div>
+                                <div className="pl-auto-cell"><div className="pl-auto-cell-l">Stages Completed</div><div className="pl-auto-cell-v">{t.stage_points}<span className="pl-auto-cell-max">/8</span></div></div>
+                                <div className="pl-auto-cell"><div className="pl-auto-cell-l">Attendance</div><div className="pl-auto-cell-v">{t.attendance_points}<span className="pl-auto-cell-max">/6</span></div></div>
+                                <div className="pl-auto-cell"><div className="pl-auto-cell-l">Certificates</div><div className="pl-auto-cell-v">{t.cert_points}<span className="pl-auto-cell-max">/4</span></div></div>
+                                <div className="pl-auto-cell"><div className="pl-auto-cell-l">PPT Upload</div><div className="pl-auto-cell-v">{t.ppt_points}<span className="pl-auto-cell-max">/2</span></div></div>
+                              </div>
+                            </div>
+
+                            {/* PANEL SCORES */}
+                            <div style={{fontSize:'.72rem',fontWeight:700,color:'#a78bfa',textTransform:'uppercase',letterSpacing:'0.08em',marginTop:18,marginBottom:8}}>Panel Scores {t.panel_count > 0 && <span style={{color:'rgba(255,255,255,.4)',fontWeight:500,textTransform:'none',letterSpacing:'normal',marginLeft:6}}>· {t.panel_count} panel{t.panel_count === 1 ? '' : 's'}</span>}</div>
                             {t.panel_breakdown.length === 0 ? (
                               <div className="pl-detail-empty">No panel scores submitted yet for this team.</div>
                             ) : (
