@@ -28,6 +28,7 @@ export default function AdminProjectLeaders({ adminEmail }) {
   const [sortBy, setSortBy] = useState('rank')
   const [sortDir, setSortDir] = useState('asc')
   const [expandedTeam, setExpandedTeam] = useState(null)
+  const [showAllTeams, setShowAllTeams] = useState(false)  // false = only show panel-scored teams
 
   async function fetchData() {
     if (!adminEmail) return
@@ -95,6 +96,8 @@ export default function AdminProjectLeaders({ adminEmail }) {
   const filteredTeams = useMemo(() => {
     if (!data?.teams) return []
     let arr = data.teams
+    // Filter: only show teams with at least one panel score (unless toggle is on)
+    if (!showAllTeams) arr = arr.filter(t => (t.panel_count || 0) > 0)
     if (techFilter !== 'all') arr = arr.filter(t => t.technology === techFilter)
     if (search) {
       const q = search.toLowerCase()
@@ -113,7 +116,7 @@ export default function AdminProjectLeaders({ adminEmail }) {
       return dir * (av - bv)
     })
     return sorted
-  }, [data, search, techFilter, sortBy, sortDir])
+  }, [data, search, techFilter, sortBy, sortDir, showAllTeams])
 
   function handleSort(field) {
     if (sortBy === field) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
@@ -359,12 +362,25 @@ export default function AdminProjectLeaders({ adminEmail }) {
         <select className="pl-sel" value={techFilter} onChange={e => setTechFilter(e.target.value)}>
           {technologies.map(t => <option key={t} value={t} style={{background:'#13101a'}}>{t === 'all' ? 'All Technologies' : t}</option>)}
         </select>
+        <button
+          onClick={() => setShowAllTeams(v => !v)}
+          style={{padding:'7px 14px',borderRadius:8,background:showAllTeams?'rgba(255,255,255,.06)':'rgba(167,139,250,.12)',border:`1px solid ${showAllTeams?'rgba(255,255,255,.1)':'rgba(167,139,250,.3)'}`,color:showAllTeams?'rgba(255,255,255,.65)':'#a78bfa',fontFamily:'Inter,DM Sans,sans-serif',fontSize:'.72rem',fontWeight:600,cursor:'pointer',whiteSpace:'nowrap'}}
+          title={showAllTeams ? 'Click to show only scored teams' : 'Click to show all 160 teams'}
+        >
+          {showAllTeams ? '👁 Showing all teams' : '✓ Only scored teams'}
+        </button>
         <div style={{fontSize:'.7rem',color:'rgba(255,255,255,.35)',marginLeft:'auto',fontWeight:500}}>{filteredTeams.length} teams</div>
       </div>
 
       {/* TABLE */}
       {filteredTeams.length === 0 ? (
-        <div className="pl-empty">No teams match filters</div>
+        <div className="pl-empty">{!showAllTeams && (data?.teams?.length || 0) > 0 ? (
+          <>
+            <div style={{fontSize:'1rem',fontWeight:600,color:'rgba(255,255,255,.55)',marginBottom:6}}>Panels haven't started scoring yet</div>
+            <div style={{fontSize:'.78rem',color:'rgba(255,255,255,.35)',marginBottom:14}}>Teams will appear here as panel mentors submit their scores.</div>
+            <button onClick={() => setShowAllTeams(true)} style={{padding:'7px 16px',borderRadius:8,background:'rgba(167,139,250,.15)',border:'1px solid rgba(167,139,250,.35)',color:'#a78bfa',fontFamily:'Inter,DM Sans,sans-serif',fontSize:'.74rem',fontWeight:600,cursor:'pointer'}}>Show all teams anyway</button>
+          </>
+        ) : 'No teams match filters'}</div>
       ) : (
         <div className="pl-tbl-wrap">
           <table className="pl-tbl">
