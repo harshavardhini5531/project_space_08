@@ -1,17 +1,12 @@
 // app/api/mentor/panel-score/route.js
 //
-// Mentor panel scoring endpoint.
+// Mentor panel scoring endpoint (v3 — table view, all 160 teams, hard duplicate block).
 //
-// GET  ?mentorEmail=X       — Returns mentor's panel assignment + their submitted scores + finalist teams list
-// POST { mentorEmail, teamNumber, scores: {project_idea, ai_usage, presentation, technical, qa_defense} }
-//                          — Submit/upsert score. Mentor MUST be on a panel.
+// GET  ?mentorEmail=X       — Returns mentor's panel + all 160 teams + mentor's existing scores
+// POST { mentorEmail, teamNumber, scores: {project_idea, ai_usage, presentation, technical, project_complexity} }
+//                          — Submit NEW score. Returns 409 if mentor already scored this team.
 
 import { supabase } from '@/lib/supabase'
-
-// ─────────────────────────────────────────────────────────────────
-// FINALIST TEAMS — Only these 51 teams appear in the mentor dropdown
-// ─────────────────────────────────────────────────────────────────
-const FINALIST_TEAMS = ['PS-002', 'PS-007', 'PS-008', 'PS-012', 'PS-014', 'PS-016', 'PS-018', 'PS-022', 'PS-024', 'PS-027', 'PS-028', 'PS-032', 'PS-033', 'PS-034', 'PS-035', 'PS-036', 'PS-039', 'PS-040', 'PS-045', 'PS-047', 'PS-048', 'PS-050', 'PS-052', 'PS-054', 'PS-055', 'PS-057', 'PS-061', 'PS-065', 'PS-079', 'PS-081', 'PS-089', 'PS-103', 'PS-107', 'PS-109', 'PS-112', 'PS-113', 'PS-115', 'PS-119', 'PS-120', 'PS-130', 'PS-131', 'PS-132', 'PS-133', 'PS-134', 'PS-135', 'PS-139', 'PS-142', 'PS-144', 'PS-147', 'PS-149', 'PS-154']
 
 function badRequest(msg, status = 400) {
   return Response.json({ ok: false, error: msg }, { status })
@@ -51,18 +46,17 @@ export async function GET(request) {
 
     const { mentor, panel } = verify
 
-    // Mentor's own past submissions
+    // Get mentor's submitted scores
     const { data: myScores } = await supabase
       .from('panel_scores')
       .select('*')
       .eq('mentor_email', mentor.email.toLowerCase())
       .order('updated_at', { ascending: false })
 
-    // ── Only finalist teams ──
+    // Get ALL 160 teams (not restricted to finalists anymore)
     const { data: teams } = await supabase
       .from('teams')
       .select('team_number, project_title, technology, mentor_assigned, leader_roll')
-      .in('team_number', FINALIST_TEAMS)
       .order('team_number', { ascending: true })
 
     return Response.json({
@@ -91,8 +85,8 @@ export async function POST(request) {
     if (!teamNumber || typeof teamNumber !== 'string') return badRequest('teamNumber required')
     if (!scores || typeof scores !== 'object') return badRequest('scores object required')
 
-    // Validate each score is 0-10
-    const keys = ['project_idea', 'ai_usage', 'presentation', 'technical', 'qa_defense']
+    // 5 criteria — last one renamed to project_complexity
+    const keys = ['project_idea', 'ai_usage', 'presentation', 'technical', 'project_complexity']
     const cleaned = {}
     for (const k of keys) {
       const v = Number(scores[k])
@@ -100,11 +94,7 @@ export async function POST(request) {
       cleaned[k] = Math.round(v * 10) / 10
     }
 
-    // Only allow scoring finalist teams
-    if (!FINALIST_TEAMS.includes(teamNumber)) {
-      return badRequest(`Team ${teamNumber} is not a finalist`, 403)
-    }
-
+    // Verify team exists
     const { data: team } = await supabase
       .from('teams')
       .select('team_number')
@@ -112,6 +102,27 @@ export async function POST(request) {
       .maybeSingle()
     if (!team) return badRequest(`Team ${teamNumber} not found`, 404)
 
+    // HARD BLOCK: check if this mentor already scored this team
+    const { data: existing } = await supabase
+      .from('panel_scores')
+      .select('id, total_score, updated_at')
+      .eq('team_number', teamNumber)
+      .eq('mentor_email', mentor.email.toLowerCase())
+      .maybeSingle()
+
+    if (existing) {
+      return Response.json({
+        ok: false,
+        error: `You have already submitted a score for ${teamNumber}. Duplicate submissions are not allowed.`,
+        existing: {
+          id: existing.id,
+          total_score: existing.total_score,
+          submitted_at: existing.updated_at,
+        },
+      }, { status: 409 })
+    }
+
+    // NOTE: DB column is still 'score_qa_defense' for backwards compat — store project_complexity value there
     const row = {
       team_number: teamNumber,
       mentor_id: mentor.id,
@@ -122,17 +133,24 @@ export async function POST(request) {
       score_ai_usage: cleaned.ai_usage,
       score_presentation: cleaned.presentation,
       score_technical: cleaned.technical,
-      score_qa_defense: cleaned.qa_defense,
-      total_score: cleaned.project_idea + cleaned.ai_usage + cleaned.presentation + cleaned.technical + cleaned.qa_defense,
+      score_qa_defense: cleaned.project_complexity,  // ← reusing existing column for new label
+      total_score: cleaned.project_idea + cleaned.ai_usage + cleaned.presentation + cleaned.technical + cleaned.project_complexity,
     }
 
     const { data: saved, error: saveErr } = await supabase
       .from('panel_scores')
-      .upsert(row, { onConflict: 'team_number,mentor_email' })
+      .insert(row)
       .select()
       .single()
 
     if (saveErr) {
+      // Unique constraint violation (in case race condition)
+      if (saveErr.code === '23505') {
+        return Response.json({
+          ok: false,
+          error: `You have already submitted a score for ${teamNumber}. Duplicate submissions are not allowed.`,
+        }, { status: 409 })
+      }
       console.error('[mentor/panel-score POST] save error:', saveErr)
       return Response.json({ ok: false, error: 'Could not save score', detail: saveErr.message }, { status: 500 })
     }

@@ -424,7 +424,7 @@ export default function AdminProjectLeaders({ adminEmail }) {
                                       </div>
                                       <div>
                                         <div>Tech: <strong style={{color:'rgba(255,255,255,.85)'}}>{p.scores.technical}</strong></div>
-                                        <div>Q&A: <strong style={{color:'rgba(255,255,255,.85)'}}>{p.scores.qa_defense}</strong></div>
+                                        <div>Complexity: <strong style={{color:'rgba(255,255,255,.85)'}}>{p.scores.qa_defense}</strong></div>
                                       </div>
                                     </div>
                                     <div className="pl-detail-total">
