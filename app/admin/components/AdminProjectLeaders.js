@@ -93,23 +93,23 @@ export default function AdminProjectLeaders({ adminEmail }) {
     } catch (e) { alert('Network error: ' + e.message) }
   }
 
-  // Compute scored teams split by category
+  // Compute scored teams split by BATCH (not technology — some VLSI teams are Skillup batch)
   const driveReadyTeams = useMemo(() => {
     if (!data?.teams) return []
     return data.teams
       .filter(t => (t.panel_count || 0) > 0)
-      .filter(t => t.technology !== 'SkillUp Coder')
+      .filter(t => t.batch === 'Drive Ready')
       .sort((a, b) => (b.grand_total ?? 0) - (a.grand_total ?? 0))
-      .map((t, i) => ({ ...t, rank: i + 1 }))  // re-rank starting at #1
+      .map((t, i) => ({ ...t, rank: i + 1 }))
   }, [data])
 
   const skillupTeams = useMemo(() => {
     if (!data?.teams) return []
     return data.teams
       .filter(t => (t.panel_count || 0) > 0)
-      .filter(t => t.technology === 'SkillUp Coder')
+      .filter(t => t.batch === 'SkillUp Coder')
       .sort((a, b) => (b.grand_total ?? 0) - (a.grand_total ?? 0))
-      .map((t, i) => ({ ...t, rank: i + 1 }))  // re-rank starting at #1
+      .map((t, i) => ({ ...t, rank: i + 1 }))
   }, [data])
 
   const filteredTeams = useMemo(() => {
