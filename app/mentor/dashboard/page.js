@@ -6,6 +6,7 @@ import MentorAttendance from '@/app/mentor/dashboard/components/MentorAttendance
 import MentorEvaluation from '@/app/mentor/dashboard/components/MentorEvaluation'
 import MentorSubmissions from '@/app/mentor/dashboard/components/MentorSubmissions'
 import MentorProjectSubmission from '@/app/mentor/dashboard/components/MentorProjectSubmission'
+import MentorLeaderboard from '@/app/mentor/dashboard/components/MentorLeaderboard'
 // ── LINE SVG ICONS ──
 const I = {
   grid: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>,
@@ -1268,6 +1269,7 @@ body.sb-open{overflow:hidden}
             {activePage==='attendance' && <MentorAttendance mentor={mentor}/>}
             {activePage==='submissions' && <MentorSubmissions mentor={mentor}/>}
             {activePage==='my-project' && <MentorProjectSubmission mentor={mentor}/>}
+            {activePage==='leaderboard' && <MentorLeaderboard mentor={mentor}/>}
 
             {/* SETTINGS */}
             {activePage==='settings' && (<>

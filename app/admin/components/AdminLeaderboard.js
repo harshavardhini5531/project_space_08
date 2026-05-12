@@ -192,7 +192,7 @@ export default function AdminLeaderboard({ adminEmail }) {
 .lb-pt.low{background:rgba(253,28,0,.08);color:#ff6b5e;border:1px solid rgba(253,28,0,.2)}
 
 .lb-grand{text-align:right;padding-right:14px;white-space:nowrap}
-.lb-grand-num{font-family:'Inter',sans-serif;font-variant-numeric:tabular-nums;font-feature-settings:'tnum';font-size:1.15rem;font-weight:800;color:#fd1c00;letter-spacing:-0.02em;display:inline-block}
+.lb-grand-num{font-family:'Inter',sans-serif;font-variant-numeric:tabular-nums;font-feature-settings:'tnum';font-size:0.95rem;font-weight:800;color:#fd1c00;letter-spacing:-0.02em;display:inline-block}
 .lb-out{color:rgba(255,255,255,.35);font-weight:500;font-size:.66rem;margin-left:4px;display:inline-block}
 
 .lb-empty{padding:40px;text-align:center;color:rgba(255,255,255,.3);font-size:.78rem;font-weight:500}
