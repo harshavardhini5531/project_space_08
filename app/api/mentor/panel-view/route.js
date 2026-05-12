@@ -37,6 +37,7 @@ const MANUAL_AI_SCORES = {
   'ai-powered security operations center (ai soc) for amazon web services': { score: 69.8, dims: { problem_statement: 70.0, architecture_design: 82.0, requirements_fulfillment: 74.0, code_quality: 68.0, future_scope: 55.0 } },
   'algotalk-ai-powered collaborative learning & competitive programming platform': { score: 77.4, dims: { problem_statement: 82.0, architecture_design: 88.0, requirements_fulfillment: 78.0, code_quality: 84.0, future_scope: 55.0 } },
   'articulate hub': { score: 76.8, dims: { problem_statement: 82.0, architecture_design: 78.0, requirements_fulfillment: 72.0, code_quality: 78.0, future_scope: 74.0 } },
+'articulatehub': { score: 76.8, dims: { problem_statement: 82.0, architecture_design: 78.0, requirements_fulfillment: 72.0, code_quality: 78.0, future_scope: 74.0 } },
   'attendinsights': { score: 44.0, dims: { problem_statement: 55.0, architecture_design: 40.0, requirements_fulfillment: 35.0, code_quality: 52.0, future_scope: 38.0 } },
   'auto assign & escalate': { score: 67.4, dims: { problem_statement: 72.0, architecture_design: 68.0, requirements_fulfillment: 65.0, code_quality: 62.0, future_scope: 70.0 } },
   'automated service chatbot': { score: 58.8, dims: { problem_statement: 72.0, architecture_design: 68.0, requirements_fulfillment: 62.0, code_quality: 52.0, future_scope: 40.0 } },
@@ -513,6 +514,7 @@ export async function GET(request) {
         ppt: ppt ? {
           file_name: ppt.file_name,
           storage_path: ppt.storage_path,
+          public_url: ppt.storage_path ? `https://yiwyfhdzgvlsmdeshdgv.supabase.co/storage/v1/object/public/team-uploads/${ppt.storage_path}` : null,
           uploaded_at: ppt.uploaded_at,
           uploaded_by: ppt.uploaded_by_name,
         } : null,

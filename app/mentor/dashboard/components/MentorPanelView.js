@@ -384,14 +384,15 @@ export default function MentorPanelView({ mentor }) {
                         ↗ GitHub
                       </a>
                     )}
-                    {activeTeam.ppt?.storage_path && (
-                      <a href={activeTeam.ppt.storage_path} target="_blank" rel="noopener noreferrer" className="pv-act-btn pv-act-ppt">
+                    {activeTeam.ppt?.public_url && (
+                      <a href={activeTeam.ppt.public_url} target="_blank" rel="noopener noreferrer" className="pv-act-btn pv-act-ppt" download>
                         ↓ PPT ({activeTeam.ppt.file_name})
                       </a>
                     )}
                     <button className="pv-act-btn pv-act-score" onClick={() => {
-                      if (typeof window !== 'undefined' && window.dispatchEvent) {
-                        window.dispatchEvent(new CustomEvent('mentor-nav', { detail: { page: 'panel-scoring', team: activeTeam.team_number } }))
+                      // Dispatch event for page.js to switch tabs
+                      if (typeof window !== 'undefined') {
+                        window.dispatchEvent(new CustomEvent('mentor-switch-page', { detail: { page: 'panel-scoring', team: activeTeam.team_number } }))
                       }
                     }}>
                       ⚖ Score this team →

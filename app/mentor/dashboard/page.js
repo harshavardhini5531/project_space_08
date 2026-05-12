@@ -35,6 +35,19 @@ export default function MentorDashboard() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [activePage, setActivePage] = useState('overview')
+  useEffect(() => {
+    const handler = (e) => {
+      if (e?.detail?.page) {
+        setActivePage(e.detail.page)
+        setSidebarOpen(false)
+        document.body.classList.remove('sb-open')
+      }
+    }
+    if (typeof window !== 'undefined') {
+      window.addEventListener('mentor-switch-page', handler)
+      return () => window.removeEventListener('mentor-switch-page', handler)
+    }
+  }, [])
   const [expandedTeam, setExpandedTeam] = useState(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
@@ -185,7 +198,6 @@ export default function MentorDashboard() {
   const solidColors = { 'Data Specialist':'#3b82f6', 'AWS Development':'#f59e0b', 'Full Stack':'#10b981', 'Google Flutter':'#06b6d4', 'ServiceNow':'#8b5cf6', 'VLSI':'#ef4444' }
 
   const navItems = [
-    {id:'submissions', label:'Submissions', icon:I.upload},
     {id:'allteams', label:'My Teams', icon:I.users},
     {id:'techprojects', label:'Tech Teams', icon:I.code},
     {id:'reviews', label:'Project Status', icon:I.target},
