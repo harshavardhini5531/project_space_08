@@ -1556,13 +1556,13 @@ body{font-family:'DM Sans',sans-serif;color:#fff}
             {/* ATTENDANCE */}
             {activeTab === 'review-scores' && email && <AdminReviewScores adminEmail={email}/>}
             {activeTab === 'leaderboard' && email && <AdminLeaderboard adminEmail={email}/>}
+            {activeTab === 'project-leaders' && email && <AdminProjectLeaders adminEmail={email}/>}
             {activeTab === 'attendance' && <AdminAttendance/>}
             {activeTab === 'submissions' && <AdminSubmissionsTracker adminEmail={email}/>}
             {activeTab === 'mentor-projects' && <AdminMentorSubmissions adminEmail={email}/>}
             {activeTab === 'project-street' && <AdminProjectStreet/>}
             {activeTab === 'project-review' && <AdminProjectReview user={{ email: email, rollNumber: 'admin' }}/>}
-            {activeTab === 'project-leaders' && email && <AdminProjectLeaders adminEmail={email}/>}
-
+            
             {/* PROJECT STATUS */}
             {activeTab === 'milestones' && <div className="adm-lb">
               <style>{`
