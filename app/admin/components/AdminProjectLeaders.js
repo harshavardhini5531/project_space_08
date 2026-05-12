@@ -28,7 +28,7 @@ export default function AdminProjectLeaders({ adminEmail }) {
   const [sortBy, setSortBy] = useState('rank')
   const [sortDir, setSortDir] = useState('asc')
   const [expandedTeam, setExpandedTeam] = useState(null)
-  const [showAllTeams, setShowAllTeams] = useState(false)  // false = only show panel-scored teams
+  const [activeTab, setActiveTab] = useState('drive')  // 'drive' | 'skillup'
 
   async function fetchData() {
     if (!adminEmail) return
@@ -93,11 +93,28 @@ export default function AdminProjectLeaders({ adminEmail }) {
     } catch (e) { alert('Network error: ' + e.message) }
   }
 
-  const filteredTeams = useMemo(() => {
+  // Compute scored teams split by category
+  const driveReadyTeams = useMemo(() => {
     if (!data?.teams) return []
-    let arr = data.teams
-    // Filter: only show teams with at least one panel score (unless toggle is on)
-    if (!showAllTeams) arr = arr.filter(t => (t.panel_count || 0) > 0)
+    return data.teams
+      .filter(t => (t.panel_count || 0) > 0)
+      .filter(t => t.technology !== 'SkillUp Coder')
+      .sort((a, b) => (b.grand_total ?? 0) - (a.grand_total ?? 0))
+      .map((t, i) => ({ ...t, rank: i + 1 }))  // re-rank starting at #1
+  }, [data])
+
+  const skillupTeams = useMemo(() => {
+    if (!data?.teams) return []
+    return data.teams
+      .filter(t => (t.panel_count || 0) > 0)
+      .filter(t => t.technology === 'SkillUp Coder')
+      .sort((a, b) => (b.grand_total ?? 0) - (a.grand_total ?? 0))
+      .map((t, i) => ({ ...t, rank: i + 1 }))  // re-rank starting at #1
+  }, [data])
+
+  const filteredTeams = useMemo(() => {
+    const base = activeTab === 'skillup' ? skillupTeams : driveReadyTeams
+    let arr = base
     if (techFilter !== 'all') arr = arr.filter(t => t.technology === techFilter)
     if (search) {
       const q = search.toLowerCase()
@@ -116,7 +133,7 @@ export default function AdminProjectLeaders({ adminEmail }) {
       return dir * (av - bv)
     })
     return sorted
-  }, [data, search, techFilter, sortBy, sortDir, showAllTeams])
+  }, [activeTab, driveReadyTeams, skillupTeams, search, techFilter, sortBy, sortDir])
 
   function handleSort(field) {
     if (sortBy === field) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
@@ -374,18 +391,18 @@ export default function AdminProjectLeaders({ adminEmail }) {
       {/* TABS */}
       <div className="pl-tabs">
         <button
-          className={`pl-tab ${!showAllTeams ? 'on' : ''}`}
-          onClick={() => setShowAllTeams(false)}
+          className={`pl-tab ${activeTab === 'drive' ? 'on' : ''}`}
+          onClick={() => setActiveTab('drive')}
         >
-          <span>Scored Teams</span>
-          <span className="pl-tab-cnt">{(data?.teams || []).filter(t => (t.panel_count || 0) > 0).length}</span>
+          <span>Scored Drive Ready Teams</span>
+          <span className="pl-tab-cnt">{driveReadyTeams.length}</span>
         </button>
         <button
-          className={`pl-tab ${showAllTeams ? 'on' : ''}`}
-          onClick={() => setShowAllTeams(true)}
+          className={`pl-tab ${activeTab === 'skillup' ? 'on' : ''}`}
+          onClick={() => setActiveTab('skillup')}
         >
-          <span>All Teams</span>
-          <span className="pl-tab-cnt">{(data?.teams || []).length}</span>
+          <span>Scored Skillup Teams</span>
+          <span className="pl-tab-cnt">{skillupTeams.length}</span>
         </button>
       </div>
 
@@ -400,11 +417,10 @@ export default function AdminProjectLeaders({ adminEmail }) {
 
       {/* TABLE */}
       {filteredTeams.length === 0 ? (
-        <div className="pl-empty">{!showAllTeams && (data?.teams?.length || 0) > 0 ? (
+        <div className="pl-empty">{(activeTab === 'drive' ? driveReadyTeams : skillupTeams).length === 0 ? (
           <>
-            <div style={{fontSize:'1rem',fontWeight:600,color:'rgba(255,255,255,.55)',marginBottom:6}}>Panels haven't started scoring yet</div>
-            <div style={{fontSize:'.78rem',color:'rgba(255,255,255,.35)',marginBottom:14}}>Teams will appear here as panel mentors submit their scores.</div>
-            <button onClick={() => setShowAllTeams(true)} style={{padding:'7px 16px',borderRadius:8,background:'rgba(167,139,250,.15)',border:'1px solid rgba(167,139,250,.35)',color:'#a78bfa',fontFamily:'Inter,DM Sans,sans-serif',fontSize:'.74rem',fontWeight:600,cursor:'pointer'}}>Show all teams anyway</button>
+            <div style={{fontSize:'1rem',fontWeight:600,color:'rgba(255,255,255,.55)',marginBottom:6}}>No {activeTab === 'drive' ? 'Drive Ready' : 'Skillup'} teams scored yet</div>
+            <div style={{fontSize:'.78rem',color:'rgba(255,255,255,.35)'}}>Teams will appear here as panel mentors submit their scores.</div>
           </>
         ) : 'No teams match filters'}</div>
       ) : (
