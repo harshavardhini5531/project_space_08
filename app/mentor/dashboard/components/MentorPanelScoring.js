@@ -33,7 +33,28 @@ export default function MentorPanelScoring({ mentor }) {
   const [flashMsg, setFlashMsg] = useState(null) // { type: 'success'|'error', text }
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [searchQ, setSearchQ] = useState('')
+  const [ddPos, setDdPos] = useState({ top: 0, left: 0 })
   const dropdownRef = useRef(null)
+  const ddBtnRef = useRef(null)
+
+  function openDropdown() {
+    if (ddBtnRef.current) {
+      const rect = ddBtnRef.current.getBoundingClientRect()
+      const ddWidth = 340
+      let left = rect.left
+      // Keep within viewport
+      if (left + ddWidth > window.innerWidth - 10) {
+        left = Math.max(10, window.innerWidth - ddWidth - 10)
+      }
+      let top = rect.bottom + 4
+      // Flip up if not enough room below
+      if (top + 380 > window.innerHeight - 10 && rect.top > 380) {
+        top = rect.top - 384
+      }
+      setDdPos({ top, left })
+    }
+    setDropdownOpen(true)
+  }
 
   const mentorEmail = mentor?.email
 
@@ -57,12 +78,19 @@ export default function MentorPanelScoring({ mentor }) {
   // Close dropdown on outside click
   useEffect(() => {
     const onClick = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setDropdownOpen(false)
-      }
+      const inDropdown = dropdownRef.current && dropdownRef.current.contains(e.target)
+      const inBtn = ddBtnRef.current && ddBtnRef.current.contains(e.target)
+      if (!inDropdown && !inBtn) setDropdownOpen(false)
     }
+    const onScroll = () => setDropdownOpen(false)
     document.addEventListener('mousedown', onClick)
-    return () => document.removeEventListener('mousedown', onClick)
+    window.addEventListener('scroll', onScroll, true)
+    window.addEventListener('resize', onScroll)
+    return () => {
+      document.removeEventListener('mousedown', onClick)
+      window.removeEventListener('scroll', onScroll, true)
+      window.removeEventListener('resize', onScroll)
+    }
   }, [])
 
   // Listen for cross-page nav events that pre-select a team (from Panel View)
@@ -213,7 +241,7 @@ export default function MentorPanelScoring({ mentor }) {
 .ps-flash.success{background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.3);color:#4ade80}
 .ps-flash.error{background:rgba(253,28,0,.08);border:1px solid rgba(253,28,0,.3);color:#ff6b5e}
 
-.ps-tbl-wrap{background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.06);border-radius:12px;overflow:auto;-webkit-overflow-scrolling:touch}
+.ps-tbl-wrap{background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.06);border-radius:12px;overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch}
 .ps-tbl{width:100%;border-collapse:separate;border-spacing:0;min-width:1100px;font-family:'Inter','DM Sans',sans-serif}
 .ps-tbl thead{background:rgba(12,8,20,.97);position:sticky;top:0;z-index:2}
 .ps-tbl th{padding:12px 11px;text-align:left;font-size:.6rem;font-weight:700;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:0.08em;border-bottom:1px solid rgba(255,255,255,.08);white-space:nowrap}
@@ -249,7 +277,7 @@ export default function MentorPanelScoring({ mentor }) {
 .ps-dd-btn.placeholder{color:rgba(255,255,255,.4);font-weight:400}
 .ps-dd-chev{color:rgba(255,255,255,.4);font-size:.65rem;flex-shrink:0}
 
-.ps-dd-pop{position:absolute;top:calc(100% + 4px);left:0;right:0;max-height:340px;overflow-y:auto;background:#13101a;border:1px solid rgba(255,255,255,.12);border-radius:10px;z-index:50;box-shadow:0 12px 40px rgba(0,0,0,.5);scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.15) transparent}
+.ps-dd-pop{position:fixed;max-height:380px;width:340px;overflow-y:auto;background:#13101a;border:1px solid rgba(167,139,250,.3);border-radius:10px;z-index:99999;box-shadow:0 16px 48px rgba(0,0,0,.7);scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.15) transparent}
 .ps-dd-pop::-webkit-scrollbar{width:5px}
 .ps-dd-pop::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:3px}
 .ps-dd-srch{padding:9px 10px;border-bottom:1px solid rgba(255,255,255,.05);position:sticky;top:0;background:#13101a;z-index:1}
@@ -340,10 +368,11 @@ export default function MentorPanelScoring({ mentor }) {
               {showPendingRow && (
                 <tr id="pending-row" className="row-pending">
                   <td>
-                    <div className="ps-dropdown" ref={dropdownRef}>
+                    <div className="ps-dropdown">
                       <button
+                        ref={ddBtnRef}
                         className={`ps-dd-btn ${!pendingRow.teamNumber ? 'placeholder' : ''}`}
-                        onClick={() => setDropdownOpen(o => !o)}
+                        onClick={() => dropdownOpen ? setDropdownOpen(false) : openDropdown()}
                       >
                         <span>
                           {pendingRow.teamNumber || 'Pick team...'}
@@ -351,7 +380,7 @@ export default function MentorPanelScoring({ mentor }) {
                         <span className="ps-dd-chev">{dropdownOpen ? '▲' : '▼'}</span>
                       </button>
                       {dropdownOpen && (
-                        <div className="ps-dd-pop">
+                        <div className="ps-dd-pop" ref={dropdownRef} style={{top:ddPos.top, left:ddPos.left}}>
                           <div className="ps-dd-srch">
                             <input
                               placeholder="Search team or project..."
