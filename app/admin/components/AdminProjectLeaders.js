@@ -113,7 +113,10 @@ export default function AdminProjectLeaders({ adminEmail }) {
   }, [data])
 
   const filteredTeams = useMemo(() => {
-    const base = activeTab === 'skillup' ? skillupTeams : driveReadyTeams
+    let base
+    if (activeTab === 'skillup') base = skillupTeams
+    else if (activeTab === 'all') base = data?.teams || []  // all 160, with original rank
+    else base = driveReadyTeams
     let arr = base
     if (techFilter !== 'all') arr = arr.filter(t => t.technology === techFilter)
     if (search) {
@@ -404,6 +407,13 @@ export default function AdminProjectLeaders({ adminEmail }) {
           <span>Scored Skillup Teams</span>
           <span className="pl-tab-cnt">{skillupTeams.length}</span>
         </button>
+        <button
+          className={`pl-tab ${activeTab === 'all' ? 'on' : ''}`}
+          onClick={() => setActiveTab('all')}
+        >
+          <span>All Teams</span>
+          <span className="pl-tab-cnt">{(data?.teams || []).length}</span>
+        </button>
       </div>
 
       {/* CONTROLS */}
@@ -417,9 +427,14 @@ export default function AdminProjectLeaders({ adminEmail }) {
 
       {/* TABLE */}
       {filteredTeams.length === 0 ? (
-        <div className="pl-empty">{(activeTab === 'drive' ? driveReadyTeams : skillupTeams).length === 0 ? (
+        <div className="pl-empty">{activeTab === 'drive' && driveReadyTeams.length === 0 ? (
           <>
-            <div style={{fontSize:'1rem',fontWeight:600,color:'rgba(255,255,255,.55)',marginBottom:6}}>No {activeTab === 'drive' ? 'Drive Ready' : 'Skillup'} teams scored yet</div>
+            <div style={{fontSize:'1rem',fontWeight:600,color:'rgba(255,255,255,.55)',marginBottom:6}}>No Drive Ready teams scored yet</div>
+            <div style={{fontSize:'.78rem',color:'rgba(255,255,255,.35)'}}>Teams will appear here as panel mentors submit their scores.</div>
+          </>
+        ) : activeTab === 'skillup' && skillupTeams.length === 0 ? (
+          <>
+            <div style={{fontSize:'1rem',fontWeight:600,color:'rgba(255,255,255,.55)',marginBottom:6}}>No Skillup teams scored yet</div>
             <div style={{fontSize:'.78rem',color:'rgba(255,255,255,.35)'}}>Teams will appear here as panel mentors submit their scores.</div>
           </>
         ) : 'No teams match filters'}</div>
