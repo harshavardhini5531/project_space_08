@@ -191,8 +191,9 @@ export default function AdminLeaderboard({ adminEmail }) {
 .lb-pt.med{background:rgba(238,167,39,.08);color:#EEA727;border:1px solid rgba(238,167,39,.2)}
 .lb-pt.low{background:rgba(253,28,0,.08);color:#ff6b5e;border:1px solid rgba(253,28,0,.2)}
 
-.lb-grand{font-family:'Inter',sans-serif;font-variant-numeric:tabular-nums;font-feature-settings:'tnum';font-size:1.1rem;font-weight:800;background:linear-gradient(135deg,#fd1c00,#faa000);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:right;padding-right:14px;letter-spacing:-0.02em}
-.lb-out{color:rgba(255,255,255,.3);font-weight:500;font-size:.66rem;margin-left:4px;-webkit-text-fill-color:rgba(255,255,255,.3)}
+.lb-grand{text-align:right;padding-right:14px;white-space:nowrap}
+.lb-grand-num{font-family:'Inter',sans-serif;font-variant-numeric:tabular-nums;font-feature-settings:'tnum';font-size:1.15rem;font-weight:800;color:#fd1c00;letter-spacing:-0.02em;display:inline-block}
+.lb-out{color:rgba(255,255,255,.35);font-weight:500;font-size:.66rem;margin-left:4px;display:inline-block}
 
 .lb-empty{padding:40px;text-align:center;color:rgba(255,255,255,.3);font-size:.78rem;font-weight:500}
 
@@ -320,7 +321,7 @@ export default function AdminLeaderboard({ adminEmail }) {
                   <td className="num"><PtCell value={t.attendance_points} max={6}/></td>
                   <td className="num"><PtCell value={t.cert_points} max={4}/></td>
                   <td className="num"><PtCell value={t.ppt_points} max={2}/></td>
-                  <td className="lb-grand">{t.grand_total}<span className="lb-out">/100</span></td>
+                  <td className="lb-grand"><span className="lb-grand-num">{t.grand_total ?? 0}</span><span className="lb-out">/100</span></td>
                 </tr>
               ))}
             </tbody>
