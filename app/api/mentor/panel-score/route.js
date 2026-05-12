@@ -90,7 +90,7 @@ export async function POST(request) {
     const cleaned = {}
     for (const k of keys) {
       const v = Number(scores[k])
-      if (isNaN(v) || v < 0 || v > 10) return badRequest(`${k} must be a number 0-10 (got ${scores[k]})`)
+      if (isNaN(v) || v <= 0 || v > 10) return badRequest(`${k} must be greater than 0 and at most 10 (got ${scores[k]})`)
       cleaned[k] = Math.round(v * 10) / 10
     }
 

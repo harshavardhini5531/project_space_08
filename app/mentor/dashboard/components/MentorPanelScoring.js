@@ -82,16 +82,36 @@ export default function MentorPanelScoring({ mentor }) {
       const inBtn = ddBtnRef.current && ddBtnRef.current.contains(e.target)
       if (!inDropdown && !inBtn) setDropdownOpen(false)
     }
-    const onScroll = () => setDropdownOpen(false)
+    const onScrollOrResize = () => {
+      // Recalculate position on scroll/resize so the dropdown stays anchored to the button
+      if (dropdownOpen && ddBtnRef.current) {
+        const rect = ddBtnRef.current.getBoundingClientRect()
+        const ddWidth = 340
+        let left = rect.left
+        if (left + ddWidth > window.innerWidth - 10) {
+          left = Math.max(10, window.innerWidth - ddWidth - 10)
+        }
+        let top = rect.bottom + 4
+        if (top + 380 > window.innerHeight - 10 && rect.top > 380) {
+          top = rect.top - 384
+        }
+        // If button is scrolled out of view, close dropdown
+        if (rect.bottom < 0 || rect.top > window.innerHeight) {
+          setDropdownOpen(false)
+          return
+        }
+        setDdPos({ top, left })
+      }
+    }
     document.addEventListener('mousedown', onClick)
-    window.addEventListener('scroll', onScroll, true)
-    window.addEventListener('resize', onScroll)
+    window.addEventListener('scroll', onScrollOrResize, true)
+    window.addEventListener('resize', onScrollOrResize)
     return () => {
       document.removeEventListener('mousedown', onClick)
-      window.removeEventListener('scroll', onScroll, true)
-      window.removeEventListener('resize', onScroll)
+      window.removeEventListener('scroll', onScrollOrResize, true)
+      window.removeEventListener('resize', onScrollOrResize)
     }
-  }, [])
+  }, [dropdownOpen])
 
   // Listen for cross-page nav events that pre-select a team (from Panel View)
   useEffect(() => {
@@ -160,16 +180,16 @@ export default function MentorPanelScoring({ mentor }) {
       setFlashMsg({ type: 'error', text: 'Pick a team first' })
       return
     }
-    // Validate all 5 scores are filled
+    // Validate all 5 scores: must be > 0 and <= 10
     for (const c of CRITERIA) {
       const v = pendingRow.scores[c.key]
       if (v === '' || v === null || v === undefined) {
-        setFlashMsg({ type: 'error', text: `Enter a value for ${c.label} (0-10)` })
+        setFlashMsg({ type: 'error', text: `Enter a value for ${c.label} (greater than 0, up to 10)` })
         return
       }
       const n = Number(v)
-      if (isNaN(n) || n < 0 || n > 10) {
-        setFlashMsg({ type: 'error', text: `${c.label} must be 0-10` })
+      if (isNaN(n) || n <= 0 || n > 10) {
+        setFlashMsg({ type: 'error', text: `${c.label} must be greater than 0 and at most 10` })
         return
       }
     }
@@ -309,7 +329,7 @@ export default function MentorPanelScoring({ mentor }) {
             Panel Scoring
             <span className="ps-badge">{data.panel?.name}</span>
           </div>
-          <div className="ps-sub">Score teams on 5 criteria (0-10 each). Total per team: <strong style={{color:'#a78bfa'}}>50 points</strong>. One submission per team — no duplicates.</div>
+          <div className="ps-sub">Score each criterion <strong style={{color:'#a78bfa'}}>greater than 0 up to 10</strong>. Total per team: <strong style={{color:'#a78bfa'}}>50 points</strong>. One submission per team — no duplicates.</div>
           <div className="ps-sub-info">
             <span>Scored: <strong>{data.myScores?.length || 0}</strong></span>
             <span>Available teams: <strong>{availableTeams.length}</strong> of {data.teams?.length || 0}</span>
@@ -435,7 +455,7 @@ export default function MentorPanelScoring({ mentor }) {
                         className="ps-score-input"
                         value={pendingRow.scores[c.key]}
                         onChange={e => updateScore(c.key, e.target.value)}
-                        placeholder="0"
+                        placeholder="1-10"
                       />
                     </td>
                   ))}
