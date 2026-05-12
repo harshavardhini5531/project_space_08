@@ -260,7 +260,8 @@ function SubmittedReadOnlyView({ submission, teamInfo, state, isLeader, compact 
       )}
 
       {/* ═══ EDIT REQUEST PANEL — placed at TOP for visibility ═══ */}
-      {!compact && <EditRequestPanel submission={submission} user={user} />}
+      {/* Edit Request panel removed — students can no longer request edits */}
+{false && !compact && <EditRequestPanel submission={submission} user={user} />}
 
       {/* Status banner — only when NOT reviewed (reviewed shows green banner instead) */}
       {!compact && state !== 'reviewed' && (
