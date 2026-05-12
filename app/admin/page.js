@@ -10,6 +10,7 @@ import AdminMentorSubmissions from '@/app/admin/components/AdminMentorSubmission
 import AdminProjectReview from '@/app/dashboard/components/AdminProjectReview'
 import AdminLeaderboard from '@/app/admin/components/AdminLeaderboard'
 import AdminProjectLeaders from '@/app/admin/components/AdminProjectLeaders'
+import MentorVoteLeaderboard from './MentorVoteLeaderboard'
 export default function AdminDashboard() {
   const router = useRouter()
   const [phase, setPhase] = useState('auth')
